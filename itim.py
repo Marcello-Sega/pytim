@@ -8,11 +8,6 @@ from MDAnalysis.core.AtomGroup   import *
 
 class ITIM():
 
-    def lap(self):
-        toc=timer()
-        print "LAP >>> ",toc-self.tic
-        self.tic=toc
-
     def __init__(self,universe,mesh=0.4,alpha=1.0,itim_group="all",
                  max_layers=1,pdb="layers.pdb",info=False):
         #TODO:CRITICAL handle the radii...
@@ -43,6 +38,12 @@ class ITIM():
             self.PDB=None
 
             self.tic=timer()
+
+    def lap(self):
+        toc=timer()
+        print "LAP >>> ",toc-self.tic
+        self.tic=toc
+
 
     def x(self,group="all"):
         return self.universe.select_atoms(group).positions[:,0]
