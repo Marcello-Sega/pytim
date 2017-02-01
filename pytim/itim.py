@@ -7,9 +7,23 @@ import numpy as np
 from MDAnalysis.core.AtomGroup   import *
 
 class ITIM():
-
+    """ Identifies the interfacial molecules at macroscopically 
+        flat interfaces.
+    """
     def __init__(self,universe,mesh=0.4,alpha=1.0,itim_group="all",
                  max_layers=1,pdb="layers.pdb",info=False):
+        """
+            Initializes default constants, molecular groups, and Writer
+
+            TODO Some extended description here
+
+            Parameters
+            ----------
+            universe : 
+                the MDAnalysis universe
+            mesh : float 
+                the grid spacing used for the testlines
+        """
         #TODO:CRITICAL handle the radii...
         try:
             types = np.copy(universe.select_atoms(itim_group).types)

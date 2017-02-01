@@ -14,6 +14,8 @@ from MDAnalysis.core.AtomGroup import *
 #TODO: comment each function
 
 class Observable(object):
+    """ Instantiate an observable. This is derived from the MDAnalysis Observable class
+    """
     __metaclass__ = ABCMeta
      
     def __init__(self,universe,options=''):
