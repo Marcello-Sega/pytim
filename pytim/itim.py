@@ -1,4 +1,7 @@
 #!/usr/bin/python
+""" Module: pytim
+    =============
+"""
 
 from timeit import default_timer as timer
 #from threading import Thread
@@ -9,21 +12,26 @@ from MDAnalysis.core.AtomGroup   import *
 class ITIM():
     """ Identifies the interfacial molecules at macroscopically 
         flat interfaces.
+
+        :param universe:      the MDAnalysis universe
+        :param mesh:          float --  the grid spacing used for the testlines
+        :param alpha:         float --  the probe sphere radius
+        :param itim_group:    identify the interfacial molecules from this group
+ 
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import pytim 
+	>>> from pytim.datafiles import *
+        >>> u     = mda.Universe(WATER_GRO)
+        >>> itim  = pytim.ITIM(u)
+        >>> group =  u.select_atoms("all") 
+        >>> itim.assign_layers()
+        >>> layer = itim.layers[0][0]  # first layer
+
     """
     def __init__(self,universe,mesh=0.4,alpha=1.0,itim_group="all",
                  max_layers=1,pdb="layers.pdb",info=False):
-        """
-            Initializes default constants, molecular groups, and Writer
-
-            TODO Some extended description here
-
-            Parameters
-            ----------
-            universe : 
-                the MDAnalysis universe
-            mesh : float 
-                the grid spacing used for the testlines
-        """
         #TODO:CRITICAL handle the radii...
         try:
             types = np.copy(universe.select_atoms(itim_group).types)
@@ -46,11 +54,10 @@ class ITIM():
         self.use_threads=False
         self.use_multiproc=True
         try:
-            self.PDB=Writer(pdb, multiframe=True, bonds=False,
+            self.PDB=MDAnalysis.Writer(pdb, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
         except:
             self.PDB=None
-
             self.tic=timer()
 
     def lap(self):
@@ -89,7 +96,7 @@ class ITIM():
             self.universe.coord.positions=np.column_stack((x,y,z))
 
     def writepdb(self,_seen):
-        self.universe.atoms.bfactors=_seen
+        self.universe.select_atoms(self.itim_group).atoms.bfactors=_seen
         try:
             self.PDB.write(self.universe.atoms)
         except:
@@ -261,12 +268,12 @@ if __name__ == "__main__":
     from observables import *
     parser = argparse.ArgumentParser(description='Description...')
     #TODO add series of pdb/gro/...
-    parser.add_argument('--top'                        )
-    parser.add_argument('--trj'                        )
-    parser.add_argument('--info'   ,action  = 'store_true')
-    parser.add_argument('--alpha'  ,default = 1.0         )
-    parser.add_argument('--selection',default = 'all'     )
-    parser.add_argument('--layers'    ,default = 1        )
+    parser.add_argument('--top'                                       )
+    parser.add_argument('--trj'                                       )
+    parser.add_argument('--info'     , action  = 'store_true'         )
+    parser.add_argument('--alpha'    , type = float , default = 1.0   )
+    parser.add_argument('--selection', default = 'all'                )
+    parser.add_argument('--layers'   , type = int   , default = 1     )
     parser.add_argument('--dump'   ,default = False
                                                      ,help="Output to pdb trajectory")
     # TODO: add noncontiguous sampling
@@ -305,7 +312,7 @@ if __name__ == "__main__":
     all1 = u.select_atoms("name OW")
     all2 = u.select_atoms("name OW")
     for frames, ts in enumerate(u.trajectory[::50]) :
-        print "Analyzing frame",ts.frame,\
+        print "Analyzing frame",ts.frame+1,\
               "(out of ",len(u.trajectory),") @ ",ts.time,"ps"
         itim.assign_layers()
         g1=itim.layers[0][0]
@@ -328,7 +335,7 @@ if __name__ == "__main__":
             rdf +=tmp.rdf
 #            rdf2+=tmp2.rdf
 
-    np.savetxt('angle3d.dat',np.column_stack((tmp.bins,rdf/frames)))
+    np.savetxt('angle3d.dat',np.column_stack((tmp.bins,rdf/(frames+1))))
 
 
 
