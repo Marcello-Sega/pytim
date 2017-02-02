@@ -1,0 +1,2 @@
+* to generate html help: make html
+* to generate coverage report: make coverage

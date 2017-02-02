@@ -7,9 +7,6 @@ Welcome to Pytim's documentation!
 *********************************
 
 
-The class :class:`pytim.ITIM` is the main one. 
-
-
 The itim module
 ===============
 .. automodule:: pytim.itim
@@ -21,11 +18,6 @@ The observables module
 .. automodule:: pytim.observables
    :members:
 
-The datafiles module
-====================
-
-.. automodule:: pytim.datafiles
-   :members:
 
 Table of Contents Tree
 ======================
