@@ -20,15 +20,16 @@ class ITIM():
  
         Example:
 
-        >>> import MDAnalysis as mda
+        >>> import MDAnalysis as mda                 
         >>> import pytim 
 	>>> from pytim.datafiles import *
         >>> u     = mda.Universe(WATER_GRO)
         >>> itim  = pytim.ITIM(u)
-        >>> group =  u.select_atoms("all") 
+        >>> group =  u.select_atoms("name OW") 
         >>> itim.assign_layers()
         >>> layer = itim.layers[0][0]  # first layer
-
+        >>> print layer
+        <AtomGroup with 2247 atoms>
     """
     def __init__(self,universe,mesh=0.4,alpha=1.0,itim_group="all",
                  max_layers=1,pdb="layers.pdb",info=False):

@@ -1,18 +1,10 @@
 import MDAnalysis as mda
-from MDAnalysis.core.AtomGroup   import *
-
-import pytim
-
-u = mda.Universe("../data/water.gro")
-itim  = pytim.ITIM(u,alpha=2.0)
-
-group =  u.select_atoms("name OW")
-
+import pytim 
+from pytim.datafiles import *
+u     = mda.Universe(WATER_GRO)
+itim  = pytim.ITIM(u)
+group =  u.select_atoms("name OW") 
 itim.assign_layers()
-
-layer = itim.layers[0][0]
-
-print group
+layer = itim.layers[0][0]  # first layer
 print layer
-
-
+print group

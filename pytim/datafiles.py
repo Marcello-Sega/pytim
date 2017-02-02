@@ -14,8 +14,7 @@ __all__ = [
 ]
 
 from pkg_resources import resource_filename
-
-WATER_GRO = resource_filename(__name__, 'data/water.gro')
+WATER_GRO = resource_filename('pytim', 'data/water.gro')
 
 # This should be the last line: clean up namespace
 del resource_filename
