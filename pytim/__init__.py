@@ -1,2 +1,2 @@
 from itim import ITIM
-__all__ = [ 'itim' , 'observables']
+__all__ = [ 'itim' , 'observables', 'datafiles']
