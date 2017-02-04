@@ -23,11 +23,14 @@ class ITIM():
         >>> import MDAnalysis as mda                 
         >>> import pytim 
         >>> from pytim.datafiles import *
+        >>> 
         >>> u         = mda.Universe(WATER_GRO)
+        >>> oxygens   = u.select_atoms("name OW") 
+        >>>  
         >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4)
         >>> interface.assign_layers()
-        >>> layer = interface.layers('upper',1)  # first layer, upper
-        >>> print layer
+        >>> 
+        >>> print interface.layers('upper',1)  # first layer, upper
         <AtomGroup with 842 atoms>
     """
  
@@ -73,17 +76,17 @@ class ITIM():
         print "LAP >>> ",toc-self.tic
         self.tic=toc
 
-    def x(self,group=None):
+    def _x(self,group=None):
         if (group==None) :
             group = self.all_atoms
         return group.positions[:,0]
 
-    def y(self,group=None):
+    def _y(self,group=None):
         if (group==None) :
             group = self.all_atoms
         return group.positions[:,1]
 
-    def z(self,group=None):
+    def _z(self,group=None):
         if (group==None) :
             group = self.all_atoms
         return group.positions[:,2]
@@ -96,9 +99,9 @@ class ITIM():
         # we rebox the atoms in universe, and not a vector
         if x is None and y is None and z is None:
             stack=True
-            x=self.x()
-            y=self.y()
-            z=self.z()
+            x=self._x()
+            y=self._y()
+            z=self._z()
         for index, val in enumerate((x,y,z)):
             try:
                 val[val> dim[index]-shift[index]]-=dim[index]
@@ -141,10 +144,10 @@ class ITIM():
         total_shift=0
         self._rebox()
 
-        _z_itim_group = self.z(self.itim_group)
-        _x = self.x()
-        _y = self.y()
-        _z = self.z()
+        _z_itim_group = self._z(self.itim_group)
+        _x = self._x()
+        _y = self._y()
+        _z = self._z()
 
         histo,edges=np.histogram(_z_itim_group, bins=10,
                                  range=(-dim[2]/2.,dim[2]/2.), density=True) ;
@@ -253,7 +256,7 @@ class ITIM():
         self._layers=np.array(_layers)
 
     def assign_layers(self):
-        """ Determine the ITIM layers.
+        """ Determine the ITIM layers. 
 
         """
         # TODO: speedup this part of the code.
@@ -267,11 +270,11 @@ class ITIM():
         self.center()
 
         _radius=group.radii
-        self._seen=np.zeros(len(self.x(group)))
+        self._seen=np.zeros(len(self._x(group)))
 
-        _x=self.x(group)
-        _y=self.y(group)
-        _z=self.z(group)
+        _x=self._x(group)
+        _y=self._y(group)
+        _z=self._z(group)
 
         sort = np.argsort( _z + _radius * np.sign(_z) )
 
