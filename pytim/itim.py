@@ -65,11 +65,6 @@ class ITIM():
         self.use_multiproc=True
         self.tic=timer()
 
-        try:
-            self.PDB=MDAnalysis.Writer(pdb, multiframe=True, bonds=False,
-                            n_atoms=self.universe.atoms.n_atoms)
-        except:
-            self.PDB=None
 
     def lap(self):
         toc=timer()
@@ -111,19 +106,26 @@ class ITIM():
         if stack:
             self.universe.coord.positions=np.column_stack((x,y,z))
 
-    def writepdb(self,bfactors):
+    def writepdb(self,filename,multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
             to the layers with different beta factor.
 
-        :param bfactors: array of floats -- the beta factors 
+	    :param filename:   string  -- the output file name
+            :param multiframe: boolean -- append to pdb file if True
+
+            Example:
+
+            >>> interface.writepdb('layers.pdb',multiframe=False)
 
         """
 
-        self.itim_group.atoms.bfactors=bfactors
+        self.itim_group.atoms.bfactors=self.bfactors
         try:
-            self.PDB.write(self.universe.atoms)
+            PDB=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
+                            n_atoms=self.universe.atoms.n_atoms)
+            PDB.write(self.universe.atoms)
         except:
-            print("warning: it was not possible to assign the beta factors")
+            print("Error writing pdb file")
 
 
     def center(self):
@@ -297,7 +299,7 @@ class ITIM():
             self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)
             self._assign_one_side(low,sort,_x,_y,_z,_radius)
         self._define_layers_groups()
-        self.writepdb(self._seen)
+        self.bfactors = self._seen
 
     def layers(self,side='both',*ids):
         """ Select one or more layers.
