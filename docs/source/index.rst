@@ -7,13 +7,9 @@ Welcome to Pytim's documentation!
 *********************************
 
 
-The itim module
-===============
 .. automodule:: pytim.itim
    :members:
 
-The observables module
-======================
 
 .. automodule:: pytim.observables
    :members:

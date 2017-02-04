@@ -22,59 +22,71 @@ class ITIM():
 
         >>> import MDAnalysis as mda                 
         >>> import pytim 
-	>>> from pytim.datafiles import *
-        >>> u     = mda.Universe(WATER_GRO)
-        >>> itim  = pytim.ITIM(u)
-        >>> group =  u.select_atoms("name OW") 
-        >>> itim.assign_layers()
-        >>> layer = itim.layers[0][0]  # first layer
+        >>> from pytim.datafiles import *
+        >>> u         = mda.Universe(WATER_GRO)
+        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4)
+        >>> interface.assign_layers()
+        >>> layer = interface.layers('upper',1)  # first layer, upper
         >>> print layer
-        <AtomGroup with 2247 atoms>
+        <AtomGroup with 842 atoms>
     """
-    def __init__(self,universe,mesh=0.4,alpha=1.0,itim_group="all",
+ 
+    def __init__(self,universe,mesh=0.4,alpha=1.0,itim_group=None,
                  max_layers=1,pdb="layers.pdb",info=False):
-        #TODO:CRITICAL handle the radii...
-        try:
-            types = np.copy(universe.select_atoms(itim_group).types)
-            radii = np.zeros(len(universe.select_atoms(itim_group).types))
-            radii[types=='OW']=3.5/2.
-            radii[types=='H']=0.
-            universe.select_atoms(itim_group).radii=radii
-            del radii
-            del types
-        except:
-            print "Error while selecting the group:",itim_group
 
         self.universe=universe
         self.target_mesh=mesh
         self.alpha=alpha
         self.max_layers=max_layers
-        self.itim_group=itim_group ; # TODO add analysis groups
-        self.grid=None
         self.info=info
+        self.all_atoms = self.universe.select_atoms('all')
+
+        try:
+            if(itim_group==None):
+                self.itim_group =  self.all_atoms
+            else:
+                self.itim_group =  itim_group
+            types = np.copy(self.itim_group.types)
+             #TODO:CRITICAL handle the radii...
+            radii = np.zeros(len(self.itim_group.types))
+            radii[types=='OW']=3.5/2.
+            radii[types=='H']=0.
+            self.itim_group.radii=radii
+            del radii
+            del types
+        except:
+            print ("Error while initializing ITIM")
+
+        self.grid=None
         self.use_threads=False
         self.use_multiproc=True
+        self.tic=timer()
+
         try:
             self.PDB=MDAnalysis.Writer(pdb, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
         except:
             self.PDB=None
-            self.tic=timer()
 
     def lap(self):
         toc=timer()
         print "LAP >>> ",toc-self.tic
         self.tic=toc
 
+    def x(self,group=None):
+        if (group==None) :
+            group = self.all_atoms
+        return group.positions[:,0]
 
-    def x(self,group="all"):
-        return self.universe.select_atoms(group).positions[:,0]
+    def y(self,group=None):
+        if (group==None) :
+            group = self.all_atoms
+        return group.positions[:,1]
 
-    def y(self,group="all"):
-        return self.universe.select_atoms(group).positions[:,1]
-
-    def z(self,group="all"):
-        return self.universe.select_atoms(group).positions[:,2]
+    def z(self,group=None):
+        if (group==None) :
+            group = self.all_atoms
+        return group.positions[:,2]
 
     def _rebox(self,x=None,y=None,z=None):
         dim = self.universe.coord.dimensions
@@ -96,15 +108,33 @@ class ITIM():
         if stack:
             self.universe.coord.positions=np.column_stack((x,y,z))
 
-    def writepdb(self,_seen):
-        self.universe.select_atoms(self.itim_group).atoms.bfactors=_seen
+    def writepdb(self,bfactors):
+        """ Write the frame to a pdb file, marking the atoms belonging
+            to the layers with different beta factor.
+
+        :param bfactors: array of floats -- the beta factors 
+
+        """
+
+        self.itim_group.atoms.bfactors=bfactors
         try:
             self.PDB.write(self.universe.atoms)
         except:
-            pass
+            print("warning: it was not possible to assign the beta factors")
 
 
     def center(self):
+        """ 
+        Centers the liquid slab in the simulation box.
+
+        The algorithm tries to avoid problems with the definition
+        of the center of mass. First, a rough density profile
+        (10 bins) is computed. Then, the support group is shifted
+        and reboxed until the bins at the box boundaries have a
+        density lower than a threshold delta
+
+        
+        """
         #TODO: implement shifting back for final coordinate writing as an option
         dim = self.universe.coord.dimensions
         shift=dim[2]/100. ;# TODO, what about non ortho boxes?
@@ -140,7 +170,9 @@ class ITIM():
         self.universe.coord.positions=np.column_stack((_x,_y,_z))
 
 
-    def assign_mesh(self):
+    def _assign_mesh(self):
+        """ determine a mesh size for the testlines that is compatible with the simulation box
+        """
         self.mesh_nx=int(np.ceil(self.universe.coord.dimensions[0]/
                          self.target_mesh))
         self.mesh_ny=int(np.ceil(self.universe.coord.dimensions[1]/
@@ -174,7 +206,7 @@ class ITIM():
         sel_y[sel_y>=self.mesh_ny]-=self.mesh_ny
         return np.column_stack((sel_x,sel_y))
 
-    def assign_one_side(self,uplow,layer,sorted_atoms,_x,_y,_z,
+    def _assign_one_side(self,uplow,sorted_atoms,_x,_y,_z,
                         _radius,queue=None):
 
         for layer in range(0,self.max_layers) :
@@ -209,28 +241,32 @@ class ITIM():
                 if len(mask[mask==0])==0: # no more untouched lines left
                     self.layers_ids[uplow].append(inlayer)
                     break
-            if queue != None:
-                queue.put(self._seen)
-                queue.put(self.layers_ids[uplow])
+        if queue != None:
+            queue.put(self._seen)
+            queue.put(self.layers_ids[uplow])
 
-    def define_layers_groups(self):
-        self.layers=[[],[]]
+    def _define_layers_groups(self):
+        _layers=[[],[]]
         for i,uplow in enumerate(self.layers_ids):
             for j,layer in enumerate(uplow):
-                self.layers[i].append(self.universe.atoms[layer])
+                _layers[i].append(self.universe.atoms[layer])
+        self._layers=np.array(_layers)
 
     def assign_layers(self):
+        """ Determine the ITIM layers.
+
+        """
         # TODO: speedup this part of the code.
-        self.assign_mesh()
+        self._assign_mesh()
         group=self.itim_group ; delta = self.delta ;
         mesh_dx = self.mesh_dx ; mesh_dy = self.mesh_dy
-        layer=0 ; up=0 ; low=1
+        up=0 ; low=1
         self.layers_ids=[[],[]] ;# upper, lower
         self.mask=np.zeros((2,self.max_layers,self.mesh_nx,self.mesh_ny),
                             dtype=int);
         self.center()
 
-        _radius=self.universe.select_atoms(group).radii
+        _radius=group.radii
         self._seen=np.zeros(len(self.x(group)))
 
         _x=self.x(group)
@@ -242,12 +278,12 @@ class ITIM():
         if self.use_multiproc:
             proc=[[],[]] ; queue=[[],[]] ; seen=[[],[]]
             queue[up]=Queue()
-            proc[up]  = Process(target=self.assign_one_side,
-                                args=(up,layer,sort[::-1],_x,_y,_z,_radius,
+            proc[up]  = Process(target=self._assign_one_side,
+                                args=(up,sort[::-1],_x,_y,_z,_radius,
                                 queue[up]))
             queue[low]=Queue()
-            proc[low] = Process(target=self.assign_one_side,
-                                args=(low,layer,sort,_x,_y,_z,_radius,
+            proc[low] = Process(target=self._assign_one_side,
+                                args=(low,sort,_x,_y,_z,_radius,
                                 queue[low]))
             for p in proc: p.start()
             for q in queue: self._seen+=q.get()
@@ -255,11 +291,54 @@ class ITIM():
             self.layers_ids[up]+=queue[up].get()
             for p in proc: p.join()
         else:
-            self.assign_one_side(up,layer,sort[::-1],_x,_y,_z,_radius)
-            self.assign_one_side(low,layer,sort,_x,_y,_z,_radius)
-        self.define_layers_groups()
+            self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)
+            self._assign_one_side(low,sort,_x,_y,_z,_radius)
+        self._define_layers_groups()
         self.writepdb(self._seen)
 
+    def layers(self,side='both',*ids):
+        """ Select one or more layers.
+
+        :param side: str -- 'upper', 'lower' or 'both'
+        :param ids: slice -- the slice corresponding to the layers to be selcted (starting from 0) 
+
+        The slice can be used to select a single layer, or multiple, e.g. (using the example of the :class:`ITIM` class) :
+
+        >>> interface.layers('upper')  # all layers, upper side
+        array([<AtomGroup with 842 atoms>, <AtomGroup with 686 atoms>,
+               <AtomGroup with 687 atoms>, <AtomGroup with 660 atoms>], dtype=object)
+
+        >>> interface.layers('lower',1)  # first layer, lower side
+        <AtomGroup with 840 atoms>
+
+        >>> interface.layers('both',0,3) # 1st - 3rd layer, on both sides
+        array([[<AtomGroup with 842 atoms>, <AtomGroup with 686 atoms>,
+                <AtomGroup with 687 atoms>],
+               [<AtomGroup with 840 atoms>, <AtomGroup with 658 atoms>,
+                <AtomGroup with 696 atoms>]], dtype=object)
+
+        >>> interface.layers('lower',0,4,2) # 1st - 4th layer, with a stride of 2, lower side 
+        array([<AtomGroup with 840 atoms>, <AtomGroup with 696 atoms>], dtype=object)
+
+        """
+        _options={'both':slice(None),'upper':0,'lower':1}
+        _side=_options[side]
+        if len(ids) == 0:
+            _slice = slice(None)
+        if len(ids) == 1:
+            _slice = slice(ids[0])
+        if len(ids) == 2:
+            _slice = slice(ids[0],ids[1])
+        if len(ids) == 3:
+            _slice = slice(ids[0],ids[1],ids[2])
+
+        if len(ids) == 1 and side != 'both':
+            return self._layers[_side,_slice][0]
+
+        if len(ids) == 1 :
+            return self._layers[_side,_slice][:,0]
+
+        return self._layers[_side,_slice]
 
 
 

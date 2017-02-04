@@ -1,3 +1,6 @@
+""" Module: observables
+    ===================
+"""
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from MDAnalysis.analysis import rdf
