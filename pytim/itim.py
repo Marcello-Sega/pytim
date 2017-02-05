@@ -13,10 +13,14 @@ class ITIM():
     """ Identifies the interfacial molecules at macroscopically 
         flat interfaces.
 
-        :param universe:      the MDAnalysis universe
-        :param mesh:          float --  the grid spacing used for the testlines
-        :param alpha:         float --  the probe sphere radius
-        :param itim_group:    identify the interfacial molecules from this group
+        :param Universe universe:        the MDAnalysis universe
+        :param float mesh:      the grid spacing used for the testlines
+        :param float alpha:     the probe sphere radius
+        :param AtomGroup itim_group:      identify the interfacial molecules from this group
+        :param int max_layers:  the number of layers to be identified
+        :param str pdb:         filename for PDB output
+        :param bool info:       print additional info 
+        :param bool multiproc:  parallel version (default: True. Switch off for debugging)
  
         Example:
 
@@ -35,7 +39,7 @@ class ITIM():
     """
  
     def __init__(self,universe,mesh=0.4,alpha=1.0,itim_group=None,
-                 max_layers=1,pdb="layers.pdb",info=False):
+                 max_layers=1,pdb="layers.pdb",info=False,multiproc=True):
 
         self.universe=universe
         self.target_mesh=mesh
@@ -58,13 +62,22 @@ class ITIM():
             del radii
             del types
         except:
-            print ("Error while initializing ITIM")
+            print ("Error (generic) while initializing ITIM")
+
+        self._sanity_checks()
 
         self.grid=None
         self.use_threads=False
-        self.use_multiproc=True
+        self.use_multiproc=multiproc
         self.tic=timer()
 
+    def _sanity_checks(self):
+        # these are done at the beginning to prevent burdening the inner loops
+        try:
+            np.array(self.alpha/self.target_mesh)
+        except:
+            print("Error while initializing ITIM: alpha too large or mesh too small")
+            raise ValueError
 
     def lap(self):
         toc=timer()
@@ -304,8 +317,8 @@ class ITIM():
     def layers(self,side='both',*ids):
         """ Select one or more layers.
 
-        :param side: str -- 'upper', 'lower' or 'both'
-        :param ids: slice -- the slice corresponding to the layers to be selcted (starting from 0) 
+        :param str side: 'upper', 'lower' or 'both'
+        :param slice ids: the slice corresponding to the layers to be selcted (starting from 0) 
 
         The slice can be used to select a single layer, or multiple, e.g. (using the example of the :class:`ITIM` class) :
 

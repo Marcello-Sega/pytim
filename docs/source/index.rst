@@ -14,6 +14,8 @@ Welcome to Pytim's documentation!
 .. automodule:: pytim.observables
    :members:
 
+.. automodule:: pytim.tests.testsuite1
+   :members:
 
 Table of Contents Tree
 ======================
