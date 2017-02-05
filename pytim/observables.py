@@ -1,3 +1,5 @@
+# vim: set expandtab:
+# vim: set tabstop=4:
 """ Module: observables
     ===================
 """

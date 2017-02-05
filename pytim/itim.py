@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# vim: set expandtab:
+# vim: set tabstop=4:
 """ Module: pytim
     =============
 """
@@ -8,19 +10,21 @@ from timeit import default_timer as timer
 from multiprocessing import Process, Queue
 import numpy as np
 from MDAnalysis.core.AtomGroup   import *
+from pytim.datafiles import *
 
 class ITIM():
     """ Identifies the interfacial molecules at macroscopically 
         flat interfaces.
 
-        :param Universe universe:        the MDAnalysis universe
-        :param float mesh:      the grid spacing used for the testlines
-        :param float alpha:     the probe sphere radius
-        :param AtomGroup itim_group:      identify the interfacial molecules from this group
-        :param int max_layers:  the number of layers to be identified
-        :param str pdb:         filename for PDB output
-        :param bool info:       print additional info 
-        :param bool multiproc:  parallel version (default: True. Switch off for debugging)
+        :param Universe universe:      the MDAnalysis universe
+        :param float mesh:             the grid spacing used for the testlines
+        :param float alpha:            the probe sphere radius
+        :param AtomGroup itim_group:   identify the interfacial molecules from this group
+        :param dict radii_dict:        dictionary with the atomic radii of the elements in the itim_group. 
+                                       If None is supplied, the default one (from GROMOS 43a1) will be used.
+        :param int max_layers:         the number of layers to be identified
+        :param bool info:              print additional info 
+        :param bool multiproc:         parallel version (default: True. Switch off for debugging)
  
         Example:
 
@@ -35,11 +39,13 @@ class ITIM():
         >>> interface.assign_layers()
         >>> 
         >>> print interface.layers('upper',1)  # first layer, upper
-        <AtomGroup with 842 atoms>
+        <AtomGroup with 161 atoms>
+
+        # TODO Add here an example on how to use the variuos other options
     """
  
-    def __init__(self,universe,mesh=0.4,alpha=1.0,itim_group=None,
-                 max_layers=1,pdb="layers.pdb",info=False,multiproc=True):
+    def __init__(self,universe,mesh=0.4,alpha=2.0,itim_group=None,radii_dict=None,
+                 max_layers=1,info=False,multiproc=True):
 
         self.universe=universe
         self.target_mesh=mesh
@@ -54,10 +60,18 @@ class ITIM():
             else:
                 self.itim_group =  itim_group
             types = np.copy(self.itim_group.types)
-             #TODO:CRITICAL handle the radii...
+
+            if (radii_dict==None): # let's use the default one
+                radii_dict=pytim_data.vdwradii(G43A1_TOP)
             radii = np.zeros(len(self.itim_group.types))
-            radii[types=='OW']=3.5/2.
-            radii[types=='H']=0.
+            # let's select unique atom types, and 
+            for type in np.unique(types):
+                try:
+                    radii[types==type]=radii_dict[type]
+                except:
+                    pass # those types which are not listed in the dictionary 
+                         # will have radius==0. TODO handle this
+
             self.itim_group.radii=radii
             del radii
             del types
@@ -72,11 +86,23 @@ class ITIM():
         self.tic=timer()
 
     def _sanity_checks(self):
+        ALPHA_NEGATIVE = "parameter alpha in %s.%s must be positive" % ( (__name__) , (self.__class__.__name__) )
+        ALPHA_LARGE= "parameter alpha in %s.%s must be smaller than the smaller box side" % ( (__name__) , (self.__class__.__name__) )
+
+        MESH_NEGATIVE = "parameter mesh in %s.%s must be positive" % ( (__name__) , (self.__class__.__name__) )
+        MESH_LARGE= "parameter mesh in %s.%s must be smaller than the smaller box side" % ( (__name__) , (self.__class__.__name__) )
+
         # these are done at the beginning to prevent burdening the inner loops
+        assert self.alpha > 0,                                           ALPHA_NEGATIVE
+        assert self.alpha < np.amin(self.universe.dimensions[:3]),       ALPHA_LARGE
+
+        assert self.target_mesh > 0,                                     MESH_NEGATIVE
+        assert self.target_mesh < np.amin(self.universe.dimensions[:3]), MESH_LARGE
+
         try:
-            np.array(self.alpha/self.target_mesh)
+            np.arange(int(self.alpha/self.target_mesh))
         except:
-            print("Error while initializing ITIM: alpha too large or mesh too small")
+            print("Error while initializing ITIM: alpha (%f) too large or mesh (%f) too small" % self.alpha,self.target_mesh)
             raise ValueError
 
     def lap(self):
@@ -119,7 +145,7 @@ class ITIM():
         if stack:
             self.universe.coord.positions=np.column_stack((x,y,z))
 
-    def writepdb(self,filename,multiframe=True):
+    def writepdb(self,filename='layers.pdb',multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
             to the layers with different beta factor.
 
@@ -267,7 +293,7 @@ class ITIM():
         _layers=[[],[]]
         for i,uplow in enumerate(self.layers_ids):
             for j,layer in enumerate(uplow):
-                _layers[i].append(self.universe.atoms[layer])
+                _layers[i].append(self.itim_group.atoms[layer])
         self._layers=np.array(_layers)
 
     def assign_layers(self):
@@ -290,10 +316,14 @@ class ITIM():
         _x=self._x(group)
         _y=self._y(group)
         _z=self._z(group)
-
+        
         sort = np.argsort( _z + _radius * np.sign(_z) )
+        # NOTE: np.argsort returns the sorted *indices*
 
         if self.use_multiproc:
+            # so far, it justs exploit a simple scheme splitting
+            # the calculation between the two sides. Would it be
+            # possible to implement easily 2d domain decomposition? 
             proc=[[],[]] ; queue=[[],[]] ; seen=[[],[]]
             queue[up]=Queue()
             proc[up]  = Process(target=self._assign_one_side,
@@ -323,20 +353,21 @@ class ITIM():
         The slice can be used to select a single layer, or multiple, e.g. (using the example of the :class:`ITIM` class) :
 
         >>> interface.layers('upper')  # all layers, upper side
-        array([<AtomGroup with 842 atoms>, <AtomGroup with 686 atoms>,
-               <AtomGroup with 687 atoms>, <AtomGroup with 660 atoms>], dtype=object)
+        array([<AtomGroup with 161 atoms>, <AtomGroup with 202 atoms>,
+               <AtomGroup with 280 atoms>, <AtomGroup with 272 atoms>], dtype=object)
 
         >>> interface.layers('lower',1)  # first layer, lower side
-        <AtomGroup with 840 atoms>
+        <AtomGroup with 144 atoms>
 
         >>> interface.layers('both',0,3) # 1st - 3rd layer, on both sides
-        array([[<AtomGroup with 842 atoms>, <AtomGroup with 686 atoms>,
-                <AtomGroup with 687 atoms>],
-               [<AtomGroup with 840 atoms>, <AtomGroup with 658 atoms>,
-                <AtomGroup with 696 atoms>]], dtype=object)
+        array([[<AtomGroup with 161 atoms>, <AtomGroup with 202 atoms>,
+                <AtomGroup with 280 atoms>],
+               [<AtomGroup with 144 atoms>, <AtomGroup with 178 atoms>,
+                <AtomGroup with 267 atoms>]], dtype=object)
 
         >>> interface.layers('lower',0,4,2) # 1st - 4th layer, with a stride of 2, lower side 
-        array([<AtomGroup with 840 atoms>, <AtomGroup with 696 atoms>], dtype=object)
+        array([<AtomGroup with 144 atoms>, <AtomGroup with 267 atoms>], dtype=object)
+
 
         """
         _options={'both':slice(None),'upper':0,'lower':1}
@@ -395,12 +426,13 @@ if __name__ == "__main__":
     if u is None:
         print "Error loadinig input files",exit()
 
-    itim = ITIM(u,
+    g = u.select_atoms(args.selection)
+
+    interface = ITIM(u,
                 info=args.info,
-                pdb=args.dump,
                 alpha=args.alpha,
                 max_layers = args.layers,
-                itim_group = args.selection
+                itim_group = g
                 )
     rdf=None
     rdf2=None
@@ -412,9 +444,11 @@ if __name__ == "__main__":
     for frames, ts in enumerate(u.trajectory[::50]) :
         print "Analyzing frame",ts.frame+1,\
               "(out of ",len(u.trajectory),") @ ",ts.time,"ps"
-        itim.assign_layers()
-        g1=itim.layers[0][0]
-        g2=itim.layers[0][0]
+        interface.assign_layers()
+        g1=interface.layers('upper',1) 
+        g2=interface.layers('upper',1)
+        if(args.dump):
+            interface.writepdb()
         
         tmp = InterRDF(all1,all2,range=(0.,ts.dimensions[0]/2.),function=orientation.compute)
 #        tmp = InterRDF2D(g1,g2,range=(0.,ts.dimensions[0]/2.))

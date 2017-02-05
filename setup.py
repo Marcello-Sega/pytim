@@ -75,7 +75,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy','scipy','MDAnalysis','multiprocessing'],
+    install_requires=['numpy','scipy','MDAnalysis'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -90,7 +90,7 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_data={
-        'pytim': ['data/water.gro'],
+        'pytim': ['data/*'],
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
