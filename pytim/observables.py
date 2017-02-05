@@ -84,7 +84,13 @@ class MolecularOrientation(Observable):
 
 class InterRDF(rdf.InterRDF):
     """ Calculates a radial distribution function of some observable from two groups
+
+        .. math::
+
+                 g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|)  \\right\\rangle
+
     """
+
     def __init__(self, g1, g2,
                  nbins=75, range=(0.0, 15.0), exclusion_block=None,
                  start=None, stop=None, step=None,excluded_dir='z',

@@ -56,7 +56,7 @@ source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
-
+imgmath_image_format = 'png'
 # General information about the project.
 project = u'Pytim'
 copyright = u'2017, Marcello Sega'

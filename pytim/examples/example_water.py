@@ -5,7 +5,7 @@ from pytim.datafiles import *
 u       = mda.Universe(WATER_GRO)
 oxygens = u.select_atoms("name OW") 
 
-interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,mesh=0.1)
+interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4)
 interface.assign_layers()
 
 layer = interface.layers('upper',1)  # first layer
