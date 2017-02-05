@@ -83,18 +83,71 @@ class MolecularOrientation(Observable):
 
 
 class InterRDF(rdf.InterRDF):
-    """ Calculates a radial distribution function of some observable from two groups
+    """ Calculates a radial distribution function of some observable from two groups. 
+
+        The two functions must return an array (of scalars or of vectors)
+        having the same size of the group. The scalar product between the
+        two functions is used to weight the distriution function.
+
+        :param AtomGroup g1:            1st group
+        :param AtomGroup g2:            2nd group
+        :param int nbins:               number of bins
+        :param ??? exclusion_block:
+        :param int start:               first frame
+        :param int stop:                last frame
+        :param int step:                frame stride
+        :param char excluded_dir:       project position vectors onto the plane orthogonal to 'z','y' or 'z' (TODO not used here, check & remove)
+        :param array function:          function applied to the atoms in g1
+        :param array function2:         function applied to the atoms in g2
+        :param array weights:           weights to be applied to the distribution function (mutually exclusive with function/function2)
 
         .. math::
 
-                 g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|)  \\right\\rangle
+              g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|) f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
+
+        Example: TODO comment, MolecularOrientation is not straightfowrard
+        
+        >>> from pytim.observables import * 
+        >>> orientation = MolecularOrientation(u)
+        >>> for ts in u.trajectory :
+        ...     interface.assign_layers()
+        ...     layer=interface.layers('upper',1)
+        ...     rdf = InterRDF(layer,layer,range=(0.,u.dimensions[0]/2.),function=orientation.compute)
+        ...     rdf.sample(ts)
+        ...     rdf.normalize()
+        >>> np.savetxt('angleRDF.dat', np.column_stack((rdf.bins,rdf.rdf/(rdf.nframes))))
+
+        This results in the following RDF:
+
+        .. plot::
+
+            import MDAnalysis as mda
+            import pytim
+            from pytim.datafiles import *
+            from pytim.observables import * 
+            import matplotlib.pyplot as plt
+
+            u         = mda.Universe(WATER_GRO)
+            oxygens   = u.select_atoms("name OW")
+            interface = pytim.ITIM(u,itim_group=oxygens)
+            orientation = MolecularOrientation(u)
+
+            for ts in u.trajectory :
+                interface.assign_layers()
+                layer=interface.layers('upper',1)
+                rdf = InterRDF(layer,layer,range=(0.,u.dimensions[0]/2.),function=orientation.compute)
+                rdf.sample(ts)
+                rdf.normalize()
+
+            plt.plot(rdf.bins[1:], rdf.rdf[1:])
+            plt.show()
 
     """
 
     def __init__(self, g1, g2,
                  nbins=75, range=(0.0, 15.0), exclusion_block=None,
                  start=None, stop=None, step=None,excluded_dir='z',
-                 function=None,function2=None,weights=None,obs=None):
+                 function=None,function2=None,weights=None):
         rdf.InterRDF.__init__(self, g1, g2, nbins=nbins, range=range,
                               exclusion_block=exclusion_block,
                               start=start, stop=stop, step=step)
@@ -102,7 +155,6 @@ class InterRDF(rdf.InterRDF):
         self.function=function
         self.function2=function2
         self.weights=weights
-        self.obs=obs
      
     def _single_frame(self):
         if (self.function is not None or 
@@ -150,11 +202,11 @@ class InterRDF2D(InterRDF):
     def __init__(self, g1, g2,
                  nbins=75, range=(0.0, 15.0), exclusion_block=None,
                  start=None, stop=None, step=None,excluded_dir='z',
-                 true2D=False, function=None,obs=None):
+                 true2D=False, function=None):
         InterRDF.__init__(self, g1, g2,nbins=nbins, range=range,
                           exclusion_block=exclusion_block,
                           start=start, stop=stop, step=step,
-                          function=function,obs=obs)
+                          function=function)
         self.true2D=true2D
         if excluded_dir is 'z':
                 self.excluded_dir=2

@@ -18,9 +18,12 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('./tests'))
 #import sphinx_rtd_theme
 
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('./pytim'))
+sys.path.insert(0, os.path.abspath('./pytim/observables.py'))
+sys.path.insert(0, os.path.abspath('./tests'))
 
 # -- General configuration ------------------------------------------------
 
@@ -28,10 +31,12 @@ sys.path.insert(0, os.path.abspath('./tests'))
 #
 # needs_sphinx = '1.0'
 
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
@@ -61,9 +66,6 @@ imgmath_image_format = 'png'
 project = u'Pytim'
 copyright = u'2017, Marcello Sega'
 author = u'Marcello Sega'
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('.'))
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -350,3 +352,5 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #
 # texinfo_no_detailmenu = False
+autodoc_member_order = 'bysource'
+

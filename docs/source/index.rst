@@ -47,16 +47,19 @@ where surface oxygen atoms are highlighted in blue.
 
 Modules Description
 *******************
-
 .. automodule:: pytim.itim
-   :members:
+   :members: 
+   :member-order: bysource
 
 
 .. automodule:: pytim.observables
    :members:
+   :member-order: bysource
+
 
 .. automodule:: pytim.tests.testsuite1
    :members:
+   :member-order: bysource
 
 Table of Contents Tree
 **********************
