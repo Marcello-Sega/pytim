@@ -12,6 +12,7 @@ import numpy as np
 from scipy.spatial import *
 from MDAnalysis.core.AtomGroup   import *
 from pytim.datafiles import *
+import __builtin__ # itertools shadows zip(), we access it from __builtin__
 
 class ITIM():
     """ Identifies the interfacial molecules at macroscopically 
@@ -83,6 +84,7 @@ class ITIM():
 
         self.grid=None
         self.use_threads=False
+        self.use_kdtree=False
         self.use_multiproc=multiproc
         self.tic=timer()
 
@@ -227,36 +229,48 @@ class ITIM():
         self.mesh_dx=self.universe.coord.dimensions[0]/self.mesh_nx
         self.mesh_dy=self.universe.coord.dimensions[1]/self.mesh_ny
         self.delta=np.minimum(self.mesh_dx,self.mesh_dy)/10.
+        if(self.use_kdtree==True):
+            _box = self.universe.coord.dimensions  # TODO normals other than Z! 
+            _x,_y = np.mgrid[0:_box[0]:self.mesh_dx ,  0:_box[1]:self.mesh_dy]
+            self.meshpoints = __builtin__.zip(_x.ravel(), _y.ravel())
+            # cKDTree requires a box vetor with length double the dimension, see other note
+            # in this module
+            self.meshtree   = cKDTree(self.meshpoints,boxsize=_box[:4])
 
     def _touched_lines(self,atom,_x,_y,_z,_radius):
-        # TODO: speedup this part of the code.
-        _range=self.alpha+self.delta
-        index_x = np.array(range(
-            int(np.floor((_x[atom]-_radius[atom]-_range)/self.mesh_dx)),
-            int(np.ceil ((_x[atom]+_radius[atom]+_range)/self.mesh_dx))
-            ))
-        index_y = np.array(range(
-            int(np.floor((_y[atom]-_radius[atom]-_range)/self.mesh_dy)),
-            int(np.ceil ((_y[atom]+_radius[atom]+_range)/self.mesh_dy))
-            ))
-        distmap = ( (index_x*self.mesh_dx-_x[atom]).reshape(len(index_x),1)**2+
-                    (index_y*self.mesh_dy -_y[atom])**2 )
-        _xx, _yy  = np.where(distmap<=(self.alpha+_radius[atom])**2)
-        # now we need to go back to the real space map. Whenever
-        # index_x (or index_y) is < 0 || > box we need to wrap it to
-        # the other end of the box.
-        sel_x = index_x[_xx]
-        sel_y = index_y[_yy]
-        sel_x[sel_x<0]+=self.mesh_nx
-        sel_y[sel_y<0]+=self.mesh_ny
-        sel_x[sel_x>=self.mesh_nx]-=self.mesh_nx
-        sel_y[sel_y>=self.mesh_ny]-=self.mesh_ny
-        return np.ravel_multi_index(np.array([sel_x,sel_y]),(self.mesh_nx,self.mesh_ny))
+        # NOTE: here the kdtree is slower (15%) than bucketing (only 1 line of code though...)
+        if (self.use_kdtree==True) : # this is False by default
+            return self.meshtree.query_ball_point([_x[atom],_y[atom]],_radius[atom]+self.alpha) 
+        else:
+            _dist=_radius[atom] + self.alpha + self.delta
+            index_x = np.arange(
+                np.floor((_x[atom]-_dist)/self.mesh_dx),
+                np.ceil ((_x[atom]+_dist)/self.mesh_dx)
+                )
+            index_y = np.arange(
+                np.floor((_y[atom]-_dist)/self.mesh_dy),
+                np.ceil ((_y[atom]+_dist)/self.mesh_dy)
+                )
+            _distmap = ( (index_x*self.mesh_dx-_x[atom]).reshape(len(index_x),1)**2+
+                        (index_y*self.mesh_dy -_y[atom])**2 )
+
+            _xx, _yy  = np.where(_distmap<=(self.alpha+_radius[atom])**2)
+
+            # now we need to go back to the real space map. Whenever
+            # index_x (or index_y) is < 0 || > box we need to wrap it to
+            # the other end of the box.
+            sel_x = index_x[_xx]
+            sel_y = index_y[_yy]
+            sel_x[sel_x<0]+=self.mesh_nx
+            sel_y[sel_y<0]+=self.mesh_ny
+            sel_x[sel_x>=self.mesh_nx]-=self.mesh_nx
+            sel_y[sel_y>=self.mesh_ny]-=self.mesh_ny
+
+            return np.ravel_multi_index(np.array([sel_x,sel_y]).astype(int),(self.mesh_nx,self.mesh_ny))
 
     def _assign_one_side(self,uplow,sorted_atoms,_x,_y,_z,
                         _radius,queue=None):
 
-        # this is the bottleneck so far
         for layer in range(0,self.max_layers) :
             mask = self.mask[uplow][layer]
             inlayer=[]
@@ -265,8 +279,7 @@ class ITIM():
                 count+=1
                 if self._seen[atom] != 0 :
                     continue
-                    # TODO: would a KD-Tree be faster for small boxes ?
-                    # TODO: document this
+
                 touched_lines  = self._touched_lines(atom,_x,_y,_z,_radius)
 
                 _submask = mask[touched_lines]
@@ -281,7 +294,6 @@ class ITIM():
                 self._seen[atom]=layer+1 ; # start counting from 1, 0 will be
                                            # unassigned, -1 for gas phase TODO: to be
                                            # implemented
-
                 # 3) let's add the atom id to the list of atoms in this layer
                 inlayer.append(atom)
                 if len(mask[mask==0])==0: # no more untouched lines left
@@ -335,7 +347,7 @@ class ITIM():
                             dtype=int);
         self.center()
 
-        self._init_NN_search()
+     #   self._init_NN_search()
 
         _radius=group.radii
         self._seen=np.zeros(len(self._x(group)))
