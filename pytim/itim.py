@@ -251,7 +251,7 @@ class ITIM():
         sel_y[sel_y<0]+=self.mesh_ny
         sel_x[sel_x>=self.mesh_nx]-=self.mesh_nx
         sel_y[sel_y>=self.mesh_ny]-=self.mesh_ny
-        return np.column_stack((sel_x,sel_y))
+        return np.ravel_multi_index(np.array([sel_x,sel_y]),(self.mesh_nx,self.mesh_ny))
 
     def _assign_one_side(self,uplow,sorted_atoms,_x,_y,_z,
                         _radius,queue=None):
@@ -267,37 +267,25 @@ class ITIM():
                     continue
                     # TODO: would a KD-Tree be faster for small boxes ?
                     # TODO: document this
-                print "atom start",self.lap()
                 touched_lines  = self._touched_lines(atom,_x,_y,_z,_radius)
-                print "atom touched lines",self.lap()
-                # mask and submask are a problem. Move to np.arrays? Appending sounds bad
-                # because it involves copying. Maybe filling a large array could be the solution
-                submask_=[]
-                for i,j in touched_lines:
-                    submask_.append(mask[i,j])
-                # 
-                print "atom submask appended **",self.lap()
-                submask = np.array(submask_)
-                print "submask made array",self.lap()
-                if(len(submask[submask==0])==0):
+
+                _submask = mask[touched_lines]
+                if(len(_submask[_submask==0])==0):
                     # no new contact, let's move to the next atom
                     continue
                 # let's mark now:
                 # 1) the touched lines
-                for i,j in touched_lines:
-                    mask[i,j] = 1
-                print "mask updated ** ",self.lap()
+                mask[touched_lines]=1
+
                 # 2) the sorted atom
                 self._seen[atom]=layer+1 ; # start counting from 1, 0 will be
                                            # unassigned, -1 for gas phase TODO: to be
                                            # implemented
-                print "atoms tagged",self.lap()
+
                 # 3) let's add the atom id to the list of atoms in this layer
                 inlayer.append(atom)
-                print "atom layer appended",self.lap()
                 if len(mask[mask==0])==0: # no more untouched lines left
                     self.layers_ids[uplow].append(inlayer)
-                    print "COUNT:",count
                     break
         if queue != None:
             queue.put(self._seen)
@@ -343,7 +331,7 @@ class ITIM():
         mesh_dx = self.mesh_dx ; mesh_dy = self.mesh_dy
         up=0 ; low=1
         self.layers_ids=[[],[]] ;# upper, lower
-        self.mask=np.zeros((2,self.max_layers,self.mesh_nx,self.mesh_ny),
+        self.mask=np.zeros((2,self.max_layers,self.mesh_nx*self.mesh_ny),
                             dtype=int);
         self.center()
 
