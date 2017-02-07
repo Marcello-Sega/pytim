@@ -14,6 +14,7 @@ from MDAnalysis.core.AtomGroup   import *
 from pytim.datafiles import *
 import __builtin__ # itertools shadows zip(), we access it from __builtin__
 
+
 class ITIM():
     """ Identifies the interfacial molecules at macroscopically 
         flat interfaces.
@@ -273,19 +274,19 @@ class ITIM():
 
         for layer in range(0,self.max_layers) :
             mask = self.mask[uplow][layer]
-            inlayer=[]
-            count=0
+            _inlayer=[]
             for atom in sorted_atoms:
-                count+=1
                 if self._seen[atom] != 0 :
                     continue
 
                 touched_lines  = self._touched_lines(atom,_x,_y,_z,_radius)
 
                 _submask = mask[touched_lines]
+
                 if(len(_submask[_submask==0])==0):
                     # no new contact, let's move to the next atom
                     continue
+
                 # let's mark now:
                 # 1) the touched lines
                 mask[touched_lines]=1
@@ -295,14 +296,16 @@ class ITIM():
                                            # unassigned, -1 for gas phase TODO: to be
                                            # implemented
                 # 3) let's add the atom id to the list of atoms in this layer
-                inlayer.append(atom)
-                if len(mask[mask==0])==0: # no more untouched lines left
-                    self.layers_ids[uplow].append(inlayer)
+                _inlayer.append(atom)
+                if np.sum(mask) == len(mask):
+                    self.layers_ids[uplow].append(_inlayer)
+                    #NOTE that checking len(mask[mask==0])==0 is slower. 
+                    #     np.count_nonzero is comparable. For _submask, 
+                    #     np.sum() is slightly slower, instead.
                     break
         if queue != None:
             queue.put(self._seen)
             queue.put(self.layers_ids[uplow])
-
     def _init_NN_search(self):
         #NOTE: boxsize shape must be (6,), and the last three elements are overwritten in cKDTree:
         #   boxsize_arr = np.empty(2 * self.m, dtype=np.float64)
