@@ -9,6 +9,7 @@ from timeit import default_timer as timer
 #from threading import Thread
 from multiprocessing import Process, Queue
 import numpy as np
+from scipy.spatial import *
 from MDAnalysis.core.AtomGroup   import *
 from pytim.datafiles import *
 
@@ -132,13 +133,14 @@ class ITIM():
 
         # we rebox the atoms in universe, and not a vector
         if x is None and y is None and z is None:
-            stack=True
+            stack=True ; #TODO do we really need this? check if data are copied already
             x=self._x()
             y=self._y()
             z=self._z()
         for index, val in enumerate((x,y,z)):
             try:
-                val[val> dim[index]-shift[index]]-=dim[index]
+                # the >= convention is needed for cKDTree
+                val[val>= dim[index]-shift[index]]-=dim[index]
                 val[val< 0        -shift[index]]+=dim[index]
             except:
                 pass
@@ -184,7 +186,8 @@ class ITIM():
         shift=dim[2]/100. ;# TODO, what about non ortho boxes?
         total_shift=0
         self._rebox()
-
+        self._liquid_mask=np.zeros(len(self.itim_group), dtype=np.int8) 
+ 
         _z_itim_group = self._z(self.itim_group)
         _x = self._x()
         _y = self._y()
@@ -253,6 +256,7 @@ class ITIM():
     def _assign_one_side(self,uplow,sorted_atoms,_x,_y,_z,
                         _radius,queue=None):
 
+        # this is the bottleneck so far
         for layer in range(0,self.max_layers) :
             mask = self.mask[uplow][layer]
             inlayer=[]
@@ -263,12 +267,18 @@ class ITIM():
                     continue
                     # TODO: would a KD-Tree be faster for small boxes ?
                     # TODO: document this
+                print "atom start",self.lap()
                 touched_lines  = self._touched_lines(atom,_x,_y,_z,_radius)
+                print "atom touched lines",self.lap()
+                # mask and submask are a problem. Move to np.arrays? Appending sounds bad
+                # because it involves copying. Maybe filling a large array could be the solution
                 submask_=[]
                 for i,j in touched_lines:
                     submask_.append(mask[i,j])
                 # 
+                print "atom submask appended **",self.lap()
                 submask = np.array(submask_)
+                print "submask made array",self.lap()
                 if(len(submask[submask==0])==0):
                     # no new contact, let's move to the next atom
                     continue
@@ -276,18 +286,46 @@ class ITIM():
                 # 1) the touched lines
                 for i,j in touched_lines:
                     mask[i,j] = 1
+                print "mask updated ** ",self.lap()
                 # 2) the sorted atom
                 self._seen[atom]=layer+1 ; # start counting from 1, 0 will be
                                            # unassigned, -1 for gas phase TODO: to be
                                            # implemented
+                print "atoms tagged",self.lap()
                 # 3) let's add the atom id to the list of atoms in this layer
                 inlayer.append(atom)
+                print "atom layer appended",self.lap()
                 if len(mask[mask==0])==0: # no more untouched lines left
                     self.layers_ids[uplow].append(inlayer)
+                    print "COUNT:",count
                     break
         if queue != None:
             queue.put(self._seen)
             queue.put(self.layers_ids[uplow])
+
+    def _init_NN_search(self):
+        #NOTE: boxsize shape must be (6,), and the last three elements are overwritten in cKDTree:
+        #   boxsize_arr = np.empty(2 * self.m, dtype=np.float64)
+        #   boxsize_arr[:] = boxsize
+        #   boxsize_arr[self.m:] = 0.5 * boxsize_arr[:self.m]
+        
+        # TODO: handle macroscopic normal different from z
+        #NOTE: coords in cKDTree must be in [0,L), but pytim uses [-L/2,L2/) on the 3rd axis. 
+        #We shift them here
+        _box=self.universe.coord.dimensions[:]
+        _shift=np.array([0.,0.,_box[2]])/2.
+        _pos=np.ascontiguousarray(self.itim_group.positions+_shift,dtype=np.float64)
+
+        self.KDTree=cKDTree(self.itim_group.positions+_shift,
+                            leafsize=1,compact_nodes=False,
+                            balanced_tree=False, 
+                            boxsize=_box)
+
+    def _NN_query(self,atom,range):
+        # TODO: modify to accept group of atoms (n_jobs=-1 could be used if more than x atoms supplied)
+        self.KDTree.query_ball_point(atom.position,range,n_jobs=1)
+        
+        
 
     def _define_layers_groups(self):
         _layers=[[],[]]
@@ -300,7 +338,6 @@ class ITIM():
         """ Determine the ITIM layers. 
 
         """
-        # TODO: speedup this part of the code.
         self._assign_mesh()
         group=self.itim_group ; delta = self.delta ;
         mesh_dx = self.mesh_dx ; mesh_dy = self.mesh_dy
@@ -310,13 +347,14 @@ class ITIM():
                             dtype=int);
         self.center()
 
+        self._init_NN_search()
+
         _radius=group.radii
         self._seen=np.zeros(len(self._x(group)))
 
         _x=self._x(group)
         _y=self._y(group)
         _z=self._z(group)
-        
         sort = np.argsort( _z + _radius * np.sign(_z) )
         # NOTE: np.argsort returns the sorted *indices*
 
