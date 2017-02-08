@@ -42,7 +42,7 @@ class ITIM():
         >>> interface.assign_layers()
         >>> 
         >>> print interface.layers('upper',1)  # first layer, upper
-        <AtomGroup with 161 atoms>
+        <AtomGroup with 234 atoms>
 
         # TODO Add here an example on how to use the variuos other options
     """
@@ -394,20 +394,20 @@ class ITIM():
         The slice can be used to select a single layer, or multiple, e.g. (using the example of the :class:`ITIM` class) :
 
         >>> interface.layers('upper')  # all layers, upper side
-        array([<AtomGroup with 161 atoms>, <AtomGroup with 202 atoms>,
-               <AtomGroup with 280 atoms>, <AtomGroup with 272 atoms>], dtype=object)
+        array([<AtomGroup with 234 atoms>, <AtomGroup with 478 atoms>,
+               <AtomGroup with 393 atoms>, <AtomGroup with 400 atoms>], dtype=object)
 
         >>> interface.layers('lower',1)  # first layer, lower side
-        <AtomGroup with 144 atoms>
+        <AtomGroup with 238 atoms>
 
         >>> interface.layers('both',0,3) # 1st - 3rd layer, on both sides
-        array([[<AtomGroup with 161 atoms>, <AtomGroup with 202 atoms>,
-                <AtomGroup with 280 atoms>],
-               [<AtomGroup with 144 atoms>, <AtomGroup with 178 atoms>,
-                <AtomGroup with 267 atoms>]], dtype=object)
+        array([[<AtomGroup with 234 atoms>, <AtomGroup with 478 atoms>,
+                <AtomGroup with 393 atoms>],
+               [<AtomGroup with 238 atoms>, <AtomGroup with 467 atoms>,
+                <AtomGroup with 419 atoms>]], dtype=object)
 
         >>> interface.layers('lower',0,4,2) # 1st - 4th layer, with a stride of 2, lower side 
-        array([<AtomGroup with 144 atoms>, <AtomGroup with 267 atoms>], dtype=object)
+        array([<AtomGroup with 238 atoms>, <AtomGroup with 419 atoms>], dtype=object)
 
 
         """
