@@ -52,7 +52,7 @@ class Data():
                                     _sigma=0.0
                                 else:
                                     _sigma = (_c12/_c6)**(1./6.) * self.nm2angs
-                                _radii[_atom]=_sigma
+                                _radii[_atom]=_sigma/2.
                             except:
                                 pass
                         if (re.match('^ *\[ *atomtypes *\]',_line)):
