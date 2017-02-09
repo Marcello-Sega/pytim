@@ -12,7 +12,8 @@ import numpy as np
 from scipy.spatial import *
 from MDAnalysis.core.AtomGroup   import *
 from pytim.datafiles import *
-import __builtin__ # itertools shadows zip(), we access it from __builtin__
+from MDAnalysis.topology import tables
+
 
 
 class ITIM():
@@ -46,10 +47,24 @@ class ITIM():
 
         # TODO Add here an example on how to use the variuos other options
     """
+
+    def define_error_messages(self):
+        self.ALPHA_NEGATIVE = "parameter alpha in %s.%s must be positive" % ( (__name__) , (self.__class__.__name__) )
+        self.ALPHA_LARGE= "parameter alpha in %s.%s must be smaller than the smaller box side" % ( (__name__) , (self.__class__.__name__) )
+        self.MESH_NEGATIVE = "parameter mesh in %s.%s must be positive" % ( (__name__) , (self.__class__.__name__) )
+        self.MESH_LARGE= "parameter mesh in %s.%s must be smaller than the smaller box side" % ( (__name__) , (self.__class__.__name__) )
+        self.UNDEFINED_CLUSTER_SEARCH= "Either both cluster_cut and cluster_groups in %s.%s should be defined, or set to None" % ( (__name__) , (self.__class__.__name__) )
+        self.MISMATCH_CLUSTER_SEARCH= "cluster_cut in %s.%s should be either a scalar or an array matching the number of groups" % ( (__name__) , (self.__class__.__name__) )
+        self.EMPTY_LAYER="One or more layers are empty"
+        self.CLUSTER_FAILURE="Cluster algorithm failed: too small cluster cutoff provided?"
+
+
  
     def __init__(self,universe,mesh=0.4,alpha=2.0,itim_group=None,radii_dict=None,
-                 max_layers=1,info=False,multiproc=True):
+                 max_layers=1,cluster_groups=None,cluster_cut=None,
+                 info=False,multiproc=True):
 
+        self.define_error_messages()
         self.universe=universe
         self.target_mesh=mesh
         self.alpha=alpha
@@ -57,32 +72,50 @@ class ITIM():
         self.info=info
         self.all_atoms = self.universe.select_atoms('all')
 
+        self.cluster_cut=cluster_cut
+        if cluster_cut is not None and not isinstance(cluster_cut, (list, tuple, np.ndarray)):
+            if type(cluster_cut) is int or type(cluster_cut) is float:
+                self.cluster_cut = np.array([float(cluster_cut)])
+
+        self.cluster_groups=cluster_groups
+        if cluster_groups is not None and not isinstance(cluster_groups, (list, tuple, np.ndarray)):
+            self.cluster_groups = [cluster_groups]
+
+        if itim_group==None:
+            self.itim_group = self.all_atoms
+        else:
+            self.itim_group = itim_group
         try:
-            if(itim_group==None):
-                self.itim_group =  self.all_atoms
-            else:
-                self.itim_group =  itim_group
-            types = np.copy(self.itim_group.types)
-
-            if (radii_dict==None): # let's use the default one
-                radii_dict=pytim_data.vdwradii(G43A1_TOP)
-            radii = np.zeros(len(self.itim_group.types))
-            # let's select unique atom types, and 
-            for type in np.unique(types):
-                try:
-                    radii[types==type]=radii_dict[type]
-                except:
-                    pass # those types which are not listed in the dictionary 
-                         # will have radius==0. TODO handle this
-
-            self.itim_group.radii=radii
-            del radii
-            del types
+            _groups = self.cluster_groups[:] # deep copy
+        except:
+            _groups = []
+        _groups.append(self.itim_group)
+        try:
+            for _g in _groups:
+                if _g is not None:
+                    _types = np.copy(_g.types)
+                    if None in _g.radii or radii_dict is not None : # either radii are not set or dict provided 
+                        if radii_dict is None:  # radii not set, dict not provided -> fallback to MDAnalysis vdwradii
+                            _radii_dict = tables.vdwradii
+                        else:
+                                                # else, use the provided dict.
+                            _radii_dict = radii_dict
+ 
+                        _radii = np.zeros(len(_g.types))
+                        for _atype in np.unique(_types):
+                             try:
+                                 _radii[_types==_atype]=_radii_dict[_atype]
+                             except:
+                                 pass # those types which are not listed in the dictionary 
+                                      # will have radius==0. TODO handle this
+                        _g.radii=_radii[:] #deep copy
+                        del _radii
+                    del _types
         except:
             print ("Error (generic) while initializing ITIM")
 
         self._sanity_checks()
-
+        
         self.grid=None
         self.use_threads=False
         self.use_kdtree=False
@@ -90,18 +123,17 @@ class ITIM():
         self.tic=timer()
 
     def _sanity_checks(self):
-        ALPHA_NEGATIVE = "parameter alpha in %s.%s must be positive" % ( (__name__) , (self.__class__.__name__) )
-        ALPHA_LARGE= "parameter alpha in %s.%s must be smaller than the smaller box side" % ( (__name__) , (self.__class__.__name__) )
-
-        MESH_NEGATIVE = "parameter mesh in %s.%s must be positive" % ( (__name__) , (self.__class__.__name__) )
-        MESH_LARGE= "parameter mesh in %s.%s must be smaller than the smaller box side" % ( (__name__) , (self.__class__.__name__) )
 
         # these are done at the beginning to prevent burdening the inner loops
-        assert self.alpha > 0,                                           ALPHA_NEGATIVE
-        assert self.alpha < np.amin(self.universe.dimensions[:3]),       ALPHA_LARGE
+        assert self.alpha > 0,                                           self.ALPHA_NEGATIVE
+        assert self.alpha < np.amin(self.universe.dimensions[:3]),       self.ALPHA_LARGE
 
-        assert self.target_mesh > 0,                                     MESH_NEGATIVE
-        assert self.target_mesh < np.amin(self.universe.dimensions[:3]), MESH_LARGE
+        assert self.target_mesh > 0,                                     self.MESH_NEGATIVE
+        assert self.target_mesh < np.amin(self.universe.dimensions[:3]), self.MESH_LARGE
+    
+        assert ( (self.cluster_cut is None) and (self.cluster_groups is  None) ) or (  (self.cluster_cut is not  None) and ( self.cluster_groups is not  None) ),self.UNDEFINED_CLUSTER_SEARCH
+        if(self.cluster_cut is not None):
+            assert len(self.cluster_cut)== 1 or len(self.cluster_cut) == len(self.cluster_groups), self.MISMATCH_CLUSTER_SEARCH
 
         try:
             np.arange(int(self.alpha/self.target_mesh))
@@ -130,6 +162,7 @@ class ITIM():
         return group.positions[:,2]
 
     def _rebox(self,x=None,y=None,z=None):
+        # TODO check that the correct frame-dependent box is used !! 
         dim = self.universe.coord.dimensions
         stack=False
         shift=np.array([0,0,dim[2]/2.])
@@ -163,7 +196,6 @@ class ITIM():
 
         """
 
-        self.itim_group.atoms.bfactors=self.bfactors
         try:
             PDB=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
@@ -188,7 +220,6 @@ class ITIM():
         dim = self.universe.coord.dimensions
         shift=dim[2]/100. ;# TODO, what about non ortho boxes?
         total_shift=0
-        self._rebox()
         self._liquid_mask=np.zeros(len(self.itim_group), dtype=np.int8) 
  
         _z_itim_group = self._z(self.itim_group)
@@ -213,9 +244,9 @@ class ITIM():
             histo,edges=np.histogram(_z_itim_group, bins=10,
                                      range=(-dim[2]/2.,dim[2]/2.), density=True);
         #TODO: clean up
-        center=np.average(_z_itim_group)
+        _center=np.average(_z_itim_group)
 
-        _z += total_shift - center
+        _z += total_shift - _center
         # finally, we copy everything back
         self.universe.coord.positions=np.column_stack((_x,_y,_z))
 
@@ -271,7 +302,6 @@ class ITIM():
 
     def _assign_one_side(self,uplow,sorted_atoms,_x,_y,_z,
                         _radius,queue=None):
-
         for layer in range(0,self.max_layers) :
             mask = self.mask[uplow][layer]
             _inlayer=[]
@@ -280,7 +310,6 @@ class ITIM():
                     continue
 
                 touched_lines  = self._touched_lines(atom,_x,_y,_z,_radius)
-
                 _submask = mask[touched_lines]
 
                 if(len(_submask[_submask==0])==0):
@@ -306,58 +335,119 @@ class ITIM():
         if queue != None:
             queue.put(self._seen)
             queue.put(self.layers_ids[uplow])
-    def _init_NN_search(self):
+        assert self.layers_ids[uplow],self.EMPTY_LAYER  # one of the two layers (upper,lower) or both are empty
+            
+
+    def _init_NN_search(self,group):
         #NOTE: boxsize shape must be (6,), and the last three elements are overwritten in cKDTree:
         #   boxsize_arr = np.empty(2 * self.m, dtype=np.float64)
         #   boxsize_arr[:] = boxsize
         #   boxsize_arr[self.m:] = 0.5 * boxsize_arr[:self.m]
         
         # TODO: handle macroscopic normal different from z
-        #NOTE: coords in cKDTree must be in [0,L), but pytim uses [-L/2,L2/) on the 3rd axis. 
+        #NOTE: coords in cKDTree must be in [0,L), but pytim uses [-L/2,L/2) on the 3rd axis. 
         #We shift them here
         _box=self.universe.coord.dimensions[:]
         _shift=np.array([0.,0.,_box[2]])/2.
-        _pos=np.ascontiguousarray(self.itim_group.positions+_shift,dtype=np.float64)
+        _pos=group.positions[:]+_shift
+        self.KDTree=cKDTree(_pos,boxsize=_box[:6],copy_data=True)
 
-        self.KDTree=cKDTree(self.itim_group.positions+_shift,
-                            leafsize=1,compact_nodes=False,
-                            balanced_tree=False, 
-                            boxsize=_box)
-
-    def _NN_query(self,atom,range):
+    def _NN_query(self,position,qrange):
         # TODO: modify to accept group of atoms (n_jobs=-1 could be used if more than x atoms supplied)
-        self.KDTree.query_ball_point(atom.position,range,n_jobs=1)
-        
-        
+        return self.KDTree.query_ball_point(position,qrange)
 
-    def _define_layers_groups(self):
+    def _define_layers_groups(self,group):
         _layers=[[],[]]
         for i,uplow in enumerate(self.layers_ids):
             for j,layer in enumerate(uplow):
-                _layers[i].append(self.itim_group.atoms[layer])
+                _layers[i].append(group.atoms[layer])
         self._layers=np.array(_layers)
+
+    def _do_cluster_analysis(self):
+
+        # _cluster_map[_aid]        : (atom id)        -> cluster id  | tells to which cluster atom _aid belongs 
+        # _cluster_analyzed[_aid]   : (atom id)        -> true/false  | tells wether _aid has been associated to a cluster
+        # _cluster_size[_clusterid] : (cluster id)     -> size        | tells how many atoms belong to cluster _clusterid
+        # _cluster_index[_nn_id]    : (NN id)          -> atom id     | tells you the id of the atom in the cluster being currently analyzed. Does not need to be initialized
+        self.cluster_mask = [[] for _ in self.cluster_groups]
+        _box=self.universe.coord.dimensions[:]
+
+        for _gid,_g in enumerate(self.cluster_groups):
+            self._init_NN_search(_g)
+            
+            self.cluster_mask[_gid] = np.ones(_g.n_atoms, dtype=np.int8) * -1  
+
+            _cluster_analyzed   =np.zeros(_g.n_atoms,dtype=np.bool ) 
+            _cluster_map        =np.zeros(_g.n_atoms,dtype=np.intc)
+            _cluster_size       =np.zeros(_g.n_atoms,dtype=np.intc)
+            _cluster_index      =np.zeros(_g.n_atoms,dtype=np.intc)
+            _nanalyzed = 1
+            _clusterid = 0 
+            _nn_id = 0
+            _current_max_size=0
+
+            for _aid, _atom  in enumerate(_g) :
+                if (_cluster_analyzed[_aid] == 0) :
+                    _cluster_analyzed[_aid] = True
+                    _cluster_map[_aid] = _clusterid
+                    _cluster_size[_clusterid]+=1
+                    _cluster_index[_nn_id] = _aid
+                    _nn_id+=1
+                    while _nn_id >= _nanalyzed:
+                        _aid2 = _cluster_index[_nanalyzed-1]
+                        _shift=np.array([0.,0.,_box[2]])/2.
+                        _neighbors_id = self._NN_query(_g.atoms[_aid2].position+_shift,self.cluster_cut[_gid])
+                        # Alternative fact: the commented version goes slower
+                        #_not_analyzed = np.array(_neighbors_id)[np.invert(_cluster_analyzed[_neighbors_id])]
+                        #_cluster_analyzed[_not_analyzed]=True
+                        #_cluster_map[_not_analyzed] = _clusterid
+                        #_cluster_size[_clusterid] += len(_not_analyzed)
+                        #_cluster_index[range(_nn_id,_nn_id+len(_not_analyzed))]=_not_analyzed
+                        #_nn_id+=len(_not_analyzed)
+                        for _nid in _neighbors_id:
+                            if (_cluster_analyzed[_nid] == False) :
+                                _cluster_analyzed[_nid]=True
+                                _cluster_map[_nid]=_clusterid 
+                                _cluster_size[_clusterid]+=1
+                                _cluster_index[_nn_id]=_nid
+                                _nn_id+=1
+                        _nanalyzed+=1 
+                    _clusterid+=1
+
+            _cluster_id_largest = np.argmax(_cluster_size)
+            # All atoms in the largest cluster have mask==0, those in the other clusters have mask==-1
+            self.cluster_mask[_gid][(_cluster_map==_cluster_id_largest)] = 0 
+        # TODO implement inclusiveness
+            assert np.max(_cluster_size)>1 , self.CLUSTER_FAILURE
+        return self.cluster_groups[0][self.cluster_mask[0]==0] 
+
 
     def assign_layers(self):
         """ Determine the ITIM layers. 
 
         """
         self._assign_mesh()
-        group=self.itim_group ; delta = self.delta ;
+        delta = self.delta ;
         mesh_dx = self.mesh_dx ; mesh_dy = self.mesh_dy
         up=0 ; low=1
         self.layers_ids=[[],[]] ;# upper, lower
         self.mask=np.zeros((2,self.max_layers,self.mesh_nx*self.mesh_ny),
                             dtype=int);
-        self.center()
 
-     #   self._init_NN_search()
+        self._rebox()
+        
+        if(self.cluster_cut is not None): # groups have been checked already in _sanity_checks()
+            _group=self._do_cluster_analysis()
+        else: 
+            _group=self.itim_group ; 
+        self.center() # TODO supply the liquid 
 
-        _radius=group.radii
-        self._seen=np.zeros(len(self._x(group)))
+        _radius=_group.radii
+        self._seen=np.zeros(len(self._x(_group)))
 
-        _x=self._x(group)
-        _y=self._y(group)
-        _z=self._z(group)
+        _x=self._x(_group)
+        _y=self._y(_group)
+        _z=self._z(_group)
         sort = np.argsort( _z + _radius * np.sign(_z) )
         # NOTE: np.argsort returns the sorted *indices*
 
@@ -382,8 +472,9 @@ class ITIM():
         else:
             self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)
             self._assign_one_side(low,sort,_x,_y,_z,_radius)
-        self._define_layers_groups()
-        self.bfactors = self._seen
+        self._define_layers_groups(_group)
+        self.itim_group.atoms.bfactors=-1
+        _group.atoms.bfactors=self._seen
 
     def layers(self,side='both',*ids):
         """ Select one or more layers.
