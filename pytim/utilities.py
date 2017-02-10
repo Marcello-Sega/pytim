@@ -81,5 +81,4 @@ def center(universe, group):
     _z += total_shift - _center
     # finally, we copy everything back
     universe.coord.positions=np.column_stack((_x,_y,_z))
-    universe.trajectory.ts.centered=True
  

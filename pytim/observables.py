@@ -114,25 +114,15 @@ class Profile(object):
     def sample(self):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
+        self._box=self.universe.dimensions[self._dir]
         if self.interface is None:
-            try : # TODO: check what happens if one frame is centered, but the next is not
-                self.universe.trajectory.ts.centered
-            except:
-                self.universe.trajectory.ts.centered=False
-            if(self.universe.trajectory.ts.centered==False):
-                if(self.center_group is not None):
-                    utilities.center(self.universe,self.center_group)
-                else:
-                    utilities.center(self.universe,self.group)
-
             _pos    = self.pos[self._dir](self.group)      
             _values = self.observable(self.group)
             _nbins  = int(self.universe.trajectory.ts.dimensions[self._dir]/self.binsize)
-            _avg, _bins, _binnumber = stats.binned_statistic(_pos, _values, statistic='mean',bins=_nbins)
-            print _values
-            print _pos
-            print _avg,_bins
-            exit()
+            _avg, _bins, _binnumber = stats.binned_statistic(_pos, _values, 
+                                                             range=[-self._box/2.,self._box/2.],
+                                                             statistic='mean',bins=_nbins)
+            _avg[np.isnan(_avg)]=0.0
             self.sampled_values.append(_avg)
             self.sampled_bins.append(_bins[1:]-self.binsize/2.) # these are the bins midpoints
     
@@ -154,7 +144,9 @@ class Profile(object):
 
         _avg,_bins,_binnumber = stats.binned_statistic(list(chain.from_iterable(self.sampled_bins  )),
                                             list(chain.from_iterable(self.sampled_values)),
+                                            range=[-self._box/2.,self._box/2.],
                                             statistic='mean',bins=_nbins )
+        _avg[np.isnan(_avg)]=0.0
         _binsize = _bins[1]-_bins[0]
         return [  (_bins[1:] - _binsize/2.) , _avg ]
 
@@ -237,8 +229,7 @@ class InterRDF(rdf.InterRDF):
             plt.show()
 
 
-        Example: dipole-dipole correlation on the surface
-        =================================================
+        Example: dipole-dipole correlation on the surface (TODO)
 
 
 

@@ -59,6 +59,7 @@ class ITIM():
         self.MISMATCH_CLUSTER_SEARCH= "cluster_cut in %s.%s should be either a scalar or an array matching the number of groups" % ( (__name__) , (self.__class__.__name__) )
         self.EMPTY_LAYER="One or more layers are empty"
         self.CLUSTER_FAILURE="Cluster algorithm failed: too small cluster cutoff provided?"
+        self.UNDEFINED_LAYER="No layer defined: forgot to call assign_layers() ?"
 
 
  
@@ -73,6 +74,7 @@ class ITIM():
         self.max_layers=max_layers
         self.info=info
         self.all_atoms = self.universe.select_atoms('all')
+        self._layers=None
 
         self.cluster_cut=cluster_cut
         if cluster_cut is not None and not isinstance(cluster_cut, (list, tuple, np.ndarray)):
@@ -277,6 +279,7 @@ class ITIM():
             for j,layer in enumerate(uplow):
                 _layers[i].append(group.atoms[layer])
         self._layers=np.array(_layers)
+        assert np.any(self._layers) != False, self.UNDEFINED_LAYER
 
     def _do_cluster_analysis(self):
 
@@ -418,6 +421,7 @@ class ITIM():
 
 
         """
+
         _options={'both':slice(None),'upper':0,'lower':1}
         _side=_options[side]
         if len(ids) == 0:
