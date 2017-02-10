@@ -5,9 +5,13 @@
 """
 from abc import ABCMeta, abstractmethod
 import numpy as np
+from scipy import stats
 from MDAnalysis.analysis import rdf
 from MDAnalysis.lib import distances
 from MDAnalysis.core.AtomGroup import *
+from itertools import chain
+import pytim
+import utilities
 # we try here to have no options passed
 # to the observables, so that classes are
 # not becoming behemoths that do everything.
@@ -56,20 +60,10 @@ class AnalysisBase(object):
     def compute(self,input):
         print "Not implemented"
 
-class Profile(AnalysisBase):
-    def compute(self,pos):
 
-        flat = pos.flatten()
-        pos  = flat.reshape(len(flat)/3,3)
-        a = pos[1::3] - pos[0::3]   
-        b = pos[2::3] - pos[0::3]   
-        # TODO: can this be vectorized? 
-        if 'normal' in self.options:
-            v = np.cross(a,b)
-        else:
-            v = np.array(a+b)
-        v =  np.array([el/np.sqrt(np.dot(el,el)) for el in v])
-        return v
+class Number(AnalysisBase):
+    def compute(self,inp):
+        return np.ones(len(inp))
 
 
             
@@ -97,6 +91,73 @@ class MolecularOrientation(AnalysisBase):
             inp=inp.residues
         pos = self.fold_around_first_atom_in_residue(inp)
         return Orientation(self.u,self.options).compute(pos)
+
+
+
+class Profile(object):
+    def __init__(self,universe,group,direction='z',observable=None,interface=None,center_group=None):
+        _dir = {'x':0,'y':1,'z':2}
+        self.universe      = universe
+        self.group         = group
+        self.center_group  = center_group
+        if observable is None:
+            self.observable = Number()
+        self.observable    = observable
+        self._dir          =_dir[direction]
+        self.binsize       = 0.1 # this is used for internal calculations, the output binsize can be specified in self.profile()
+
+        self.interface     = interface
+        self.sampled_values=[]
+        self.sampled_bins  =[]
+        self.pos=[utilities.get_x,utilities.get_y,utilities.get_z]
+
+    def sample(self):
+        # TODO: implement progressive averaging to handle very long trajs
+        # TODO: implement memory cleanup
+        if self.interface is None:
+            try : # TODO: check what happens if one frame is centered, but the next is not
+                self.universe.trajectory.ts.centered
+            except:
+                self.universe.trajectory.ts.centered=False
+            if(self.universe.trajectory.ts.centered==False):
+                if(self.center_group is not None):
+                    utilities.center(self.universe,self.center_group)
+                else:
+                    utilities.center(self.universe,self.group)
+
+            _pos    = self.pos[self._dir](self.group)      
+            _values = self.observable(self.group)
+            _nbins  = int(self.universe.trajectory.ts.dimensions[self._dir]/self.binsize)
+            _avg, _bins, _binnumber = stats.binned_statistic(_pos, _values, statistic='mean',bins=_nbins)
+            print _values
+            print _pos
+            print _avg,_bins
+            exit()
+            self.sampled_values.append(_avg)
+            self.sampled_bins.append(_bins[1:]-self.binsize/2.) # these are the bins midpoints
+    
+    def profile(self,binwidth=None,nbins=None):
+        assert self.sampled_values, "No profile sampled so far."
+        # we use the largest box (largest number of bins) as reference. 
+        # Statistics will be poor at the boundaries, but like that we don't loose information
+        _max_bins  = np.max(map(lambda x: len(x),self.sampled_bins))
+        _max_size  = _max_bins * self.binsize
+        if(binwidth==None and nbins==None):
+            _nbins = _max_bins
+        else:
+            if binwidth==None:
+                _nbins = nbins
+            else:
+                _nbins = _max_size/binwidth
+
+        # TODO sanity check on binwidth and nbins missing
+
+        _avg,_bins,_binnumber = stats.binned_statistic(list(chain.from_iterable(self.sampled_bins  )),
+                                            list(chain.from_iterable(self.sampled_values)),
+                                            statistic='mean',bins=_nbins )
+        _binsize = _bins[1]-_bins[0]
+        return [  (_bins[1:] - _binsize/2.) , _avg ]
+
 
 
 class InterRDF(rdf.InterRDF):

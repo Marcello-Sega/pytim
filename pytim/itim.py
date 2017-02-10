@@ -12,6 +12,7 @@ import numpy as np
 from scipy.spatial import *
 from MDAnalysis.core.AtomGroup   import *
 from pytim.datafiles import *
+from pytim import utilities 
 from MDAnalysis.topology import tables
 
 
@@ -140,47 +141,6 @@ class ITIM():
             print("Error while initializing ITIM: alpha (%f) too large or mesh (%f) too small" % self.alpha,self.target_mesh)
             raise ValueError
 
-    def lap(self):
-        toc=timer()
-        print "LAP >>> ",toc-self.tic
-        self.tic=toc
-
-    def _x(self,group=None):
-        if (group is None) :
-            group = self.all_atoms
-        return group.positions[:,0]
-
-    def _y(self,group=None):
-        if (group is None) :
-            group = self.all_atoms
-        return group.positions[:,1]
-
-    def _z(self,group=None):
-        if (group is None) :
-            group = self.all_atoms
-        return group.positions[:,2]
-
-    def _rebox(self,x=None,y=None,z=None):
-        # TODO check that the correct frame-dependent box is used !! 
-        dim = self.universe.coord.dimensions
-        stack=False
-        shift=np.array([0,0,dim[2]/2.])
-
-        # we rebox the atoms in universe, and not a vector
-        if x is None and y is None and z is None:
-            stack=True ; #TODO do we really need this? check if data are copied already
-            x=self._x()
-            y=self._y()
-            z=self._z()
-        for index, val in enumerate((x,y,z)):
-            try:
-                # the >= convention is needed for cKDTree
-                val[val>= dim[index]-shift[index]]-=dim[index]
-                val[val< 0        -shift[index]]+=dim[index]
-            except:
-                pass
-        if stack:
-            self.universe.coord.positions=np.column_stack((x,y,z))
 
     def writepdb(self,filename='layers.pdb',multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
@@ -203,51 +163,7 @@ class ITIM():
             print("Error writing pdb file")
 
 
-    def center(self):
-        """ 
-        Centers the liquid slab in the simulation box.
-
-        The algorithm tries to avoid problems with the definition
-        of the center of mass. First, a rough density profile
-        (10 bins) is computed. Then, the support group is shifted
-        and reboxed until the bins at the box boundaries have a
-        density lower than a threshold delta
-
-        
-        """
-        #TODO: implement shifting back for final coordinate writing as an option
-        dim = self.universe.coord.dimensions
-        shift=dim[2]/100. ;# TODO, what about non ortho boxes?
-        total_shift=0
-        self._liquid_mask=np.zeros(len(self.itim_group), dtype=np.int8) 
- 
-        _z_itim_group = self._z(self.itim_group)
-        _x = self._x()
-        _y = self._y()
-        _z = self._z()
-
-        histo,edges=np.histogram(_z_itim_group, bins=10,
-                                 range=(-dim[2]/2.,dim[2]/2.), density=True) ;
-            #TODO handle norm!=z
-        max=np.amax(histo)
-        min=np.amin(histo)
-        delta=min+(max-min)/3. ;# TODO test different cases
-
-        # let's first avoid crossing pbc with the liquid phase. This can fail:
-        # TODO handle failure
-        while(histo[0]>delta or histo[-1]> delta):
-            if self.info: print "shifting by ",shift
-            total_shift+=shift
-            _z_itim_group +=shift
-            self._rebox(z=_z_itim_group);
-            histo,edges=np.histogram(_z_itim_group, bins=10,
-                                     range=(-dim[2]/2.,dim[2]/2.), density=True);
-        #TODO: clean up
-        _center=np.average(_z_itim_group)
-
-        _z += total_shift - _center
-        # finally, we copy everything back
-        self.universe.coord.positions=np.column_stack((_x,_y,_z))
+       
 
 
     def _assign_mesh(self):
@@ -433,20 +349,20 @@ class ITIM():
         self.mask=np.zeros((2,self.max_layers,self.mesh_nx*self.mesh_ny),
                             dtype=int);
 
-        self._rebox()
+        utilities.rebox(self.universe)
         
         if(self.cluster_cut is not None): # groups have been checked already in _sanity_checks()
             _group=self._do_cluster_analysis()
         else: 
             _group=self.itim_group ; 
-        self.center() # TODO supply the liquid 
+        utilities.center(self.universe,_group) 
 
         _radius=_group.radii
-        self._seen=np.zeros(len(self._x(_group)))
+        self._seen=np.zeros(len(utilities.get_x(_group)))
 
-        _x=self._x(_group)
-        _y=self._y(_group)
-        _z=self._z(_group)
+        _x=utilities.get_x(_group)
+        _y=utilities.get_y(_group)
+        _z=utilities.get_z(_group)
 
         sort = np.argsort( _z + _radius * np.sign(_z) )
         # NOTE: np.argsort returns the sorted *indices*
