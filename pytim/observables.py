@@ -1,5 +1,5 @@
-# vim: set expandtab:
-# vim: set tabstop=4:
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 """ Module: observables
     ===================
 """
@@ -33,7 +33,7 @@ class AnalysisBase(object):
         # let's thake the first atom in the residue as the origin
         box=self.u.trajectory.ts.dimensions[0:3]
         pos = atom.position - atom.residue[0].position
-        pos[pos> box/2.]-=box[pos> box/2.] 
+        pos[pos>= box/2.]-=box[pos>= box/2.] 
         pos[pos<-box/2.]+=box[pos<-box/2.] 
         return pos
      
@@ -174,6 +174,12 @@ class InterRDF(rdf.InterRDF):
             rdf.rdf[0]=0.0
             plt.plot(rdf.bins, rdf.rdf)
             plt.show()
+
+
+        Example: dipole-dipole correlation on the surface
+        =================================================
+
+
 
     """
 
