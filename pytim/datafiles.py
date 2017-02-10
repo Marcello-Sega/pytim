@@ -13,6 +13,7 @@ directory. Use as ::
 
 __all__ = [
     "WATER_GRO", # GROMACS single frame, water/vapour interface
+    "WATER_XTC", # GROMACS trajectory, 100 frames, water/vapour interface
     "G43A1_TOP", # GROMOS 43a1 nonbonded parameters, from gromacs distribution
     "pytim_data",# class to access the data
 ]
@@ -65,6 +66,7 @@ pytim_data=Data()
 ## NOTE: to add a new datafile, make sure it is listed in setup.py (in the root directory)
 ##       in the package_data option (a glob like 'data/*' is usually enough)
 WATER_GRO = resource_filename('pytim', 'data/water.gro')           
+WATER_XTC = resource_filename('pytim', 'data/water.xtc')           
 pytim_data.add(WATER_GRO  ,  'config', 'GRO') 
 
 G43A1_TOP = resource_filename('pytim', 'data/ffg43a1.nonbonded.itp') # This should be the last line: clean up namespace

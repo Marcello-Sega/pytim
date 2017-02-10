@@ -18,13 +18,13 @@ from MDAnalysis.core.AtomGroup import *
 #TODO: error handling is horrible
 #TODO: comment each function
 
-class Observable(object):
-    """ Instantiate an observable. This is derived from the MDAnalysis Observable class
+class AnalysisBase(object):
+    """ Instantiate an observable. This is derived from the MDAnalysis AnalysisBase class
 
     """
     __metaclass__ = ABCMeta
      
-    def __init__(self,universe,options=''):
+    def __init__(self,universe,options='',):
         self.u=universe
         self.options=options
 
@@ -55,8 +55,8 @@ class Observable(object):
     @abstractmethod
     def compute(self,input):
         print "Not implemented"
-            
-class Orientation(Observable):
+
+class Profile(AnalysisBase):
     def compute(self,pos):
 
         flat = pos.flatten()
@@ -71,7 +71,24 @@ class Orientation(Observable):
         v =  np.array([el/np.sqrt(np.dot(el,el)) for el in v])
         return v
 
-class MolecularOrientation(Observable):
+
+            
+class Orientation(AnalysisBase):
+    def compute(self,pos):
+
+        flat = pos.flatten()
+        pos  = flat.reshape(len(flat)/3,3)
+        a = pos[1::3] - pos[0::3]   
+        b = pos[2::3] - pos[0::3]   
+        # TODO: can this be vectorized? 
+        if 'normal' in self.options:
+            v = np.cross(a,b)
+        else:
+            v = np.array(a+b)
+        v =  np.array([el/np.sqrt(np.dot(el,el)) for el in v])
+        return v
+
+class MolecularOrientation(AnalysisBase):
     def compute(self,inp):
         t = type(inp)
         # TODO: checks for other types?
@@ -105,41 +122,57 @@ class InterRDF(rdf.InterRDF):
 
               g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|) f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
 
-        Example: TODO comment, MolecularOrientation is not straightfowrard
+        TODO add a MolecularOrientation example
         
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import numpy as np
+        >>> import pytim 
+        >>> from pytim.datafiles import *
         >>> from pytim.observables import * 
-        >>> orientation = MolecularOrientation(u)
-        >>> for ts in u.trajectory :
+        >>> 
+        >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+        >>> L = np.min(u.dimensions[:3])
+        >>> oxygens = u.select_atoms("name OW") 
+        >>> radii=pytim_data.vdwradii(G43A1_TOP)
+        >>> 
+        >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,multiproc=True,radii_dict=radii,cluster_groups=oxygens,cluster_cut=3.5)
+        >>> 
+        >>> for ts in u.trajectory[::50] : 
         ...     interface.assign_layers()
-        ...     layer=interface.layers('upper',1)
-        ...     rdf = InterRDF(layer,layer,range=(0.,u.dimensions[0]/2.),function=orientation.compute)
+        ...     layer=interface.layers('upper',1)	
+        ...     if ts.frame==0 :
+        ...         rdf=InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
         ...     rdf.sample(ts)
-        ...     rdf.normalize()
-        >>> np.savetxt('angleRDF.dat', np.column_stack((rdf.bins,rdf.rdf/(rdf.nframes))))
+        >>> rdf.normalize()
+        >>> rdf.rdf[0]=0.0
+        >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf)))  #doctest:+SKIP
+
 
         This results in the following RDF:
 
         .. plot::
 
             import MDAnalysis as mda
-            import pytim
+            import numpy as np
+            import pytim 
             from pytim.datafiles import *
             from pytim.observables import * 
-            import matplotlib.pyplot as plt
-
-            u         = mda.Universe(WATER_GRO)
-            oxygens   = u.select_atoms("name OW")
-            interface = pytim.ITIM(u,itim_group=oxygens)
-            orientation = MolecularOrientation(u)
-
-            for ts in u.trajectory :
+            u = mda.Universe(WATER_GRO,WATER_XTC)
+            L = np.min(u.dimensions[:3])
+            oxygens = u.select_atoms("name OW") 
+            radii=pytim_data.vdwradii(G43A1_TOP)
+            interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,multiproc=True,radii_dict=radii,cluster_groups=oxygens,cluster_cut=3.5)
+            for ts in u.trajectory[::5] :
                 interface.assign_layers()
-                layer=interface.layers('upper',1)
-                rdf = InterRDF(layer,layer,range=(0.,u.dimensions[0]/2.),function=orientation.compute)
+                layer=interface.layers('upper',1)	
+                if ts.frame==0 :
+                    rdf=InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
                 rdf.sample(ts)
-                rdf.normalize()
-
-            plt.plot(rdf.bins[1:], rdf.rdf[1:])
+            rdf.normalize()
+            rdf.rdf[0]=0.0
+            plt.plot(rdf.bins, rdf.rdf)
             plt.show()
 
     """
@@ -192,7 +225,7 @@ class InterRDF(rdf.InterRDF):
         self.nsamples+=1
      
     def normalize(self):
-        self._conclude()
+        self._conclude() # TODO fix variable group size; remove blocks support
             # undo the normalization in InterRDF._conclude()
         if self.nsamples>0:
                 self.rdf *= self.nframes**2 / self.nsamples**2 ;

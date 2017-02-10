@@ -43,7 +43,7 @@ class ITIM():
         >>> interface.assign_layers()
         >>> 
         >>> print interface.layers('upper',1)  # first layer, upper
-        <AtomGroup with 234 atoms>
+        <AtomGroup with 406 atoms>
 
         # TODO Add here an example on how to use the variuos other options
     """
@@ -53,6 +53,7 @@ class ITIM():
         self.ALPHA_LARGE= "parameter alpha in %s.%s must be smaller than the smaller box side" % ( (__name__) , (self.__class__.__name__) )
         self.MESH_NEGATIVE = "parameter mesh in %s.%s must be positive" % ( (__name__) , (self.__class__.__name__) )
         self.MESH_LARGE= "parameter mesh in %s.%s must be smaller than the smaller box side" % ( (__name__) , (self.__class__.__name__) )
+        self.UNDEFINED_RADIUS= "one or more atoms do not have a corresponding radius in the default or provided dictionary in %s.%s" % ( (__name__) , (self.__class__.__name__) )
         self.UNDEFINED_CLUSTER_SEARCH= "Either both cluster_cut and cluster_groups in %s.%s should be defined, or set to None" % ( (__name__) , (self.__class__.__name__) )
         self.MISMATCH_CLUSTER_SEARCH= "cluster_cut in %s.%s should be either a scalar or an array matching the number of groups" % ( (__name__) , (self.__class__.__name__) )
         self.EMPTY_LAYER="One or more layers are empty"
@@ -81,7 +82,7 @@ class ITIM():
         if cluster_groups is not None and not isinstance(cluster_groups, (list, tuple, np.ndarray)):
             self.cluster_groups = [cluster_groups]
 
-        if itim_group==None:
+        if itim_group is None:
             self.itim_group = self.all_atoms
         else:
             self.itim_group = itim_group
@@ -90,29 +91,27 @@ class ITIM():
         except:
             _groups = []
         _groups.append(self.itim_group)
-        try:
-            for _g in _groups:
-                if _g is not None:
-                    _types = np.copy(_g.types)
-                    if None in _g.radii or radii_dict is not None : # either radii are not set or dict provided 
-                        if radii_dict is None:  # radii not set, dict not provided -> fallback to MDAnalysis vdwradii
-                            _radii_dict = tables.vdwradii
-                        else:
-                                                # else, use the provided dict.
-                            _radii_dict = radii_dict
- 
-                        _radii = np.zeros(len(_g.types))
-                        for _atype in np.unique(_types):
-                             try:
-                                 _radii[_types==_atype]=_radii_dict[_atype]
-                             except:
-                                 pass # those types which are not listed in the dictionary 
-                                      # will have radius==0. TODO handle this
-                        _g.radii=_radii[:] #deep copy
-                        del _radii
-                    del _types
-        except:
-            print ("Error (generic) while initializing ITIM")
+        for _g in _groups:
+            # TODO: add a switch that allows to use the atom name instead of the type!
+            if _g is not None:
+                _types = np.copy(_g.types)
+                if np.any(_g.radii is None)  or radii_dict is None : # either radii are not set or dict provided 
+                    if radii_dict is None:  # radii not set, dict not provided -> fallback to MDAnalysis vdwradii
+                        _radii_dict = tables.vdwradii
+                else: # use the provided dict.  
+                    _radii_dict = radii_dict
+
+                _radii = np.zeros(len(_g.types))
+                for _atype in np.unique(_types):
+                     try:
+                         _radii[_types==_atype]=_radii_dict[_atype]
+                     except:
+                         pass # those types which are not listed in the dictionary 
+                              # will have radius==0. TODO handle this
+                _g.radii=_radii[:] #deep copy
+                assert np.all(_g.radii is not None), self.UNDEFINED_RADIUS
+                del _radii
+                del _types
 
         self._sanity_checks()
         
@@ -147,17 +146,17 @@ class ITIM():
         self.tic=toc
 
     def _x(self,group=None):
-        if (group==None) :
+        if (group is None) :
             group = self.all_atoms
         return group.positions[:,0]
 
     def _y(self,group=None):
-        if (group==None) :
+        if (group is None) :
             group = self.all_atoms
         return group.positions[:,1]
 
     def _z(self,group=None):
-        if (group==None) :
+        if (group is None) :
             group = self.all_atoms
         return group.positions[:,2]
 
@@ -448,6 +447,7 @@ class ITIM():
         _x=self._x(_group)
         _y=self._y(_group)
         _z=self._z(_group)
+
         sort = np.argsort( _z + _radius * np.sign(_z) )
         # NOTE: np.argsort returns the sorted *indices*
 
@@ -485,20 +485,20 @@ class ITIM():
         The slice can be used to select a single layer, or multiple, e.g. (using the example of the :class:`ITIM` class) :
 
         >>> interface.layers('upper')  # all layers, upper side
-        array([<AtomGroup with 234 atoms>, <AtomGroup with 478 atoms>,
-               <AtomGroup with 393 atoms>, <AtomGroup with 400 atoms>], dtype=object)
+        array([<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
+               <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>], dtype=object)
 
         >>> interface.layers('lower',1)  # first layer, lower side
-        <AtomGroup with 238 atoms>
+        <AtomGroup with 406 atoms>
 
         >>> interface.layers('both',0,3) # 1st - 3rd layer, on both sides
-        array([[<AtomGroup with 234 atoms>, <AtomGroup with 478 atoms>,
-                <AtomGroup with 393 atoms>],
-               [<AtomGroup with 238 atoms>, <AtomGroup with 467 atoms>,
-                <AtomGroup with 419 atoms>]], dtype=object)
+        array([[<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
+                <AtomGroup with 414 atoms>],
+               [<AtomGroup with 406 atoms>, <AtomGroup with 418 atoms>,
+                <AtomGroup with 399 atoms>]], dtype=object)
 
         >>> interface.layers('lower',0,4,2) # 1st - 4th layer, with a stride of 2, lower side 
-        array([<AtomGroup with 238 atoms>, <AtomGroup with 419 atoms>], dtype=object)
+        array([<AtomGroup with 406 atoms>, <AtomGroup with 399 atoms>], dtype=object)
 
 
         """
