@@ -135,6 +135,24 @@ todo_include_todos = True
 # a list of builtin themes.
 #
 html_theme = 'classic'
+
+html_theme_options = {
+#'sidebarbgcolor':'#cccccc',
+'sidebarbgcolor':'#0063A6',
+'headtextcolor':'#0063A6',
+'headbgcolor':'#ffffff',
+'sidebarlinkcolor':'#F6A800',
+'relbarbgcolor':'#ffffff',
+'relbartextcolor':'#0063A6',
+'relbarlinkcolor':'#0063A6',
+'bgcolor':'#ffffff',
+'codebgcolor':'#e0e0e0',
+
+}
+
+
+#import sphinx_rtd_theme
+#html_theme = "sphinx_rtd_theme"
 #html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -164,7 +182,7 @@ html_logo = 'logo.png'
 # the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
 #
-# html_favicon = None
+html_favicon = 'pytim.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

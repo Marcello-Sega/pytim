@@ -22,8 +22,8 @@ import utilities
 #TODO: error handling is horrible
 #TODO: comment each function
 
-class AnalysisBase(object):
-    """ Instantiate an observable. This is derived from the MDAnalysis AnalysisBase class
+class Observable(object):
+    """ Instantiate an observable. 
 
     """
     __metaclass__ = ABCMeta
@@ -61,13 +61,13 @@ class AnalysisBase(object):
         print "Not implemented"
 
 
-class Number(AnalysisBase):
+class Number(Observable):
     def compute(self,inp):
         return np.ones(len(inp))
 
 
             
-class Orientation(AnalysisBase):
+class Orientation(Observable):
     def compute(self,pos):
 
         flat = pos.flatten()
@@ -82,7 +82,7 @@ class Orientation(AnalysisBase):
         v =  np.array([el/np.sqrt(np.dot(el,el)) for el in v])
         return v
 
-class MolecularOrientation(AnalysisBase):
+class MolecularOrientation(Observable):
     def compute(self,inp):
         t = type(inp)
         # TODO: checks for other types?
@@ -111,18 +111,19 @@ class Profile(object):
         >>> from pytim.datafiles   import *
         >>> 
         >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
-        >>> oxygens = u.select_atoms("name OW") 
+        >>> oxygens = u.select_atoms("all") 
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
         >>> 
         >>> obs     = observables.Number(u).compute
         >>> profile = observables.Profile(group=oxygens,observable=obs)
         >>> 
         >>> for ts in u.trajectory[:]:
-        >>>     utilities.center(u,oxygens)
-        >>>     profile.sample()
+        ...     utilities.center(u,oxygens)
+        ...     profile.sample()
         >>> 
         >>> bins, avg = profile.profile(binwidth=1.0)
-        >>> np.savetxt('profile.dat',zip(bins,avg))
+        >>> np.savetxt('profile.dat',list(zip(bins,avg)))
+
 
         This results in the following profile:
 
@@ -171,14 +172,14 @@ class Profile(object):
     def sample(self):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
-        self._box=self.universe.dimensions[self._dir]
+        self._box=self.universe.dimensions[:3]
         if self.interface is None:
             _pos    = self.pos[self._dir](self.group)      
-            _values = self.observable(self.group)
+            _values = self.observable.compute(self.group)
             _nbins  = int(self.universe.trajectory.ts.dimensions[self._dir]/self.binsize)
             _avg, _bins, _binnumber = stats.binned_statistic(_pos, _values, 
-                                                             range=[-self._box/2.,self._box/2.],
-                                                             statistic='mean',bins=_nbins)
+                                                             range=[-self._box[self._dir]/2.,self._box[self._dir]/2.],
+                                                             statistic='sum',bins=_nbins)
             _avg[np.isnan(_avg)]=0.0
             self.sampled_values.append(_avg)
             self.sampled_bins.append(_bins[1:]-self.binsize/2.) # these are the bins midpoints
@@ -201,11 +202,12 @@ class Profile(object):
 
         _avg,_bins,_binnumber = stats.binned_statistic(list(chain.from_iterable(self.sampled_bins  )),
                                             list(chain.from_iterable(self.sampled_values)),
-                                            range=[-self._box/2.,self._box/2.],
-                                            statistic='mean',bins=_nbins )
+                                            range=[-self._box[self._dir]/2.,self._box[self._dir]/2.],
+                                            statistic='sum',bins=_nbins )
         _avg[np.isnan(_avg)]=0.0
         _binsize = _bins[1]-_bins[0]
-        return [  (_bins[1:] - _binsize/2.) , _avg ]
+        _vol = np.prod(self._box)/_nbins
+        return [  (_bins[1:] - _binsize/2.) , _avg/len(self.sampled_values)/_vol ]
 
 
 
