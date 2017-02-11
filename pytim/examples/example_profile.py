@@ -6,7 +6,7 @@ from pytim  import *
 from pytim.datafiles   import *
 
 u       = mda.Universe(WATER_GRO,WATER_XTC)
-oxygens = u.select_atoms("name OW") 
+oxygens = u.select_atoms('all') 
 radii=pytim_data.vdwradii(G43A1_TOP)
 
 obs     = observables.Number(u).compute
