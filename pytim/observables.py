@@ -95,10 +95,67 @@ class MolecularOrientation(AnalysisBase):
 
 
 class Profile(object):
-    def __init__(self,universe,group,direction='z',observable=None,interface=None,center_group=None):
+    """ Calculates the profile of a given observable across the simulation box
+
+        :param AtomGroup    group:          calculate the profile based on this group
+        :param str          direction:      'x','y', or 'z' : calculate the profile along this direction
+        :param Observable   observable:     calculate the profile of this quantity. If None is supplied, it defaults to the number density
+        :param ITIM         interface:      if provided, calculate the intrinsic profile with respect to the first layers
+        :param AtomGroup    center_group:   if `interface` is not provided, this optional group can be supplied to center the system 
+
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import numpy as np
+        >>> from pytim  import *
+        >>> from pytim.datafiles   import *
+        >>> 
+        >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
+        >>> oxygens = u.select_atoms("name OW") 
+        >>> radii=pytim_data.vdwradii(G43A1_TOP)
+        >>> 
+        >>> obs     = observables.Number(u).compute
+        >>> profile = observables.Profile(group=oxygens,observable=obs)
+        >>> 
+        >>> for ts in u.trajectory[:]:
+        >>>     utilities.center(u,oxygens)
+        >>>     profile.sample()
+        >>> 
+        >>> bins, avg = profile.profile(binwidth=1.0)
+        >>> np.savetxt('profile.dat',zip(bins,avg))
+
+        This results in the following profile:
+
+        .. plot::
+
+            import MDAnalysis as mda
+            import numpy as np
+            from pytim  import *
+            from pytim.datafiles   import *
+            
+            u       = mda.Universe(WATER_GRO,WATER_XTC)
+            oxygens = u.select_atoms("name OW") 
+            radii=pytim_data.vdwradii(G43A1_TOP)
+            
+            obs     = observables.Number(u).compute
+            profile = observables.Profile(group=oxygens,observable=obs)
+            
+            for ts in u.trajectory[:]:
+                utilities.center(u,oxygens)
+                profile.sample()
+            
+            bins, avg = profile.profile(binwidth=1.0)
+            plt.ylim(0.0,1.1)
+            plt.plot(bins, avg)
+            plt.show()
+
+    """
+
+    def __init__(self,group,direction='z',observable=None,interface=None,center_group=None):
+        #TODO: the directions are handled differently, fix it in the code
         _dir = {'x':0,'y':1,'z':2}
-        self.universe      = universe
         self.group         = group
+        self.universe      = group.universe
         self.center_group  = center_group
         if observable is None:
             self.observable = Number()
