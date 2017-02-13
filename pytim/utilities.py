@@ -91,14 +91,8 @@ def center(universe, group):
 
 def distance_from_planar_set(group,reference_group,cutoff=0):
     # we need a cutoff to implement periodic boundary conditions
-    import matplotlib.pyplot as plt
     
     tri = Delaunay(reference_group.positions[:,0:2]) 
-    index = tri.find_simplex(group.positions[::100,0:2]) 
-    
-    plt.triplot(reference_group.positions[:,0], reference_group.positions[:,1],tri.simplices.copy())
-    plt.triplot(reference_group.positions[:,0], reference_group.positions[:,1],tri.simplices.copy())
-    plt.plot(group.positions[::100,0], group.positions[::100,1], 'o')
-    plt.triplot(reference_group.positions[:,0], reference_group.positions[:,1],tri.simplices[index].copy(),lw=4)
-    plt.show()
+    index = tri.find_simplex(group.positions[:,0:2]) 
+    return tri,index
     
