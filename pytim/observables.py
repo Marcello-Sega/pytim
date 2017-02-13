@@ -19,9 +19,6 @@ import utilities
 # should be done by the user beforehand,
 # or implemented in specific classes.
 
-#TODO: error handling is horrible
-#TODO: comment each function
-
 class Observable(object):
     """ Instantiate an observable. 
 
@@ -111,10 +108,10 @@ class Profile(object):
         >>> from pytim.datafiles   import *
         >>> 
         >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
-        >>> oxygens = u.select_atoms("all") 
+        >>> oxygens = u.select_atoms("name OW") 
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
         >>> 
-        >>> obs     = observables.Number(u).compute
+        >>> obs     = observables.Number(u)
         >>> profile = observables.Profile(group=oxygens,observable=obs)
         >>> 
         >>> for ts in u.trajectory[:]:
@@ -138,7 +135,7 @@ class Profile(object):
             oxygens = u.select_atoms("name OW") 
             radii=pytim_data.vdwradii(G43A1_TOP)
             
-            obs     = observables.Number(u).compute
+            obs     = observables.Number(u)
             profile = observables.Profile(group=oxygens,observable=obs)
             
             for ts in u.trajectory[:]:
@@ -146,7 +143,6 @@ class Profile(object):
                 profile.sample()
             
             bins, avg = profile.profile(binwidth=1.0)
-            plt.ylim(0.0,1.1)
             plt.plot(bins, avg)
             plt.show()
 
@@ -226,9 +222,9 @@ class InterRDF(rdf.InterRDF):
         :param int stop:                last frame
         :param int step:                frame stride
         :param char excluded_dir:       project position vectors onto the plane orthogonal to 'z','y' or 'z' (TODO not used here, check & remove)
-        :param array function:          function applied to the atoms in g1
-        :param array function2:         function applied to the atoms in g2
-        :param array weights:           weights to be applied to the distribution function (mutually exclusive with function/function2)
+        :param Observable observable:        observable calculated on the atoms in g1
+        :param Observable observable2:       observable calculated on the atoms in g2
+        :param array weights:           weights to be applied to the distribution function (mutually exclusive with observable/observable2)
 
         .. math::
 
@@ -297,28 +293,28 @@ class InterRDF(rdf.InterRDF):
     def __init__(self, g1, g2,
                  nbins=75, range=(0.0, 15.0), exclusion_block=None,
                  start=None, stop=None, step=None,excluded_dir='z',
-                 function=None,function2=None,weights=None):
+                 observable=None,observable2=None,weights=None):
         rdf.InterRDF.__init__(self, g1, g2, nbins=nbins, range=range,
                               exclusion_block=exclusion_block,
                               start=start, stop=stop, step=step)
         self.nsamples=0
-        self.function=function
-        self.function2=function2
+        self.observable=observable
+        self.observable2=observable2
         self.weights=weights
      
     def _single_frame(self):
-        if (self.function is not None or 
-            self.function2 is not None) and \
+        if (self.observable is not None or 
+            self.observable2 is not None) and \
             self.weights is not None:
             print "Error, cannot specify both a function and weights" 
-        if self.function is not None or self.function2 is not None:
-            if self.function2 is None:
-                self.function2 = self.function
+        if self.observable is not None or self.observable2 is not None:
+            if self.observable2 is None:
+                self.observable2 = self.observable
 
-                fg1 = self.function(self.g1)
-                fg2 = self.function2(self.g2)
+                fg1 = self.observable.compute(self.g1)
+                fg2 = self.observable2.compute(self.g2)
                 if len(fg1)!=len(self.g1) or len(fg2)!=len(self.g2):
-                    print "Error, the function should output an array (of scalar or vectors) the same size of the group",exit()
+                    print "Error, the observable should output an array (of scalar or vectors) the same size of the group",exit()
                 # both are (arrays of) scalars
                 if len(fg1.shape)==1 and len(fg2.shape)==1:
                     _weights = np.outer(fg1,fg2)
@@ -327,7 +323,7 @@ class InterRDF(rdf.InterRDF):
                 # TODO: tests on the second dimension...
                     _weights = np.dot(fg1,fg2.T)
                 else :  
-                    print "Erorr, shape of the function output not handled",exit()
+                    print "Erorr, shape of the observable output not handled",exit()
                 # numpy.histogram accepts negative weights
                 self.rdf_settings['weights']=_weights
         if self.weights is not None:
@@ -352,11 +348,11 @@ class InterRDF2D(InterRDF):
     def __init__(self, g1, g2,
                  nbins=75, range=(0.0, 15.0), exclusion_block=None,
                  start=None, stop=None, step=None,excluded_dir='z',
-                 true2D=False, function=None):
+                 true2D=False, observable=None):
         InterRDF.__init__(self, g1, g2,nbins=nbins, range=range,
                           exclusion_block=exclusion_block,
                           start=start, stop=stop, step=step,
-                          function=function)
+                          observable=observable)
         self.true2D=true2D
         if excluded_dir is 'z':
                 self.excluded_dir=2

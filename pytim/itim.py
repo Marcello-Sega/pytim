@@ -5,7 +5,6 @@
     =============
 """
 
-from timeit import default_timer as timer
 #from threading import Thread
 from multiprocessing import Process, Queue
 import numpy as np
@@ -122,7 +121,6 @@ class ITIM():
         self.use_threads=False
         self.use_kdtree=False
         self.use_multiproc=multiproc
-        self.tic=timer()
 
     def _sanity_checks(self):
 

@@ -1,10 +1,16 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
+from timeit import default_timer as timer
 import numpy as np
+from scipy.spatial import Delaunay
+from scipy.interpolate import griddata
 def lap():
-    toc=timer()
-    print "LAP >>> ",toc-lap.tic
-    lap.tic=toc
+    if not hasattr(lap, "tic"):
+        lap.tic=timer()
+    else:
+        toc=timer()
+        print "LAP >>> ",toc-lap.tic
+        lap.tic=toc
 
 def get_x(group=None):
     return group.positions[:,0]
@@ -82,3 +88,17 @@ def center(universe, group):
     # finally, we copy everything back
     universe.coord.positions=np.column_stack((_x,_y,_z))
  
+
+def distance_from_planar_set(group,reference_group,cutoff=0):
+    # we need a cutoff to implement periodic boundary conditions
+    import matplotlib.pyplot as plt
+    
+    tri = Delaunay(reference_group.positions[:,0:2]) 
+    index = tri.find_simplex(group.positions[::100,0:2]) 
+    
+    plt.triplot(reference_group.positions[:,0], reference_group.positions[:,1],tri.simplices.copy())
+    plt.triplot(reference_group.positions[:,0], reference_group.positions[:,1],tri.simplices.copy())
+    plt.plot(group.positions[::100,0], group.positions[::100,1], 'o')
+    plt.triplot(reference_group.positions[:,0], reference_group.positions[:,1],tri.simplices[index].copy(),lw=4)
+    plt.show()
+    
