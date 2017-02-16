@@ -7,7 +7,8 @@
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
-from os import path
+import os
+import sys
 
 from distutils.core import setup
 from distutils.extension import Extension
@@ -20,11 +21,15 @@ import numpy
 dbscan = Extension("dbscan", ["pytim/_dbscan_inner.pyx"], language="c++",
     include_dirs = [numpy.get_include()])
 
-here = path.abspath(path.dirname(__file__))
+here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
+
+# This fixes the default architecture flags of Apple's python
+if sys.platform == 'darwin' and os.path.exists('/usr/bin/xcodebuild'):
+    os.environ['ARCHFLAGS'] = ''
 
 setup(
     name='pytim',
@@ -89,7 +94,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy','scipy>=0.18','MDAnalysis'],
+    install_requires=['numpy','scipy>=0.18','MDAnalysis','cython'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

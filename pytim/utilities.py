@@ -4,13 +4,16 @@ from timeit import default_timer as timer
 import numpy as np
 from scipy.spatial import Delaunay
 from scipy.interpolate import griddata
-def lap():
+def lap(show=False):
     if not hasattr(lap, "tic"):
         lap.tic=timer()
     else:
         toc=timer()
-        print "LAP >>> ",toc-lap.tic
+        dt = toc-lap.tic
         lap.tic=toc
+        if show:
+            print "LAP >>> ",dt
+        return dt
 
 def get_x(group=None):
     return group.positions[:,0]

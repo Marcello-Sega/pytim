@@ -14,6 +14,7 @@ from pytim.datafiles import *
 from pytim import utilities
 from MDAnalysis.topology import tables
 from dbscan import dbscan_inner
+import __builtin__
 
 class ITIM():
     """ Identifies the interfacial molecules at macroscopically
@@ -89,7 +90,7 @@ class ITIM():
 
         self.grid          = None
         self.use_threads   = False
-        self.use_kdtree    = False
+        self.use_kdtree    = True
         self.use_multiproc = multiproc
 
 
@@ -197,10 +198,10 @@ class ITIM():
             self.meshtree   = cKDTree(self.meshpoints,boxsize=_box[:4])
 
     def _touched_lines(self,atom,_x,_y,_z,_radius):
-        # NOTE: here the kdtree is slower (15%) than bucketing (only 1 line of code though...)
+        # NOTE: kdtree might be slower than bucketing in some cases
         if (self.use_kdtree==True) : # this is False by default
             return self.meshtree.query_ball_point([_x[atom],_y[atom]],_radius[atom]+self.alpha)
-        else:
+        else: # For some large configurations this fails. Don't switch off use_kdtree
             _dist=_radius[atom] + self.alpha + self.delta
             index_x = np.arange(
                 np.floor((_x[atom]-_dist)/self.mesh_dx),
@@ -224,7 +225,7 @@ class ITIM():
             sel_y[sel_y<0]+=self.mesh_ny
             sel_x[sel_x>=self.mesh_nx]-=self.mesh_nx
             sel_y[sel_y>=self.mesh_ny]-=self.mesh_ny
-
+            print np.array([sel_x,sel_y]).astype(int)
             return np.ravel_multi_index(np.array([sel_x,sel_y]).astype(int),(self.mesh_nx,self.mesh_ny))
 
     def _assign_one_side(self,uplow,sorted_atoms,_x,_y,_z,
@@ -448,11 +449,12 @@ class ITIM():
 
 
         # convert to numpy array 
-        self._layers = np.array(self._layers)
         # assign bfactors to all layers
         for uplow in [up,low]:
             for _nlayer,_layer in enumerate(self._layers[uplow]):
                 _layer.bfactors = _nlayer+1 
+
+        self._layers = np.array(self._layers)
                 
 
 
