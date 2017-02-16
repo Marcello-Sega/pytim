@@ -14,7 +14,7 @@ pytim.lap()
 interface.assign_layers()
 pytim.lap()
 
-layer = interface.layers('upper',1)  # first layer
+layer = interface.layers('upper',1)  # first layer, upper side
 print ("Interface computed. Upper layer:\n %s out of %s" % (layer,oxygens))
 
 interface.writepdb('layers.pdb')

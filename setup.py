@@ -1,3 +1,5 @@
+# -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 """A python based tool for interfacial molecules analysis
 """
 
@@ -7,6 +9,17 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
+from distutils.core import setup
+from distutils.extension import Extension
+from Cython.Distutils import build_ext
+#from Cython.Build import cythonize
+
+import numpy
+
+
+dbscan = Extension("dbscan", ["pytim/_dbscan_inner.pyx"], language="c++",
+    include_dirs = [numpy.get_include()])
+
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
@@ -15,7 +28,8 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='pytim',
-
+    ext_modules=[dbscan],
+    cmdclass = {'build_ext': build_ext},
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
@@ -107,4 +121,5 @@ setup(
   ##          'sample=sample:main',
   ##      ],
   ##  },
+	
 )

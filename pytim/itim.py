@@ -13,8 +13,7 @@ from MDAnalysis.core.AtomGroup   import *
 from pytim.datafiles import *
 from pytim import utilities
 from MDAnalysis.topology import tables
-
-
+from dbscan import dbscan_inner
 
 class ITIM():
     """ Identifies the interfacial molecules at macroscopically
@@ -39,7 +38,7 @@ class ITIM():
         >>> u         = mda.Universe(WATER_GRO)
         >>> oxygens   = u.select_atoms("name OW")
         >>>
-        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4)
+        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=False)
         >>> interface.assign_layers()
         >>>
         >>> print interface.layers('upper',1)  # first layer, upper
@@ -54,20 +53,24 @@ class ITIM():
         self.MESH_NEGATIVE = "parameter mesh in %s.%s must be positive" % ( (__name__) , (self.__class__.__name__) )
         self.MESH_LARGE= "parameter mesh in %s.%s must be smaller than the smaller box side" % ( (__name__) , (self.__class__.__name__) )
         self.UNDEFINED_RADIUS= "one or more atoms do not have a corresponding radius in the default or provided dictionary in %s.%s" % ( (__name__) , (self.__class__.__name__) )
-        self.UNDEFINED_CLUSTER_SEARCH= "Either both cluster_cut and cluster_groups in %s.%s should be defined, or set to None" % ( (__name__) , (self.__class__.__name__) )
-        self.MISMATCH_CLUSTER_SEARCH= "cluster_cut in %s.%s should be either a scalar or an array matching the number of groups" % ( (__name__) , (self.__class__.__name__) )
+        self.UNDEFINED_CLUSTER_SEARCH= "If extra_cluster_groups is defined, a cluster_cut should e provided ( %s.%s )" % ( (__name__) , (self.__class__.__name__) )
+        self.MISMATCH_CLUSTER_SEARCH= "cluster_cut in %s.%s should be either a scalar or an array matching the number of groups (including itim_group" % ( (__name__) , (self.__class__.__name__) )
         self.EMPTY_LAYER="One or more layers are empty"
         self.CLUSTER_FAILURE="Cluster algorithm failed: too small cluster cutoff provided?"
         self.UNDEFINED_LAYER="No layer defined: forgot to call assign_layers() ?"
+        self.WRONG_UNIVERSE="Wrong Universe passed to ITIM class"
+
 
 
 
     def __init__(self,universe,mesh=0.4,alpha=2.0,itim_group=None,radii_dict=None,
-                 max_layers=1,cluster_groups=None,cluster_cut=None,
-                 info=False,multiproc=True,molecular=True):
+                 max_layers=1,cluster_cut=None,molecular=True,extra_cluster_groups=None,
+                 info=False,multiproc=True):
 
+        #TODO add type checking for each MDA class passed
         self.define_error_messages()
         self.universe=universe
+        assert type(universe)==MDAnalysis.core.AtomGroup.Universe, self.WRONG_UNIVERSE
         self.target_mesh=mesh
         self.alpha=alpha
         self.max_layers=max_layers
@@ -76,21 +79,36 @@ class ITIM():
         self._layers=None
         self.molecular=molecular
 
-        self.cluster_cut=cluster_cut
-        if cluster_cut is not None and not isinstance(cluster_cut, (list, tuple, np.ndarray)):
-            if type(cluster_cut) is int or type(cluster_cut) is float:
-                self.cluster_cut = np.array([float(cluster_cut)])
+        self.cluster_cut          = cluster_cut
+        self.extra_cluster_groups = extra_cluster_groups
+        self.itim_group           = itim_group
 
-        self.cluster_groups=cluster_groups
-        if cluster_groups is not None and not isinstance(cluster_groups, (list, tuple, np.ndarray)):
-            self.cluster_groups = [cluster_groups]
+        self._define_groups()
+        self._assign_radii(radii_dict)
+        self._sanity_checks()
 
-        if itim_group is None:
+        self.grid          = None
+        self.use_threads   = False
+        self.use_kdtree    = False
+        self.use_multiproc = multiproc
+
+
+    def _define_groups(self):
+        # we first make sure cluster_cut is either None, or an array
+        if self.cluster_cut is not None and not isinstance(self.cluster_cut, (list, tuple, np.ndarray)):
+            if type(self.cluster_cut) is int or type(self.cluster_cut) is float:
+                self.cluster_cut = np.array([float(self.cluster_cut)])
+        # same with extra_cluster_groups
+        if self.extra_cluster_groups is not None and not isinstance(self.extra_cluster_groups, (list, tuple, np.ndarray)):
+            self.extra_cluster_groups = [self.extra_cluster_groups]
+   
+        # fallback for itim_group 
+        if self.itim_group is None:
             self.itim_group = self.all_atoms
-        else:
-            self.itim_group = itim_group
+
+    def _assign_radii(self,radii_dict):
         try:
-            _groups = self.cluster_groups[:] # deep copy
+            _groups = self.extra_cluster_groups[:] # deep copy
         except:
             _groups = []
         _groups.append(self.itim_group)
@@ -116,25 +134,18 @@ class ITIM():
                 del _radii
                 del _types
 
-        self._sanity_checks()
-
-        self.grid=None
-        self.use_threads=False
-        self.use_kdtree=False
-        self.use_multiproc=multiproc
-
     def _sanity_checks(self):
 
-        # these are done at the beginning to prevent burdening the inner loops
         assert self.alpha > 0,                                           self.ALPHA_NEGATIVE
         assert self.alpha < np.amin(self.universe.dimensions[:3]),       self.ALPHA_LARGE
 
         assert self.target_mesh > 0,                                     self.MESH_NEGATIVE
         assert self.target_mesh < np.amin(self.universe.dimensions[:3]), self.MESH_LARGE
 
-        assert ( (self.cluster_cut is None) and (self.cluster_groups is  None) ) or (  (self.cluster_cut is not  None) and ( self.cluster_groups is not  None) ),self.UNDEFINED_CLUSTER_SEARCH
         if(self.cluster_cut is not None):
-            assert len(self.cluster_cut)== 1 or len(self.cluster_cut) == len(self.cluster_groups), self.MISMATCH_CLUSTER_SEARCH
+            assert len(self.cluster_cut)== 1 or len(self.cluster_cut) == 1+len(self.extra_cluster_groups), self.MISMATCH_CLUSTER_SEARCH
+        else:
+            assert self.extra_cluster_groups is None, self.UNDEFINED_CLUSTER_SEARCH
 
         try:
             np.arange(int(self.alpha/self.target_mesh))
@@ -218,6 +229,7 @@ class ITIM():
 
     def _assign_one_side(self,uplow,sorted_atoms,_x,_y,_z,
                         _radius,queue=None):
+        _layers=[]
         for layer in range(0,self.max_layers) :
             # this mask tells which lines have been touched.
             mask = self.mask[uplow][layer]
@@ -243,20 +255,28 @@ class ITIM():
 
                 # 3) if all lines have been touched, create a group that includes all atoms in this layer
                 if np.sum(mask) == len(mask):  #NOTE that checking len(mask[mask==0])==0 is slower.
-
+                    _inlayer_indices   = np.flatnonzero(self._seen[uplow]==layer+1)
+                    _inlayer_group     = self.cluster_group[_inlayer_indices]
                     if self.molecular == True:
-                        _indices = np.flatnonzero(self.itim_group.resids == self.cluster_group[atom].resid) # atom is an index to cluster_group (== liquid part of itim_group)
+                        # atom is an index to cluster_group (== liquid part of itim_group)
+                        _inlayer_resindices= _inlayer_group.resids-1
+                        # this is the group of molecules in the layer
+                        _inlayer_group   = self.universe.residues[_inlayer_resindices].atoms
+                        # now we need the indices within the cluster_group, of those atoms which are in the 
+                        # molecular layer group
+                        _indices = np.flatnonzero(np.in1d(self.cluster_group.atoms.ids,_inlayer_group.atoms.ids))
+                        # and update the tagged, sorted atoms
                         self._seen[uplow][_indices] = layer + 1 
+                        
+                    # one of the two layers (upper,lower) or both are empty
+                    assert _inlayer_group , self.EMPTY_LAYER  
 
-                    _layer_group = self.cluster_group[self._seen[uplow]==layer+1] # a subgroup of itim_group, whose members are in the actual side+layer
-
-                    assert _layer_group , self.EMPTY_LAYER  # one of the two layers (upper,lower) or both are empty
-
-                    self._layers[uplow].append(_layer_group)
-                    self.cluster_group.atoms.bfactors[self._seen[uplow]!=0] = self._seen[uplow][self._seen[uplow]!=0] # bfactor <- layer
+                    _layers.append(_inlayer_group)
                     break
-             
-
+        if(queue==None):
+            return _layers
+        else:
+            queue.put(_layers)
 
     def _init_NN_search(self,group):
         #NOTE: boxsize shape must be (6,), and the last three elements are overwritten in cKDTree:
@@ -273,8 +293,35 @@ class ITIM():
         self.KDTree=cKDTree(_pos,boxsize=_box[:6],copy_data=True)
 
     def _NN_query(self,position,qrange):
-        # TODO: modify to accept group of atoms (n_jobs=-1 could be used if more than x atoms supplied)
-        return self.KDTree.query_ball_point(position,qrange)
+        return self.KDTree.query_ball_point(position,qrange,n_jobs=-1)
+
+    def _do_cluster_analysis_DBSCAN(self):
+        """ Performs a cluster analysis using DBSCAN 
+
+            :returns [labels,counts]: lists of the id of the cluster to which every atom is belonging to, and of the number of elements in each cluster. 
+
+            Uses a slightly modified version of DBSCAN from sklearn.cluster
+            that takes periodic boundary conditions into account (through
+            cKDTree's boxsize option) and collects also the sizes of all 
+            clusters. This is on average O(N log N) thanks to the O(log N) 
+            scaling of the kdtree.
+
+        """
+        # TODO: extra_cluster_groups are not yet implemented
+        min_samples = 2 ;
+        _box=self.universe.coord.dimensions[:]
+        points = self.itim_group.atoms.positions[:]+np.array([0.,0.,_box[2]])/2.
+        tree = cKDTree(points,boxsize=_box[:6])
+        neighborhoods = np.array( [ np.array(neighbors) 
+                                for neighbors in tree.query_ball_point(points, self.cluster_cut,n_jobs=-1) ] )
+        n_neighbors = np.array([len(neighbors)
+                                for neighbors in neighborhoods])
+        labels = -np.ones(points.shape[0], dtype=np.intp)
+        counts = np.zeros(points.shape[0], dtype=np.intp)
+        core_samples = np.asarray(n_neighbors >= min_samples, dtype=np.uint8)
+        dbscan_inner(core_samples, neighborhoods, labels, counts)
+        return labels, counts
+
 
     def _do_cluster_analysis(self):
 
@@ -286,6 +333,7 @@ class ITIM():
         _box=self.universe.coord.dimensions[:]
 
         for _gid,_g in enumerate(self.cluster_groups):
+
             self._init_NN_search(_g)
 
             self.cluster_mask[_gid] = np.ones(_g.n_atoms, dtype=np.int8) * -1
@@ -298,9 +346,8 @@ class ITIM():
             _clusterid = 0
             _nn_id = 0
             _current_max_size=0
-
             for _aid, _atom  in enumerate(_g) :
-                if (_cluster_analyzed[_aid] == 0) :
+                if (_cluster_analyzed[_aid] == False) :
                     _cluster_analyzed[_aid] = True
                     _cluster_map[_aid] = _clusterid
                     _cluster_size[_clusterid]+=1
@@ -338,34 +385,6 @@ class ITIM():
     def assign_layers(self):
         """ Determine the ITIM layers.
 
-            Example:
-
-            >>> oandh1 = u.select_atoms("name OW")
-            >>> oxygens = u.select_atoms("name OW")
-            >>> radii=pytim_data.vdwradii(G43A1_TOP)
-            >>> interface = pytim.ITIM(u,alpha=2.00,itim_group=oandh1,max_layers=1,multiproc=True,radii_dict=radii,molecular=False)
-            >>> interface.assign_layers()
-            >>> l = interface.layers('both',1)
-            >>> print l
-            [<AtomGroup with 235 atoms> <AtomGroup with 238 atoms>]
-
-            >>> oandh1 = u.select_atoms("name OW")
-            >>> oxygens = u.select_atoms("name OW")
-            >>> radii=pytim_data.vdwradii(G43A1_TOP)
-            >>> interface = pytim.ITIM(u,alpha=2.00,itim_group=oandh1,max_layers=1,multiproc=True,radii_dict=radii,molecular=True)
-            >>> interface.assign_layers()
-            >>> l = interface.layers('both',1)
-            >>> print l
-            [<AtomGroup with 235 atoms> <AtomGroup with 238 atoms>]
-
-            >>> oandh1 = u.select_atoms("name OW HW1")
-            >>> oxygens = u.select_atoms("name OW")
-            >>> radii=pytim_data.vdwradii(G43A1_TOP)
-            >>> interface = pytim.ITIM(u,alpha=2.00,itim_group=oandh1,max_layers=1,multiproc=True,radii_dict=radii,molecular=True)
-            >>> interface.assign_layers()
-            >>> l = interface.layers('both',1)
-            >>> print l
-            [<AtomGroup with 470 atoms> <AtomGroup with 476 atoms>]
 
         """
         self._assign_mesh()
@@ -377,19 +396,28 @@ class ITIM():
                             dtype=int);
 
         utilities.rebox(self.universe)
-        
         if(self.cluster_cut is not None): # groups have been checked already in _sanity_checks()
-            self.cluster_group=self._do_cluster_analysis()
+            labels,counts = self._do_cluster_analysis_DBSCAN()
+            labels = np.array(labels)
+            label_max = np.argmax(counts) # the label of atoms in the largest cluster
+            ids_max   = np.where(labels==label_max)[0]  # the indices (within the group) of the 
+                                                        # atoms belonging to the largest cluster
+            self.cluster_group = self.itim_group[ids_max]
+            
         else:
             self.cluster_group=self.itim_group ;
+
         utilities.center(self.universe,self.cluster_group)
-                
-        self.itim_group.atoms.bfactors = -1
+               
+        # first we label all atoms in itim_group to be in the gas phase 
+        self.itim_group.atoms.bfactors = 0.5
+        # then all atoms in the larges group are labelled as liquid-like
+        self.cluster_group.atoms.bfactors = 0
 
         _radius=self.cluster_group.radii
         self._seen=[[],[]]
-        self._seen[up] =np.zeros(len(utilities.get_x(self.cluster_group)))
-        self._seen[low]=np.zeros(len(utilities.get_x(self.cluster_group)))
+        self._seen[up] =np.zeros(len(utilities.get_x(self.cluster_group)),dtype=np.int8)
+        self._seen[low]=np.zeros(len(utilities.get_x(self.cluster_group)),dtype=np.int8)
 
         _x=utilities.get_x(self.cluster_group)
         _y=utilities.get_y(self.cluster_group)
@@ -403,17 +431,30 @@ class ITIM():
             # so far, it justs exploit a simple scheme splitting
             # the calculation between the two sides. Would it be
             # possible to implement easily 2d domain decomposition?
-            proc=[[],[]] 
+            proc=[[],[]]
+            queue = [ Queue() , Queue() ] 
             proc[up]  = Process(target=self._assign_one_side,
-                                args=(up,sort[::-1],_x,_y,_z,_radius))
+                                args=(up,sort[::-1],_x,_y,_z,_radius,queue[up]))
             proc[low] = Process(target=self._assign_one_side,
-                                args=(low,sort[::] ,_x,_y,_z,_radius))
+                                args=(low,sort[::] ,_x,_y,_z,_radius,queue[low]))
 
             for p in proc: p.start()
+            for uplow  in [up,low]:
+                self._layers[uplow] = queue[uplow].get()
             for p in proc: p.join()
         else:
-            self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)
-            self._assign_one_side(low,sort,_x,_y,_z,_radius)
+            self._layers[up]   = self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)
+            self._layers[low] = self._assign_one_side(low,sort,_x,_y,_z,_radius)
+
+
+        # convert to numpy array 
+        self._layers = np.array(self._layers)
+        # assign bfactors to all layers
+        for uplow in [up,low]:
+            for _nlayer,_layer in enumerate(self._layers[uplow]):
+                _layer.bfactors = _nlayer+1 
+                
+
 
     def layers(self,side='both',*ids):
         """ Select one or more layers.
@@ -460,7 +501,6 @@ class ITIM():
             return self._layers[_side,_slice][:,0]
 
         return self._layers[_side,_slice]
-
 
 
 if __name__ == "__main__":
