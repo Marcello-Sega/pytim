@@ -455,7 +455,55 @@ class ITIM():
                 _layer.bfactors = _nlayer+1 
 
         self._layers = np.array(self._layers)
-                
+        # reset the interpolator        
+        self._interpolator=None
+
+
+    def _initialize_disance_interpolator(self):
+
+        if self._interpolator == None :
+            upper = self.layers('upper',1) 
+            lower = self.layers('lower',1) 
+            self._interpolator= [None,None]
+            self._surface_tri = [None,None] 
+            # it is not strictly necessary to perform the triangulatio here 
+            # (LinearNDInterpolator would take care), but in this way we 
+            # can return it later on
+            self._surface_tri[0] = Delaunay(upper.positions[:,0:2]) 
+            self._surface_tri[1] = Delaunay(lower.positions[:,0:2]) 
+            self._interpolator[0] = scipy.interpolate.LinearNDInterpolator(self._surface_tri[0],
+                                                               upper.positions[:,2])
+            self._interpolator[1] = scipy.interpolate.LinearNDInterpolator(self._surface_tri[1],
+                                                               lower.positions[:,2])
+            
+
+    def intrinsic_distance(self,group,return_triangulation=False):
+        """ Compute the relative position of a group of atoms from the first layers
+
+            :param AtomGroup group: compute the relative position for this group of atoms 
+
+            Example: TODO
+
+        """
+        elevation = self.interpolation(group.positions)
+        # positive values are outside the surface, negative inside
+        distance  = (elevation - group.positions) * np.sign(group.positions)
+        if return_triangulation == False:
+            return distance
+        else:
+            return [distance, self._surface_tri[0], self.surface_tri[1]]
+        
+            
+    def interpolator(self,positions):
+        self._initialize_disance_interpolator()
+        upper_set = group.positions[positions>=0]
+        lower_set = group.positions[positions< 0]
+        upper_int = self._interpolator[0](upper_set)
+        lower_int = self._interpolator[1](lower_set)
+        elevation = np.zeros(len(positions))
+        elevation[np.where(positions>=0)] = upper_int 
+        elevation[np.where(positions< 0)] = lower_int 
+        return elevation
 
 
     def layers(self,side='both',*ids):

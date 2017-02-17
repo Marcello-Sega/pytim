@@ -92,10 +92,3 @@ def center(universe, group):
     universe.coord.positions=np.column_stack((_x,_y,_z))
  
 
-def distance_from_planar_set(group,reference_group,cutoff=0):
-    # we need a cutoff to implement periodic boundary conditions
-    
-    tri = Delaunay(reference_group.positions[:,0:2]) 
-    index = tri.find_simplex(group.positions[:,0:2]) 
-    return tri,index
-    
