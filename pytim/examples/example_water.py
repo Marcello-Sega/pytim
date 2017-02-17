@@ -13,7 +13,6 @@ interface =pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4)#,multiproc=Tru
 pytim.lap()
 interface.assign_layers()
 pytim.lap()
-
 layer = interface.layers('upper',1)  # first layer, upper side
 print ("Interface computed. Upper layer:\n %s out of %s" % (layer,oxygens))
 

@@ -50,12 +50,194 @@ class Observable(object):
                 for atom in inp.atoms:
                     pos.append(self.fold_atom_around_first_atom_in_residue(atom))
         else:
-            print "input not valid for fold_around_first_atom_in_residue():",t,type(self.u.trajectory.ts),exit()
+            raise Exception("input not valid for fold_around_first_atom_in_residue()")
         return np.array(pos)
 
     @abstractmethod
     def compute(self,input):
-        print "Not implemented"
+        pass
+
+
+class InterRDF(rdf.InterRDF):
+    """ Calculates a radial distribution function of some observable from two groups. 
+
+        The two functions must return an array (of scalars or of vectors)
+        having the same size of the group. The scalar product between the
+        two functions is used to weight the distriution function.
+
+        :param AtomGroup g1:            1st group
+        :param AtomGroup g2:            2nd group
+        :param int nbins:               number of bins
+        :param ??? exclusion_block:
+        :param int start:               first frame
+        :param int stop:                last frame
+        :param int step:                frame stride
+        :param char excluded_dir:       project position vectors onto the plane orthogonal to 'z','y' or 'z' (TODO not used here, check & remove)
+        :param Observable observable:        observable calculated on the atoms in g1
+        :param Observable observable2:       observable calculated on the atoms in g2
+        :param array weights:           weights to be applied to the distribution function (mutually exclusive with observable/observable2)
+
+        .. math::
+
+              g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|) f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
+
+        TODO add a MolecularOrientation example
+        
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import numpy as np
+        >>> import pytim 
+        >>> from pytim import *
+        >>> from pytim.datafiles import *
+        >>> 
+        >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+        >>> L = np.min(u.dimensions[:3])
+        >>> oxygens = u.select_atoms("name OW") 
+        >>> radii=pytim_data.vdwradii(G43A1_TOP)
+        >>> 
+        >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,radii_dict=radii,cluster_cut=3.5)
+        >>> 
+        >>> for ts in u.trajectory[::50] : 
+        ...     interface.assign_layers()
+        ...     layer=interface.layers('upper',1)	
+        ...     if ts.frame==0 :
+        ...         rdf = observables.InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
+        ...     rdf.sample(ts)
+        >>> rdf.normalize()
+        >>> rdf.rdf[0]=0.0
+        >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf)))  #doctest:+SKIP
+
+
+        This results in the following RDF:
+
+        .. plot::
+
+            import MDAnalysis as mda
+            import numpy as np
+            import pytim 
+            from pytim.datafiles import *
+            from pytim.observables import * 
+            u = mda.Universe(WATER_GRO,WATER_XTC)
+            L = np.min(u.dimensions[:3])
+            oxygens = u.select_atoms("name OW") 
+            radii=pytim_data.vdwradii(G43A1_TOP)
+            interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,multiproc=True,radii_dict=radii,cluster_cut=3.5)
+            for ts in u.trajectory[::5] :
+                interface.assign_layers()
+                layer=interface.layers('upper',1)	
+                if ts.frame==0 :
+                    rdf=InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
+                rdf.sample(ts)
+            rdf.normalize()
+            rdf.rdf[0]=0.0
+            plt.plot(rdf.bins, rdf.rdf)
+            plt.show()
+
+
+        Example: dipole-dipole correlation on the surface (TODO)
+
+
+
+    """
+
+    def __init__(self, g1, g2,
+                 nbins=75, range=(0.0, 15.0), exclusion_block=None,
+                 start=None, stop=None, step=None,excluded_dir='z',
+                 observable=None,observable2=None,weights=None):
+        rdf.InterRDF.__init__(self, g1, g2, nbins=nbins, range=range,
+                              exclusion_block=exclusion_block,
+                              start=start, stop=stop, step=step)
+        self.nsamples=0
+        self.observable=observable
+        self.observable2=observable2
+        self.weights=weights
+     
+    def _single_frame(self):
+        if (self.observable is not None or 
+            self.observable2 is not None) and \
+            self.weights is not None:
+            raise Exception("Error, cannot specify both a function and weights in InterRDF()" )
+        if self.observable is not None or self.observable2 is not None:
+            if self.observable2 is None:
+                self.observable2 = self.observable
+
+                fg1 = self.observable.compute(self.g1)
+                fg2 = self.observable2.compute(self.g2)
+                if len(fg1)!=len(self.g1) or len(fg2)!=len(self.g2):
+                    raise Exception ("Error, the observable passed to InterRDF should output an array (of scalar or vectors) the same size of the group")
+                # both are (arrays of) scalars
+                if len(fg1.shape)==1 and len(fg2.shape)==1:
+                    _weights = np.outer(fg1,fg2)
+                # both are (arrays of) vectors
+                elif len(fg1.shape)==2 and len(fg2.shape)==2:
+                # TODO: tests on the second dimension...
+                    _weights = np.dot(fg1,fg2.T)
+                else :  
+                    raise Exception("Erorr, shape of the observable output not handled in InterRDF")
+                # numpy.histogram accepts negative weights
+                self.rdf_settings['weights']=_weights
+        if self.weights is not None:
+            raise Exception("Weights not implemented yet in InterRDF")
+        
+        #
+        rdf.InterRDF._single_frame(self)
+     
+    def sample(self,ts):
+        self._ts=ts
+        self._single_frame()
+        self.nsamples+=1
+     
+    def normalize(self):
+        self._conclude() # TODO fix variable group size; remove blocks support
+            # undo the normalization in InterRDF._conclude()
+        if self.nsamples>0:
+                self.rdf *= self.nframes**2 / self.nsamples**2 ;
+
+
+class InterRDF2D(InterRDF):
+    def __init__(self, g1, g2,
+                 nbins=75, range=(0.0, 15.0), exclusion_block=None,
+                 start=None, stop=None, step=None,excluded_dir='z',
+                 true2D=False, observable=None):
+        InterRDF.__init__(self, g1, g2,nbins=nbins, range=range,
+                          exclusion_block=exclusion_block,
+                          start=start, stop=stop, step=step,
+                          observable=observable)
+        self.true2D=true2D
+        if excluded_dir is 'z':
+                self.excluded_dir=2
+        if excluded_dir is 'y':
+                self.excluded_dir=1
+        if excluded_dir is 'x':
+                self.excluded_dir=0
+     
+    def _single_frame(self):
+        excl=self.excluded_dir
+        p1=self.g1.positions
+        p2=self.g2.positions
+        if self.true2D:
+                p1[:,excl]=0
+                p2[:,excl]=0
+        self.g1.positions=p1
+        self.g2.positions=p2
+        InterRDF._single_frame(self)
+        # TODO: works only for rectangular boxes
+        # we subtract the volume added for the 3d case,
+        # and we add the surface
+        self.volume += self._ts.volume*(1./self._ts.dimensions[excl]-1.)
+     
+    def _conclude(self):
+        InterRDF._conclude(self)
+        correction = 4./3.*np.pi * (np.power(self.edges[1:], 3) -
+                                    np.power(self.edges[:-1], 3))
+        correction /= np.pi * (np.power(self.edges[1:], 2) -
+                               np.power(self.edges[:-1], 2))
+        rdf = self.rdf * correction
+        self.rdf = rdf
+
+
+
 
 class LayerTriangulation(Observable):
     """ Computes the triangulation of the surface and some associated quantities
@@ -64,9 +246,11 @@ class LayerTriangulation(Observable):
             :param int     layer: (default: 1) compute the triangulation with respect to this layer of the interface
             :param bool    return_triangulation: (default: True) return the Delaunay triangulation used for the interpolation
             :param bool    return_statistics: (default: True) return the Delaunay triangulation used for the interpolation
+
+            :returns Observable LayerTriangulation:
     """ 
 
-    def __init__(self,universe,interface,layer=1,return_triangulation=True,return_statistics=True):
+    def __init__(self,interface,layer=1,return_triangulation=True,return_statistics=True):
         self.interface=interface
         self.layer=layer
         self.return_triangulation=return_triangulation
@@ -74,6 +258,16 @@ class LayerTriangulation(Observable):
 
     def compute(self,input=None):
         """ Compute the triangulation of a layer on both sides of the interface
+
+            Example:
+
+            >>> interface = pytim.ITIM(mda.Universe(WATER_GRO))
+            >>> surface   = observables.LayerTriangulation(interface)
+            >>> interface.assign_layers()
+            >>> stats, tri =  surface.compute()
+            >>> print ("Surface= {:04.1f} A^2".format(stats[0]))
+            Surface= 7317.1 A^2
+
         """
         stats = []
         self.interface.triangulate_layer(self.layer)
@@ -81,8 +275,8 @@ class LayerTriangulation(Observable):
         if self.return_triangulation is True and self.return_statistics is False:
             return self.interface.surface_triangulation
         if self.return_statistics is True:
-            stats_up  = utilities.triangulated_surface_stats(self.interface.surface_triangulation[0],self.interface.triangulation_heights[0],box)   
-            stats_low = utilities.triangulated_surface_stats(self.interface.surface_triangulation[1],self.interface.triangulation_heights[1],box)   
+            stats_up  = utilities.triangulated_surface_stats(self.interface.surface_triangulation[0],self.interface.triangulation_points[0],box)   
+            stats_low = utilities.triangulated_surface_stats(self.interface.surface_triangulation[1],self.interface.triangulation_points[1],box)   
             # this average depends on what is in the stats, it can't be done automatically
             stats.append(stats_up[0]+stats_low[0])
             # add here new stats other than total area
@@ -102,7 +296,7 @@ class IntrinsicDistance(Observable):
         Example: TODO
     """
 
-    def __init__(self,universe,interface,layer=1,return_triangulation=False):
+    def __init__(self,interface,layer=1,return_triangulation=False):
         self.interface=interface
         self.return_triangulation=return_triangulation
         self.layer=layer
@@ -122,7 +316,7 @@ class IntrinsicDistance(Observable):
         if t is AtomGroup:
             positions=input.positions
         elevation = self.interface.interpolate_surface(positions,self.layer)
-        assert np.sum(np.isnan(elevation))==0, "Internal error: a point has fallen outside the convex hull"
+        assert np.sum(np.isnan(elevation))==0 , "Internal error: a point has fallen outside the convex hull"
         # positive values are outside the surface, negative inside
         distance  = (positions[:,2]-elevation) * np.sign(positions[:,2])
         if self.return_triangulation == False:
@@ -130,7 +324,6 @@ class IntrinsicDistance(Observable):
         else:
             return [distance, interface.surface_triangulation[0], interface.surface_triangulation[1]]
  
-
 
 class Number(Observable):
     def compute(self,inp):
@@ -176,11 +369,6 @@ class Profile(object):
 
         Example:
 
-        >>> import MDAnalysis as mda
-        >>> import numpy as np
-        >>> from pytim  import *
-        >>> from pytim.datafiles   import *
-        >>> 
         >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
         >>> oxygens = u.select_atoms("name OW") 
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
@@ -246,7 +434,7 @@ class Profile(object):
         if self.interface is None:
             _pos    = self.pos[self._dir](self.group)      
         else:
-            _pos    = IntrinsicDistance(self.universe,self.interface).compute(self.group)
+            _pos    = IntrinsicDistance(self.interface).compute(self.group)
 
         _values = self.observable.compute(self.group)
         _nbins  = int(self.universe.trajectory.ts.dimensions[self._dir]/self.binsize)
@@ -258,7 +446,7 @@ class Profile(object):
         self.sampled_bins.append(_bins[1:]-self.binsize/2.) # these are the bins midpoints
     
     def profile(self,binwidth=None,nbins=None):
-        assert self.sampled_values, "No profile sampled so far."
+        assert self.sampled_values ,  "No profile sampled so far."
         # we use the largest box (largest number of bins) as reference. 
         # Statistics will be poor at the boundaries, but like that we don't loose information
         _max_bins  = np.max(map(lambda x: len(x),self.sampled_bins))
@@ -284,183 +472,6 @@ class Profile(object):
 
 
 
-class InterRDF(rdf.InterRDF):
-    """ Calculates a radial distribution function of some observable from two groups. 
-
-        The two functions must return an array (of scalars or of vectors)
-        having the same size of the group. The scalar product between the
-        two functions is used to weight the distriution function.
-
-        :param AtomGroup g1:            1st group
-        :param AtomGroup g2:            2nd group
-        :param int nbins:               number of bins
-        :param ??? exclusion_block:
-        :param int start:               first frame
-        :param int stop:                last frame
-        :param int step:                frame stride
-        :param char excluded_dir:       project position vectors onto the plane orthogonal to 'z','y' or 'z' (TODO not used here, check & remove)
-        :param Observable observable:        observable calculated on the atoms in g1
-        :param Observable observable2:       observable calculated on the atoms in g2
-        :param array weights:           weights to be applied to the distribution function (mutually exclusive with observable/observable2)
-
-        .. math::
-
-              g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|) f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
-
-        TODO add a MolecularOrientation example
-        
-        Example:
-
-        >>> import MDAnalysis as mda
-        >>> import numpy as np
-        >>> import pytim 
-        >>> from pytim.datafiles import *
-        >>> from pytim.observables import * 
-        >>> 
-        >>> u = mda.Universe(WATER_GRO,WATER_XTC)
-        >>> L = np.min(u.dimensions[:3])
-        >>> oxygens = u.select_atoms("name OW") 
-        >>> radii=pytim_data.vdwradii(G43A1_TOP)
-        >>> 
-        >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,multiproc=True,radii_dict=radii,cluster_cut=3.5)
-        >>> 
-        >>> for ts in u.trajectory[::50] : 
-        ...     interface.assign_layers()
-        ...     layer=interface.layers('upper',1)	
-        ...     if ts.frame==0 :
-        ...         rdf=InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
-        ...     rdf.sample(ts)
-        >>> rdf.normalize()
-        >>> rdf.rdf[0]=0.0
-        >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf)))  #doctest:+SKIP
-
-
-        This results in the following RDF:
-
-        .. plot::
-
-            import MDAnalysis as mda
-            import numpy as np
-            import pytim 
-            from pytim.datafiles import *
-            from pytim.observables import * 
-            u = mda.Universe(WATER_GRO,WATER_XTC)
-            L = np.min(u.dimensions[:3])
-            oxygens = u.select_atoms("name OW") 
-            radii=pytim_data.vdwradii(G43A1_TOP)
-            interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,multiproc=True,radii_dict=radii,cluster_groups=oxygens,cluster_cut=3.5)
-            for ts in u.trajectory[::5] :
-                interface.assign_layers()
-                layer=interface.layers('upper',1)	
-                if ts.frame==0 :
-                    rdf=InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
-                rdf.sample(ts)
-            rdf.normalize()
-            rdf.rdf[0]=0.0
-            plt.plot(rdf.bins, rdf.rdf)
-            plt.show()
-
-
-        Example: dipole-dipole correlation on the surface (TODO)
-
-
-
-    """
-
-    def __init__(self, g1, g2,
-                 nbins=75, range=(0.0, 15.0), exclusion_block=None,
-                 start=None, stop=None, step=None,excluded_dir='z',
-                 observable=None,observable2=None,weights=None):
-        rdf.InterRDF.__init__(self, g1, g2, nbins=nbins, range=range,
-                              exclusion_block=exclusion_block,
-                              start=start, stop=stop, step=step)
-        self.nsamples=0
-        self.observable=observable
-        self.observable2=observable2
-        self.weights=weights
-     
-    def _single_frame(self):
-        if (self.observable is not None or 
-            self.observable2 is not None) and \
-            self.weights is not None:
-            print "Error, cannot specify both a function and weights" 
-        if self.observable is not None or self.observable2 is not None:
-            if self.observable2 is None:
-                self.observable2 = self.observable
-
-                fg1 = self.observable.compute(self.g1)
-                fg2 = self.observable2.compute(self.g2)
-                if len(fg1)!=len(self.g1) or len(fg2)!=len(self.g2):
-                    print "Error, the observable should output an array (of scalar or vectors) the same size of the group",exit()
-                # both are (arrays of) scalars
-                if len(fg1.shape)==1 and len(fg2.shape)==1:
-                    _weights = np.outer(fg1,fg2)
-                # both are (arrays of) vectors
-                elif len(fg1.shape)==2 and len(fg2.shape)==2:
-                # TODO: tests on the second dimension...
-                    _weights = np.dot(fg1,fg2.T)
-                else :  
-                    print "Erorr, shape of the observable output not handled",exit()
-                # numpy.histogram accepts negative weights
-                self.rdf_settings['weights']=_weights
-        if self.weights is not None:
-            print "Weights not implemented yet",exit()
-        
-        #
-        rdf.InterRDF._single_frame(self)
-     
-    def sample(self,ts):
-        self._ts=ts
-        self._single_frame()
-        self.nsamples+=1
-     
-    def normalize(self):
-        self._conclude() # TODO fix variable group size; remove blocks support
-            # undo the normalization in InterRDF._conclude()
-        if self.nsamples>0:
-                self.rdf *= self.nframes**2 / self.nsamples**2 ;
-
-
-class InterRDF2D(InterRDF):
-    def __init__(self, g1, g2,
-                 nbins=75, range=(0.0, 15.0), exclusion_block=None,
-                 start=None, stop=None, step=None,excluded_dir='z',
-                 true2D=False, observable=None):
-        InterRDF.__init__(self, g1, g2,nbins=nbins, range=range,
-                          exclusion_block=exclusion_block,
-                          start=start, stop=stop, step=step,
-                          observable=observable)
-        self.true2D=true2D
-        if excluded_dir is 'z':
-                self.excluded_dir=2
-        if excluded_dir is 'y':
-                self.excluded_dir=1
-        if excluded_dir is 'x':
-                self.excluded_dir=0
-     
-    def _single_frame(self):
-        excl=self.excluded_dir
-        p1=self.g1.positions
-        p2=self.g2.positions
-        if self.true2D:
-                p1[:,excl]=0
-                p2[:,excl]=0
-        self.g1.positions=p1
-        self.g2.positions=p2
-        InterRDF._single_frame(self)
-        # TODO: works only for rectangular boxes
-        # we subtract the volume added for the 3d case,
-        # and we add the surface
-        self.volume += self._ts.volume*(1./self._ts.dimensions[excl]-1.)
-     
-    def _conclude(self):
-        InterRDF._conclude(self)
-        correction = 4./3.*np.pi * (np.power(self.edges[1:], 3) -
-                                    np.power(self.edges[:-1], 3))
-        correction /= np.pi * (np.power(self.edges[1:], 2) -
-                               np.power(self.edges[:-1], 2))
-        rdf = self.rdf * correction
-        self.rdf = rdf
 
 
 #

@@ -73,7 +73,7 @@ class ITIM():
         #TODO add type checking for each MDA class passed
         self.define_error_messages()
         self.universe=universe
-        assert type(universe)==MDAnalysis.core.AtomGroup.Universe, self.WRONG_UNIVERSE
+        assert type(universe)==MDAnalysis.core.AtomGroup.Universe , self.WRONG_UNIVERSE
         self.target_mesh=mesh
         self.alpha=alpha
         self.max_layers=max_layers
@@ -133,22 +133,22 @@ class ITIM():
                          pass # those types which are not listed in the dictionary
                               # will have radius==0. TODO handle this
                 _g.radii=_radii[:] #deep copy
-                assert np.all(_g.radii is not None), self.UNDEFINED_RADIUS
+                assert np.all(_g.radii is not None) , self.UNDEFINED_RADIUS
                 del _radii
                 del _types
 
     def _sanity_checks(self):
 
-        assert self.alpha > 0,                                           self.ALPHA_NEGATIVE
-        assert self.alpha < np.amin(self.universe.dimensions[:3]),       self.ALPHA_LARGE
+        assert self.alpha > 0 ,                                           self.ALPHA_NEGATIVE
+        assert self.alpha < np.amin(self.universe.dimensions[:3]) ,       self.ALPHA_LARGE
 
-        assert self.target_mesh > 0,                                     self.MESH_NEGATIVE
-        assert self.target_mesh < np.amin(self.universe.dimensions[:3]), self.MESH_LARGE
+        assert self.target_mesh > 0 ,                                     self.MESH_NEGATIVE
+        assert self.target_mesh < np.amin(self.universe.dimensions[:3]) , self.MESH_LARGE
 
         if(self.cluster_cut is not None):
-            assert len(self.cluster_cut)== 1 or len(self.cluster_cut) == 1+len(self.extra_cluster_groups), self.MISMATCH_CLUSTER_SEARCH
+            assert len(self.cluster_cut)== 1 or len(self.cluster_cut) == 1+len(self.extra_cluster_groups) , self.MISMATCH_CLUSTER_SEARCH
         else:
-            assert self.extra_cluster_groups is None, self.UNDEFINED_CLUSTER_SEARCH
+            assert self.extra_cluster_groups is None , self.UNDEFINED_CLUSTER_SEARCH
 
         try:
             np.arange(int(self.alpha/self.target_mesh))
@@ -455,7 +455,6 @@ class ITIM():
             for _nlayer,_layer in enumerate(self._layers[uplow]):
                 _layer.bfactors = _nlayer+1 
 
-        # self._layers = np.array(self._layers)
         # reset the interpolator        
         self._interpolator=None
 
@@ -487,7 +486,7 @@ class ITIM():
             :param int layer:  (default: 1) triangulate this layer (on both sides of the interface)
             :return list triangulations:  a list of two Delaunay triangulations, which are also stored in self.surface_triangulation
         """
-        assert len(self._layers[0])>=layer, self.UNDEFINED_LAYER
+        assert len(self._layers[0])>=layer , self.UNDEFINED_LAYER
         upper = self._layers[0][layer-1]
         lower = self._layers[1][layer-1]
 
@@ -495,11 +494,11 @@ class ITIM():
         lowerpos = self._generate_periodic_border_2D(lower.positions)
 
         self.surface_triangulation = [None,None] 
-        self.triangulation_heights = [None,None] 
+        self.triangulation_points= [None,None] 
         self.surface_triangulation[0] = Delaunay(upperpos[:,0:2]) 
         self.surface_triangulation[1] = Delaunay(lowerpos[:,0:2]) 
-        self.triangulation_heights[0] = upperpos[:,2]
-        self.triangulation_heights[1] = lowerpos[:,2]
+        self.triangulation_points[0] = upperpos[:]
+        self.triangulation_points[1] = lowerpos[:]
         return self.surface_triangulation
         
     def _initialize_distance_interpolator(self,layer):
@@ -511,9 +510,9 @@ class ITIM():
        
             self._interpolator= [None,None]
             self._interpolator[0] = LinearNDInterpolator(self.surface_triangulation[0],
-                                                         self.triangulation_heights[0])
+                                                         self.triangulation_points[0][:,2])
             self._interpolator[1] = LinearNDInterpolator(self.surface_triangulation[1],
-                                                         self.triangulation_heights[1])
+                                                         self.triangulation_points[1][:,2])
             
     def interpolate_surface(self,positions,layer):
         self._initialize_distance_interpolator(layer)
@@ -538,42 +537,35 @@ class ITIM():
         The slice can be used to select a single layer, or multiple, e.g. (using the example of the :class:`ITIM` class) :
 
         >>> interface.layers('upper')  # all layers, upper side
-        array([<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
-               <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>], dtype=object)
+        [<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>, <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>]
 
         >>> interface.layers('lower',1)  # first layer, lower side
         <AtomGroup with 406 atoms>
 
         >>> interface.layers('both',0,3) # 1st - 3rd layer, on both sides
-        array([[<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
-                <AtomGroup with 414 atoms>],
-               [<AtomGroup with 406 atoms>, <AtomGroup with 418 atoms>,
-                <AtomGroup with 399 atoms>]], dtype=object)
+        [[<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>, <AtomGroup with 414 atoms>], [<AtomGroup with 406 atoms>, <AtomGroup with 418 atoms>, <AtomGroup with 399 atoms>]]
 
         >>> interface.layers('lower',0,4,2) # 1st - 4th layer, with a stride of 2, lower side
-        array([<AtomGroup with 406 atoms>, <AtomGroup with 399 atoms>], dtype=object)
+        [<AtomGroup with 406 atoms>, <AtomGroup with 399 atoms>]
 
 
         """
-
         _options={'both':slice(None),'upper':0,'lower':1}
         _side=_options[side]
         if len(ids) == 0:
             _slice = slice(None)
         if len(ids) == 1:
-            _slice = slice(ids[0])
+            _slice = ids[0]-1
         if len(ids) == 2:
             _slice = slice(ids[0],ids[1])
         if len(ids) == 3:
             _slice = slice(ids[0],ids[1],ids[2])
 
-        if len(ids) == 1 and side != 'both':
-            return self._layers[_side,_slice][0]
+        if side != 'both':
+            return self._layers[_side][_slice]
+        else:
+            return [ sub[_slice] for sub in self._layers]
 
-        if len(ids) == 1 :
-            return self._layers[_side,_slice][:,0]
-
-        return self._layers[_side,_slice]
 
 
 if __name__ == "__main__":

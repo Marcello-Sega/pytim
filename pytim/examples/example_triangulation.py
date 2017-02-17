@@ -6,18 +6,14 @@ import pytim
 from pytim import *
 from pytim.datafiles import *
 
-u         = mda.Universe(WATER_GRO)
-oxygens   = u.select_atoms("name OW") 
-radii     = pytim_data.vdwradii(G43A1_TOP)
+interface = pytim.ITIM(mda.Universe(WATER_GRO))
+surface   = observables.LayerTriangulation(interface)
 
-interface = pytim.ITIM(u,alpha=2.,max_layers=1,multiproc=True)
-stats     = observables.LayerTriangulation(u,interface,return_triangulation=False)
 interface.assign_layers()
-print stats.compute()
 
+stats, tri =  surface.compute()
 
-bins, avg = profile.profile(binwidth=0.2)
-np.savetxt('intrdist.dat',list(zip(bins,avg)))
+print("The total triangulated surface has an area of {:04.1f} Angstrom^2".format(stats[0]))
 
 #subset=oxygens[::100]
 #print subset

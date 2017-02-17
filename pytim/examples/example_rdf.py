@@ -11,10 +11,10 @@ L = np.min(u.dimensions[:3])
 oxygens = u.select_atoms("name OW") 
 radii=pytim_data.vdwradii(G43A1_TOP)
 
-interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,multiproc=True,radii_dict=radii,cluster_groups=oxygens,cluster_cut=3.5)
+interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,radii_dict=radii,cluster_cut=3.5)
 
 for ts in u.trajectory[::5] :
-    print "frame",ts.frame,"/",len(u.trajectory)
+    print ("frame "+str(ts.frame)+" / "+str(len(u.trajectory)))
     interface.assign_layers()
     layer=interface.layers('upper',1)	
     if ts.frame==0 :

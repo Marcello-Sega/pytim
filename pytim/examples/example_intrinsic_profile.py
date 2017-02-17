@@ -11,7 +11,7 @@ oxygens   = u.select_atoms("name OW")
 radii     = pytim_data.vdwradii(G43A1_TOP)
 
 number    = observables.Number(u)
-interface = pytim.ITIM(u,alpha=2.,max_layers=1,multiproc=True)
+interface = pytim.ITIM(u,alpha=2.)
 
 profile   = observables.Profile(group=oxygens,observable=number, interface=interface)
 
