@@ -57,6 +57,80 @@ class Observable(object):
     def compute(self,input):
         print "Not implemented"
 
+class LayerTriangulation(Observable):
+    """ Computes the triangulation of the surface and some associated quantities
+            :param Universe universe: the MDAnalysis universe
+            :param ITIM    interface: compute the triangulation with respect to this interface
+            :param int     layer: (default: 1) compute the triangulation with respect to this layer of the interface
+            :param bool    return_triangulation: (default: True) return the Delaunay triangulation used for the interpolation
+            :param bool    return_statistics: (default: True) return the Delaunay triangulation used for the interpolation
+    """ 
+
+    def __init__(self,universe,interface,layer=1,return_triangulation=True,return_statistics=True):
+        self.interface=interface
+        self.layer=layer
+        self.return_triangulation=return_triangulation
+        self.return_statistics=return_statistics
+
+    def compute(self,input=None):
+        """ Compute the triangulation of a layer on both sides of the interface
+        """
+        stats = []
+        self.interface.triangulate_layer(self.layer)
+        box = self.interface.universe.dimensions[:3]
+        if self.return_triangulation is True and self.return_statistics is False:
+            return self.interface.surface_triangulation
+        if self.return_statistics is True:
+            stats_up  = utilities.triangulated_surface_stats(self.interface.surface_triangulation[0],self.interface.triangulation_heights[0],box)   
+            stats_low = utilities.triangulated_surface_stats(self.interface.surface_triangulation[1],self.interface.triangulation_heights[1],box)   
+            # this average depends on what is in the stats, it can't be done automatically
+            stats.append(stats_up[0]+stats_low[0])
+            # add here new stats other than total area
+            if self.return_triangulation is False :
+                return stats
+            else:
+                return [stats, self.interface.surface_triangulation]
+         
+
+class IntrinsicDistance(Observable):
+    """ Initialize the intrinsic distance calculation
+            :param Universe universe: the MDAnalysis universe
+            :param ITIM    interface: compute the intrinsic distance with respect to this interface
+            :param int     layer: (default: 1) compute the intrinsic distance with respect to this layer of the interface
+            :param bool    return_triangulation: (default: False) return the Delaunay triangulation used for the interpolation
+
+        Example: TODO
+    """
+
+    def __init__(self,universe,interface,layer=1,return_triangulation=False):
+        self.interface=interface
+        self.return_triangulation=return_triangulation
+        self.layer=layer
+
+    def compute(self,input):
+        """ Compute the intrinsic distance of a set of points from the first layers
+            :param ndarray positions: compute the intrinsic distance for this set of points
+
+            Example: TODO
+
+        """
+        t = type(input)
+        if t is np.ndarray:
+            positions = input 
+        if t is Atom:
+            positions=input.position 
+        if t is AtomGroup:
+            positions=input.positions
+        elevation = self.interface.interpolate_surface(positions,self.layer)
+        assert np.sum(np.isnan(elevation))==0, "Internal error: a point has fallen outside the convex hull"
+        # positive values are outside the surface, negative inside
+        distance  = (positions[:,2]-elevation) * np.sign(positions[:,2])
+        if self.return_triangulation == False:
+            return distance
+        else:
+            return [distance, interface.surface_triangulation[0], interface.surface_triangulation[1]]
+ 
+
 
 class Number(Observable):
     def compute(self,inp):
@@ -171,14 +245,17 @@ class Profile(object):
         self._box=self.universe.dimensions[:3]
         if self.interface is None:
             _pos    = self.pos[self._dir](self.group)      
-            _values = self.observable.compute(self.group)
-            _nbins  = int(self.universe.trajectory.ts.dimensions[self._dir]/self.binsize)
-            _avg, _bins, _binnumber = stats.binned_statistic(_pos, _values, 
-                                                             range=[-self._box[self._dir]/2.,self._box[self._dir]/2.],
-                                                             statistic='sum',bins=_nbins)
-            _avg[np.isnan(_avg)]=0.0
-            self.sampled_values.append(_avg)
-            self.sampled_bins.append(_bins[1:]-self.binsize/2.) # these are the bins midpoints
+        else:
+            _pos    = IntrinsicDistance(self.universe,self.interface).compute(self.group)
+
+        _values = self.observable.compute(self.group)
+        _nbins  = int(self.universe.trajectory.ts.dimensions[self._dir]/self.binsize)
+        _avg, _bins, _binnumber = stats.binned_statistic(_pos, _values, 
+                                                         range=[-self._box[self._dir]/2.,self._box[self._dir]/2.],
+                                                         statistic='sum',bins=_nbins)
+        _avg[np.isnan(_avg)]=0.0
+        self.sampled_values.append(_avg)
+        self.sampled_bins.append(_bins[1:]-self.binsize/2.) # these are the bins midpoints
     
     def profile(self,binwidth=None,nbins=None):
         assert self.sampled_values, "No profile sampled so far."

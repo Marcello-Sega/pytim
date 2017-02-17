@@ -6,15 +6,19 @@ import pytim
 from pytim import *
 from pytim.datafiles import *
 
-u         = mda.Universe(WATER_GRO)
+u         = mda.Universe(WATER_GRO,WATER_XTC)
 oxygens   = u.select_atoms("name OW") 
 radii     = pytim_data.vdwradii(G43A1_TOP)
 
+number    = observables.Number(u)
 interface = pytim.ITIM(u,alpha=2.,max_layers=1,multiproc=True)
-stats     = observables.LayerTriangulation(u,interface,return_triangulation=False)
-interface.assign_layers()
-print stats.compute()
 
+profile   = observables.Profile(group=oxygens,observable=number, interface=interface)
+
+for t in u.trajectory[::]:
+    print t.frame
+    interface.assign_layers()
+    profile.sample()
 
 bins, avg = profile.profile(binwidth=0.2)
 np.savetxt('intrdist.dat',list(zip(bins,avg)))

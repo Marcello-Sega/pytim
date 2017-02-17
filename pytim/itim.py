@@ -9,6 +9,7 @@
 from multiprocessing import Process, Queue
 import numpy as np
 from scipy.spatial import *
+from scipy.interpolate import *
 from MDAnalysis.core.AtomGroup   import *
 from pytim.datafiles import *
 from pytim import utilities
@@ -58,8 +59,9 @@ class ITIM():
         self.MISMATCH_CLUSTER_SEARCH= "cluster_cut in %s.%s should be either a scalar or an array matching the number of groups (including itim_group" % ( (__name__) , (self.__class__.__name__) )
         self.EMPTY_LAYER="One or more layers are empty"
         self.CLUSTER_FAILURE="Cluster algorithm failed: too small cluster cutoff provided?"
-        self.UNDEFINED_LAYER="No layer defined: forgot to call assign_layers() ?"
+        self.UNDEFINED_LAYER="No layer defined: forgot to call assign_layers() or not enough layers requested"
         self.WRONG_UNIVERSE="Wrong Universe passed to ITIM class"
+        
 
 
 
@@ -448,61 +450,82 @@ class ITIM():
             self._layers[low] = self._assign_one_side(low,sort,_x,_y,_z,_radius)
 
 
-        # convert to numpy array 
         # assign bfactors to all layers
         for uplow in [up,low]:
             for _nlayer,_layer in enumerate(self._layers[uplow]):
                 _layer.bfactors = _nlayer+1 
 
-        self._layers = np.array(self._layers)
+        # self._layers = np.array(self._layers)
         # reset the interpolator        
         self._interpolator=None
 
+    def _generate_periodic_border_2D(self, positions):
+        _box = self.universe.coord.dimensions[:3]
 
-    def _initialize_disance_interpolator(self):
+        shift=np.diagflat(_box)
+        eps = min(2.*self.alpha,_box[0],_box[1])
+        L = [eps,eps] 
+        U = [_box[0] - eps  , _box[1] - eps  ]
 
-        if self._interpolator == None :
-            upper = self.layers('upper',1) 
-            lower = self.layers('lower',1) 
-            self._interpolator= [None,None]
-            self._surface_tri = [None,None] 
-            # it is not strictly necessary to perform the triangulatio here 
-            # (LinearNDInterpolator would take care), but in this way we 
-            # can return it later on
-            self._surface_tri[0] = Delaunay(upper.positions[:,0:2]) 
-            self._surface_tri[1] = Delaunay(lower.positions[:,0:2]) 
-            self._interpolator[0] = scipy.interpolate.LinearNDInterpolator(self._surface_tri[0],
-                                                               upper.positions[:,2])
-            self._interpolator[1] = scipy.interpolate.LinearNDInterpolator(self._surface_tri[1],
-                                                               lower.positions[:,2])
-            
+        pos=positions[:]
 
-    def intrinsic_distance(self,group,return_triangulation=False):
-        """ Compute the relative position of a group of atoms from the first layers
+        Lx= positions[positions[:,0]<=L[0]]+shift[0] 
+        Ly= positions[positions[:,1]<=L[1]]+shift[1]
+        Ux= positions[positions[:,0]>=U[0]]-shift[0]
+        Uy= positions[positions[:,1]>=U[1]]-shift[1]
 
-            :param AtomGroup group: compute the relative position for this group of atoms 
-
-            Example: TODO
-
-        """
-        elevation = self.interpolation(group.positions)
-        # positive values are outside the surface, negative inside
-        distance  = (elevation - group.positions) * np.sign(group.positions)
-        if return_triangulation == False:
-            return distance
-        else:
-            return [distance, self._surface_tri[0], self.surface_tri[1]]
+        LxLy = positions[np.logical_and(positions[:,0]<=L[0], positions[:,1]<=L[1])] + (shift[0]+shift[1])
+        UxUy = positions[np.logical_and(positions[:,0]>=U[0], positions[:,1]>=U[1])] - (shift[0]+shift[1])
+        LxUy = positions[np.logical_and(positions[:,0]<=L[0], positions[:,1]>=U[1])] + (shift[0]-shift[1])
+        UxLy = positions[np.logical_and(positions[:,0]>=U[0], positions[:,1]<=L[1])] - (shift[0]-shift[1])
         
+        return np.concatenate((pos,Lx,Ly,Ux,Uy,LxLy,UxUy,LxUy,UxLy))
+
+    def triangulate_layer(self,layer=1):
+        """ Triangulate a layer 
+
+            :param int layer:  (default: 1) triangulate this layer (on both sides of the interface)
+            :return list triangulations:  a list of two Delaunay triangulations, which are also stored in self.surface_triangulation
+        """
+        assert len(self._layers[0])>=layer, self.UNDEFINED_LAYER
+        upper = self._layers[0][layer-1]
+        lower = self._layers[1][layer-1]
+
+        upperpos = self._generate_periodic_border_2D(upper.positions)
+        lowerpos = self._generate_periodic_border_2D(lower.positions)
+
+        self.surface_triangulation = [None,None] 
+        self.triangulation_heights = [None,None] 
+        self.surface_triangulation[0] = Delaunay(upperpos[:,0:2]) 
+        self.surface_triangulation[1] = Delaunay(lowerpos[:,0:2]) 
+        self.triangulation_heights[0] = upperpos[:,2]
+        self.triangulation_heights[1] = lowerpos[:,2]
+        return self.surface_triangulation
+        
+    def _initialize_distance_interpolator(self,layer):
+        if self._interpolator == None :
+            # we don't know if previous triangulations have been done on the same
+            # layer, so just in case we repeat it here. This can be fixed in principle 
+            # with a switch
+            self.triangulate_layer(layer)
+       
+            self._interpolator= [None,None]
+            self._interpolator[0] = LinearNDInterpolator(self.surface_triangulation[0],
+                                                         self.triangulation_heights[0])
+            self._interpolator[1] = LinearNDInterpolator(self.surface_triangulation[1],
+                                                         self.triangulation_heights[1])
             
-    def interpolator(self,positions):
-        self._initialize_disance_interpolator()
-        upper_set = group.positions[positions>=0]
-        lower_set = group.positions[positions< 0]
-        upper_int = self._interpolator[0](upper_set)
-        lower_int = self._interpolator[1](lower_set)
+    def interpolate_surface(self,positions,layer):
+        self._initialize_distance_interpolator(layer)
+        upper_set = positions[positions[:,2]>=0]
+        lower_set = positions[positions[:,2]< 0]
+        #interpolated values of upper/lower_set on the upper/lower surface
+        upper_int = self._interpolator[0](upper_set[:,0:2])
+        lower_int = self._interpolator[1](lower_set[:,0:2])
+        #copy everything back to one array with the correct order
         elevation = np.zeros(len(positions))
-        elevation[np.where(positions>=0)] = upper_int 
-        elevation[np.where(positions< 0)] = lower_int 
+        elevation[np.where(positions[:,2]>=0)] = upper_int 
+        elevation[np.where(positions[:,2]< 0)] = lower_int 
         return elevation
 
 

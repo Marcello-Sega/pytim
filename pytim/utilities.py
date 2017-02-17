@@ -91,4 +91,36 @@ def center(universe, group):
     # finally, we copy everything back
     universe.coord.positions=np.column_stack((_x,_y,_z))
  
+def trim_triangulated_surface(tri,box):
+    """ Reduce a surface triangulation that has been extended to allow for periodic boundary conditions
+        to the primary cell.
+
+        The simplices within the primary cell are those with at least two vertices within the cell boundaries.
+
+        :param Delaunay tri: a 2D triangulation
+        :param ndarray  box: box cell parameters
+        :returns ndarray simplices: the simplices within the primary cell.
+    """
+    return tri.simplices[np.logical_and(tri.simplices<=box[:2],tri.simplices>0).sum(axis=1)>=2]
+
+def triangulated_surface_stats(tri,points3d,box):
+    """ Return basic statistics about a surface triangulation 
+
+        Implemented statistics are: surface area
+
+        :param Delaunay tri   : a 2D triangulation
+        :param ndarray values : the heigth of each vertex along the third dimension
+        :param ndarray  box   : box cell parameters
+        :returns list stats   : the statistics :  [surface_area]
+    """
+
+    # TODO: write a more efficient routine
+    reduced = trim_triangulated_surface(tri,box)
+    area=0
+    for triangle in reduced:
+        v=values[triangle]-values[triangle[0]]
+        area+=np.linalg.norm(np.cross(v[1],v[2]))
+    return [area]
+     
+
 
