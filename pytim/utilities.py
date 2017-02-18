@@ -104,24 +104,22 @@ def trim_triangulated_surface(tri,box):
     return tri.simplices[np.where((np.logical_and(tri.points[tri.simplices]<=box[0:2],
                                                   tri.points[tri.simplices]>[0,0]).sum(axis=2)>=2).sum(axis=1)>=2)]
 
-def triangulated_surface_stats(tri2d,points3d,box):
+def triangulated_surface_stats(tri2d,points3d):
     """ Return basic statistics about a surface triangulation 
 
         Implemented statistics are: surface area
 
-        :param Delaunay tri2d    : a 2D triangulation
+        :param tri2d             : indices of triangles vertices 
         :param ndarray  points3d : the heigth of each vertex along the third dimension
-        :param ndarray  box      : box cell parameters
         :returns list stats      : the statistics :  [surface_area]
     """
 
     # TODO: write a more efficient routine ? 
-    reduced = trim_triangulated_surface(tri2d,box)
     # some advanced indexing here...
     # points3d[reduced] is an array of shape (x,3,3)
     # we need to subtract the first of the three vectors 
     # from each of them. This uses numpy.newaxis
-    v = points3d[reduced]-points3d[reduced][:,0][:,None]
+    v = points3d[tri2d]-points3d[tri2d][:,0][:,None]
     # then we need to make the cross product of the two 
     # non-zero vectors of each triplet 
     area = np.linalg.norm(np.cross(v[:,1],v[:,2]),axis=1).sum()/2.

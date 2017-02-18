@@ -487,6 +487,9 @@ class ITIM():
             :return list triangulations:  a list of two Delaunay triangulations, which are also stored in self.surface_triangulation
         """
         assert len(self._layers[0])>=layer , self.UNDEFINED_LAYER
+
+        box = self.universe.dimensions[:3]
+
         upper = self._layers[0][layer-1]
         lower = self._layers[1][layer-1]
 
@@ -494,11 +497,14 @@ class ITIM():
         lowerpos = self._generate_periodic_border_2D(lower.positions)
 
         self.surface_triangulation = [None,None] 
+        self.trimmed_surface_triangles = [None,None] 
         self.triangulation_points= [None,None] 
         self.surface_triangulation[0] = Delaunay(upperpos[:,0:2]) 
         self.surface_triangulation[1] = Delaunay(lowerpos[:,0:2]) 
         self.triangulation_points[0] = upperpos[:]
         self.triangulation_points[1] = lowerpos[:]
+        self.trimmed_surface_triangles[0] = utilities.trim_triangulated_surface(self.surface_triangulation[0],box)
+        self.trimmed_surface_triangles[1] = utilities.trim_triangulated_surface(self.surface_triangulation[1],box)
         return self.surface_triangulation
         
     def _initialize_distance_interpolator(self,layer):

@@ -275,15 +275,17 @@ class LayerTriangulation(Observable):
         if self.return_triangulation is True and self.return_statistics is False:
             return self.interface.surface_triangulation
         if self.return_statistics is True:
-            stats_up  = utilities.triangulated_surface_stats(self.interface.surface_triangulation[0],self.interface.triangulation_points[0],box)   
-            stats_low = utilities.triangulated_surface_stats(self.interface.surface_triangulation[1],self.interface.triangulation_points[1],box)   
+            stats_up  = utilities.triangulated_surface_stats(self.interface.trimmed_surface_triangles[0],
+                                                             self.interface.triangulation_points[0])   
+            stats_low = utilities.triangulated_surface_stats(self.interface.trimmed_surface_triangles[1],
+                                                             self.interface.triangulation_points[1])   
             # this average depends on what is in the stats, it can't be done automatically
             stats.append(stats_up[0]+stats_low[0])
             # add here new stats other than total area
             if self.return_triangulation is False :
                 return stats
             else:
-                return [stats, self.interface.surface_triangulation]
+                return [stats, self.interface.surface_triangulation, self.interface.triangulation_points, self.interface.trimmed_surface_triangles ]
          
 
 class IntrinsicDistance(Observable):
