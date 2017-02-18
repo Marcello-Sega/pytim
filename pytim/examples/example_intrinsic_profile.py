@@ -3,8 +3,8 @@
 import MDAnalysis as mda
 import numpy as np 
 import pytim
-from pytim import *
-from pytim.datafiles import *
+from   pytim import observables
+from   pytim.datafiles import *
 
 u         = mda.Universe(WATER_GRO,WATER_XTC)
 oxygens   = u.select_atoms("name OW") 
@@ -20,22 +20,32 @@ for t in u.trajectory[::]:
     interface.assign_layers()
     profile.sample()
 
-bins, avg = profile.profile(binwidth=0.2)
-np.savetxt('intrdist.dat',list(zip(bins,avg)))
+bins, avg = profile.profile(binwidth=0.1)
+np.savetxt('intrdist.dat',list(zip(bins,avg)),fmt=['%.5f','%e'])
 
-#subset=oxygens[::100]
-#print subset
-#tri, index = pytim.distance_from_planar_set(subset,layer)
-#print tri
-#print index,len(index)
-#
-#pytim.lap()
-#
-#import matplotlib.pyplot as plt
-#plt.triplot(layer.positions[:,0], layer.positions[:,1],tri.simplices.copy())
-#plt.plot(subset.positions[:,0], subset.positions[:,1], 'o')
-#plt.triplot(layer.positions[:,0], layer.positions[:,1],tri.simplices[index].copy(),lw=4)
-#plt.show()
+# the maximum, excluding the delta contribution
+
+values = np.loadtxt('intrdist.dat')
+import matplotlib.pyplot as plt
+
+plt.plot(values[:,0],values[:,1])
+
+maxval = np.max(avg[:len(bins)/2-1])
+plt.ylim((0,maxval*1.5))
+plt.xlim((-20,10))
+
+try:
+    # nice latex labels for publication-ready figures, in case
+    plt.rc('text', usetex=True)
+    plt.rc('font', family='serif')
+    plt.xlabel(r'$\xi/\AA$')
+    plt.ylabel(r'$\rho  \AA^3$')
+except:
+    pass
+
+plt.savefig("intrinsic.pdf") 
+print("Intrinsic profile saved in intrinsic.pdf")
+plt.show()
     
 
 

@@ -3,11 +3,11 @@
 import MDAnalysis as mda
 import numpy as np
 import pytim  
-from pytim.datafiles import *
+from   pytim.datafiles import *
 
-u       = mda.Universe(WATER_GRO,WATER_GRO)
-g       = u.select_atoms('all')
+u       = mda.Universe(WATER_GRO)
 radii=pytim_data.vdwradii(G43A1_TOP)
-interface =pytim.ITIM(u,max_layers=4,molecular=True,multiproc=True,cluster_cut=3.5)
+
+interface =pytim.ITIM(u,max_layers=4,molecular=True,cluster_cut=3.5)
 interface.assign_layers()
 interface.writepdb('layers.pdb')

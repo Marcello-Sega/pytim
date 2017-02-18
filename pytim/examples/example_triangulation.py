@@ -3,8 +3,8 @@
 import MDAnalysis as mda
 import numpy as np 
 import pytim
-from pytim import *
-from pytim.datafiles import *
+from   pytim import observables
+from   pytim.datafiles import *
 
 interface = pytim.ITIM(mda.Universe(WATER_GRO))
 box       = interface.universe.dimensions[:3] 
@@ -25,8 +25,7 @@ print("The total triangulated surface has an area of {:04.1f} Angstrom^2".format
 # plot the triangulation using matplotlib
 try:
     import matplotlib
-    matplotlib.use('TkAgg')
-    from mpl_toolkits.mplot3d import Axes3D
+    from   mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     import matplotlib.tri as mtplt_tri
 except: 

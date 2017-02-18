@@ -262,9 +262,9 @@ class LayerTriangulation(Observable):
             Example:
 
             >>> interface = pytim.ITIM(mda.Universe(WATER_GRO))
-            >>> surface   = observables.LayerTriangulation(interface)
+            >>> surface   = observables.LayerTriangulation(interface,return_triangulation=False)
             >>> interface.assign_layers()
-            >>> stats, tri =  surface.compute()
+            >>> stats =  surface.compute()
             >>> print ("Surface= {:04.1f} A^2".format(stats[0]))
             Surface= 7317.1 A^2
 
@@ -440,6 +440,10 @@ class Profile(object):
 
         _values = self.observable.compute(self.group)
         _nbins  = int(self.universe.trajectory.ts.dimensions[self._dir]/self.binsize)
+        # we need to make sure that the number of bins is odd, so that the central one encompasses 
+        # zero (to make the delta-function contribution appear always in this bin)
+        if(_nbins % 2 >= 0 ):
+            _nbins+=1
         _avg, _bins, _binnumber = stats.binned_statistic(_pos, _values, 
                                                          range=[-self._box[self._dir]/2.,self._box[self._dir]/2.],
                                                          statistic='sum',bins=_nbins)
@@ -460,6 +464,8 @@ class Profile(object):
                 _nbins = nbins
             else:
                 _nbins = _max_size/binwidth
+        if(_nbins % 2 > 0 ):
+            _nbins+=1
 
         # TODO sanity check on binwidth and nbins missing
 
