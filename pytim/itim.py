@@ -46,7 +46,7 @@ class ITIM(pytim.PYTIM):
         # TODO Add here an example on how to use the variuos other options
     """
 
-    def __init__(self,universe,mesh=0.4,alpha=2.0,itim_group=None,radii_dict=None,
+    def __init__(self,universe,mesh=0.4,alpha=2.0,normal='guess',itim_group=None,radii_dict=None,
                  max_layers=1,cluster_cut=None,molecular=True,extra_cluster_groups=None,
                  info=False,multiproc=True):
 
@@ -56,6 +56,7 @@ class ITIM(pytim.PYTIM):
         self.alpha=alpha
         self.max_layers=max_layers
         self.info=info
+        self.normal=None
         try: 
             self.all_atoms = self.universe.select_atoms('all')
         except:
@@ -68,6 +69,8 @@ class ITIM(pytim.PYTIM):
         self.itim_group           = itim_group
 
         self._define_groups()
+
+        self._assign_normal(normal)
         self.assign_radii(radii_dict)
         self._sanity_checks()
 
@@ -76,24 +79,32 @@ class ITIM(pytim.PYTIM):
         self.use_kdtree    = True
         self.use_multiproc = multiproc
 
+    def _assign_normal(self,normal):
 
+        assert self.itim_group is not None, self.UNDEFINED_ITIM_GROUP
+        if normal=='guess':
+            self.normal=utilities.guess_normal(self.universe,self.itim_group)
+        else:
+            assert normal in self.directions_dict, self.WRONG_DIRECTION
+            self.normal = self.directions_dict[normal]
+            
     def _assign_mesh(self):
         """ determine a mesh size for the testlines that is compatible with the simulation box
         """
-        self.mesh_nx=int(np.ceil(self.universe.coord.dimensions[0]/
-                         self.target_mesh))
-        self.mesh_ny=int(np.ceil(self.universe.coord.dimensions[1]/
-                         self.target_mesh))
-        self.mesh_dx=self.universe.coord.dimensions[0]/self.mesh_nx
-        self.mesh_dy=self.universe.coord.dimensions[1]/self.mesh_ny
+        box = utilities.get_box(self.universe,self.normal)
+        self.mesh_nx=int(np.ceil(box[0]/self.target_mesh))
+        self.mesh_ny=int(np.ceil(box[1]/self.target_mesh))
+        self.mesh_dx=box[0]/self.mesh_nx
+        self.mesh_dy=box[1]/self.mesh_ny
         self.delta=np.minimum(self.mesh_dx,self.mesh_dy)/10.
         if(self.use_kdtree==True):
-            _box = self.universe.coord.dimensions  # TODO normals other than Z!
-            _x,_y = np.mgrid[0:_box[0]:self.mesh_dx ,  0:_box[1]:self.mesh_dy]
+            _x,_y = np.mgrid[0:box[0]:self.mesh_dx ,  0:box[1]:self.mesh_dy]
             self.meshpoints = builtin_zip(_x.ravel(), _y.ravel())
             # cKDTree requires a box vetor with length double the dimension, see other note
             # in this module
-            self.meshtree   = cKDTree(self.meshpoints,boxsize=_box[:4])
+            _box=np.arange(4)
+            _box[:2]=box[:2]
+            self.meshtree   = cKDTree(self.meshpoints,boxsize=_box)
 
     def _touched_lines(self,atom,_x,_y,_z,_radius):
         # NOTE: kdtree might be slower than bucketing in some cases
@@ -224,7 +235,11 @@ class ITIM(pytim.PYTIM):
         self.mask=np.zeros((2,self.max_layers,self.mesh_nx*self.mesh_ny),
                             dtype=int);
 
-        utilities.rebox(self.universe)
+        # this can be used later to shift back to the original shift
+        self.reference_position=self.universe.atoms[0].position[:]
+
+        self.universe.atoms.pack_into_box()
+
         if(self.cluster_cut is not None): # groups have been checked already in _sanity_checks()
             labels,counts = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],self.universe.dimensions[:6])
             labels = np.array(labels)
@@ -236,7 +251,8 @@ class ITIM(pytim.PYTIM):
         else:
             self.cluster_group=self.itim_group ;
 
-        utilities.center(self.universe,self.cluster_group)
+
+        self.center(self.cluster_group,self.normal)
                
         # first we label all atoms in itim_group to be in the gas phase 
         self.itim_group.atoms.bfactors = 0.5
@@ -245,12 +261,13 @@ class ITIM(pytim.PYTIM):
 
         _radius=self.cluster_group.radii
         self._seen=[[],[]]
-        self._seen[up] =np.zeros(len(utilities.get_x(self.cluster_group)),dtype=np.int8)
-        self._seen[low]=np.zeros(len(utilities.get_x(self.cluster_group)),dtype=np.int8)
+        size = len(self.cluster_group.positions)
+        self._seen[up] =np.zeros(size,dtype=np.int8)
+        self._seen[low]=np.zeros(size,dtype=np.int8)
 
-        _x=utilities.get_x(self.cluster_group)
-        _y=utilities.get_y(self.cluster_group)
-        _z=utilities.get_z(self.cluster_group)
+        _x=utilities.get_x(self.cluster_group,self.normal)
+        _y=utilities.get_y(self.cluster_group,self.normal)
+        _z=utilities.get_z(self.cluster_group,self.normal)
 
         self._layers=[[],[]]
         sort = np.argsort( _z + _radius * np.sign(_z) )
@@ -273,7 +290,7 @@ class ITIM(pytim.PYTIM):
             for p in proc: p.join()
         else:
             self._layers[up]   = self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)
-            self._layers[low] = self._assign_one_side(low,sort,_x,_y,_z,_radius)
+            self._layers[low]  = self._assign_one_side(low,sort,_x,_y,_z,_radius)
 
 
         # assign bfactors to all layers
@@ -284,16 +301,18 @@ class ITIM(pytim.PYTIM):
         # reset the interpolator        
         self._interpolator=None
 
-    def _generate_periodic_border_2D(self, positions):
-        _box = self.universe.coord.dimensions[:3]
+    def _generate_periodic_border_2D(self, group):
+        _box = utilities.get_box(group.universe,self.normal)
+
+        positions=utilities.get_pos(group,self.normal)
 
         shift=np.diagflat(_box)
+
         eps = min(2.*self.alpha,_box[0],_box[1])
         L = [eps,eps] 
         U = [_box[0] - eps  , _box[1] - eps  ]
 
         pos=positions[:]
-
         Lx= positions[positions[:,0]<=L[0]]+shift[0] 
         Ly= positions[positions[:,1]<=L[1]]+shift[1]
         Ux= positions[positions[:,0]>=U[0]]-shift[0]
@@ -319,8 +338,8 @@ class ITIM(pytim.PYTIM):
         upper = self._layers[0][layer-1]
         lower = self._layers[1][layer-1]
 
-        upperpos = self._generate_periodic_border_2D(upper.positions)
-        lowerpos = self._generate_periodic_border_2D(lower.positions)
+        upperpos = self._generate_periodic_border_2D(upper)
+        lowerpos = self._generate_periodic_border_2D(lower)
 
         self.surface_triangulation = [None,None] 
         self.trimmed_surface_triangles = [None,None] 
@@ -453,6 +472,7 @@ if __name__ == "__main__":
     for frames, ts in enumerate(u.trajectory[::50]) :
         print "Analyzing frame",ts.frame+1,\
               "(out of ",len(u.trajectory),") @ ",ts.time,"ps"
+
         interface.assign_layers()
         g1=interface.layers('upper',1)
         g2=interface.layers('upper',1)

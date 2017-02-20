@@ -377,9 +377,11 @@ class Profile(object):
         >>> 
         >>> obs     = observables.Number(u)
         >>> profile = observables.Profile(group=oxygens,observable=obs)
-        >>> 
+        >>>
+        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5) 
+        >>>
         >>> for ts in u.trajectory[:]:
-        ...     utilities.center(u,oxygens)
+        ...     interface.center(oxygens)
         ...     profile.sample()
         >>> 
         >>> bins, avg = profile.profile(binwidth=1.0)
@@ -401,9 +403,11 @@ class Profile(object):
             
             obs     = observables.Number(u)
             profile = observables.Profile(group=oxygens,observable=obs)
+
+            interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5) 
             
             for ts in u.trajectory[:]:
-                utilities.center(u,oxygens)
+                interface.center(oxygens)
                 profile.sample()
             
             bins, avg = profile.profile(binwidth=1.0)

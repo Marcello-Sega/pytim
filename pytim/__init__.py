@@ -11,6 +11,8 @@ class PYTIM(object):
     """
     __metaclass__ = ABCMeta
 
+    directions_dict={0:'x',1:'y',2:'z','x':'x','y':'y','z':'z','X':'x','Y':'y','Z:':'z'}     
+
     ALPHA_NEGATIVE = "parameter alpha must be positive"
     ALPHA_LARGE= "parameter alpha must be smaller than the smaller box side"
     MESH_NEGATIVE = "parameter mesh must be positive" 
@@ -22,23 +24,38 @@ class PYTIM(object):
     CLUSTER_FAILURE="Cluster algorithm failed: too small cluster cutoff provided?"
     UNDEFINED_LAYER="No layer defined: forgot to call assign_layers() or not enough layers requested"
     WRONG_UNIVERSE="Wrong Universe passed to ITIM class"
+    UNDEFINED_ITIM_GROUP="No itim_group defined"
+    WRONG_DIRECTION="Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
+    CENTERING_FAILURE="Cannot center the group in the box. Wrong direction supplied?" 
 
-    def writepdb(self,filename='layers.pdb',multiframe=True):
+    def writepdb(self,filename='layers.pdb',centered=True,multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
             to the layers with different beta factor.
     
             :param filename:   string  -- the output file name
             :param multiframe: boolean -- append to pdb file if True
     
-            Example:
+            Example: save the positions (centering the interface in the cell) without appending 
     
             >>> writepdb(interface,'layers.pdb',multiframe=False)
+
+            Example: save the positions without centering the interface. This will 
+                     leave the atoms in the original position with respect to the cell.
+                     The :multiframe: option set to :False: will overwrite the file.
+
+            >>> writepdb(interface,'layers.pdb',centered=False)
+
         """
 
         try:
+            if centered==False:
+                translation = self.reference_position - self.universe.atoms[0].position[:] 
+                self.universe.atoms.translate(translation) 
             PDB=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
             PDB.write(self.universe.atoms)
+            if centered==False:
+                self.universe.atoms.translate(-translation) 
         except:
             print("Error writing pdb file")
 
@@ -69,6 +86,73 @@ class PYTIM(object):
                 assert np.all(_g.radii is not None) , self.UNDEFINED_RADIUS
                 del _radii
                 del _types
+
+    def center(self, group, direction=None):
+        """ 
+        Centers the liquid slab in the simulation box.
+    
+        The algorithm tries to avoid problems with the definition
+        of the center of mass. First, a rough density profile
+        (10 bins) is computed. Then, the support group is shifted
+        and reboxed until the bins at the box boundaries have a
+        density lower than a threshold delta
+    
+        
+        """
+        if direction is None:
+            direction = self.normal
+        dim = group.universe.coord.dimensions
+        shift=dim[direction]/100. ;
+        total_shift=0
+        utilities.centerbox(group.universe,center_direction=direction)
+        assert direction in self.directions_dict, self.WRONG_DIRECTION
+        _dir = self.directions_dict[direction]
+        if _dir == 'x':
+            direction = 0
+            _pos_group =  utilities.get_x(group)
+        if _dir == 'y':
+            direction = 1
+            _pos_group =  utilities.get_y(group)
+        if _dir == 'z':
+            direction = 2
+            _pos_group =  utilities.get_z(group)
+    
+        _x = utilities.get_x(group.universe.atoms)
+        _y = utilities.get_y(group.universe.atoms)
+        _z = utilities.get_z(group.universe.atoms)
+    
+        histo,edges=np.histogram(_pos_group, bins=10,
+                                 range=(-dim[direction]/2.,dim[direction]/2.), density=True) ;
+         
+        max=np.amax(histo)
+        min=np.amin(histo)
+        delta=min+(max-min)/3. ;# TODO test different cases
+    
+        # let's first avoid crossing pbc with the liquid phase. This can fail:
+        # TODO handle failure
+        while(histo[0]>delta or histo[-1]> delta):
+            total_shift+=shift
+            assert total_shift<dim[direction], self.CENTERING_FAILURE
+            _pos_group +=shift
+            if _dir == 'x':
+                utilities.centerbox(group.universe,x=_pos_group,center_direction=direction)
+            if _dir == 'y':
+                utilities.centerbox(group.universe,y=_pos_group,center_direction=direction)
+            if _dir == 'z':
+                utilities.centerbox(group.universe,z=_pos_group,center_direction=direction)
+            histo,edges=np.histogram(_pos_group, bins=10,
+                                     range=(-dim[direction]/2.,dim[direction]/2.), density=True);
+        #TODO: clean up
+        _center=np.average(_pos_group)
+    
+        if _dir == 'x':
+            _x += total_shift - _center
+        if _dir == 'y':
+            _y += total_shift - _center
+        if _dir == 'z':
+            _z += total_shift - _center
+        # finally, we copy everything back
+        group.universe.coord.positions=np.column_stack((_x,_y,_z))
 
 
     @abstractmethod

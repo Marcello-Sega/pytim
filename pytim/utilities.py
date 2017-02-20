@@ -20,21 +20,44 @@ def lap(show=False):
             print("LAP >>> "+str(dt))
         return dt
 
-def get_x(group=None):
-    return group.positions[:,0]
+def get_box(universe,normal=2):
+    box=universe.coord.dimensions[0:3]
+    if normal==2:
+        return box
+    if normal==0:
+        return np.roll(box,2)
+    if normal==1:
+        return np.roll(box,1)
 
-def get_y(group=None):
-    return group.positions[:,1]
+def get_x(group=None,normal=2):
+    return group.positions[:, (0+1+normal)%3]
 
-def get_z(group=None):
-    return group.positions[:,2]
+def get_y(group=None,normal=2):
+    return group.positions[:, (1+1+normal)%3]
 
-def rebox(universe,x=None,y=None,z=None):
-    # TODO check that the correct frame-dependent box is used !! 
+def get_z(group=None,normal=2):
+    return group.positions[:, (2+1+normal)%3]
+
+def get_pos(group=None,normal=2):
+    pos = group.positions[:]
+    if normal==2:
+        return pos
+    if normal==0:
+        return np.roll(pos,2,axis=1)
+    if normal==1:
+        return np.roll(pos,1,axis=1)
+
+def centerbox(universe,x=None,y=None,z=None,center_direction=2):
+     
     dim = universe.coord.dimensions
     stack=False
-    shift=np.array([0,0,dim[2]/2.])
-
+    dirdict = {'x':0,'y':1,'z':2}
+    if center_direction in dirdict:
+        center_direction = dirdict[center_direction]
+    assert center_direction in [0,1,2], "Wrong direction supplied to centerbox"
+        
+    shift=np.array([0.,0.,0.])
+    shift[center_direction]=dim[center_direction]/2.
     # we rebox the atoms in universe, and not a vector
     if x is None and y is None and z is None:
         stack=True ; 
@@ -51,50 +74,23 @@ def rebox(universe,x=None,y=None,z=None):
     if stack:
         universe.coord.positions=np.column_stack((x,y,z))
 
-def center(universe, group):
+def guess_normal(universe, group):
     """ 
-    Centers the liquid slab in the simulation box.
+    Guess the normal of a liquid slab 
 
-    The algorithm tries to avoid problems with the definition
-    of the center of mass. First, a rough density profile
-    (10 bins) is computed. Then, the support group is shifted
-    and reboxed until the bins at the box boundaries have a
-    density lower than a threshold delta
-
-    
     """
-    #TODO: implement shifting back for final coordinate writing as an option
+    universe.atoms.pack_into_box()
     dim = universe.coord.dimensions
-    shift=dim[2]/100. ;# TODO, what about non ortho boxes?
-    total_shift=0
-    rebox(universe)
-    #self._liquid_mask=np.zeros(len(self.itim_group), dtype=np.int8) 
-    _z_group = get_z(group)
-    _x = get_x(universe.atoms)
-    _y = get_y(universe.atoms)
-    _z = get_z(universe.atoms)
 
-    histo,edges=np.histogram(_z_group, bins=10,
-                             range=(-dim[2]/2.,dim[2]/2.), density=True) ;
-        #TODO handle norm!=z
-    max=np.amax(histo)
-    min=np.amin(histo)
-    delta=min+(max-min)/3. ;# TODO test different cases
-
-    # let's first avoid crossing pbc with the liquid phase. This can fail:
-    # TODO handle failure
-    while(histo[0]>delta or histo[-1]> delta):
-        total_shift+=shift
-        _z_group +=shift
-        rebox(universe,z=_z_group)
-        histo,edges=np.histogram(_z_group, bins=10,
-                                 range=(-dim[2]/2.,dim[2]/2.), density=True);
-    #TODO: clean up
-    _center=np.average(_z_group)
-
-    _z += total_shift - _center
-    # finally, we copy everything back
-    universe.coord.positions=np.column_stack((_x,_y,_z))
+    delta = []
+    for direction in range(0,3):
+        histo,edges=np.histogram(group.positions[:,direction], bins=5,
+                                 range=(0,dim[direction]), 
+                                 density=True) ;
+        max=np.amax(histo)
+        min=np.amin(histo)
+        delta.append( np.sqrt((max-min)**2 )) 
+    return np.argmax(delta) 
  
 def trim_triangulated_surface(tri,box):
     """ Reduce a surface triangulation that has been extended to allow for periodic boundary conditions
@@ -161,7 +157,8 @@ def do_cluster_analysis_DBSCAN(group,cluster_cut,box):
     """
     # TODO: extra_cluster_groups are not yet implemented
     min_samples = 2 ;
-    points = group.atoms.positions[:]+np.array([0.,0.,box[2]])/2.
+    points = group.atoms.positions[:]
+
     tree = cKDTree(points,boxsize=box[:6])
     neighborhoods = np.array( [ np.array(neighbors) 
                             for neighbors in tree.query_ball_point(points, cluster_cut,n_jobs=-1) ] )
