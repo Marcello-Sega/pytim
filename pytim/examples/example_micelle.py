@@ -5,5 +5,12 @@ import pytim
 from   pytim.datafiles import *
 
 u       = mda.Universe(MICELLE_PDB)
+g       = u.select_atoms('resname DPC')
+print g
+radii=pytim_data.vdwradii(G43A1_TOP)
 
-print u
+interface =pytim.GITIM(u,itim_group=g,molecular=False,symmetry='spherical',alpha=4.0)
+interface.assign_layers()
+
+interface.writepdb('test.pdb')
+

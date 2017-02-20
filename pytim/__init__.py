@@ -1,10 +1,10 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 
-from abc import ABCMeta, abstractmethod
+from   abc import ABCMeta, abstractmethod
 import numpy as np
 import MDAnalysis
-from MDAnalysis.topology import tables
+from   MDAnalysis.topology import tables
 
 class PYTIM(object):
     """ The PYTIM metaclass
@@ -12,6 +12,7 @@ class PYTIM(object):
     __metaclass__ = ABCMeta
 
     directions_dict={0:'x',1:'y',2:'z','x':'x','y':'y','z':'z','X':'x','Y':'y','Z:':'z'}     
+    symmetry_dict={'cylindrical':'cylindrical','spherical':'spherical'}
 
     ALPHA_NEGATIVE = "parameter alpha must be positive"
     ALPHA_LARGE= "parameter alpha must be smaller than the smaller box side"
@@ -59,6 +60,9 @@ class PYTIM(object):
         except:
             print("Error writing pdb file")
 
+    def savepdb(self,filename='layers.pdb',centered=True,multiframe=True):
+        self.writepdb(filename,centered,multiframe)
+
     def assign_radii(self,radii_dict):
         try:
             _groups = self.extra_cluster_groups[:] # deep copy
@@ -87,7 +91,7 @@ class PYTIM(object):
                 del _radii
                 del _types
 
-    def center(self, group, direction=None):
+    def center(self, group, direction=None, halfbox_shift=True):
         """ 
         Centers the liquid slab in the simulation box.
     
@@ -96,15 +100,18 @@ class PYTIM(object):
         (10 bins) is computed. Then, the support group is shifted
         and reboxed until the bins at the box boundaries have a
         density lower than a threshold delta
+
     
+        In ITIM, the system along the normal direction is always 
+        centered at 0 (halfbox_shift==True). To center to the middle 
+        of the box along all directions, set halfbox_shift=False
         
         """
         if direction is None:
             direction = self.normal
         dim = group.universe.coord.dimensions
-        shift=dim[direction]/100. ;
         total_shift=0
-        utilities.centerbox(group.universe,center_direction=direction)
+    
         assert direction in self.directions_dict, self.WRONG_DIRECTION
         _dir = self.directions_dict[direction]
         if _dir == 'x':
@@ -117,40 +124,52 @@ class PYTIM(object):
             direction = 2
             _pos_group =  utilities.get_z(group)
     
+        shift=dim[direction]/100. ;
+
+
         _x = utilities.get_x(group.universe.atoms)
         _y = utilities.get_y(group.universe.atoms)
         _z = utilities.get_z(group.universe.atoms)
+
+        if(halfbox_shift==True):
+            _range=(-dim[direction]/2.,dim[direction]/2.)
+        else:
+            _range=(0.,dim[direction])
     
-        histo,edges=np.histogram(_pos_group, bins=10,
-                                 range=(-dim[direction]/2.,dim[direction]/2.), density=True) ;
-         
+        histo,edges=np.histogram(_pos_group, bins=10, range=_range, density=True) 
+
         max=np.amax(histo)
         min=np.amin(histo)
         delta=min+(max-min)/3. ;# TODO test different cases
     
         # let's first avoid crossing pbc with the liquid phase. This can fail:
-        # TODO handle failure
         while(histo[0]>delta or histo[-1]> delta):
             total_shift+=shift
             assert total_shift<dim[direction], self.CENTERING_FAILURE
             _pos_group +=shift
             if _dir == 'x':
-                utilities.centerbox(group.universe,x=_pos_group,center_direction=direction)
+                utilities.centerbox(group.universe,x=_pos_group,center_direction=direction,halfbox_shift=halfbox_shift)
             if _dir == 'y':
-                utilities.centerbox(group.universe,y=_pos_group,center_direction=direction)
+                utilities.centerbox(group.universe,y=_pos_group,center_direction=direction,halfbox_shift=halfbox_shift)
             if _dir == 'z':
-                utilities.centerbox(group.universe,z=_pos_group,center_direction=direction)
-            histo,edges=np.histogram(_pos_group, bins=10,
-                                     range=(-dim[direction]/2.,dim[direction]/2.), density=True);
+                utilities.centerbox(group.universe,z=_pos_group,center_direction=direction,halfbox_shift=halfbox_shift)
+
+
+            histo,edges=np.histogram(_pos_group, bins=10, range=_range, density=True)
+
         #TODO: clean up
         _center=np.average(_pos_group)
     
+        if(halfbox_shift==False):
+            box_half = dim[direction]/2.
+        else:
+            box_half = 0.
         if _dir == 'x':
-            _x += total_shift - _center
+            _x += total_shift - _center + box_half
         if _dir == 'y':
-            _y += total_shift - _center
+            _y += total_shift - _center + box_half
         if _dir == 'z':
-            _z += total_shift - _center
+            _z += total_shift - _center + box_half
         # finally, we copy everything back
         group.universe.coord.positions=np.column_stack((_x,_y,_z))
 
@@ -171,7 +190,22 @@ class PYTIM(object):
     def layers(self):
         pass
 
-from pytim.itim import ITIM
+    def _define_groups(self):
+        # we first make sure cluster_cut is either None, or an array
+        if self.cluster_cut is not None and not isinstance(self.cluster_cut, (list, tuple, np.ndarray)):
+            if type(self.cluster_cut) is int or type(self.cluster_cut) is float:
+                self.cluster_cut = np.array([float(self.cluster_cut)])
+        # same with extra_cluster_groups
+        if self.extra_cluster_groups is not None and not isinstance(self.extra_cluster_groups, (list, tuple, np.ndarray)):
+            self.extra_cluster_groups = [self.extra_cluster_groups]
+    
+        # fallback for itim_group 
+        if self.itim_group is None:
+            self.itim_group = self.all_atoms
+
+
+from pytim.itim import  ITIM
+from pytim.gitim import GITIM
 
 __all__ = [ 'itim' , 'gitim' , 'observables', 'datafiles', 'tests', 'utilities']
 

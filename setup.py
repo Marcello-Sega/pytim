@@ -4,16 +4,15 @@
 """
 
 # Always prefer setuptools over distutils
-from setuptools import setup, find_packages
+from   setuptools import setup, find_packages
 # To use a consistent encoding
-from codecs import open
+from   codecs import open
 import os
 import sys
 
-from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
-#from Cython.Build import cythonize
+from   distutils.core import setup
+from   distutils.extension import Extension
+from   Cython.Distutils import build_ext
 
 import numpy
 
@@ -71,7 +70,6 @@ setup(
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
@@ -94,7 +92,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy','scipy>=0.18','MDAnalysis','cython'],
+    install_requires=['numpy','scipy>=0.18','MDAnalysis>=0.15','cython'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,

@@ -47,8 +47,9 @@ def get_pos(group=None,normal=2):
     if normal==1:
         return np.roll(pos,1,axis=1)
 
-def centerbox(universe,x=None,y=None,z=None,center_direction=2):
-     
+def centerbox(universe,x=None,y=None,z=None,center_direction=2,halfbox_shift=True):
+    # in ITIM, the system along the normal direction is always centered at 0 (halfbox_shift==True)
+    # To center to the middle of the box along all directions, set halfbox_shift=False
     dim = universe.coord.dimensions
     stack=False
     dirdict = {'x':0,'y':1,'z':2}
@@ -57,18 +58,21 @@ def centerbox(universe,x=None,y=None,z=None,center_direction=2):
     assert center_direction in [0,1,2], "Wrong direction supplied to centerbox"
         
     shift=np.array([0.,0.,0.])
-    shift[center_direction]=dim[center_direction]/2.
+    if halfbox_shift==True:
+        shift[center_direction]=dim[center_direction]/2.
     # we rebox the atoms in universe, and not a vector
     if x is None and y is None and z is None:
         stack=True ; 
         x=get_x(universe.atoms)
         y=get_y(universe.atoms)
         z=get_z(universe.atoms)
+    
     for index, val in enumerate((x,y,z)):
         try:
+            # let's just try to rebox all directions. Will succeed only for those which are not None  
             # the >= convention is needed for cKDTree
             val[val>= dim[index]-shift[index]]-=dim[index]
-            val[val< 0        -shift[index]]+=dim[index]
+            val[val<  0         -shift[index]]+=dim[index]
         except:
             pass
     if stack:
