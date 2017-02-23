@@ -20,6 +20,8 @@ import os
 import sys
 #import sphinx_rtd_theme
 
+needs_sphinx = '1.4.3'
+
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('./pytim'))

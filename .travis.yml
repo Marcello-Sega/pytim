@@ -1,0 +1,14 @@
+language: python
+python:
+  - "2.7"
+
+before_install:
+- sudo apt-get install liblapack-dev -y
+
+install: 
+- pip install Sphinx>=1.4.3
+- pip install matplotlib
+- pip install cython
+- pip install .
+# command to run tests
+script: cd docs ; make doctest
