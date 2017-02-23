@@ -4,13 +4,18 @@ import MDAnalysis as mda
 import pytim  
 from   pytim.datafiles import *
 
-u       = mda.Universe(MICELLE_PDB)
-g       = u.select_atoms('resname DPC')
-print g
-radii=pytim_data.vdwradii(G43A1_TOP)
+u         = mda.Universe(MICELLE_PDB)
+g         = u.select_atoms('resname DPC')
 
-interface =pytim.GITIM(u,itim_group=g,molecular=False,symmetry='spherical',alpha=4.0)
+radii     = pytim_data.vdwradii(G43A1_TOP)
+
+interface = pytim.GITIM(u,itim_group=g,molecular=False,symmetry='spherical',alpha=2.5,)
+
 interface.assign_layers()
 
-interface.writepdb('test.pdb')
+layer     = interface.layers(1)
+
+interface.writepdb('gitim.pdb',centered=False)
+
+print("selected one layer of "+str(len(layer))+" atoms out of a group of "+str(len(g)))
 

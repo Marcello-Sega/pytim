@@ -29,8 +29,21 @@ class GITIM(pytim.PYTIM):
         :param bool multiproc:         parallel version (default: True. Switch off for debugging)
 
         Example:
+        >>> import MDAnalysis as mda
+        >>> import pytim  
+        >>> from   pytim.datafiles import *
+        >>> 
+        >>> u       = mda.Universe(MICELLE_PDB)
+        >>> g       = u.select_atoms('resname DPC')
+        >>> radii=pytim_data.vdwradii(G43A1_TOP)
+        >>> 
+        >>> interface =pytim.GITIM(u,itim_group=g,molecular=False,symmetry='spherical',alpha=2.5,)
+        >>> interface.assign_layers()
+        >>> layer = interface.layers(1)
+        >>> interface.writepdb('gitim.pdb',centered=False)
+        >>> print layer
+        <AtomGroup with 558 atoms>
 
-        # TODO 
     """
 
     def __init__(self,universe,alpha=2.0,symmetry='spherical',itim_group=None,radii_dict=None,
@@ -89,27 +102,70 @@ class GITIM(pytim.PYTIM):
     def alpha_prefilter(self,triangulation,alpha):
         t=triangulation
         threshold = 2.*alpha
-        return t.simplices [ [np.max(distance.cdist(t.points[simplex],t.points[simplex],'euclidean'))>=threshold for simplex in t.simplices] ]
+        return t.simplices [ [np.max(distance.cdist(t.points[simplex],t.points[simplex],'euclidean'))>=threshold+2.*np.min(t.radii[simplex]) for simplex in t.simplices] ]
 
-    def circumcircle(self,simplex):
+    def circumradius(self,simplex):
     
-        def sq_norm(v): #squared norm 
-            return np.linalg.norm(v)**2
         points = self.triangulation.points
-        # Just a test, taken from https://plot.ly/python/alpha-shapes/
-        A=[points[simplex[k]] for k in range(3)]
-        M=[[1.0]*4]
-        M+=[[sq_norm(A[k]), A[k][0], A[k][1], 1.0 ] for k in range(3)]
-        M=np.asarray(M, dtype=np.float32)
-        S=np.array([0.5*np.linalg.det(M[1:,[0,2,3]]), -0.5*np.linalg.det(M[1:,[0,1,3]])])
-        a=np.linalg.det(M[1:, 1:])
-        b=np.linalg.det(M[1:, [0,1,2]])
-        return np.sqrt(b/a+sq_norm(S)/a**2) #center=S/a, radius=np.sqrt(b/a+sq_norm(S)/a**2)
+        radii  = self.triangulation.radii 
+
+        R      = []
+        r_i    = points[simplex]
+        R_i    = radii[simplex]
+        d      = (R_i[0]- R_i)[1:]
+
+        r_i2   = np.sum(r_i**2,axis=1)
+        d_2    = d**2
+
+        M      = (r_i[0] - r_i)[1:]
+        s      = ((r_i2[0] - r_i2[1:] - d_2[0] + d_2))/2.
+         
+        u      = np.dot(np.linalg.inv(M),d)
+        v      = r_i[1]-r_i[0]
+        
+        A      = - (R_i[0] - np.dot(u,v) )
+        B      = np.linalg.norm(R_i[0]*u+v)
+        C      = 1-np.sum(u**2)
+        R.append( ( A + B )/C )
+        R.append( ( A - B )/C )
+        R=np.array(R)
+        positiveR = R[R>=0]
+        return np.min(positiveR) if positiveR.size == 1 else 0
+
+##       check configuration  ##
+##            print r_i
+##            print R_i
+##            from mpl_toolkits.mplot3d import Axes3D
+##            import matplotlib.pyplot as plt
+##            
+##            def drawSphere(xCenter, yCenter, zCenter, r):
+##                #draw sphere
+##                u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+##                x=np.cos(u)*np.sin(v)
+##                y=np.sin(u)*np.sin(v)
+##                z=np.cos(v)
+##                # shift and scale sphere
+##                x = r*x + xCenter
+##                y = r*y + yCenter
+##                z = r*z + zCenter
+##                return (x,y,z)
+##            
+##            fig = plt.figure()
+##            ax = fig.add_subplot(111, projection='3d')
+##
+##            # draw a sphere for each data point
+##            for (xi,yi,zi,ri) in zip(r_i[:,0],r_i[:,1],r_i[:,2],R_i):
+##                (xs,ys,zs) = drawSphere(xi,yi,zi,ri)
+##                ax.plot_wireframe(xs, ys, zs, color="r")
+##            plt.show()
+##            exit()
+
+        
 
     def alpha_shape(self,alpha):
         box    = self.universe.dimensions[:3]
         delta  = 2.*self.alpha+1e-6
-        points = self.itim_group.positions[:]
+        points = self.cluster_group.positions[:]
         extrapoints  = [] 
         # add points at the vertices of the expanded (by 2 alpha) box
         for dim in range(8):
@@ -118,36 +174,30 @@ class GITIM(pytim.PYTIM):
                 tmp *=(box+delta)
                 tmp[tmp<box/2.]-=delta
                 extrapoints.append(tmp)
-        points = np.append(points,extrapoints)
-        time=dict()
-        utilities.lap()
+        points = np.append(points,extrapoints,axis=0)
 
-        self.triangulation = Delaunay(self.itim_group.positions[:]) 
-        time['triangulate']=utilities.lap()
+#       time=dict();utilities.lap()
+
+        self.triangulation = Delaunay(points) 
+        self.triangulation.radii = np.append(self.cluster_group.radii[:],np.zeros(8))
+
+#       time['triangulate']=utilities.lap()
 
         prefiltered = self.alpha_prefilter(self.triangulation, alpha)
-        time['prefilter']=utilities.lap()
+#       time['prefilter']=utilities.lap()
 
-        alpha_shape = prefiltered [ [ self.circumcircle(simplex) >=self.alpha for simplex in prefiltered      ]   ]
-        time['alpha']=utilities.lap()
+        alpha_shape = prefiltered [ [ self.circumradius(simplex) >=self.alpha for simplex in prefiltered      ]   ]
+#       time['alpha']=utilities.lap()
+#       print time
+#       print len(self.triangulation.simplices),len(prefiltered),len(alpha_shape),len(_ids)
 
-
-        print time
         _ids = np.unique(alpha_shape)
+
         # remove the indices corresponding to the 8 additional points
-        ids =_ids
-        # ids = _ids[_ids<len(points)-8]
-        print len(self.triangulation.simplices),len(prefiltered),len(alpha_shape)
-        self.itim_group[ids].write('tt.pdb')
-        exit()
-        print "simplices:"
-        print self.triangulation.simplices
-        #cc = lambda simplex,points: self.circumcircle(points,simplex)[1]
-        print "CC:", [self.circumcircle(simplex) for simplex in self.triangulation.simplices]
-    
-        exit()
-        #TODO: the option 'axis' will be introduced in numpy.unique() (numpy 1.13), check it out and replace this code.
-        #border_indices = np.unique(alpha_complex.neighbors[np.where(dela.neighbors<0)[0]])
+        #ids =_ids
+        ids = _ids[_ids<len(points)-8]
+
+        return ids
     
     def assign_layers(self):
         """ Determine the GITIM layers.
@@ -183,12 +233,12 @@ class GITIM(pytim.PYTIM):
         size = len(self.cluster_group.positions)
         self._seen=np.zeros(size,dtype=np.int8)
     
-        self.alpha_shape(self.alpha)
+        alpha_ids = self.alpha_shape(self.alpha)
 
-        self._layers=[]
+        self._layers=[self.cluster_group[alpha_ids]]
 
         for nlayer,layer in enumerate(self._layers):
-                _layer.bfactors = _nlayer+1 
+                layer.bfactors = 1 
 
         # reset the interpolator        
         self._interpolator=None
@@ -271,30 +321,14 @@ class GITIM(pytim.PYTIM):
         return elevation
 
 
-    def layers(self,side='both',*ids):
+    def layers(self,*ids):
         """ Select one or more layers.
 
-        :param str side: 'upper', 'lower' or 'both'
         :param slice ids: the slice corresponding to the layers to be selcted (starting from 0)
 
-        The slice can be used to select a single layer, or multiple, e.g. (using the example of the :class:`ITIM` class) :
-
-        >>> interface.layers('upper')  # all layers, upper side
-        [<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>, <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>]
-
-        >>> interface.layers('lower',1)  # first layer, lower side
-        <AtomGroup with 406 atoms>
-
-        >>> interface.layers('both',0,3) # 1st - 3rd layer, on both sides
-        [[<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>, <AtomGroup with 414 atoms>], [<AtomGroup with 406 atoms>, <AtomGroup with 418 atoms>, <AtomGroup with 399 atoms>]]
-
-        >>> interface.layers('lower',0,4,2) # 1st - 4th layer, with a stride of 2, lower side
-        [<AtomGroup with 406 atoms>, <AtomGroup with 399 atoms>]
-
+        The slice can be used to select a single layer, or multiple, e.g. using the example of the :class:`GITIM` class :
 
         """
-        _options={'both':slice(None),'upper':0,'lower':1}
-        _side=_options[side]
         if len(ids) == 0:
             _slice = slice(None)
         if len(ids) == 1:
@@ -304,11 +338,6 @@ class GITIM(pytim.PYTIM):
         if len(ids) == 3:
             _slice = slice(ids[0],ids[1],ids[2])
 
-        if side != 'both':
-            return self._layers[_side][_slice]
-        else:
-            return [ sub[_slice] for sub in self._layers]
-
-
+        return self._layers[_slice]
 
 #

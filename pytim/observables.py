@@ -116,8 +116,8 @@ class InterRDF(rdf.InterRDF):
             import MDAnalysis as mda
             import numpy as np
             import pytim 
-            from pytim.datafiles import *
-            from pytim.observables import * 
+            import matplotlib.pyplot as plt
+            from   pytim.datafiles import *
             u = mda.Universe(WATER_GRO,WATER_XTC)
             L = np.min(u.dimensions[:3])
             oxygens = u.select_atoms("name OW") 
@@ -127,7 +127,7 @@ class InterRDF(rdf.InterRDF):
                 interface.assign_layers()
                 layer=interface.layers('upper',1)	
                 if ts.frame==0 :
-                    rdf=InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
+                    rdf=pytim.observables.InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
                 rdf.sample(ts)
             rdf.normalize()
             rdf.rdf[0]=0.0
@@ -394,15 +394,16 @@ class Profile(object):
 
             import MDAnalysis as mda
             import numpy as np
-            from pytim  import *
-            from pytim.datafiles   import *
+            import pytim  
+            import matplotlib.pyplot as plt
+            from   pytim.datafiles   import *
             
             u       = mda.Universe(WATER_GRO,WATER_XTC)
             oxygens = u.select_atoms("name OW") 
             radii=pytim_data.vdwradii(G43A1_TOP)
             
-            obs     = observables.Number(u)
-            profile = observables.Profile(group=oxygens,observable=obs)
+            obs     = pytim.observables.Number(u)
+            profile = pytim.observables.Profile(group=oxygens,observable=obs)
 
             interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5) 
             

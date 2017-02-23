@@ -26,7 +26,9 @@ for planar interfaces is the following:
 This code block first imports MDAanalysis, pytim, and useful
 datafiles, then initializes the universe in the usual way, using
 as an input file one of the structures provided by the package, in
-this case a water/vapor interface in a gromos file format.
+this case a water/vapor interface in a gromos file format (the variable
+WATER_GRO is made available by the pytim.datafiles module, and points 
+to 'data/water.gro')
 
 The oxygens are then chosen as a reference atom group to perform
 the interfacial analysis, and the interface calculation is initialized
@@ -51,11 +53,13 @@ Modules Description
    :members: 
    :member-order: bysource
 
+.. automodule:: pytim.gitim
+   :members: 
+   :member-order: bysource
 
 .. automodule:: pytim.observables
    :members:
    :member-order: bysource
-
 
 .. automodule:: pytim.tests.testsuite1
    :members:
