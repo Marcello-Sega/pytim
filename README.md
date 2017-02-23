@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.org/Marcello-Sega/pytim)
+
 # README #
 
 This is a cross-platform python implementation of ITIM
