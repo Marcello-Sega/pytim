@@ -11,17 +11,17 @@ for planar interfaces is the following:
 
 .. code-block:: python
 
-	import MDAnalysis as mda                 
-	import pytim 
-	from pytim.datafiles import *
+    import MDAnalysis as mda                 
+    import pytim 
+    from pytim.datafiles import *
 
-	u         = mda.Universe(WATER_GRO)
-	oxygens   = u.select_atoms("name OW") 
+    u         = mda.Universe(WATER_GRO)
+    oxygens   = u.select_atoms("name OW") 
 
-	interface = pytim.ITIM(u,itim_group=oxygens)
+    interface = pytim.ITIM(u,itim_group=oxygens)
 
-	interface.assign_layers()
-	interface.writepdb()
+    interface.assign_layers()
+    interface.writepdb()
 
 This code block first imports MDAanalysis, pytim, and useful
 datafiles, then initializes the universe in the usual way, using
@@ -47,30 +47,15 @@ where surface oxygen atoms are highlighted in blue.
    :align: center
 
 
-Modules Description
-*******************
-.. automodule:: pytim.itim
-   :members: 
-   :member-order: bysource
-
-.. automodule:: pytim.gitim
-   :members: 
-   :member-order: bysource
-
-.. automodule:: pytim.observables
-   :members:
-   :member-order: bysource
-
-.. automodule:: pytim.tests.testsuite1
-   :members:
-   :member-order: bysource
-
 Table of Contents Tree
 **********************
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    ITIM
+    GITIM
+    observables
+    utilities
+    testsuite
 
 
 * :ref:`genindex`

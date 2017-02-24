@@ -87,7 +87,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['numpy>=1.12.0','scipy>=0.18','MDAnalysis>=0.15','cython>=0.25.2','sphinx>=1.4.3','matplotlib>=2.0.0'],
+    install_requires=['numpy>=1.12.0','scipy>=0.18','MDAnalysis>=0.15','cython>=0.24.1','sphinx>=1.4.3','matplotlib'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
@@ -119,5 +119,5 @@ setup(
   ##          'sample=sample:main',
   ##      ],
   ##  },
-	
+    
 )

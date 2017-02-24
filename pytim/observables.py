@@ -65,6 +65,11 @@ class InterRDF(rdf.InterRDF):
         having the same size of the group. The scalar product between the
         two functions is used to weight the distriution function.
 
+        .. math::
+
+              g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|) f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
+
+
         :param AtomGroup g1:            1st group
         :param AtomGroup g2:            2nd group
         :param int nbins:               number of bins
@@ -76,68 +81,6 @@ class InterRDF(rdf.InterRDF):
         :param Observable observable:        observable calculated on the atoms in g1
         :param Observable observable2:       observable calculated on the atoms in g2
         :param array weights:           weights to be applied to the distribution function (mutually exclusive with observable/observable2)
-
-        .. math::
-
-              g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|) f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
-
-        TODO add a MolecularOrientation example
-        
-        Example:
-
-        >>> import MDAnalysis as mda
-        >>> import numpy as np
-        >>> import pytim 
-        >>> from pytim import *
-        >>> from pytim.datafiles import *
-        >>> 
-        >>> u = mda.Universe(WATER_GRO,WATER_XTC)
-        >>> L = np.min(u.dimensions[:3])
-        >>> oxygens = u.select_atoms("name OW") 
-        >>> radii=pytim_data.vdwradii(G43A1_TOP)
-        >>> 
-        >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,radii_dict=radii,cluster_cut=3.5)
-        >>> 
-        >>> for ts in u.trajectory[::50] : 
-        ...     interface.assign_layers()
-        ...     layer=interface.layers('upper',1)	
-        ...     if ts.frame==0 :
-        ...         rdf = observables.InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
-        ...     rdf.sample(ts)
-        >>> rdf.normalize()
-        >>> rdf.rdf[0]=0.0
-        >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf)))  #doctest:+SKIP
-
-
-        This results in the following RDF:
-
-        .. plot::
-
-            import MDAnalysis as mda
-            import numpy as np
-            import pytim 
-            import matplotlib.pyplot as plt
-            from   pytim.datafiles import *
-            u = mda.Universe(WATER_GRO,WATER_XTC)
-            L = np.min(u.dimensions[:3])
-            oxygens = u.select_atoms("name OW") 
-            radii=pytim_data.vdwradii(G43A1_TOP)
-            interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,multiproc=True,radii_dict=radii,cluster_cut=3.5)
-            for ts in u.trajectory[::5] :
-                interface.assign_layers()
-                layer=interface.layers('upper',1)	
-                if ts.frame==0 :
-                    rdf=pytim.observables.InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
-                rdf.sample(ts)
-            rdf.normalize()
-            rdf.rdf[0]=0.0
-            plt.plot(rdf.bins, rdf.rdf)
-            plt.show()
-
-
-        Example: dipole-dipole correlation on the surface (TODO)
-
-
 
     """
 
@@ -196,6 +139,78 @@ class InterRDF(rdf.InterRDF):
 
 
 class InterRDF2D(InterRDF):
+    """ Calculates a radial distribution function of some observable from two groups, projected on a plane. 
+
+        The two functions must return an array (of scalars or of vectors)
+        having the same size of the group. The scalar product between the
+        two functions is used to weight the distriution function.
+
+        :param AtomGroup g1:            1st group
+        :param AtomGroup g2:            2nd group
+        :param int nbins:               number of bins
+        :param ??? exclusion_block:
+        :param int start:               first frame
+        :param int stop:                last frame
+        :param int step:                frame stride
+        :param char excluded_dir:       project position vectors onto the plane orthogonal to 'z','y' or 'z' (TODO not used here, check & remove)
+        :param Observable observable:        observable calculated on the atoms in g1
+        :param Observable observable2:       observable calculated on the atoms in g2
+        :param array weights:           weights to be applied to the distribution function (mutually exclusive with observable/observable2)
+
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import numpy as np
+        >>> import pytim 
+        >>> from pytim import *
+        >>> from pytim.datafiles import *
+        >>> 
+        >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+        >>> L = np.min(u.dimensions[:3])
+        >>> oxygens = u.select_atoms("name OW") 
+        >>> radii=pytim_data.vdwradii(G43A1_TOP)
+        >>> 
+        >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,radii_dict=radii,cluster_cut=3.5)
+        >>> 
+        >>> for ts in u.trajectory[::50] : 
+        ...     interface.assign_layers()
+        ...     layer=interface.layers('upper',1)   
+        ...     if ts.frame==0 :
+        ...         rdf = observables.InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
+        ...     rdf.sample(ts)
+        >>> rdf.normalize()
+        >>> rdf.rdf[0]=0.0
+        >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf)))  #doctest:+SKIP
+
+
+        This results in the following RDF:
+
+        .. plot::
+
+            import MDAnalysis as mda
+            import numpy as np
+            import pytim 
+            import matplotlib.pyplot as plt
+            from   pytim.datafiles import *
+            u = mda.Universe(WATER_GRO,WATER_XTC)
+            L = np.min(u.dimensions[:3])
+            oxygens = u.select_atoms("name OW") 
+            radii=pytim_data.vdwradii(G43A1_TOP)
+            interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,multiproc=True,radii_dict=radii,cluster_cut=3.5)
+            for ts in u.trajectory[::5] :
+                interface.assign_layers()
+                layer=interface.layers('upper',1)   
+                if ts.frame==0 :
+                    rdf=pytim.observables.InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
+                rdf.sample(ts)
+            rdf.normalize()
+            rdf.rdf[0]=0.0
+            plt.plot(rdf.bins, rdf.rdf)
+            plt.show()
+
+
+    """
+
     def __init__(self, g1, g2,
                  nbins=75, range=(0.0, 15.0), exclusion_block=None,
                  start=None, stop=None, step=None,excluded_dir='z',
@@ -328,13 +343,48 @@ class IntrinsicDistance(Observable):
  
 
 class Number(Observable):
+    """ The number of atoms 
+
+
+    """ 
+    def __init__(self):
+        pass
+
     def compute(self,inp):
+        """ Compute the observable 
+
+        :param AtomGroup inp:  the input atom group 
+        :returns: one, for each atom in the group
+
+        """
         return np.ones(len(inp))
 
 
             
 class Orientation(Observable):
+    """ Orientation of a group of points
+
+        :param str options: optional string. If `normal` is passed, the orientation of the normal vectors is computed
+
+        This observable does not take into account boudary conditions. See :class:`~pytim.observables.MolecularOrientation`
+
+    """ 
+
+    def __init__(self):
+        pass
+
     def compute(self,pos):
+        """ Compute the observable 
+
+        :param ndarray inp:  the input atom group. The length be a multiple of three
+        :returns: the orientation vectors
+
+        For each triplet of positions A1,A2,A3, computes the unit vector beteeen A2-A1 and  A3-A1 or, 
+        if the option 'normal' is passed at initialization, the unit vector normal to the plane 
+        spanned by the three vectors
+        
+
+        """
 
         flat = pos.flatten()
         pos  = flat.reshape(len(flat)/3,3)
@@ -349,19 +399,29 @@ class Orientation(Observable):
         return v
 
 class MolecularOrientation(Observable):
+    """ Molecular orientation vector of a set of molecules
+
+    """
     def compute(self,inp):
+        """ Compute the observable 
+    
+            :param variable inp: an AtomGroup or a ResidueGroup
+
+            TODO: document and check if the function needs to be modified
+
+        """
         t = type(inp)
         # TODO: checks for other types?
         if t is AtomGroup and len(inp) != 3*len(inp.residues):
             #TODO: we take automatically the first three if more than three are supplied?
             inp=inp.residues
         pos = self.fold_around_first_atom_in_residue(inp)
-        return Orientation(self.u,self.options).compute(pos)
+        return Orientation(self.options).compute(pos)
 
 
 
 class Profile(object):
-    """ Calculates the profile of a given observable across the simulation box
+    """ Calculates the profile (normal, or intrinsic) of a given observable across the simulation box
 
         :param AtomGroup    group:          calculate the profile based on this group
         :param str          direction:      'x','y', or 'z' : calculate the profile along this direction
@@ -375,7 +435,7 @@ class Profile(object):
         >>> oxygens = u.select_atoms("name OW") 
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
         >>> 
-        >>> obs     = observables.Number(u)
+        >>> obs     = observables.Number()
         >>> profile = observables.Profile(group=oxygens,observable=obs)
         >>>
         >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5) 
@@ -402,7 +462,7 @@ class Profile(object):
             oxygens = u.select_atoms("name OW") 
             radii=pytim_data.vdwradii(G43A1_TOP)
             
-            obs     = pytim.observables.Number(u)
+            obs     = pytim.observables.Number()
             profile = pytim.observables.Profile(group=oxygens,observable=obs)
 
             interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5) 

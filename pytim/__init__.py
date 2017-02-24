@@ -38,13 +38,13 @@ class PYTIM(object):
     
             Example: save the positions (centering the interface in the cell) without appending 
     
-            >>> writepdb(interface,'layers.pdb',multiframe=False)
+            >>> interface.writepdb('layers.pdb',multiframe=False)
 
             Example: save the positions without centering the interface. This will 
                      leave the atoms in the original position with respect to the cell.
                      The :multiframe: option set to :False: will overwrite the file.
 
-            >>> writepdb(interface,'layers.pdb',centered=False)
+            >>> interface.writepdb('layers.pdb',centered=False)
 
         """
 
@@ -207,6 +207,6 @@ class PYTIM(object):
 from pytim.itim import  ITIM
 from pytim.gitim import GITIM
 
-__all__ = [ 'itim' , 'gitim' , 'observables', 'datafiles', 'tests', 'utilities']
+#__all__ = [ 'itim' , 'gitim' , 'observables', 'datafiles', 'utilities']
 
 

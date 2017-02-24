@@ -29,6 +29,7 @@ class GITIM(pytim.PYTIM):
         :param bool multiproc:         parallel version (default: True. Switch off for debugging)
 
         Example:
+
         >>> import MDAnalysis as mda
         >>> import pytim  
         >>> from   pytim.datafiles import *
