@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Utilities &#8212; Pytim 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/pytim.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Testsuite" href="testsuite.html" />
+    <link rel="prev" title="Observables" href="observables.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testsuite.html" title="Testsuite"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="observables.html" title="Observables"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pytim.utilities">
+<span id="utilities"></span><h1>Utilities<a class="headerlink" href="#module-pytim.utilities" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pytim.utilities.do_cluster_analysis_DBSCAN">
+<code class="descclassname">pytim.utilities.</code><code class="descname">do_cluster_analysis_DBSCAN</code><span class="sig-paren">(</span><em>group</em>, <em>cluster_cut</em>, <em>box</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.do_cluster_analysis_DBSCAN" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a cluster analysis using DBSCAN</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Returns [labels,counts]:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">lists of the id of the cluster to which every atom is belonging to, and of the number of elements in each cluster.</td>
+</tr>
+</tbody>
+</table>
+<p>Uses a slightly modified version of DBSCAN from sklearn.cluster
+that takes periodic boundary conditions into account (through
+cKDTree&#8217;s boxsize option) and collects also the sizes of all 
+clusters. This is on average O(N log N) thanks to the O(log N) 
+scaling of the kdtree.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytim.utilities.guess_normal">
+<code class="descclassname">pytim.utilities.</code><code class="descname">guess_normal</code><span class="sig-paren">(</span><em>universe</em>, <em>group</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.guess_normal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Guess the normal of a liquid slab</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytim.utilities.triangulated_surface_stats">
+<code class="descclassname">pytim.utilities.</code><code class="descname">triangulated_surface_stats</code><span class="sig-paren">(</span><em>tri2d</em>, <em>points3d</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.triangulated_surface_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return basic statistics about a surface triangulation</p>
+<p>Implemented statistics are: surface area</p>
+<p>:param tri2d             : indices of triangles vertices 
+:param ndarray  points3d : the heigth of each vertex along the third dimension
+:returns list stats      : the statistics :  [surface_area]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pytim.utilities.trim_triangulated_surface">
+<code class="descclassname">pytim.utilities.</code><code class="descname">trim_triangulated_surface</code><span class="sig-paren">(</span><em>tri</em>, <em>box</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.trim_triangulated_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reduce a surface triangulation that has been extended to allow for periodic boundary conditions
+to the primary cell.</p>
+<p>The simplices within the primary cell are those with at least two vertices within the cell boundaries.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tri</strong> (<em>Delaunay</em>) &#8211; a 2D triangulation</li>
+<li><strong>box</strong> (<em>ndarray</em>) &#8211; box cell parameters</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Returns ndarray simplices:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first last">the simplices within the primary cell.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="observables.html"
+                        title="previous chapter">Observables</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="testsuite.html"
+                        title="next chapter">Testsuite</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/utilities.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="testsuite.html" title="Testsuite"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="observables.html" title="Observables"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Marcello Sega.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+    </div>
+  </body>
+</html>
