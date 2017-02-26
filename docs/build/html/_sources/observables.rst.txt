@@ -37,3 +37,7 @@ Basic Observables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. raw:: html
+   :file: analytics.html
+
