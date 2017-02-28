@@ -37,7 +37,7 @@ using the :class:`ITIM` class.
 
 The last two lines are used to calculate the interfacial atoms, and to 
 save the whole configuration (with surface atoms having a beta
-factor equal to the numer of the layer they belong to)
+factor equal to the numer of the layer they belong to).
 
 The result of the calculation can be seen in the following picture,
 where surface oxygen atoms are highlighted in blue.
