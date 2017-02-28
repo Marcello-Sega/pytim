@@ -55,6 +55,7 @@ Table of Contents Tree
     ITIM
     GITIM
     observables
+    datafiles
     utilities
     testsuite
 

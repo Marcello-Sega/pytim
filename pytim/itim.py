@@ -108,7 +108,7 @@ class ITIM(pytim.PYTIM):
 
     def _touched_lines(self,atom,_x,_y,_z,_radius):
         # NOTE: kdtree might be slower than bucketing in some cases
-        if (self.use_kdtree==True) : # this is False by default
+        if (self.use_kdtree==True) : # this is True by default
             return self.meshtree.query_ball_point([_x[atom],_y[atom]],_radius[atom]+self.alpha)
         else: # For some large configurations this fails. Don't switch off use_kdtree
             _dist=_radius[atom] + self.alpha + self.delta
