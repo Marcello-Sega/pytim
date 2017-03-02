@@ -153,8 +153,6 @@ class PYTIM(object):
                 utilities.centerbox(group.universe,y=_pos_group,center_direction=direction,halfbox_shift=halfbox_shift)
             if _dir == 'z':
                 utilities.centerbox(group.universe,z=_pos_group,center_direction=direction,halfbox_shift=halfbox_shift)
-
-
             histo,edges=np.histogram(_pos_group, bins=10, range=_range, density=True)
 
         #TODO: clean up

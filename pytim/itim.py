@@ -238,11 +238,10 @@ class ITIM(pytim.PYTIM):
         else:
             self.cluster_group=self.itim_group ;
 
-
-        utilities.centerbox(self.universe,center_direction=self.normal)
         self.center(self.cluster_group,self.normal)
-
-        # first we label all atoms in itim_group to be in the gas phase
+        utilities.centerbox(self.universe,center_direction=self.normal)
+               
+        # first we label all atoms in itim_group to be in the gas phase 
         self.itim_group.atoms.bfactors = 0.5
         # then all atoms in the larges group are labelled as liquid-like
         self.cluster_group.atoms.bfactors = 0
