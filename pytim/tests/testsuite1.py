@@ -15,6 +15,7 @@ class testsuite1():
     >>> # TEST:1 basic functionality
     >>> import MDAnalysis as mda
     >>> import pytim 
+    >>> from pytim import  * 
     >>> from pytim.datafiles import *
     >>> u         = mda.Universe(WATER_GRO)
     >>> oxygens   = u.select_atoms("name OW") 
@@ -27,8 +28,19 @@ class testsuite1():
     Traceback (most recent call last):
     	...
     AssertionError: parameter alpha in pytim.itim.ITIM must be smaller than the smaller box side
+
+
+    >>> # OBSERVABLES TEST: 1
+    >>> u = mda.Universe(_TEST_ORIENTATION_GRO) 
+    >>> o = observables.MolecularOrientation(u)
+    >>> print(o.compute(u.atoms).flatten())
+    [ 1.          0.          0.          0.          1.          0.          0.
+     -0.70710677 -0.70710677]
+
     """
+
     pass
+
 
 if __name__ == "__main__":
     import doctest

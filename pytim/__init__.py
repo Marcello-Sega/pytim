@@ -206,6 +206,8 @@ class PYTIM(object):
 
 from pytim.itim import  ITIM
 from pytim.gitim import GITIM
+from pytim import observables, utilities 
+from pytim.datafiles import * 
 
 #__all__ = [ 'itim' , 'gitim' , 'observables', 'datafiles', 'utilities']
 

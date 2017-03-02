@@ -370,8 +370,8 @@ class Orientation(Observable):
 
     """ 
 
-    def __init__(self):
-        pass
+    def __init__(self,options=''):
+        self.options = options
 
     def compute(self,pos):
         """ Compute the observable 
@@ -416,7 +416,7 @@ class MolecularOrientation(Observable):
             #TODO: we take automatically the first three if more than three are supplied?
             inp=inp.residues
         pos = self.fold_around_first_atom_in_residue(inp)
-        return Orientation(self.options).compute(pos)
+        return Orientation().compute(pos)
 
 
 
