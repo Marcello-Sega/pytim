@@ -79,13 +79,37 @@ class PYTIM(object):
                 else: # use the provided dict.
                     _radii_dict = radii_dict
 
+                # this is _radii_dict restricted to the 1st character. Not necessarily unique, but a reasonable fallback.
+                _reduced_radii_dict = dict()
+                for key, val in _radii_dict.iteritems():
+                    _reduced_radii_dict[key[0]]=val
+
                 _radii = np.zeros(len(_g.types))
+                null_radii=[]
                 for _atype in np.unique(_types):
                      try:
                          _radii[_types==_atype]=_radii_dict[_atype]
                      except:
-                         pass # those types which are not listed in the dictionary
-                              # will have radius==0. TODO handle this
+                        try:
+                            _radii[_types==_atype]=_reduced_radii_dict[_atype]
+                            if _reduced_radii_dict[_atype] == 0 and _atype is not 'H':
+                                print("")
+                                print("*******************************************")
+                                print("Warning, radius set to zero for atomtype "+str(_atype))
+                                print("*******************************************")
+                                print("")
+                        except:
+                            null_radii.append(_atype)
+                if len(null_radii) > 0:
+                    print("************************************************************************************")
+                    print("                                 Fatal error                                        ")
+                    print("No appropriate radius was found for the atomtypes / first letter in the atom namess:")
+                    print("   "+', '.join(null_radii)                                                           )
+                    print("Pass a dictionary of radii (in Angstrom) with the option radii_dict"                 )
+                    print("for example: r={'"+str(null_radii[0])+"':1.2} ; inter=pytim.ITIM(u,radii_dict=r)    ")
+                    print("or include a distributed one (from pytim.datafiles import *; print pytim_data.topol)")
+                    print("************************************************************************************")
+                    exit(1)
                 _g.radii=_radii[:] #deep copy
                 assert np.all(_g.radii is not None) , self.UNDEFINED_RADIUS
                 del _radii
