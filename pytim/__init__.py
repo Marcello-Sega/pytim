@@ -11,36 +11,36 @@ class PYTIM(object):
     """
     __metaclass__ = ABCMeta
 
-    directions_dict={0:'x',1:'y',2:'z','x':'x','y':'y','z':'z','X':'x','Y':'y','Z:':'z'}     
+    directions_dict={0:'x',1:'y',2:'z','x':'x','y':'y','z':'z','X':'x','Y':'y','Z:':'z'}
     symmetry_dict={'cylindrical':'cylindrical','spherical':'spherical'}
 
     ALPHA_NEGATIVE = "parameter alpha must be positive"
     ALPHA_LARGE= "parameter alpha must be smaller than the smaller box side"
-    MESH_NEGATIVE = "parameter mesh must be positive" 
+    MESH_NEGATIVE = "parameter mesh must be positive"
     MESH_LARGE= "parameter mesh must be smaller than the smaller box side"
-    UNDEFINED_RADIUS= "one or more atoms do not have a corresponding radius in the default or provided dictionary" 
-    UNDEFINED_CLUSTER_SEARCH= "If extra_cluster_groups is defined, a cluster_cut should e provided" 
-    MISMATCH_CLUSTER_SEARCH= "cluster_cut should be either a scalar or an array matching the number of groups (including itim_group)" 
+    UNDEFINED_RADIUS= "one or more atoms do not have a corresponding radius in the default or provided dictionary"
+    UNDEFINED_CLUSTER_SEARCH= "If extra_cluster_groups is defined, a cluster_cut should e provided"
+    MISMATCH_CLUSTER_SEARCH= "cluster_cut should be either a scalar or an array matching the number of groups (including itim_group)"
     EMPTY_LAYER="One or more layers are empty"
     CLUSTER_FAILURE="Cluster algorithm failed: too small cluster cutoff provided?"
     UNDEFINED_LAYER="No layer defined: forgot to call assign_layers() or not enough layers requested"
     WRONG_UNIVERSE="Wrong Universe passed to ITIM class"
     UNDEFINED_ITIM_GROUP="No itim_group defined"
     WRONG_DIRECTION="Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
-    CENTERING_FAILURE="Cannot center the group in the box. Wrong direction supplied?" 
+    CENTERING_FAILURE="Cannot center the group in the box. Wrong direction supplied?"
 
     def writepdb(self,filename='layers.pdb',centered=True,multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
             to the layers with different beta factor.
-    
+
             :param filename:   string  -- the output file name
             :param multiframe: boolean -- append to pdb file if True
-    
-            Example: save the positions (centering the interface in the cell) without appending 
-    
+
+            Example: save the positions (centering the interface in the cell) without appending
+
             >>> interface.writepdb('layers.pdb',multiframe=False)
 
-            Example: save the positions without centering the interface. This will 
+            Example: save the positions without centering the interface. This will
                      leave the atoms in the original position with respect to the cell.
                      The :multiframe: option set to :False: will overwrite the file.
 
@@ -50,13 +50,13 @@ class PYTIM(object):
 
         try:
             if centered==False:
-                translation = self.reference_position - self.universe.atoms[0].position[:] 
-                self.universe.atoms.translate(translation) 
+                translation = self.reference_position - self.universe.atoms[0].position[:]
+                self.universe.atoms.translate(translation)
             PDB=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
             PDB.write(self.universe.atoms)
             if centered==False:
-                self.universe.atoms.translate(-translation) 
+                self.universe.atoms.translate(-translation)
         except:
             print("Error writing pdb file")
 
@@ -78,7 +78,7 @@ class PYTIM(object):
                         _radii_dict = tables.vdwradii
                 else: # use the provided dict.
                     _radii_dict = radii_dict
-    
+
                 _radii = np.zeros(len(_g.types))
                 for _atype in np.unique(_types):
                      try:
@@ -92,26 +92,26 @@ class PYTIM(object):
                 del _types
 
     def center(self, group, direction=None, halfbox_shift=True):
-        """ 
+        """
         Centers the liquid slab in the simulation box.
-    
+
         The algorithm tries to avoid problems with the definition
         of the center of mass. First, a rough density profile
-        (10 bins) is computed. Then, the support group is shifted
+        (10 bins) is computed. Then, the group is shifted
         and reboxed until the bins at the box boundaries have a
         density lower than a threshold delta
 
-    
-        In ITIM, the system along the normal direction is always 
-        centered at 0 (halfbox_shift==True). To center to the middle 
+
+        In ITIM, the system along the normal direction is always
+        centered at 0 (halfbox_shift==True). To center to the middle
         of the box along all directions, set halfbox_shift=False
-        
+
         """
         if direction is None:
             direction = self.normal
         dim = group.universe.coord.dimensions
         total_shift=0
-    
+
         assert direction in self.directions_dict, self.WRONG_DIRECTION
         _dir = self.directions_dict[direction]
         if _dir == 'x':
@@ -123,7 +123,7 @@ class PYTIM(object):
         if _dir == 'z':
             direction = 2
             _pos_group =  utilities.get_z(group)
-    
+
         shift=dim[direction]/100. ;
 
 
@@ -135,13 +135,13 @@ class PYTIM(object):
             _range=(-dim[direction]/2.,dim[direction]/2.)
         else:
             _range=(0.,dim[direction])
-    
-        histo,edges=np.histogram(_pos_group, bins=10, range=_range, density=True) 
+
+        histo,edges=np.histogram(_pos_group, bins=10, range=_range, density=True)
 
         max=np.amax(histo)
         min=np.amin(histo)
         delta=min+(max-min)/3. ;# TODO test different cases
-    
+
         # let's first avoid crossing pbc with the liquid phase. This can fail:
         while(histo[0]>delta or histo[-1]> delta):
             total_shift+=shift
@@ -159,7 +159,7 @@ class PYTIM(object):
 
         #TODO: clean up
         _center=np.average(_pos_group)
-    
+
         if(halfbox_shift==False):
             box_half = dim[direction]/2.
         else:
@@ -176,7 +176,7 @@ class PYTIM(object):
 
     @abstractmethod
     def assign_layers(self):
-        pass 
+        pass
 
     @abstractmethod
     def triangulate_layer(self):
@@ -198,8 +198,8 @@ class PYTIM(object):
         # same with extra_cluster_groups
         if self.extra_cluster_groups is not None and not isinstance(self.extra_cluster_groups, (list, tuple, np.ndarray)):
             self.extra_cluster_groups = [self.extra_cluster_groups]
-    
-        # fallback for itim_group 
+
+        # fallback for itim_group
         if self.itim_group is None:
             self.itim_group = self.all_atoms
 

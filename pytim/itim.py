@@ -11,7 +11,7 @@ from   scipy.spatial     import cKDTree
 from   scipy.spatial     import Delaunay
 from   scipy.interpolate import LinearNDInterpolator
 from __builtin__         import zip as builtin_zip
-from   pytim             import utilities  
+from   pytim             import utilities
 import pytim
 
 class ITIM(pytim.PYTIM):
@@ -21,6 +21,7 @@ class ITIM(pytim.PYTIM):
         :param Universe universe:      the MDAnalysis universe
         :param float mesh:             the grid spacing used for the testlines
         :param float alpha:            the probe sphere radius
+        :param str normal:             the macroscopic interface normal direction 'x','y' or 'z' (by default is 'guess')
         :param AtomGroup itim_group:   identify the interfacial molecules from this group
         :param dict radii_dict:        dictionary with the atomic radii of the elements in the itim_group.
                                        If None is supplied, the default one (from GROMOS 43a1) will be used.
@@ -57,7 +58,7 @@ class ITIM(pytim.PYTIM):
         self.max_layers=max_layers
         self.info=info
         self.normal=None
-        try: 
+        try:
             self.all_atoms = self.universe.select_atoms('all')
         except:
             raise Exception(self.WRONG_UNIVERSE)
@@ -87,7 +88,7 @@ class ITIM(pytim.PYTIM):
         else:
             assert normal in self.directions_dict, self.WRONG_DIRECTION
             self.normal = self.directions_dict[normal]
-            
+
     def _assign_mesh(self):
         """ determine a mesh size for the testlines that is compatible with the simulation box
         """
@@ -172,14 +173,14 @@ class ITIM(pytim.PYTIM):
                         _inlayer_resindices= _inlayer_group.resids-1
                         # this is the group of molecules in the layer
                         _inlayer_group   = self.universe.residues[_inlayer_resindices].atoms
-                        # now we need the indices within the cluster_group, of those atoms which are in the 
+                        # now we need the indices within the cluster_group, of those atoms which are in the
                         # molecular layer group
                         _indices = np.flatnonzero(np.in1d(self.cluster_group.atoms.ids,_inlayer_group.atoms.ids))
                         # and update the tagged, sorted atoms
-                        self._seen[uplow][_indices] = layer + 1 
-                        
+                        self._seen[uplow][_indices] = layer + 1
+
                     # one of the two layers (upper,lower) or both are empty
-                    assert _inlayer_group , self.EMPTY_LAYER  
+                    assert _inlayer_group , self.EMPTY_LAYER
 
                     _layers.append(_inlayer_group)
                     break
@@ -189,18 +190,18 @@ class ITIM(pytim.PYTIM):
             queue.put(_layers)
 
     def _sanity_checks(self):
-    
+
         assert self.alpha > 0 ,                                           self.ALPHA_NEGATIVE
         assert self.alpha < np.amin(self.universe.dimensions[:3]) ,       self.ALPHA_LARGE
-    
+
         assert self.target_mesh > 0 ,                                     self.MESH_NEGATIVE
         assert self.target_mesh < np.amin(self.universe.dimensions[:3]) , self.MESH_LARGE
-    
+
         if(self.cluster_cut is not None):
             assert len(self.cluster_cut)== 1 or len(self.cluster_cut) == 1+len(self.extra_cluster_groups) , self.MISMATCH_CLUSTER_SEARCH
         else:
             assert self.extra_cluster_groups is None , self.UNDEFINED_CLUSTER_SEARCH
-    
+
         try:
             np.arange(int(self.alpha/self.target_mesh))
         except:
@@ -230,18 +231,18 @@ class ITIM(pytim.PYTIM):
             labels,counts = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],self.universe.dimensions[:6])
             labels = np.array(labels)
             label_max = np.argmax(counts) # the label of atoms in the largest cluster
-            ids_max   = np.where(labels==label_max)[0]  # the indices (within the group) of the 
+            ids_max   = np.where(labels==label_max)[0]  # the indices (within the group) of the
                                                         # atoms belonging to the largest cluster
             self.cluster_group = self.itim_group[ids_max]
-            
+
         else:
             self.cluster_group=self.itim_group ;
 
-        
+
         utilities.centerbox(self.universe,center_direction=self.normal)
         self.center(self.cluster_group,self.normal)
-               
-        # first we label all atoms in itim_group to be in the gas phase 
+
+        # first we label all atoms in itim_group to be in the gas phase
         self.itim_group.atoms.bfactors = 0.5
         # then all atoms in the larges group are labelled as liquid-like
         self.cluster_group.atoms.bfactors = 0
@@ -265,7 +266,7 @@ class ITIM(pytim.PYTIM):
             # the calculation between the two sides. Would it be
             # possible to implement easily 2d domain decomposition?
             proc=[[],[]]
-            queue = [ Queue() , Queue() ] 
+            queue = [ Queue() , Queue() ]
             proc[up]  = Process(target=self._assign_one_side,
                                 args=(up,sort[::-1],_x,_y,_z,_radius,queue[up]))
             proc[low] = Process(target=self._assign_one_side,
@@ -283,9 +284,9 @@ class ITIM(pytim.PYTIM):
         # assign bfactors to all layers
         for uplow in [up,low]:
             for _nlayer,_layer in enumerate(self._layers[uplow]):
-                _layer.bfactors = _nlayer+1 
+                _layer.bfactors = _nlayer+1
 
-        # reset the interpolator        
+        # reset the interpolator
         self._interpolator=None
 
     def _generate_periodic_border_2D(self, group):
@@ -296,11 +297,11 @@ class ITIM(pytim.PYTIM):
         shift=np.diagflat(_box)
 
         eps = min(2.*self.alpha,_box[0],_box[1])
-        L = [eps,eps] 
+        L = [eps,eps]
         U = [_box[0] - eps  , _box[1] - eps  ]
 
         pos=positions[:]
-        Lx= positions[positions[:,0]<=L[0]]+shift[0] 
+        Lx= positions[positions[:,0]<=L[0]]+shift[0]
         Ly= positions[positions[:,1]<=L[1]]+shift[1]
         Ux= positions[positions[:,0]>=U[0]]-shift[0]
         Uy= positions[positions[:,1]>=U[1]]-shift[1]
@@ -309,11 +310,11 @@ class ITIM(pytim.PYTIM):
         UxUy = positions[np.logical_and(positions[:,0]>=U[0], positions[:,1]>=U[1])] - (shift[0]+shift[1])
         LxUy = positions[np.logical_and(positions[:,0]<=L[0], positions[:,1]>=U[1])] + (shift[0]-shift[1])
         UxLy = positions[np.logical_and(positions[:,0]>=U[0], positions[:,1]<=L[1])] - (shift[0]-shift[1])
-        
+
         return np.concatenate((pos,Lx,Ly,Ux,Uy,LxLy,UxUy,LxUy,UxLy))
 
     def triangulate_layer(self,layer=1):
-        """ Triangulate a layer 
+        """ Triangulate a layer
 
             :param int layer:  (default: 1) triangulate this layer (on both sides of the interface)
             :return list triangulations:  a list of two Delaunay triangulations, which are also stored in self.surface_triangulation
@@ -328,30 +329,30 @@ class ITIM(pytim.PYTIM):
         upperpos = self._generate_periodic_border_2D(upper)
         lowerpos = self._generate_periodic_border_2D(lower)
 
-        self.surface_triangulation = [None,None] 
-        self.trimmed_surface_triangles = [None,None] 
-        self.triangulation_points= [None,None] 
-        self.surface_triangulation[0] = Delaunay(upperpos[:,0:2]) 
-        self.surface_triangulation[1] = Delaunay(lowerpos[:,0:2]) 
+        self.surface_triangulation = [None,None]
+        self.trimmed_surface_triangles = [None,None]
+        self.triangulation_points= [None,None]
+        self.surface_triangulation[0] = Delaunay(upperpos[:,0:2])
+        self.surface_triangulation[1] = Delaunay(lowerpos[:,0:2])
         self.triangulation_points[0] = upperpos[:]
         self.triangulation_points[1] = lowerpos[:]
         self.trimmed_surface_triangles[0] = utilities.trim_triangulated_surface(self.surface_triangulation[0],box)
         self.trimmed_surface_triangles[1] = utilities.trim_triangulated_surface(self.surface_triangulation[1],box)
         return self.surface_triangulation
-        
+
     def _initialize_distance_interpolator(self,layer):
         if self._interpolator == None :
             # we don't know if previous triangulations have been done on the same
-            # layer, so just in case we repeat it here. This can be fixed in principle 
+            # layer, so just in case we repeat it here. This can be fixed in principle
             # with a switch
             self.triangulate_layer(layer)
-       
+
             self._interpolator= [None,None]
             self._interpolator[0] = LinearNDInterpolator(self.surface_triangulation[0],
                                                          self.triangulation_points[0][:,2])
             self._interpolator[1] = LinearNDInterpolator(self.surface_triangulation[1],
                                                          self.triangulation_points[1][:,2])
-            
+
     def interpolate_surface(self,positions,layer):
         self._initialize_distance_interpolator(layer)
         upper_set = positions[positions[:,2]>=0]
@@ -361,18 +362,21 @@ class ITIM(pytim.PYTIM):
         lower_int = self._interpolator[1](lower_set[:,0:2])
         #copy everything back to one array with the correct order
         elevation = np.zeros(len(positions))
-        elevation[np.where(positions[:,2]>=0)] = upper_int 
-        elevation[np.where(positions[:,2]< 0)] = lower_int 
+        elevation[np.where(positions[:,2]>=0)] = upper_int
+        elevation[np.where(positions[:,2]< 0)] = lower_int
         return elevation
 
 
     def layers(self,side='both',*ids):
         """ Select one or more layers.
 
-        :param str side: 'upper', 'lower' or 'both'
+        :param str side: 'upper', 'lower' or 'both', where 'upper' corresponds to the larger values of coordinates
+                         along the interface normal direction
+
         :param slice ids: the slice corresponding to the layers to be selcted (starting from 0)
 
-        The slice can be used to select a single layer, or multiple, e.g. (using the example of the :class:`ITIM` class) :
+        The slice can be used to select a single layer, or multiple, e.g. (using the example of the :class:`ITIM` class).
+        The syntax of the layer selection follows that of slicing in python:
 
         >>> interface.layers('upper')  # all layers, upper side
         [<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>, <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>]
