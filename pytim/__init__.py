@@ -162,9 +162,9 @@ class PYTIM(object):
 
         histo,edges=np.histogram(_pos_group, bins=10, range=_range, density=True)
 
-        max=np.amax(histo)
-        min=np.amin(histo)
-        delta=min+(max-min)/3. ;# TODO test different cases
+        max_val=np.amax(histo)
+        min_val=np.amin(histo)
+        delta=min_val+(max_val-min_val)/3. ;# TODO test different cases
 
         # let's first avoid crossing pbc with the liquid phase. This can fail:
         while(histo[0]>delta or histo[-1]> delta):

@@ -210,7 +210,8 @@ class ITIM(pytim.PYTIM):
 
 
     def assign_layers(self):
-        """ Determine the ITIM layers.
+        """ Determine the ITIM layers. The algorithm centers the system around zero. To center it around the middle of the box
+            use the center() method after this one
 
 
         """
