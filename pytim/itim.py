@@ -238,6 +238,7 @@ class ITIM(pytim.PYTIM):
         else:
             self.cluster_group=self.itim_group ;
 
+        utilities.centerbox(self.universe,center_direction=self.normal)
         self.center(self.cluster_group,self.normal)
         utilities.centerbox(self.universe,center_direction=self.normal)
                
