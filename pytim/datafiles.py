@@ -1,10 +1,10 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 """
-Location of data files for Pytim examples and tests 
+Location of data files for Pytim examples and tests
 ====================================================
 
-Real MD simulation data are stored in the ``data/`` subdirectory. 
+Real MD simulation data are stored in the ``data/`` subdirectory.
 
 
     Example: load an example trajectory
@@ -50,11 +50,12 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 __all__ = [
     "WATER_GRO",             # GROMACS single frame, water/vapour interface
     "WATERSMALL_GRO",        # GROMACS single frame, water/vapour interface
-    "MICELLE_PDB",           # PDB of dodecylphosphocholine micelle in water 
+    "MICELLE_PDB",           # PDB of dodecylphosphocholine micelle in water
     "WATER_XTC",             # GROMACS trajectory, 100 frames, water/vapour interface
     "G43A1_TOP",             # GROMOS 43a1 nonbonded parameters, from gromacs distribution
     "pytim_data",            # class to access the data
     "_TEST_ORIENTATION_GRO", # test file
+    "_TEST_PROFILE_GRO", # test file
 ]
 
 from pkg_resources import resource_filename
@@ -90,7 +91,7 @@ class Data(object):
         self._label.append(label)
         if label[0] is not '_':
             self.label.append(label)
-        self.file[label]       = globals()[label]  
+        self.file[label]       = globals()[label]
         file = self.file[label]
         self.type[file]=type
         self.type[label]=type
@@ -98,10 +99,10 @@ class Data(object):
         self.format[label]=format
         self.description[file]=desc
         self.description[label]=desc
-        
+
 
     nm2angs=10.0
-    
+
     def vdwradii(self,filename):
         if self.type[filename] == 'topol':
             if self.format[filename] == 'GMX':
@@ -127,26 +128,29 @@ class Data(object):
                         if (re.match('^ *\[ *atomtypes *\]',_line)):
                             scan=True
                 return _radii
-                
-     
+
+
 pytim_data=Data()
 
 ## NOTE: to add a new datafile, make sure it is listed in setup.py (in the root directory)
 ##       in the package_data option (a glob like 'data/*' is usually enough)
-WATER_GRO      = resource_filename('pytim', 'data/water.gro')           
-pytim_data.add('WATER_GRO'  ,  'config', 'GRO', 'SPC water/vapour interface') 
+WATER_GRO      = resource_filename('pytim', 'data/water.gro')
+pytim_data.add('WATER_GRO'  ,  'config', 'GRO', 'SPC water/vapour interface')
 
-MICELLE_PDB    = resource_filename('pytim', 'data/micelle.pdb')           
-pytim_data.add('MICELLE_PDB',  'config', 'GRO','DPC micelle') 
+MICELLE_PDB    = resource_filename('pytim', 'data/micelle.pdb')
+pytim_data.add('MICELLE_PDB',  'config', 'GRO','DPC micelle')
 
-WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')           
-pytim_data.add('WATERSMALL_GRO'  ,  'config', 'GRO','small SPC water/vapour interface') 
+WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
+pytim_data.add('WATERSMALL_GRO'  ,  'config', 'GRO','small SPC water/vapour interface')
 
 WATER_XTC      = resource_filename('pytim', 'data/water.xtc')
-pytim_data.add('WATER_XTC'  ,  'traj', 'XTC','SPC water/vapour interface trajectory') 
+pytim_data.add('WATER_XTC'  ,  'traj', 'XTC','SPC water/vapour interface trajectory')
 
-_TEST_ORIENTATION_GRO = resource_filename('pytim', 'data/_test_orientation.gro')           
-pytim_data.add('_TEST_ORIENTATION_GRO',  'config', 'GRO','test file') 
+_TEST_ORIENTATION_GRO = resource_filename('pytim', 'data/_test_orientation.gro')
+pytim_data.add('_TEST_ORIENTATION_GRO',  'config', 'GRO','test file')
+
+_TEST_PROFILE_GRO = resource_filename('pytim', 'data/_test_profile.gro')
+pytim_data.add('_TEST_PROFILE_GRO',  'config', 'GRO','test file')
 
 G43A1_TOP = resource_filename('pytim', 'data/ffg43a1.nonbonded.itp') # This should be the last line: clean up namespace
 pytim_data.add('G43A1_TOP'  , 'topol' , 'GMX','GROMOS 43A1 topology for GROMACS')

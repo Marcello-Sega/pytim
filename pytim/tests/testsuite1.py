@@ -10,20 +10,20 @@ class testsuite1():
     This is a collection of basic tests to check
     that code is running -- no test on the correctness
     of the output is performed here.
-    
-    
+
+
     >>> # TEST:1 basic functionality
     >>> import MDAnalysis as mda
-    >>> import pytim 
-    >>> from pytim import  * 
+    >>> import pytim
+    >>> from pytim import  *
     >>> from pytim.datafiles import *
     >>> u         = mda.Universe(WATER_GRO)
-    >>> oxygens   = u.select_atoms("name OW") 
+    >>> oxygens   = u.select_atoms("name OW")
     >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4)
     >>> interface.assign_layers()
     >>> del interface
-     
-    >>> # TEST:2 large probe sphere radius 
+
+    >>> # TEST:2 large probe sphere radius
     >>> interface = pytim.ITIM(u, alpha=100000.0, max_layers=1,multiproc=False)
     Traceback (most recent call last):
     	...
@@ -31,11 +31,23 @@ class testsuite1():
 
 
     >>> # OBSERVABLES TEST: 1
-    >>> u = mda.Universe(_TEST_ORIENTATION_GRO) 
+    >>> u = mda.Universe(_TEST_ORIENTATION_GRO)
     >>> o = observables.MolecularOrientation(u)
     >>> print(o.compute(u.atoms).flatten())
     [ 1.          0.          0.          0.          1.          0.          0.
      -0.70710677 -0.70710677]
+
+    >>> # OBSERVABLES TEST: 2
+    >>> u=mda.Universe(_TEST_PROFILE_GRO)
+    >>> o=observables.Number()
+    >>> p=observables.Profile(direction='x',group=u.atoms,observable=o)
+    >>> p.sample()
+    >>> low,up,avg =  p.profile(binwidth=1.0)
+    >>> print(low[0:3])
+    [ 0.  1.  2.]
+    >>> print(avg[0:3])
+    [ 0.01  0.02  0.03]
+
 
     """
 

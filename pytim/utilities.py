@@ -47,7 +47,7 @@ def get_pos(group=None,normal=2):
     if normal==1:
         return np.roll(pos,1,axis=1)
 
-def centerbox(universe,x=None,y=None,z=None,center_direction=2,halfbox_shift=True):
+def centerbox(universe,x=None,y=None,z=None,vector=None,center_direction=2,halfbox_shift=True):
     # in ITIM, the system along the normal direction is always centered at 0 (halfbox_shift==True)
     # To center to the middle of the box along all directions, set halfbox_shift=False
     dim = universe.coord.dimensions
@@ -56,31 +56,37 @@ def centerbox(universe,x=None,y=None,z=None,center_direction=2,halfbox_shift=Tru
     if center_direction in dirdict:
         center_direction = dirdict[center_direction]
     assert center_direction in [0,1,2], "Wrong direction supplied to centerbox"
-        
+
     shift=np.array([0.,0.,0.])
     if halfbox_shift==True:
         shift[center_direction]=dim[center_direction]/2.
     # we rebox the atoms in universe, and not a vector
-    if x is None and y is None and z is None:
-        stack=True ; 
+    if x is None and y is None and z is None and vector is None:
+        stack=True ;
         x=get_x(universe.atoms)
         y=get_y(universe.atoms)
         z=get_z(universe.atoms)
-    
-    for index, val in enumerate((x,y,z)):
-        try:
-            # let's just try to rebox all directions. Will succeed only for those which are not None  
-            # the >= convention is needed for cKDTree
-            val[val>= dim[index]-shift[index]]-=dim[index]
-            val[val<  0         -shift[index]]+=dim[index]
-        except:
+    if x is None and y is None and z is None and vector is not None:
+         try:
+            vector[vector>= dim[center_direction]-shift[center_direction]]-=dim[center_direction]
+            vector[vector< -dim[center_direction]-shift[center_direction]]+=dim[center_direction]
+         except:
             pass
+    if x is not None and y is not None and z is not None and vector is None:
+        for index, val in enumerate((x,y,z)):
+            try:
+                # let's just try to rebox all directions. Will succeed only for those which are not None
+                # the >= convention is needed for cKDTree
+                val[val>= dim[index]-shift[index]]-=dim[index]
+                val[val<  0         -shift[index]]+=dim[index]
+            except:
+                pass
     if stack:
         universe.coord.positions=np.column_stack((x,y,z))
 
 def guess_normal(universe, group):
-    """ 
-    Guess the normal of a liquid slab 
+    """
+    Guess the normal of a liquid slab
 
     """
     universe.atoms.pack_into_box()
@@ -89,13 +95,13 @@ def guess_normal(universe, group):
     delta = []
     for direction in range(0,3):
         histo,edges=np.histogram(group.positions[:,direction], bins=5,
-                                 range=(0,dim[direction]), 
+                                 range=(0,dim[direction]),
                                  density=True) ;
         max=np.amax(histo)
         min=np.amin(histo)
-        delta.append( np.sqrt((max-min)**2 )) 
-    return np.argmax(delta) 
- 
+        delta.append( np.sqrt((max-min)**2 ))
+    return np.argmax(delta)
+
 def trim_triangulated_surface(tri,box):
     """ Reduce a surface triangulation that has been extended to allow for periodic boundary conditions
         to the primary cell.
@@ -110,26 +116,26 @@ def trim_triangulated_surface(tri,box):
                                                   tri.points[tri.simplices]>[0,0]).sum(axis=2)>=2).sum(axis=1)>=2)]
 
 def triangulated_surface_stats(tri2d,points3d):
-    """ Return basic statistics about a surface triangulation 
+    """ Return basic statistics about a surface triangulation
 
         Implemented statistics are: surface area
 
-        :param tri2d             : indices of triangles vertices 
+        :param tri2d             : indices of triangles vertices
         :param ndarray  points3d : the heigth of each vertex along the third dimension
         :returns list stats      : the statistics :  [surface_area]
     """
 
-    # TODO: write a more efficient routine ? 
+    # TODO: write a more efficient routine ?
     # some advanced indexing here...
     # points3d[reduced] is an array of shape (x,3,3)
-    # we need to subtract the first of the three vectors 
+    # we need to subtract the first of the three vectors
     # from each of them. This uses numpy.newaxis
     v = points3d[tri2d]-points3d[tri2d][:,0][:,None]
-    # then we need to make the cross product of the two 
-    # non-zero vectors of each triplet 
+    # then we need to make the cross product of the two
+    # non-zero vectors of each triplet
     area = np.linalg.norm(np.cross(v[:,1],v[:,2]),axis=1).sum()/2.
     return [area]
-     
+
 
 def _init_NN_search(group,box):
     #NOTE: boxsize shape must be (6,), and the last three elements are overwritten in cKDTree:
@@ -148,14 +154,14 @@ def _NN_query(kdtree,position,qrange):
     return kdtree.query_ball_point(position,qrange,n_jobs=-1)
 
 def do_cluster_analysis_DBSCAN(group,cluster_cut,box):
-    """ Performs a cluster analysis using DBSCAN 
+    """ Performs a cluster analysis using DBSCAN
 
-        :returns [labels,counts]: lists of the id of the cluster to which every atom is belonging to, and of the number of elements in each cluster. 
+        :returns [labels,counts]: lists of the id of the cluster to which every atom is belonging to, and of the number of elements in each cluster.
 
         Uses a slightly modified version of DBSCAN from sklearn.cluster
         that takes periodic boundary conditions into account (through
-        cKDTree's boxsize option) and collects also the sizes of all 
-        clusters. This is on average O(N log N) thanks to the O(log N) 
+        cKDTree's boxsize option) and collects also the sizes of all
+        clusters. This is on average O(N log N) thanks to the O(log N)
         scaling of the kdtree.
 
     """
@@ -164,7 +170,7 @@ def do_cluster_analysis_DBSCAN(group,cluster_cut,box):
     points = group.atoms.positions[:]
 
     tree = cKDTree(points,boxsize=box[:6])
-    neighborhoods = np.array( [ np.array(neighbors) 
+    neighborhoods = np.array( [ np.array(neighbors)
                             for neighbors in tree.query_ball_point(points, cluster_cut,n_jobs=-1) ] )
     n_neighbors = np.array([len(neighbors)
                             for neighbors in neighborhoods])
