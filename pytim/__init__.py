@@ -6,6 +6,32 @@ import numpy as np
 import MDAnalysis
 from   MDAnalysis.topology import tables
 
+
+def PatchTrajectory(trajectory,interface):
+
+    trajectory.interface = interface
+
+    class PatchedTrajectory(trajectory.__class__):
+        __frame=trajectory.ts.frame
+        @property
+        def frame(self):
+            if self.ts.frame != self.__frame:
+                self.interface._assign_layers()
+                __frame=self.ts.frame
+            return self.ts.frame
+
+        @frame.setter
+        def frame(self, value):
+            __frame       = value
+
+    oldname  = trajectory.__class__.__name__
+    oldmodule= trajectory.__class__.__module__
+
+    PatchedTrajectory.__name__   = oldname
+    PatchedTrajectory.__module__ = oldmodule
+    trajectory.__class__ = PatchedTrajectory
+
+
 class PYTIM(object):
     """ The PYTIM metaclass
     """
@@ -23,7 +49,7 @@ class PYTIM(object):
     MISMATCH_CLUSTER_SEARCH= "cluster_cut should be either a scalar or an array matching the number of groups (including itim_group)"
     EMPTY_LAYER="One or more layers are empty"
     CLUSTER_FAILURE="Cluster algorithm failed: too small cluster cutoff provided?"
-    UNDEFINED_LAYER="No layer defined: forgot to call assign_layers() or not enough layers requested"
+    UNDEFINED_LAYER="No layer defined: forgot to call _assign_layers() or not enough layers requested"
     WRONG_UNIVERSE="Wrong Universe passed to ITIM class"
     UNDEFINED_ITIM_GROUP="No itim_group defined"
     WRONG_DIRECTION="Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
@@ -197,7 +223,7 @@ class PYTIM(object):
 
 
     @abstractmethod
-    def assign_layers(self):
+    def _assign_layers(self):
         pass
 
     @abstractmethod

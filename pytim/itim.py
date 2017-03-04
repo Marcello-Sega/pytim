@@ -39,7 +39,6 @@ class ITIM(pytim.PYTIM):
         >>> oxygens   = u.select_atoms("name OW")
         >>>
         >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=False)
-        >>> interface.assign_layers()
         >>>
         >>> print interface.layers('upper',1)  # first layer, upper
         <AtomGroup with 406 atoms>
@@ -52,6 +51,10 @@ class ITIM(pytim.PYTIM):
                  info=False,multiproc=True):
 
         #TODO add type checking for each MDA class passed
+
+        # dynamic monkey patch to change the behavior of the frame property
+        pytim.PatchTrajectory(universe.trajectory,self)
+
         self.universe=universe
         self.target_mesh=mesh
         self.alpha=alpha
@@ -79,6 +82,8 @@ class ITIM(pytim.PYTIM):
         self.use_threads   = False
         self.use_kdtree    = True
         self.use_multiproc = multiproc
+
+        self._assign_layers()
 
     def _assign_normal(self,normal):
 
@@ -209,7 +214,7 @@ class ITIM(pytim.PYTIM):
             raise ValueError
 
 
-    def assign_layers(self):
+    def _assign_layers(self):
         """ Determine the ITIM layers.
 
 
@@ -241,8 +246,8 @@ class ITIM(pytim.PYTIM):
         utilities.centerbox(self.universe,center_direction=self.normal)
         self.center(self.cluster_group,self.normal)
         utilities.centerbox(self.universe,center_direction=self.normal)
-               
-        # first we label all atoms in itim_group to be in the gas phase 
+
+        # first we label all atoms in itim_group to be in the gas phase
         self.itim_group.atoms.bfactors = 0.5
         # then all atoms in the larges group are labelled as liquid-like
         self.cluster_group.atoms.bfactors = 0

@@ -39,7 +39,6 @@ class GITIM(pytim.PYTIM):
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
         >>> 
         >>> interface =pytim.GITIM(u,itim_group=g,molecular=False,symmetry='spherical',alpha=2.5,)
-        >>> interface.assign_layers()
         >>> layer = interface.layers(1)
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print layer
@@ -52,6 +51,10 @@ class GITIM(pytim.PYTIM):
                  info=False,multiproc=True):
 
         #TODO add type checking for each MDA class passed
+
+        # dynamic monkey patch to change the behavior of the frame property
+        pytim.PatchTrajectory(universe.trajectory,self)
+
         self.universe=universe
         self.alpha=alpha
         self.max_layers=max_layers
@@ -78,6 +81,8 @@ class GITIM(pytim.PYTIM):
         self.use_threads   = False
         self.use_kdtree    = True
         self.use_multiproc = multiproc
+
+        self._assign_layers()
 
     def _assign_symmetry(self,symmetry):
 
@@ -200,7 +205,7 @@ class GITIM(pytim.PYTIM):
 
         return ids
     
-    def assign_layers(self):
+    def _assign_layers(self):
         """ Determine the GITIM layers.
 
 

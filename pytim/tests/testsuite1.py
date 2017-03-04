@@ -20,7 +20,6 @@ class testsuite1():
     >>> u         = mda.Universe(WATER_GRO)
     >>> oxygens   = u.select_atoms("name OW")
     >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4)
-    >>> interface.assign_layers()
     >>> del interface
 
     >>> # TEST:2 large probe sphere radius
