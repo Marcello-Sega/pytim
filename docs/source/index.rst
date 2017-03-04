@@ -21,7 +21,6 @@ for planar interfaces is the following:
 
     interface = pytim.ITIM(u,itim_group=oxygens)
 
-    interface.assign_layers()
     interface.writepdb()
 
 This code block first imports MDAanalysis, pytim, and useful
@@ -48,15 +47,18 @@ where surface oxygen atoms are highlighted in blue.
    :align: center
 
 
-Table of Contents Tree
-**********************
-
 .. toctree::
+
     ITIM
     GITIM
     observables
     datafiles
     utilities
+
+.. The next toctree is hidden to include testsuite in the doctest without showing it in the html pages
+.. toctree::
+    :hidden:
+
     testsuite
 
 
