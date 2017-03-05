@@ -116,13 +116,11 @@ class PYTIM(object):
                         avg =  np.average(_radii_dict.values())
                         _radii[_types==_atype] = avg
 
-                        print("*************************************************************************************")
-                        print("                                 Warning                                             ")
-                        print(" No appropriate radius was found for the atomtype "+_atype                            )
-                        print(" Using the average radius ("+str(avg)+") as a fallback option...                     ")
-                        print(" Pass a dictionary of radii (in Angstrom) with the option radii_dict"                 )
-                        print(" for example: r={'"+_atype+"':1.2,...} ; inter=pytim.ITIM(u,radii_dict=r)            ")
-                        print("*************************************************************************************")
+                        print("!!                              WARNING")
+                        print("!! No appropriate radius was found for the atomtype "+_atype)
+                        print("!! Using the average radius ("+str(avg)+") as a fallback option...")
+                        print("!! Pass a dictionary of radii (in Angstrom) with the option radii_dict")
+                        print("!! for example: r={'"+_atype+"':1.2,...} ; inter=pytim.ITIM(u,radii_dict=r)")
 
                 _g.radii=_radii[:] #deep copy
                 assert np.all(_g.radii is not None) , self.UNDEFINED_RADIUS
