@@ -18,12 +18,11 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 
     Example: list all configurations
 
-    >>> for config in pytim_data.config:
+    >>> for config in sorted(pytim_data.config):
     ...     print("{:20s} {:s}".format(config,pytim_data.description[config]))
-    WATER_GRO            SPC water/vapour interface
     MICELLE_PDB          DPC micelle
     WATERSMALL_GRO       small SPC water/vapour interface
-
+    WATER_GRO            SPC water/vapour interface
 
 
     Example: list all topologies
@@ -50,6 +49,7 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 __all__ = [
     "WATER_GRO",             # GROMACS single frame, water/vapour interface
     "WATERSMALL_GRO",        # GROMACS single frame, water/vapour interface
+    "METHANOL_GRO",          # XYZ, single frame, methanol/vapour interface with molecules in the vapour phase
     "MICELLE_PDB",           # PDB of dodecylphosphocholine micelle in water
     "WATER_XTC",             # GROMACS trajectory, 100 frames, water/vapour interface
     "G43A1_TOP",             # GROMOS 43a1 nonbonded parameters, from gromacs distribution
@@ -142,6 +142,9 @@ pytim_data.add('MICELLE_PDB',  'config', 'GRO','DPC micelle')
 
 WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
 pytim_data.add('WATERSMALL_GRO'  ,  'config', 'GRO','small SPC water/vapour interface')
+
+METHANOL_GRO   = resource_filename('pytim', 'data/methanol.gro')
+pytim_data.add('METHANOL_GRO'  ,  'conf', 'GRO', 'methanol/vapour interface')
 
 WATER_XTC      = resource_filename('pytim', 'data/water.xtc')
 pytim_data.add('WATER_XTC'  ,  'traj', 'XTC','SPC water/vapour interface trajectory')

@@ -5,6 +5,7 @@ from   abc import ABCMeta, abstractmethod
 import numpy as np
 import MDAnalysis
 from   MDAnalysis.topology import tables
+from   difflib import get_close_matches
 
 
 def PatchTrajectory(trajectory,interface):
@@ -105,37 +106,24 @@ class PYTIM(object):
                 else: # use the provided dict.
                     _radii_dict = radii_dict
 
-                # this is _radii_dict restricted to the 1st character. Not necessarily unique, but a reasonable fallback.
-                _reduced_radii_dict = dict()
-                for key, val in _radii_dict.iteritems():
-                    _reduced_radii_dict[key[0]]=val
-
                 _radii = np.zeros(len(_g.types))
-                null_radii=[]
+
                 for _atype in np.unique(_types):
-                     try:
-                         _radii[_types==_atype]=_radii_dict[_atype]
-                     except:
-                        try:
-                            _radii[_types==_atype]=_reduced_radii_dict[_atype]
-                            if _reduced_radii_dict[_atype] == 0 and _atype is not 'H':
-                                print("")
-                                print("*******************************************")
-                                print("Warning, radius set to zero for atomtype "+str(_atype))
-                                print("*******************************************")
-                                print("")
-                        except:
-                            null_radii.append(_atype)
-                if len(null_radii) > 0:
-                    print("************************************************************************************")
-                    print("                                 Fatal error                                        ")
-                    print("No appropriate radius was found for the atomtypes / first letter in the atom namess:")
-                    print("   "+', '.join(null_radii)                                                           )
-                    print("Pass a dictionary of radii (in Angstrom) with the option radii_dict"                 )
-                    print("for example: r={'"+str(null_radii[0])+"':1.2} ; inter=pytim.ITIM(u,radii_dict=r)    ")
-                    print("or include a distributed one (from pytim.datafiles import *; print pytim_data.topol)")
-                    print("************************************************************************************")
-                    exit(1)
+                    try: 
+                        matching_type         = get_close_matches(_atype, _radii_dict.keys() , n=1, cutoff=0.1)
+                        _radii[_types==_atype]=_radii_dict[matching_type[0]]
+                    except:
+                        avg =  np.average(_radii_dict.values())
+                        _radii[_types==_atype] = avg
+
+                        print("*************************************************************************************")
+                        print("                                 Warning                                             ")
+                        print(" No appropriate radius was found for the atomtype "+_atype                            )
+                        print(" Using the average radius ("+str(avg)+") as a fallback option...                     ")
+                        print(" Pass a dictionary of radii (in Angstrom) with the option radii_dict"                 )
+                        print(" for example: r={'"+_atype+"':1.2,...} ; inter=pytim.ITIM(u,radii_dict=r)            ")
+                        print("*************************************************************************************")
+
                 _g.radii=_radii[:] #deep copy
                 assert np.all(_g.radii is not None) , self.UNDEFINED_RADIUS
                 del _radii

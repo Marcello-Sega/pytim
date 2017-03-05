@@ -48,12 +48,21 @@ where surface oxygen atoms are highlighted in blue.
 
 
 .. toctree::
+    :caption: Modules
+    :name: Modules
 
     ITIM
     GITIM
     observables
     datafiles
     utilities
+
+.. toctree::
+    :caption: Tutorials
+    :name: Tutorials
+
+    guessing_radii
+
 
 .. The next toctree is hidden to include testsuite in the doctest without showing it in the html pages
 .. toctree::
