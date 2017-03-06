@@ -54,7 +54,7 @@ where surface oxygen atoms are highlighted in blue.
 
 
 .. image:: example_water.png
-   :scale: 70%
+   :width: 70%
    :align: center
 
 This is a very basic example, and many more are given in the :doc:`Tutorials`. 
