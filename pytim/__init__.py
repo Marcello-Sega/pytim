@@ -88,6 +88,8 @@ class PYTIM(object):
             print("Error writing pdb file")
 
     def savepdb(self,filename='layers.pdb',centered=True,multiframe=True):
+        """ An alias to :func:`writepdb`
+        """
         self.writepdb(filename,centered,multiframe)
 
     def assign_radii(self,radii_dict):
