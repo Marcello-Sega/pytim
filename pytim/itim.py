@@ -55,6 +55,7 @@ class ITIM(pytim.PYTIM):
         # dynamic monkey patch to change the behavior of the frame property
         pytim.PatchTrajectory(universe.trajectory,self)
 
+        self.symmetry='planar'
         self.universe=universe
         self.target_mesh=mesh
         self.alpha=alpha

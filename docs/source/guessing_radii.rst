@@ -11,27 +11,29 @@ Example
 -------
 
 **The problem**
-	Configuration file formats such as the gromos one do not bear *atomtype* nor *atomic radius* information, and *atomic radii* are needed to run an ITIM/GITIM analysis.
+	Configuration file formats such as the gromos one do not bear *atomtype* nor *atomic radius* information.
+	If the atom names in the configuration file start with one of the letters `['C', 'F', 'H', 'O', 'N', 'P', 'S']`, Pytim chooses the corresponding 
+	radius using the MDAnalysis values, and their average otherwise. This is usually a good enough compromise, but it is possible to have full control 
+	over this. Let's start with a "problematic" configuration file:
 
 	>>> import MDAnalysis as mda
 	>>> import pytim
 	>>> from pytim.datafiles import *
 	>>> u = mda.Universe(METHANOL_GRO)
 
+	Since no information is carried by the file format on the radii, we have
 
-	the atom types will be assigned by MDAnalysis to be the first letter in the
+        >>> print u.residues[0].atoms.radii
+        [None None None]
+
+	the atom types will assigned by MDAnalysis are the first letter in the
 	atom name:
 
 	>>> print u.residues[0].atoms.types
 	['M' 'O' 'H']
-	>>> print u.residues[0].atoms.names
-	['Me1' 'O2' 'H3']
 
-	As no information on the atom radii is carried by the gromos format, of course we have
-
-	>>> print u.residues[0].atoms.radii
-	[None None None]
-
+	By initializing the interface, Pytim will associate standard radii to the matching types, and an average radius to the non-matching ones. If this
+	is not the wanted behavior, one has usually the following two options:
 
 **Case 1**
 	We know exactly what the atomic radii should be.
@@ -44,7 +46,7 @@ Example
 	>>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=mydict)
 
 **Case 2** 
-	we don't know exactly the atomic radii.
+	We don't know exactly the atomic radii, but we don't want to use just the standard values.
 **Solution**
 	Use an existing topology, and overwrite the types guessed by MDAnalysis
 
@@ -72,10 +74,16 @@ pytim.tables.vdwradii:
 >>> print pytim.tables.vdwradii.keys()
 ['C', 'F', 'H', 'O', 'N', 'P', 'S']
 
-Only few atom types have a radius associated to them...
+Our atom names are
 
-If we try to run the interfacial analysis we 
-get the following warning
+>>> print u.residues[0].atoms.names
+['Me1' 'O2' 'H3']
+
+>>> print u.residues[0].atoms.types
+['M' 'O' 'H']
+
+When building the interface, Pytim will try to guess atom types and radii. Since `M` 
+does not match any atom type in `tables.vdwradii`, the following warning is issued:
 
 >>> interface = pytim.ITIM(u,cluster_cut=5.0)
 !!                              WARNING
@@ -85,17 +93,14 @@ get the following warning
 !! for example: r={'M':1.2,...} ; inter=pytim.ITIM(u,radii_dict=r)
 
                                                                                      
-
-
-
-Another possible option is to extend the default dictionary of radii, for example:
+The default dictionary `tables.vdwradii` can be extended directly, for example:
 
 >>> pytim.tables.vdwradii['M']=1.6
 
 now the warning is not issued anymore:
 >>> interface = pytim.ITIM(u,cluster_cut=5.0)
 
-Of course, one can provide the radii explicitly:
+Of course, one can provide all the radii explicitly:
 
 >>> radii = dict({'O':1.5,'M':1.6,'H':0.0})
 >>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=radii)

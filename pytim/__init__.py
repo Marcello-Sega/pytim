@@ -56,11 +56,12 @@ class PYTIM(object):
     WRONG_DIRECTION="Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
     CENTERING_FAILURE="Cannot center the group in the box. Wrong direction supplied?"
 
-    def writepdb(self,filename='layers.pdb',centered=True,multiframe=True):
+    def writepdb(self,filename='layers.pdb',centered='origin',multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
             to the layers with different beta factor.
 
             :param filename:   string  -- the output file name
+            :param origin:     string  -- 'origin', 'middle', or 'no'
             :param multiframe: boolean -- append to pdb file if True
 
             Example: save the positions (centering the interface in the cell) without appending
@@ -68,22 +69,37 @@ class PYTIM(object):
             >>> interface.writepdb('layers.pdb',multiframe=False)
 
             Example: save the positions without centering the interface. This will
-                     leave the atoms in the original position with respect to the cell.
+                     not shift the atoms from the original position (still, they will 
+                     be put into the basic cell).
                      The :multiframe: option set to :False: will overwrite the file.
 
-            >>> interface.writepdb('layers.pdb',centered=False)
+            >>> interface.writepdb('layers.pdb',centered='no')
 
         """
-
+        center_options=['no','middle','origin']
+        if centered not in center_options:
+            centered='origin'
         try:
-            if centered==False:
+            if centered=='no':
+                original_pos = self.universe.atoms.positions[:]
                 translation = self.reference_position - self.universe.atoms[0].position[:]
                 self.universe.atoms.translate(translation)
+                self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+
+            if centered=='middle' and self.symmetry=='planar':
+                original_pos = self.universe.atoms.positions[:]
+                translation = [0,0,0]
+                translation[self.normal] = self.universe.dimensions[self.normal]/2.
+                self.universe.atoms.translate(translation)
+                self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+                
             PDB=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
+
             PDB.write(self.universe.atoms)
-            if centered==False:
-                self.universe.atoms.translate(-translation)
+
+            if centered=='no' or centered=='middle':
+                self.universe.atoms.positions=original_pos
         except:
             print("Error writing pdb file")
 

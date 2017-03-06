@@ -97,9 +97,6 @@ Pytim's Main Features
 ....
 
 
-
-
-
 .. toctree::
 
 .. raw:: html

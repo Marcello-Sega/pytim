@@ -11,6 +11,8 @@
     :name: Tutorials
 
     quick
+    install
+    center
     guessing_radii
 
 
