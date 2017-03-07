@@ -97,9 +97,9 @@ def guess_normal(universe, group):
         histo,edges=np.histogram(group.positions[:,direction], bins=5,
                                  range=(0,dim[direction]),
                                  density=True) ;
-        max=np.amax(histo)
-        min=np.amin(histo)
-        delta.append( np.sqrt((max-min)**2 ))
+        max_val=np.amax(histo)
+        min_val=np.amin(histo)
+        delta.append( np.sqrt((max_val-min_val)**2 ))
     return np.argmax(delta)
 
 def trim_triangulated_surface(tri,box):
