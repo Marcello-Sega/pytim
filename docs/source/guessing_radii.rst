@@ -4,16 +4,16 @@ Topologies without atomi radii
 Summary
 -------
 if one starts from a configuration/trajectory for which
-the atom types are not known, there are two main ways of 
-feeding the relevant information to the interface constructor. 
+the atom types are not known, there are two main ways of
+feeding the relevant information to the interface constructor.
 
 Example
 -------
 
 **The problem**
 	Configuration file formats such as the gromos one do not bear *atomtype* nor *atomic radius* information.
-	If the atom names in the configuration file start with one of the letters `['C', 'F', 'H', 'O', 'N', 'P', 'S']`, Pytim chooses the corresponding 
-	radius using the MDAnalysis values, and their average otherwise. This is usually a good enough compromise, but it is possible to have full control 
+	If the atom names in the configuration file start with one of the letters `['C', 'F', 'H', 'O', 'N', 'P', 'S']`, Pytim chooses the corresponding
+	radius using the MDAnalysis values, and their average otherwise. This is usually a good enough compromise, but it is possible to have full control
 	over this. Let's start with a "problematic" configuration file:
 
 	>>> import MDAnalysis as mda
@@ -38,14 +38,14 @@ Example
 **Case 1**
 	We know exactly what the atomic radii should be.
 
-**Solution** 
-	build a dictionary of radii corresponding to the first letter 
+**Solution**
+	build a dictionary of radii corresponding to the first letter
 	of the atom name
 
 	>>> mydict    = {'M':1.6, 'O':1.5, 'H':0.0}
 	>>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=mydict)
 
-**Case 2** 
+**Case 2**
 	We don't know exactly the atomic radii, but we don't want to use just the standard values.
 **Solution**
 	Use an existing topology, and overwrite the types guessed by MDAnalysis
@@ -69,7 +69,7 @@ More in detail
 
 If we do not specify any external dictionary for the radii,
 the default one is that of MDAnalysis, which can be accessed by
-pytim.tables.vdwradii: 
+pytim.tables.vdwradii:
 
 >>> print pytim.tables.vdwradii.keys()
 ['C', 'F', 'H', 'O', 'N', 'P', 'S']
@@ -82,7 +82,7 @@ Our atom names are
 >>> print u.residues[0].atoms.types
 ['M' 'O' 'H']
 
-When building the interface, Pytim will try to guess atom types and radii. Since `M` 
+When building the interface, Pytim will try to guess atom types and radii. Since `M`
 does not match any atom type in `tables.vdwradii`, the following warning is issued:
 
 >>> interface = pytim.ITIM(u,cluster_cut=5.0)
@@ -92,7 +92,7 @@ does not match any atom type in `tables.vdwradii`, the following warning is issu
 !! Pass a dictionary of radii (in Angstrom) with the option radii_dict
 !! for example: r={'M':1.2,...} ; inter=pytim.ITIM(u,radii_dict=r)
 
-                                                                                     
+
 The default dictionary `tables.vdwradii` can be extended directly, for example:
 
 >>> pytim.tables.vdwradii['M']=1.6
@@ -121,9 +121,8 @@ The atom types supplied are:
 ['CU1+', 'CDmso', 'OWT3', 'CA2+', 'FE', 'BR', 'MG2+', 'HC', 'OWT4', 'CL-', 'NL', 'CCl4', 'CLCl4', 'CL', 'NE', 'SDmso', 'CH1', 'NZ', 'CH3', 'CH4', 'ODmso', 'NR', 'NT', 'C', 'HChl', 'DUM', 'F', 'H', 'CChl', 'CMet', 'CLChl', 'O', 'N', 'MW', 'P', 'S', 'AR', 'IW', 'CU2+', 'OM', 'CR1', 'MNH3', 'NA+', 'OA', 'SI', 'CH2', 'OW', 'ZN2+', 'OMet']
 
 
-these do not correspond exactly to ours, unless we 
-had set the atom names in the .gro file to be those
-of the corresponding atom types. 
+these do not correspond exactly to ours, unless we
+of the corresponding atom types.
 
 **However**, the automatic selection will anyway make a choice:
 
@@ -159,7 +158,8 @@ An equivalent result can be obtained faster, by overwriting the types:
 >>> u.atoms.types[u.atoms.types=='O']='OMet'
 >>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=radii_gromos)
 >>> print interface.layers()
-[[<AtomGroup with 855 atoms>], [<AtomGroup with 885 atoms>]]
+[[<AtomGroup with 555 atoms>], [<AtomGroup with 564 atoms>]]
+
 
 .. toctree::
 
