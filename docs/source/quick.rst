@@ -26,7 +26,7 @@ for planar interfaces:
     interface = pytim.ITIM(u)
 
     # write a pdb with the information on the surface layers
-    interface.writepdb('layers.pdb')
+    interface.writepdb('layers.pdb',centered='middle')
 
     # access the atoms in the layers as an MDAnalysis' AtomGroups
     upper_layer = interface.layers('upper')
