@@ -109,7 +109,7 @@ class ITIM(pytim.PYTIM):
             self.meshpoints = builtin_zip(_x.ravel(), _y.ravel())
             # cKDTree requires a box vetor with length double the dimension, see other note
             # in this module
-            _box=np.arange(4)
+            _box=np.zeros(4)
             _box[:2]=box[:2]
             self.meshtree   = cKDTree(self.meshpoints,boxsize=_box)
 
@@ -174,11 +174,13 @@ class ITIM(pytim.PYTIM):
                 if np.sum(mask) == len(mask):  #NOTE that checking len(mask[mask==0])==0 is slower.
                     _inlayer_indices   = np.flatnonzero(self._seen[uplow]==layer+1)
                     _inlayer_group     = self.cluster_group[_inlayer_indices]
+
                     if self.molecular == True:
-                        # atom is an index to cluster_group (== liquid part of itim_group)
-                        _inlayer_resindices= _inlayer_group.resids-1
-                        # this is the group of molecules in the layer
-                        _inlayer_group   = self.universe.residues[_inlayer_resindices].atoms
+                        # we first select the (unique) residues corresponding to _inlayer_group, and then
+                        # we create  group of the atoms belonging to them, with _inlayer_group.residues.atoms
+                        _tmp   = _inlayer_group.residues.atoms[:]
+                        # and we copy it back to _inlayer_group
+                        _inlayer_group = _tmp
                         # now we need the indices within the cluster_group, of those atoms which are in the
                         # molecular layer group
                         _indices = np.flatnonzero(np.in1d(self.cluster_group.atoms.ids,_inlayer_group.atoms.ids))
