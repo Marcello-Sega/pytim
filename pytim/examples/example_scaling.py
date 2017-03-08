@@ -2,14 +2,14 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 import MDAnalysis as mda
 import numpy as np
-import pytim  
+import pytim
 from   pytim.datafiles import *
 from   pytim import utilities
 import matplotlib.pyplot as plt
 
 def plot():
     data = np.loadtxt('timings.dat')
-    size=np.array(data[:,0]) 
+    size=np.array(data[:,0])
     time=np.array(data[:,1])
     plt.loglog(size,time)
     plt.ylabel('time (s)')
@@ -32,7 +32,7 @@ for n in range(9):
     print nres," molecules"
 
     utilities.lap()
-    interface.assign_layers()
+    interface._assign_layers()
     times.append((natm,utilities.lap()))
 
     u2 = mda.Merge(g,g)

@@ -1,13 +1,13 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 import MDAnalysis as mda
-import numpy as np 
+import numpy as np
 import pytim
 from   pytim import observables
 from   pytim.datafiles import *
 
 u         = mda.Universe(WATER_GRO,WATER_XTC)
-oxygens   = u.select_atoms("name OW") 
+oxygens   = u.select_atoms("name OW")
 radii     = pytim_data.vdwradii(G43A1_TOP)
 
 number    = observables.Number(u)
@@ -17,7 +17,6 @@ profile   = observables.Profile(group=oxygens,observable=number, interface=inter
 
 for t in u.trajectory[::]:
     print t.frame
-    interface.assign_layers()
     profile.sample()
 
 bins, avg = profile.profile(binwidth=0.1)
@@ -43,9 +42,9 @@ try:
 except:
     pass
 
-plt.savefig("intrinsic.pdf") 
+plt.savefig("intrinsic.pdf")
 print("Intrinsic profile saved in intrinsic.pdf")
 plt.show()
-    
+
 
 

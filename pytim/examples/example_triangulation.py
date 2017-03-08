@@ -1,21 +1,19 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 import MDAnalysis as mda
-import numpy as np 
+import numpy as np
 import pytim
 from   pytim import observables
 from   pytim.datafiles import *
 
 interface = pytim.ITIM(mda.Universe(WATER_GRO))
-box       = interface.universe.dimensions[:3] 
-
-interface.assign_layers()
+box       = interface.universe.dimensions[:3]
 
 # triangulate the surface
 surface   = observables.LayerTriangulation(interface)
 
-# obtain : statistics on the surface, two Delaunay objects, 
-#          the points belonging to the surfaces, 
+# obtain : statistics on the surface, two Delaunay objects,
+#          the points belonging to the surfaces,
 #          the triangles points clipped to the simulation box
 stats, tri , points , trim =  surface.compute()
 
@@ -28,7 +26,7 @@ try:
     from   mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     import matplotlib.tri as mtplt_tri
-except: 
+except:
     print ("mpl_toolkits is needed for the graphical part of this example, you might need to upgrade matplotlib to v. 2.0")
     exit()
 
@@ -58,9 +56,9 @@ except:
     pass
 
 # save to pdf and visualize interactively
-plt.savefig("surfaces.pdf") 
+plt.savefig("surfaces.pdf")
 print("surface triangulation saved in surfaces.pdf")
 plt.show()
-    
+
 
 
