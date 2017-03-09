@@ -12,7 +12,7 @@ from   scipy.spatial     import Delaunay
 from   scipy.spatial     import distance
 from   scipy.interpolate import LinearNDInterpolator
 from __builtin__         import zip as builtin_zip
-from   pytim             import utilities  
+from   pytim             import utilities
 import pytim
 
 class GITIM(pytim.PYTIM):
@@ -31,15 +31,15 @@ class GITIM(pytim.PYTIM):
         Example:
 
         >>> import MDAnalysis as mda
-        >>> import pytim  
+        >>> import pytim
         >>> from   pytim.datafiles import *
-        >>> 
+        >>>
         >>> u       = mda.Universe(MICELLE_PDB)
         >>> g       = u.select_atoms('resname DPC')
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
-        >>> 
+        >>>
         >>> interface =pytim.GITIM(u,itim_group=g,molecular=False,symmetry='spherical',alpha=2.5,)
-        >>> layer = interface.layers(1)
+        >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print layer
         <AtomGroup with 558 atoms>
@@ -58,13 +58,13 @@ class GITIM(pytim.PYTIM):
         self.universe=universe
         self.alpha=alpha
         self.max_layers=max_layers
+        self._layers=np.empty([max_layers],dtype=type(universe.atoms))
         self.info=info
         self.normal=None
-        try: 
+        try:
             self.all_atoms = self.universe.select_atoms('all')
         except:
             raise Exception(self.WRONG_UNIVERSE)
-        self._layers=None
         self.molecular=molecular
 
         self.cluster_cut          = cluster_cut
@@ -93,12 +93,12 @@ class GITIM(pytim.PYTIM):
         else:
             assert symmetry in self.symmetry_dict, self.WRONG_DIRECTION
             self.symmetry = symmetry
-            
+
     def _sanity_checks(self):
-    
+
         assert self.alpha > 0 ,                                           self.ALPHA_NEGATIVE
         assert self.alpha < np.amin(self.universe.dimensions[:3]) ,       self.ALPHA_LARGE
-    
+
         if(self.cluster_cut is not None):
             assert len(self.cluster_cut)== 1 or len(self.cluster_cut) == 1+len(self.extra_cluster_groups) , self.MISMATCH_CLUSTER_SEARCH
         else:
@@ -111,9 +111,9 @@ class GITIM(pytim.PYTIM):
         return t.simplices [ [np.max(distance.cdist(t.points[simplex],t.points[simplex],'euclidean'))>=threshold+2.*np.min(t.radii[simplex]) for simplex in t.simplices] ]
 
     def circumradius(self,simplex):
-    
+
         points = self.triangulation.points
-        radii  = self.triangulation.radii 
+        radii  = self.triangulation.radii
 
         R      = []
         r_i    = points[simplex]
@@ -125,10 +125,10 @@ class GITIM(pytim.PYTIM):
 
         M      = (r_i[0] - r_i)[1:]
         s      = ((r_i2[0] - r_i2[1:] - d_2[0] + d_2))/2.
-         
+
         u      = np.dot(np.linalg.inv(M),d)
         v      = r_i[1]-r_i[0]
-        
+
         A      = - (R_i[0] - np.dot(u,v) )
         B      = np.linalg.norm(R_i[0]*u+v)
         C      = 1-np.sum(u**2)
@@ -143,7 +143,7 @@ class GITIM(pytim.PYTIM):
 ##            print R_i
 ##            from mpl_toolkits.mplot3d import Axes3D
 ##            import matplotlib.pyplot as plt
-##            
+##
 ##            def drawSphere(xCenter, yCenter, zCenter, r):
 ##                #draw sphere
 ##                u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
@@ -155,7 +155,7 @@ class GITIM(pytim.PYTIM):
 ##                y = r*y + yCenter
 ##                z = r*z + zCenter
 ##                return (x,y,z)
-##            
+##
 ##            fig = plt.figure()
 ##            ax = fig.add_subplot(111, projection='3d')
 ##
@@ -166,13 +166,13 @@ class GITIM(pytim.PYTIM):
 ##            plt.show()
 ##            exit()
 
-        
+
 
     def alpha_shape(self,alpha):
         box    = self.universe.dimensions[:3]
         delta  = 2.*self.alpha+1e-6
         points = self.cluster_group.positions[:]
-        extrapoints  = [] 
+        extrapoints  = []
         # add points at the vertices of the expanded (by 2 alpha) box
         for dim in range(8):
                 # [0,0,0],[0,0,1],[0,1,0],...,[1,1,1]
@@ -184,7 +184,7 @@ class GITIM(pytim.PYTIM):
 
 #       time=dict();utilities.lap()
 
-        self.triangulation = Delaunay(points) 
+        self.triangulation = Delaunay(points)
         self.triangulation.radii = np.append(self.cluster_group.radii[:],np.zeros(8))
 
 #       time['triangulate']=utilities.lap()
@@ -204,7 +204,7 @@ class GITIM(pytim.PYTIM):
         ids = _ids[_ids<len(points)-8]
 
         return ids
-    
+
     def _assign_layers(self):
         """ Determine the GITIM layers.
 
@@ -219,18 +219,18 @@ class GITIM(pytim.PYTIM):
             labels,counts = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],self.universe.dimensions[:6])
             labels = np.array(labels)
             label_max = np.argmax(counts) # the label of atoms in the largest cluster
-            ids_max   = np.where(labels==label_max)[0]  # the indices (within the group) of the 
+            ids_max   = np.where(labels==label_max)[0]  # the indices (within the group) of the
                                                         # atoms belonging to the largest cluster
             self.cluster_group = self.itim_group[ids_max]
-            
+
         else:
             self.cluster_group=self.itim_group ;
         if self.symmetry=='spherical':
             self.center(self.cluster_group,'x',halfbox_shift=False)
             self.center(self.cluster_group,'y',halfbox_shift=False)
             self.center(self.cluster_group,'z',halfbox_shift=False)
-              
-        # first we label all atoms in itim_group to be in the gas phase 
+
+        # first we label all atoms in itim_group to be in the gas phase
         self.itim_group.atoms.bfactors = 0.5
         # then all atoms in the larges group are labelled as liquid-like
         self.cluster_group.atoms.bfactors = 0
@@ -238,15 +238,16 @@ class GITIM(pytim.PYTIM):
         _radius=self.cluster_group.radii
         size = len(self.cluster_group.positions)
         self._seen=np.zeros(size,dtype=np.int8)
-    
+
         alpha_ids = self.alpha_shape(self.alpha)
 
-        self._layers=[self.cluster_group[alpha_ids]]
+        # only the 1st layer is implemented in gitim so far
+        self._layers[0] = self.cluster_group[alpha_ids]
 
-        for nlayer,layer in enumerate(self._layers):
-                layer.bfactors = 1 
+        for layer in self._layers:
+                layer.bfactors = 1
 
-        # reset the interpolator        
+        # reset the interpolator
         self._interpolator=None
 
     def _generate_periodic_border_2D(self, group):
@@ -257,11 +258,11 @@ class GITIM(pytim.PYTIM):
         shift=np.diagflat(_box)
 
         eps = min(2.*self.alpha,_box[0],_box[1])
-        L = [eps,eps] 
+        L = [eps,eps]
         U = [_box[0] - eps  , _box[1] - eps  ]
 
         pos=positions[:]
-        Lx= positions[positions[:,0]<=L[0]]+shift[0] 
+        Lx= positions[positions[:,0]<=L[0]]+shift[0]
         Ly= positions[positions[:,1]<=L[1]]+shift[1]
         Ux= positions[positions[:,0]>=U[0]]-shift[0]
         Uy= positions[positions[:,1]>=U[1]]-shift[1]
@@ -270,11 +271,11 @@ class GITIM(pytim.PYTIM):
         UxUy = positions[np.logical_and(positions[:,0]>=U[0], positions[:,1]>=U[1])] - (shift[0]+shift[1])
         LxUy = positions[np.logical_and(positions[:,0]<=L[0], positions[:,1]>=U[1])] + (shift[0]-shift[1])
         UxLy = positions[np.logical_and(positions[:,0]>=U[0], positions[:,1]<=L[1])] - (shift[0]-shift[1])
-        
+
         return np.concatenate((pos,Lx,Ly,Ux,Uy,LxLy,UxUy,LxUy,UxLy))
 
     def triangulate_layer(self,layer=1):
-        """ Triangulate a layer 
+        """ Triangulate a layer
 
             :param int layer:  (default: 1) triangulate this layer (on both sides of the interface)
             :return list triangulations:  a list of two Delaunay triangulations, which are also stored in self.surface_triangulation
@@ -289,30 +290,30 @@ class GITIM(pytim.PYTIM):
         upperpos = self._generate_periodic_border_2D(upper)
         lowerpos = self._generate_periodic_border_2D(lower)
 
-        self.surface_triangulation = [None,None] 
-        self.trimmed_surface_triangles = [None,None] 
-        self.triangulation_points= [None,None] 
-        self.surface_triangulation[0] = Delaunay(upperpos[:,0:2]) 
-        self.surface_triangulation[1] = Delaunay(lowerpos[:,0:2]) 
+        self.surface_triangulation = [None,None]
+        self.trimmed_surface_triangles = [None,None]
+        self.triangulation_points= [None,None]
+        self.surface_triangulation[0] = Delaunay(upperpos[:,0:2])
+        self.surface_triangulation[1] = Delaunay(lowerpos[:,0:2])
         self.triangulation_points[0] = upperpos[:]
         self.triangulation_points[1] = lowerpos[:]
         self.trimmed_surface_triangles[0] = utilities.trim_triangulated_surface(self.surface_triangulation[0],box)
         self.trimmed_surface_triangles[1] = utilities.trim_triangulated_surface(self.surface_triangulation[1],box)
         return self.surface_triangulation
-        
+
     def _initialize_distance_interpolator(self,layer):
         if self._interpolator == None :
             # we don't know if previous triangulations have been done on the same
-            # layer, so just in case we repeat it here. This can be fixed in principle 
+            # layer, so just in case we repeat it here. This can be fixed in principle
             # with a switch
             self.triangulate_layer(layer)
-       
+
             self._interpolator= [None,None]
             self._interpolator[0] = LinearNDInterpolator(self.surface_triangulation[0],
                                                          self.triangulation_points[0][:,2])
             self._interpolator[1] = LinearNDInterpolator(self.surface_triangulation[1],
                                                          self.triangulation_points[1][:,2])
-            
+
     def interpolate_surface(self,positions,layer):
         self._initialize_distance_interpolator(layer)
         upper_set = positions[positions[:,2]>=0]
@@ -322,28 +323,16 @@ class GITIM(pytim.PYTIM):
         lower_int = self._interpolator[1](lower_set[:,0:2])
         #copy everything back to one array with the correct order
         elevation = np.zeros(len(positions))
-        elevation[np.where(positions[:,2]>=0)] = upper_int 
-        elevation[np.where(positions[:,2]< 0)] = lower_int 
+        elevation[np.where(positions[:,2]>=0)] = upper_int
+        elevation[np.where(positions[:,2]< 0)] = lower_int
         return elevation
 
+    @property
+    def layers(self):
+        """ Access the layers as numpy arrays of AtomGroups
 
-    def layers(self,*ids):
-        """ Select one or more layers.
-
-        :param slice ids: the slice corresponding to the layers to be selcted (starting from 0)
-
-        The slice can be used to select a single layer, or multiple, e.g. using the example of the :class:`GITIM` class :
-
+        The object can be sliced as usual with numpy arrays.
         """
-        if len(ids) == 0:
-            _slice = slice(None)
-        if len(ids) == 1:
-            _slice = ids[0]-1
-        if len(ids) == 2:
-            _slice = slice(ids[0],ids[1])
-        if len(ids) == 3:
-            _slice = slice(ids[0],ids[1],ids[2])
-
-        return self._layers[_slice]
+        return self._layers
 
 #

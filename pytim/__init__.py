@@ -1,7 +1,7 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 
-from   abc import ABCMeta, abstractmethod
+from   abc import ABCMeta, abstractmethod, abstractproperty
 import numpy as np
 import MDAnalysis
 from   MDAnalysis.topology import tables
@@ -69,7 +69,7 @@ class PYTIM(object):
             >>> interface.writepdb('layers.pdb',multiframe=False)
 
             Example: save the positions without centering the interface. This will
-                     not shift the atoms from the original position (still, they will 
+                     not shift the atoms from the original position (still, they will
                      be put into the basic cell).
                      The :multiframe: option set to :False: will overwrite the file.
 
@@ -92,7 +92,7 @@ class PYTIM(object):
                 translation[self.normal] = self.universe.dimensions[self.normal]/2.
                 self.universe.atoms.translate(translation)
                 self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
-                
+
             PDB=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
 
@@ -127,7 +127,7 @@ class PYTIM(object):
                 _radii = np.zeros(len(_g.types))
 
                 for _atype in np.unique(_types):
-                    try: 
+                    try:
                         matching_type         = get_close_matches(_atype, _radii_dict.keys() , n=1, cutoff=0.1)
                         _radii[_types==_atype]=_radii_dict[matching_type[0]]
                     except:
@@ -238,7 +238,7 @@ class PYTIM(object):
     def interpolate_surface(self):
         pass
 
-    @abstractmethod
+    @abstractproperty
     def layers(self):
         pass
 
@@ -258,8 +258,8 @@ class PYTIM(object):
 
 from pytim.itim import  ITIM
 from pytim.gitim import GITIM
-from pytim import observables, utilities 
-from pytim.datafiles import * 
+from pytim import observables, utilities
+from pytim.datafiles import *
 
 #__all__ = [ 'itim' , 'gitim' , 'observables', 'datafiles', 'utilities']
 

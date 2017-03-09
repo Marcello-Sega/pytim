@@ -157,8 +157,9 @@ An equivalent result can be obtained faster, by overwriting the types:
 >>> u.atoms.types[u.atoms.types=='M']='CMet'
 >>> u.atoms.types[u.atoms.types=='O']='OMet'
 >>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=radii_gromos)
->>> print interface.layers()
-[[<AtomGroup with 555 atoms>], [<AtomGroup with 564 atoms>]]
+>>> print interface.layers
+[[<AtomGroup with 555 atoms>]
+ [<AtomGroup with 564 atoms>]]
 
 
 .. toctree::

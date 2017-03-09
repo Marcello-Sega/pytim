@@ -40,11 +40,36 @@ class ITIM(pytim.PYTIM):
         >>>
         >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=False)
         >>>
-        >>> print interface.layers('upper',1)  # first layer, upper
+        >>> print interface.layers[0,0]  # first layer, upper
         <AtomGroup with 406 atoms>
 
-        # TODO Add here an example on how to use the variuos other options
     """
+    @property
+    def layers(self):
+
+        """ Access the layers as numpy arrays of AtomGroups
+
+        The object can be sliced as usual with numpy arrays, so, for example:
+
+        >>> interface.layers[0,:]  # upper side (0), all layers
+        array([<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
+               <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>], dtype=object)
+
+        >>> interface.layers[1,0]  # lower side (1), first layer (0)
+        <AtomGroup with 406 atoms>
+
+        >>> interface.layers[:,0:3] # 1st - 3rd layer (0:3), on both sides
+        array([[<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
+                <AtomGroup with 414 atoms>],
+               [<AtomGroup with 406 atoms>, <AtomGroup with 418 atoms>,
+                <AtomGroup with 399 atoms>]], dtype=object)
+
+        >>> interface.layers[1,0:4:2] # 1st - 4th layer, with a stride of 2 (0:4:2), lower side (1)
+        array([<AtomGroup with 406 atoms>, <AtomGroup with 399 atoms>], dtype=object)
+
+        """
+        return self._layers
+
 
     def __init__(self,universe,mesh=0.4,alpha=2.0,normal='guess',itim_group=None,radii_dict=None,
                  max_layers=1,cluster_cut=None,molecular=True,extra_cluster_groups=None,
@@ -60,13 +85,13 @@ class ITIM(pytim.PYTIM):
         self.target_mesh=mesh
         self.alpha=alpha
         self.max_layers=max_layers
+        self._layers=np.empty([2,max_layers],dtype=type(universe.atoms))
         self.info=info
         self.normal=None
         try:
             self.all_atoms = self.universe.select_atoms('all')
         except:
             raise Exception(self.WRONG_UNIVERSE)
-        self._layers=None
         self.molecular=molecular
 
         self.cluster_cut          = cluster_cut
@@ -265,7 +290,6 @@ class ITIM(pytim.PYTIM):
         _y=utilities.get_y(self.cluster_group,self.normal)
         _z=utilities.get_z(self.cluster_group,self.normal)
 
-        self._layers=[[],[]]
         sort = np.argsort( _z + _radius * np.sign(_z) )
         # NOTE: np.argsort returns the sorted *indices*
 
@@ -282,11 +306,14 @@ class ITIM(pytim.PYTIM):
 
             for p in proc: p.start()
             for uplow  in [up,low]:
-                self._layers[uplow] = queue[uplow].get()
+                for index,group in enumerate(queue[uplow].get()):
+                    self._layers[uplow,index] = group
             for p in proc: p.join()
         else:
-            self._layers[up]   = self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)
-            self._layers[low]  = self._assign_one_side(low,sort,_x,_y,_z,_radius)
+            for index,group in enumerate(self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)):
+                self._layers[up][index] = group
+            for index,group in enumerate(self._assign_one_side(low,sort,_x,_y,_z,_radius)):
+                self._layers[low][index] = group
 
 
         # assign bfactors to all layers
@@ -375,46 +402,3 @@ class ITIM(pytim.PYTIM):
         return elevation
 
 
-    def layers(self,side='both',*ids):
-        """ Select one or more layers.
-
-        :param str side: 'upper', 'lower' or 'both', where 'upper' corresponds to the larger values of coordinates
-                         along the interface normal direction
-
-        :param slice ids: the slice corresponding to the layers to be selcted (starting from 0)
-
-        The slice can be used to select a single layer, or multiple, e.g. (using the example of the :class:`ITIM` class).
-        The syntax of the layer selection follows that of slicing in python:
-
-        >>> interface.layers('upper')  # all layers, upper side
-        [<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>, <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>]
-
-        >>> interface.layers('lower',1)  # first layer, lower side
-        <AtomGroup with 406 atoms>
-
-        >>> interface.layers('both',0,3) # 1st - 3rd layer, on both sides
-        [[<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>, <AtomGroup with 414 atoms>], [<AtomGroup with 406 atoms>, <AtomGroup with 418 atoms>, <AtomGroup with 399 atoms>]]
-
-        >>> interface.layers('lower',0,4,2) # 1st - 4th layer, with a stride of 2, lower side
-        [<AtomGroup with 406 atoms>, <AtomGroup with 399 atoms>]
-
-
-        """
-        _options={'both':slice(None),'upper':0,'lower':1}
-        _side=_options[side]
-        if len(ids) == 0:
-            _slice = slice(None)
-        if len(ids) == 1:
-            _slice = ids[0]-1
-        if len(ids) == 2:
-            _slice = slice(ids[0],ids[1])
-        if len(ids) == 3:
-            _slice = slice(ids[0],ids[1],ids[2])
-
-        if side != 'both':
-            return self._layers[_side][_slice]
-        else:
-            return [ sub[_slice] for sub in self._layers]
-
-
-#
