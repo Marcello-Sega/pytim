@@ -15,8 +15,8 @@ for planar interfaces:
 
 .. code-block:: python
 
-    import MDAnalysis as mda                 
-    import pytim 
+    import MDAnalysis as mda
+    import pytim
     from   pytim.datafiles import *
 
     # load an example configuration file
@@ -29,7 +29,7 @@ for planar interfaces:
     interface.writepdb('layers.pdb',centered='middle')
 
     # access the atoms in the layers as an MDAnalysis' AtomGroups
-    upper_layer = interface.layers('upper')
+    upper_layer = interface.layers[0]
 
 
 The above lines are doing the following:
@@ -44,7 +44,7 @@ The above lines are doing the following:
    calculated automatically.
 3. The whole configuration is saved to a pdb for graphical inspection using
    :meth:`~pytim.itim.ITIM.writepdb`
-   (with surface atoms having a beta factor equal to the numer of the layer 
+   (with surface atoms having a beta factor equal to the numer of the layer
    they belong to).
 4. The groups of atoms corresponding to different layers can be extracted using
    :meth:`~pytim.itim.ITIM.layers`
@@ -57,26 +57,26 @@ where surface oxygen atoms are highlighted in blue.
    :width: 70%
    :align: center
 
-This is a very basic example, and many more are given in the :doc:`Tutorials`. 
+This is a very basic example, and many more are given in the :doc:`Tutorials`.
 
 Pytim's Main Features
 =====================
 
 
-* It's easy to use! While many optional arguments can be used to trigger special features, 
+* It's easy to use! While many optional arguments can be used to trigger special features,
   or to fine-tune the behavior of the algorithm, just invoking the class with the minimal
   set of arguments, as in the example shown here, delivers what you expect.
 
 * Works for planar (:mod:`~pytim.itim`)  and arbitrary (:mod:`~pytim.gitim`) interfaces
 
-* Thanks to MDAnalysis_, Pytim can work with several common file formats, including: 
+* Thanks to MDAnalysis_, Pytim can work with several common file formats, including:
 
   - CHARMM & NAMD,
   - LAMMPS
   - GROMACS
-  - AMBER 
+  - AMBER
   - DL_POLY
-  - GAMESS 
+  - GAMESS
 
   For the full list see the Supported_Formats_
 
@@ -86,8 +86,8 @@ Pytim's Main Features
 
   - in-layer radial distribution functions
   - intrinsic and non-intrinsic density profiles
-  - calculation of surface triangulation and associated geometrical parameters 
-  - ... 
+  - calculation of surface triangulation and associated geometrical parameters
+  - ...
 
 
 * It is easy to extend: as it relies on the MDAnalysis_ interface,

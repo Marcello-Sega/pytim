@@ -12,6 +12,7 @@
 
     quick
     install
+    micelle
     center
     guessing_radii
 
