@@ -72,7 +72,7 @@ class ITIM(pytim.PYTIM):
 
 
     def __init__(self,universe,mesh=0.4,alpha=2.0,normal='guess',itim_group=None,radii_dict=None,
-                 max_layers=1,cluster_cut=None,molecular=True,extra_cluster_groups=None,
+                 max_layers=1,cluster_cut=None,cluster_threshold_density=None, molecular=True,extra_cluster_groups=None,
                  info=False,multiproc=True):
 
         #TODO add type checking for each MDA class passed
@@ -82,6 +82,7 @@ class ITIM(pytim.PYTIM):
 
         self.symmetry='planar'
         self.universe=universe
+        self.cluster_threshold_density = cluster_threshold_density
         self.target_mesh=mesh
         self.alpha=alpha
         self.max_layers=max_layers
@@ -224,16 +225,18 @@ class ITIM(pytim.PYTIM):
 
     def _sanity_checks(self):
 
-        assert self.alpha > 0 ,                                           self.ALPHA_NEGATIVE
-        assert self.alpha < np.amin(self.universe.dimensions[:3]) ,       self.ALPHA_LARGE
+        assert isinstance(self.alpha,float) or isinstance(self.alpha,int),            self.ALPHA_NAN
+        assert self.alpha > 0 ,                                                       self.ALPHA_NEGATIVE
+        assert self.alpha < np.amin(self.universe.dimensions[:3]) ,                   self.ALPHA_LARGE
 
-        assert self.target_mesh > 0 ,                                     self.MESH_NEGATIVE
-        assert self.target_mesh < np.amin(self.universe.dimensions[:3]) , self.MESH_LARGE
+        assert isinstance(self.target_mesh,int) or isinstance(self.target_mesh,float),self.MESH_NAN
+        assert self.target_mesh > 0 ,                                                 self.MESH_NEGATIVE
+        assert self.target_mesh < np.amin(self.universe.dimensions[:3]) ,             self.MESH_LARGE
 
         if(self.cluster_cut is not None):
             assert len(self.cluster_cut)== 1 or len(self.cluster_cut) == 1+len(self.extra_cluster_groups) , self.MISMATCH_CLUSTER_SEARCH
         else:
-            assert self.extra_cluster_groups is None , self.UNDEFINED_CLUSTER_SEARCH
+            assert self.extra_cluster_groups is None ,                                self.UNDEFINED_CLUSTER_SEARCH
 
         try:
             np.arange(int(self.alpha/self.target_mesh))
@@ -261,7 +264,7 @@ class ITIM(pytim.PYTIM):
         self.universe.atoms.pack_into_box()
 
         if(self.cluster_cut is not None): # groups have been checked already in _sanity_checks()
-            labels,counts = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],self.universe.dimensions[:6])
+            labels,counts = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],self.universe.dimensions[:6],self.cluster_threshold_density)
             labels = np.array(labels)
             label_max = np.argmax(counts) # the label of atoms in the largest cluster
             ids_max   = np.where(labels==label_max)[0]  # the indices (within the group) of the

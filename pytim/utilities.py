@@ -153,7 +153,7 @@ def _init_NN_search(group,box):
 def _NN_query(kdtree,position,qrange):
     return kdtree.query_ball_point(position,qrange,n_jobs=-1)
 
-def do_cluster_analysis_DBSCAN(group,cluster_cut,box):
+def do_cluster_analysis_DBSCAN(group,cluster_cut,box,threshold_density=None):
     """ Performs a cluster analysis using DBSCAN
 
         :returns [labels,counts]: lists of the id of the cluster to which every atom is belonging to, and of the number of elements in each cluster.
@@ -165,8 +165,14 @@ def do_cluster_analysis_DBSCAN(group,cluster_cut,box):
         scaling of the kdtree.
 
     """
+    if isinstance(threshold_density,type(None)):
+        min_samples = 2
+    if isinstance(threshold_density,float) or isinstance(threshold_density,int):
+        min_samples = threshold_density * 4./3. * np.pi * cluster_cut**3
+        if min_samples < 2 :
+            min_samples = 2
+
     # TODO: extra_cluster_groups are not yet implemented
-    min_samples = 2 ;
     points = group.atoms.positions[:]
 
     tree = cKDTree(points,boxsize=box[:6])
@@ -174,8 +180,17 @@ def do_cluster_analysis_DBSCAN(group,cluster_cut,box):
                             for neighbors in tree.query_ball_point(points, cluster_cut,n_jobs=-1) ] )
     n_neighbors = np.array([len(neighbors)
                             for neighbors in neighborhoods])
+
+    if isinstance(threshold_density,str):
+        assert threshold_density == 'auto', "Internal error: wrong parameter 'threshold_density' passed to do_cluster_analysis_DBSCAN"
+        max_neighbors = np.max(n_neighbors)
+        min_neighbors = np.min(n_neighbors)
+        avg_neighbors = (min_neighbors + max_neighbors)/2.
+        min_samples   = avg_neighbors
+
     labels = -np.ones(points.shape[0], dtype=np.intp)
     counts = np.zeros(points.shape[0], dtype=np.intp)
+
     core_samples = np.asarray(n_neighbors >= min_samples, dtype=np.uint8)
     dbscan_inner(core_samples, neighborhoods, labels, counts)
     return labels, counts
