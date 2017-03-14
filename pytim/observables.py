@@ -124,7 +124,23 @@ class InterRDF(rdf.InterRDF):
             raise Exception("Weights not implemented yet in InterRDF")
 
         #
-        rdf.InterRDF._single_frame(self)
+        distances.distance_array(self.g1.positions, self.g2.positions,
+                                 box=self.u.dimensions, result=self._result)
+        ## temporary solution, before we rewrite the RDF code as independent from MDA.
+        # Maybe exclude same molecule distances
+        if self._exclusion_mask is not None:
+            self._exclusion_mask[:] = self._maxrange
+
+        count = np.histogram(self._result, **self.rdf_settings)[0]
+        self.count += count
+
+        try:
+            self.volume += self._ts.volume
+        except:
+            self.volume += self.u.dimensions[0]*self.u.dimensions[1]*self.u.dimensions[2]
+
+
+
 
     def sample(self,ts):
         self._ts=ts
@@ -342,7 +358,6 @@ class IntrinsicDistance(Observable):
 class Number(Observable):
     """ The number of atoms
 
-
     """
     def __init__(self):
         pass
@@ -355,6 +370,33 @@ class Number(Observable):
 
         """
         return np.ones(len(inp))
+
+class NumberOfResidues(Observable):
+    """ The number of residues. Instead of associating 1 to the center of mass
+        of the residue, we associate 1/(number of atoms in residue) to each atom.
+        In an homogeneous system, these two definitions are (on average) equivalent.
+        If the system is not homogeneous, this is not true anymore.
+
+    """
+    def __init__(self):
+        pass
+
+    def compute(self,inp):
+        """ Compute the observable
+
+        :param AtomGroup inp:  the input atom group
+        :returns: one, for each residue in the group
+
+        """
+        residueNames = np.unique(inp.atoms.resnames)
+        tmp = np.zeros(len(inp))
+
+        for name in residueNames:
+             atomId = np.where(inp.resnames==name)[0][0]
+             tmp[ inp.resnames==name ] = 1./len(inp[atomId].residue.atoms)
+
+        return tmp
+
 
 
 
@@ -441,7 +483,7 @@ class Profile(object):
         ...     interface.center(oxygens)
         ...     profile.sample()
         >>>
-        >>> low, up, avg = profile.profile(binwidth=1.0)
+        >>> low, up, avg = profile.get_values(binwidth=1.0)
         >>> np.savetxt('profile.dat',list(zip(low,up,avg)))
 
 
@@ -468,7 +510,7 @@ class Profile(object):
                 interface.center(oxygens)
                 profile.sample()
 
-            low, up, avg = profile.profile(binwidth=1.0)
+            low, up, avg = profile.get_values(binwidth=1.0)
             plt.plot((low+up)/2., avg)
             plt.show()
 
@@ -479,13 +521,14 @@ class Profile(object):
         _dir = {'x':0,'y':1,'z':2}
         self.halfbox_shift = center_in_zero
         self.group         = group
+        assert isinstance(group,AtomGroup) , "The first argument passed to Profile() must be an AtomGroup."
         self.universe      = group.universe
         self.center_group  = center_group
         if observable is None:
             self.observable = Number()
         self.observable    = observable
         self._dir          =_dir[direction]
-        self.binsize       = 0.1 # this is used for internal calculations, the output binsize can be specified in self.profile()
+        self.binsize       = 0.1 # this is used for internal calculations, the output binsize can be specified in self.get_values()
 
         self.interface     = interface
         if self.interface is not None:
@@ -522,7 +565,7 @@ class Profile(object):
         self.sampled_values.append(_avg)
         self.sampled_bins.append(_bins[1:]-self.binsize/2.) # these are the bins midpoints
 
-    def profile(self,binwidth=None,nbins=None):
+    def get_values(self,binwidth=None,nbins=None):
         assert self.sampled_values ,  "No profile sampled so far."
         # we use the largest box (largest number of bins) as reference.
         # Statistics will be poor at the boundaries, but like that we don't loose information

@@ -264,12 +264,16 @@ class ITIM(pytim.PYTIM):
         self.universe.atoms.pack_into_box()
 
         if(self.cluster_cut is not None): # groups have been checked already in _sanity_checks()
-            labels,counts = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],self.universe.dimensions[:6],self.cluster_threshold_density)
+            labels,counts,n_neigh = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],self.universe.dimensions[:6],self.cluster_threshold_density,self.molecular)
             labels = np.array(labels)
             label_max = np.argmax(counts) # the label of atoms in the largest cluster
             ids_max   = np.where(labels==label_max)[0]  # the indices (within the group) of the
                                                         # atoms belonging to the largest cluster
             self.cluster_group = self.itim_group[ids_max]
+            if (self.molecular==True):
+                _tmp = self.cluster_group.residues.atoms[:]
+                self.cluster_group = _tmp
+            self.n_neighbors = n_neigh
 
         else:
             self.cluster_group=self.itim_group ;
@@ -280,7 +284,7 @@ class ITIM(pytim.PYTIM):
 
         # first we label all atoms in itim_group to be in the gas phase
         self.itim_group.atoms.bfactors = 0.5
-        # then all atoms in the larges group are labelled as liquid-like
+        # then all atoms in the largest group are labelled as liquid-like
         self.cluster_group.atoms.bfactors = 0
 
         _radius=self.cluster_group.radii

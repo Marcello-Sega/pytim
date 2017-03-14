@@ -7,6 +7,7 @@ from scipy.spatial import *
 from dbscan import dbscan_inner
 from scipy.spatial import Delaunay
 from scipy.interpolate import griddata
+from scipy.cluster import vq
 from MDAnalysis.topology import tables
 
 def lap(show=False):
@@ -153,7 +154,7 @@ def _init_NN_search(group,box):
 def _NN_query(kdtree,position,qrange):
     return kdtree.query_ball_point(position,qrange,n_jobs=-1)
 
-def do_cluster_analysis_DBSCAN(group,cluster_cut,box,threshold_density=None):
+def do_cluster_analysis_DBSCAN(group,cluster_cut,box,threshold_density=None,molecular=True):
     """ Performs a cluster analysis using DBSCAN
 
         :returns [labels,counts]: lists of the id of the cluster to which every atom is belonging to, and of the number of elements in each cluster.
@@ -178,22 +179,28 @@ def do_cluster_analysis_DBSCAN(group,cluster_cut,box,threshold_density=None):
     tree = cKDTree(points,boxsize=box[:6])
     neighborhoods = np.array( [ np.array(neighbors)
                             for neighbors in tree.query_ball_point(points, cluster_cut,n_jobs=-1) ] )
-    n_neighbors = np.array([len(neighbors)
-                            for neighbors in neighborhoods])
+    if molecular==False:
+        n_neighbors = np.array([len(neighbors)
+                                for neighbors in neighborhoods])
+    else:
+        n_neighbors = np.array([len(np.unique(group[neighbors].resids))
+                                    for neighbors in  neighborhoods ])
 
     if isinstance(threshold_density,str):
         assert threshold_density == 'auto', "Internal error: wrong parameter 'threshold_density' passed to do_cluster_analysis_DBSCAN"
         max_neighbors = np.max(n_neighbors)
         min_neighbors = np.min(n_neighbors)
         avg_neighbors = (min_neighbors + max_neighbors)/2.
-        min_samples   = avg_neighbors
+        modes = 2
+        centroid,_ = vq.kmeans2(n_neighbors*1.0, modes , iter=10, check_finite=False)
+        min_samples   = np.mean(centroid)
 
     labels = -np.ones(points.shape[0], dtype=np.intp)
     counts = np.zeros(points.shape[0], dtype=np.intp)
 
     core_samples = np.asarray(n_neighbors >= min_samples, dtype=np.uint8)
     dbscan_inner(core_samples, neighborhoods, labels, counts)
-    return labels, counts
+    return labels, counts, n_neighbors
 
 
 def _do_cluster_analysis(cluster_groups):

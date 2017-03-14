@@ -50,6 +50,7 @@ __all__ = [
     "WATER_GRO",             # GROMACS single frame, water/vapour interface
     "WATERSMALL_GRO",        # GROMACS single frame, water/vapour interface
     "METHANOL_GRO",          # XYZ, single frame, methanol/vapour interface with molecules in the vapour phase
+    "ILBENZENE_GRO",         # Ionic liquid/benzene, partial miscibility
     "MICELLE_PDB",           # PDB of dodecylphosphocholine micelle in water
     "WATER_XTC",             # GROMACS trajectory, 100 frames, water/vapour interface
     "G43A1_TOP",             # GROMOS 43a1 nonbonded parameters, from gromacs distribution
@@ -145,6 +146,9 @@ pytim_data.add('WATERSMALL_GRO'  ,  'config', 'GRO','small SPC water/vapour inte
 
 METHANOL_GRO   = resource_filename('pytim', 'data/methanol.gro')
 pytim_data.add('METHANOL_GRO'  ,  'conf', 'GRO', 'methanol/vapour interface')
+
+ILBENZENE_GRO = resource_filename('pytim', 'data/ilbenzene.gro')
+pytim_data.add('ILBENZENE_GRO'  ,  'conf', 'GRO', 'BMIM PF4 / benzene interface')
 
 WATER_XTC      = resource_filename('pytim', 'data/water.xtc')
 pytim_data.add('WATER_XTC'  ,  'traj', 'XTC','SPC water/vapour interface trajectory')
