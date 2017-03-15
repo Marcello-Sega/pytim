@@ -210,9 +210,7 @@ class PYTIM(object):
                 utilities.centerbox(group.universe,z=_pos_group,center_direction=direction,halfbox_shift=halfbox_shift)
             histo,edges=np.histogram(_pos_group, bins=10, range=_range, density=True)
 
-        #TODO: clean up
         _center=np.average(_pos_group)
-
         if(halfbox_shift==False):
             box_half = dim[direction]/2.
         else:
@@ -224,8 +222,7 @@ class PYTIM(object):
         if _dir == 'z':
             _z += total_shift - _center + box_half
         # finally, we copy everything back
-        group.universe.coord.positions=np.column_stack((_x,_y,_z))
-
+        group.universe.atoms.positions=np.column_stack((_x,_y,_z))
 
     @abstractmethod
     def _assign_layers(self):

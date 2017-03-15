@@ -9,6 +9,7 @@ from   setuptools import setup, find_packages
 from   codecs import open
 import os
 import sys
+import glob
 
 from   distutils.core import setup
 from   distutils.extension import Extension
@@ -105,7 +106,7 @@ setup(
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
     package_data={
-        'pytim': ['data/*'],
+        'pytim': glob.glob('data/*'),
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
