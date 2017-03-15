@@ -11,55 +11,57 @@ Example
 -------
 
 **The problem**
-	Configuration file formats such as the gromos one do not bear *atomtype* nor *atomic radius* information.
-	If the atom names in the configuration file start with one of the letters `['C', 'F', 'H', 'O', 'N', 'P', 'S']`, Pytim chooses the corresponding
-	radius using the MDAnalysis values, and their average otherwise. This is usually a good enough compromise, but it is possible to have full control
-	over this. Let's start with a "problematic" configuration file:
+    Configuration file formats such as the gromos one do not bear *atomtype* nor *atomic radius* information.
+    If the atom names in the configuration file start with one of the letters `['C', 'F', 'H', 'O', 'N', 'P', 'S']`, Pytim chooses the corresponding
+    radius using the MDAnalysis values, and their average otherwise. This is usually a good enough compromise, but it is possible to have full control
+    over this. Let's start with a "problematic" configuration file:
 
-	>>> import MDAnalysis as mda
-	>>> import pytim
-	>>> from pytim.datafiles import *
-	>>> u = mda.Universe(METHANOL_GRO)
+    >>> import MDAnalysis as mda
+    >>> import pytim
+    >>> from pytim.datafiles import *
+    >>> u = mda.Universe(METHANOL_GRO)
 
-	Since no information is carried by the file format on the radii, we have
+    Since no information is carried by the file format on the radii, we have
 
         >>> print u.residues[0].atoms.radii
         [None None None]
 
-	the atom types will assigned by MDAnalysis are the first letter in the
-	atom name:
+    the atom types will assigned by MDAnalysis are the first letter in the
+    atom name:
 
-	>>> print u.residues[0].atoms.types
-	['M' 'O' 'H']
+    >>> print u.residues[0].atoms.types
+    ['M' 'O' 'H']
 
-	By initializing the interface, Pytim will associate standard radii to the matching types, and an average radius to the non-matching ones. If this
-	is not the wanted behavior, one has usually the following two options:
+    By initializing the interface, Pytim will associate standard radii to the matching types, and an average radius to the non-matching ones. If this
+    is not the wanted behavior, one has usually the following two options:
 
 **Case 1**
-	We know exactly what the atomic radii should be.
+    We know exactly what the atomic radii should be.
 
 **Solution**
-	build a dictionary of radii corresponding to the first letter
-	of the atom name
+    build a dictionary of radii corresponding to the first letter
+    of the atom name
 
-	>>> mydict    = {'M':1.6, 'O':1.5, 'H':0.0}
-	>>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=mydict)
+    >>> u = mda.Universe(METHANOL_GRO)
+    >>> mydict    = {'M':1.6, 'O':1.5, 'H':0.0}
+    >>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=mydict)
 
 **Case 2**
-	We don't know exactly the atomic radii, but we don't want to use just the standard values.
+    We don't know exactly the atomic radii, but we don't want to use just the standard values.
 **Solution**
-	Use an existing topology, and overwrite the types guessed by MDAnalysis
+    Use an existing topology, and overwrite the types guessed by MDAnalysis
 
-	>>> # Load the radii
-	>>> radii_gromos = pytim_data.vdwradii(G43A1_TOP)
-	>>> # check which types are available
-	>>> print radii_gromos.keys()
-	['CU1+', 'CDmso', 'OWT3', 'CA2+', 'FE', 'BR', 'MG2+', 'HC', 'OWT4', 'CL-', 'NL', 'CCl4', 'CLCl4', 'CL', 'NE', 'SDmso', 'CH1', 'NZ', 'CH3', 'CH4', 'ODmso', 'NR', 'NT', 'C', 'HChl', 'DUM', 'F', 'H', 'CChl', 'CMet', 'CLChl', 'O', 'N', 'MW', 'P', 'S', 'AR', 'IW', 'CU2+', 'OM', 'CR1', 'MNH3', 'NA+', 'OA', 'SI', 'CH2', 'OW', 'ZN2+', 'OMet']
-	>>> # Overwrite the types
-	>>> u.atoms.types[u.atoms.types=='M']='CMet'
-	>>> u.atoms.types[u.atoms.types=='O']='OMet'
-	>>> # compute the interface
-	>>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=radii_gromos)
+    >>> u = mda.Universe(METHANOL_GRO)
+    >>> # Load the radii
+    >>> radii_gromos = pytim_data.vdwradii(G43A1_TOP)
+    >>> # check which types are available
+    >>> print radii_gromos.keys()
+    ['CU1+', 'CDmso', 'OWT3', 'CA2+', 'FE', 'BR', 'MG2+', 'HC', 'OWT4', 'CL-', 'NL', 'CCl4', 'CLCl4', 'CL', 'NE', 'SDmso', 'CH1', 'NZ', 'CH3', 'CH4', 'ODmso', 'NR', 'NT', 'C', 'HChl', 'DUM', 'F', 'H', 'CChl', 'CMet', 'CLChl', 'O', 'N', 'MW', 'P', 'S', 'AR', 'IW', 'CU2+', 'OM', 'CR1', 'MNH3', 'NA+', 'OA', 'SI', 'CH2', 'OW', 'ZN2+', 'OMet']
+    >>> # Overwrite the types
+    >>> u.atoms.types[u.atoms.types=='M']='CMet'
+    >>> u.atoms.types[u.atoms.types=='O']='OMet'
+    >>> # compute the interface
+    >>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=radii_gromos)
 
 
 
@@ -85,6 +87,7 @@ Our atom names are
 When building the interface, Pytim will try to guess atom types and radii. Since `M`
 does not match any atom type in `tables.vdwradii`, the following warning is issued:
 
+>>> u = mda.Universe(METHANOL_GRO)
 >>> interface = pytim.ITIM(u,cluster_cut=5.0)
 !!                              WARNING
 !! No appropriate radius was found for the atomtype M
@@ -102,6 +105,7 @@ now the warning is not issued anymore:
 
 Of course, one can provide all the radii explicitly:
 
+>>> u = mda.Universe(METHANOL_GRO)
 >>> radii = dict({'O':1.5,'M':1.6,'H':0.0})
 >>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=radii)
 
@@ -112,6 +116,7 @@ Of course, one can provide all the radii explicitly:
 
 We can extract the radii for the GROMOS 43A1 topology , like this:
 
+>>> u = mda.Universe(METHANOL_GRO)
 >>> radii_gromos=pytim_data.vdwradii(G43A1_TOP)
 >>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=radii_gromos)
 
@@ -150,14 +155,16 @@ Let's see what we've got:
 
 Better. Now we can feed them to the interface constructor:
 
+>>> u = mda.Universe(METHANOL_GRO)
 >>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=myradii)
 
 An equivalent result can be obtained faster, by overwriting the types:
 
 >>> u.atoms.types[u.atoms.types=='M']='CMet'
 >>> u.atoms.types[u.atoms.types=='O']='OMet'
+>>> u = mda.Universe(METHANOL_GRO)
 >>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=radii_gromos)
->>> print interface.layers
+>>> print interface.layers[:]
 [[<AtomGroup with 555 atoms>]
  [<AtomGroup with 564 atoms>]]
 

@@ -25,7 +25,7 @@ class testsuite1():
     >>> # TEST:2 large probe sphere radius
     >>> interface = pytim.ITIM(u, alpha=100000.0, max_layers=1,multiproc=False)
     Traceback (most recent call last):
-    	...
+        ...
     AssertionError: parameter alpha in pytim.itim.ITIM must be smaller than the smaller box side
 
 
@@ -41,7 +41,7 @@ class testsuite1():
     >>> o=observables.Number()
     >>> p=observables.Profile(direction='x',group=u.atoms,observable=o)
     >>> p.sample()
-    >>> low,up,avg =  p.profile(binwidth=1.0)
+    >>> low,up,avg =  p.get_values(binwidth=1.0)
     >>> print(low[0:3])
     [ 0.  1.  2.]
     >>> print(avg[0:3])

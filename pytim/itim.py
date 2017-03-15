@@ -270,9 +270,7 @@ class ITIM(pytim.PYTIM):
             ids_max   = np.where(labels==label_max)[0]  # the indices (within the group) of the
                                                         # atoms belonging to the largest cluster
             self.cluster_group = self.itim_group[ids_max]
-            if (self.molecular==True):
-                _tmp = self.cluster_group.residues.atoms[:]
-                self.cluster_group = _tmp
+
             self.n_neighbors = n_neigh
 
         else:
@@ -296,7 +294,6 @@ class ITIM(pytim.PYTIM):
         _x=utilities.get_x(self.cluster_group,self.normal)
         _y=utilities.get_y(self.cluster_group,self.normal)
         _z=utilities.get_z(self.cluster_group,self.normal)
-
         sort = np.argsort( _z + _radius * np.sign(_z) )
         # NOTE: np.argsort returns the sorted *indices*
 

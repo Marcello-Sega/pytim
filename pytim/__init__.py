@@ -118,14 +118,14 @@ class PYTIM(object):
             # TODO: add a switch that allows to use the atom name instead of the type!
             if _g is not None:
                 _types = np.copy(_g.types)
-                if np.any(_g.radii is None)  or radii_dict is None : # either radii are not set or dict provided
-                    if radii_dict is None:  # radii not set, dict not provided -> fallback to MDAnalysis vdwradii
-                        _radii_dict = tables.vdwradii
+                if not np.any(np.equal(_g.radii, None)): # all radii already set
+                    break
+                if radii_dict is None : # some radii are not set  and no dict provided
+                    _radii_dict = tables.vdwradii
                 else: # use the provided dict.
                     _radii_dict = radii_dict
 
                 _radii = np.zeros(len(_g.types))
-
                 for _atype in np.unique(_types):
                     try:
                         matching_type         = get_close_matches(_atype, _radii_dict.keys() , n=1, cutoff=0.1)
@@ -141,7 +141,8 @@ class PYTIM(object):
                         print("!! for example: r={'"+_atype+"':1.2,...} ; inter=pytim.ITIM(u,radii_dict=r)")
 
                 _g.radii=_radii[:] #deep copy
-                assert np.all(_g.radii is not None) , self.UNDEFINED_RADIUS
+
+                assert not np.any(np.equal(_g.radii,None)) , self.UNDEFINED_RADIUS
                 del _radii
                 del _types
 
