@@ -204,7 +204,7 @@ class ITIM(pytim.PYTIM):
                     if self.molecular == True:
                         # we first select the (unique) residues corresponding to _inlayer_group, and then
                         # we create  group of the atoms belonging to them, with _inlayer_group.residues.atoms
-                        _tmp   = _inlayer_group.residues.atoms[:]
+                        _tmp   = _inlayer_group.residues.atoms
                         # and we copy it back to _inlayer_group
                         _inlayer_group = _tmp
                         # now we need the indices within the cluster_group, of those atoms which are in the
@@ -301,7 +301,7 @@ class ITIM(pytim.PYTIM):
             # so far, it justs exploit a simple scheme splitting
             # the calculation between the two sides. Would it be
             # possible to implement easily 2d domain decomposition?
-            proc=[[],[]]
+            proc=[None,None]
             queue = [ Queue() , Queue() ]
             proc[up]  = Process(target=self._assign_one_side,
                                 args=(up,sort[::-1],_x,_y,_z,_radius,queue[up]))
@@ -311,12 +311,14 @@ class ITIM(pytim.PYTIM):
             for p in proc: p.start()
             for uplow  in [up,low]:
                 for index,group in enumerate(queue[uplow].get()):
-                    self._layers[uplow,index] = group
+                    # cannot use self._layers[uplow][index] = group, otherwise info about universe is lost (do not know why yet)
+                    # must use self._layers[uplow][index] = self.universe.atoms[group.ids]
+                    self._layers[uplow][index] = self.universe.atoms[group.ids]
             for p in proc: p.join()
         else:
             for index,group in enumerate(self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)):
                 self._layers[up][index] = group
-            for index,group in enumerate(self._assign_one_side(low,sort,_x,_y,_z,_radius)):
+            for index,group in enumerate(self._assign_one_side(low,sort[::],_x,_y,_z,_radius)):
                 self._layers[low][index] = group
 
 
