@@ -11,19 +11,13 @@ from   difflib import get_close_matches
 def PatchTrajectory(trajectory,interface):
 
     trajectory.interface = interface
+    trajectory.original_read_next_timestep = trajectory._read_next_timestep
 
     class PatchedTrajectory(trajectory.__class__):
-        __frame=trajectory.ts.frame
-        @property
-        def frame(self):
-            if self.ts.frame != self.__frame:
-                self.interface._assign_layers()
-                __frame=self.ts.frame
-            return self.ts.frame
 
-        @frame.setter
-        def frame(self, value):
-            __frame       = value
+        def read_next_timestep(self,ts=None):
+            self.interface._assign_layers()
+            self.original_read_next_timestep(ts=ts)
 
     oldname  = trajectory.__class__.__name__
     oldmodule= trajectory.__class__.__module__
