@@ -11,6 +11,7 @@ from   scipy.spatial     import cKDTree
 from   scipy.spatial     import Delaunay
 from   scipy.spatial     import distance
 from   scipy.interpolate import LinearNDInterpolator
+import itertools 
 from __builtin__         import zip as builtin_zip
 from   pytim             import utilities
 import pytim
@@ -46,8 +47,8 @@ class GITIM(pytim.PYTIM):
 
     """
 
-    def __init__(self,universe,alpha=2.0,symmetry='spherical',itim_group=None,radii_dict=None,
-                 max_layers=1,cluster_cut=None,molecular=True,extra_cluster_groups=None,
+    def __init__(self,universe,alpha=2.0,symmetry='spherical',normal='guess',itim_group=None,radii_dict=None,
+                 max_layers=1,cluster_cut=None,cluster_threshold_density=None,molecular=True,extra_cluster_groups=None,
                  info=False,multiproc=True):
 
         #TODO add type checking for each MDA class passed
@@ -56,6 +57,7 @@ class GITIM(pytim.PYTIM):
         pytim.PatchTrajectory(universe.trajectory,self)
 
         self.universe=universe
+        self.cluster_threshold_density = cluster_threshold_density
         self.alpha=alpha
         self.max_layers=max_layers
         self._layers=np.empty([max_layers],dtype=type(universe.atoms))
@@ -74,6 +76,10 @@ class GITIM(pytim.PYTIM):
         self._define_groups()
 
         self._assign_symmetry(symmetry)
+
+        if(self.symmetry=='planar'):
+            self._assign_normal(normal)
+
         self.assign_radii(radii_dict)
         self._sanity_checks()
 
@@ -138,71 +144,56 @@ class GITIM(pytim.PYTIM):
         positiveR = R[R>=0]
         return np.min(positiveR) if positiveR.size == 1 else 0
 
-##       check configuration  ##
-##            print r_i
-##            print R_i
-##            from mpl_toolkits.mplot3d import Axes3D
-##            import matplotlib.pyplot as plt
-##
-##            def drawSphere(xCenter, yCenter, zCenter, r):
-##                #draw sphere
-##                u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
-##                x=np.cos(u)*np.sin(v)
-##                y=np.sin(u)*np.sin(v)
-##                z=np.cos(v)
-##                # shift and scale sphere
-##                x = r*x + xCenter
-##                y = r*y + yCenter
-##                z = r*z + zCenter
-##                return (x,y,z)
-##
-##            fig = plt.figure()
-##            ax = fig.add_subplot(111, projection='3d')
-##
-##            # draw a sphere for each data point
-##            for (xi,yi,zi,ri) in zip(r_i[:,0],r_i[:,1],r_i[:,2],R_i):
-##                (xs,ys,zs) = drawSphere(xi,yi,zi,ri)
-##                ax.plot_wireframe(xs, ys, zs, color="r")
-##            plt.show()
-##            exit()
-
-
-
     def alpha_shape(self,alpha):
+        #print  utilities.lap()
         box    = self.universe.dimensions[:3]
         delta  = 2.*self.alpha+1e-6
         points = self.cluster_group.positions[:]
-        extrapoints  = []
+        extrapoints = np.copy(points)
+        nrealpoints = len(points)
+        extraids    = np.arange(len(points),dtype=np.int)
+        tmpPoints   = []
+        tmpIDs      = []
+        for shift in np.array(list(itertools.product([1,-1,0],repeat=3))):
+            if(np.sum(shift*shift)): # avoid [0,0,0]
+                # this needs some explanation:
+                # if shift ==0  -> the condition is always true
+                # if shift ==1  -> the condition is x > box - delta
+                # if shift ==-1 -> the condition is -x > 0 - delta -> x < delta
+                # Requiring np.all() to be true makes the logical and returns (axis=1) True for all indices whose atoms satisfy the condition
+                selection = np.all(shift * points >= shift*shift*( (box + shift * box)/2. - delta)   ,axis=1)
+                # add the new points at the border of the box
+                extrapoints=np.append(extrapoints,points[selection]-shift*box,axis=0)
+                # we keep track of the original ids.
+                extraids=np.append(extraids,np.where(selection)[0])
+
         # add points at the vertices of the expanded (by 2 alpha) box
         for dim in range(8):
                 # [0,0,0],[0,0,1],[0,1,0],...,[1,1,1]
                 tmp = np.array(np.array(list(np.binary_repr(dim,width=3)),dtype=np.int8),dtype=np.float)
                 tmp *=(box+delta)
                 tmp[tmp<box/2.]-=delta
-                extrapoints.append(tmp)
-        points = np.append(points,extrapoints,axis=0)
+                tmp=np.reshape(tmp,(1,3))
+                extrapoints=np.append(extrapoints,tmp,axis=0)
+                extraids=np.append(extraids,-1)
 
-#       time=dict();utilities.lap()
-
-        self.triangulation = Delaunay(points)
-        self.triangulation.radii = np.append(self.cluster_group.radii[:],np.zeros(8))
-
-#       time['triangulate']=utilities.lap()
+        #print utilities.lap()
+        self.triangulation = Delaunay(extrapoints)
+        self.triangulation.radii = np.append(self.cluster_group.radii[extraids[extraids>=0]],np.zeros(8))
+        #print utilities.lap()
 
         prefiltered = self.alpha_prefilter(self.triangulation, alpha)
-#       time['prefilter']=utilities.lap()
 
-        alpha_shape = prefiltered [ [ self.circumradius(simplex) >=self.alpha for simplex in prefiltered      ]   ]
-#       time['alpha']=utilities.lap()
-#       print time
-#       print len(self.triangulation.simplices),len(prefiltered),len(alpha_shape),len(_ids)
+        #print utilities.lap()
+        a_shape = prefiltered [ [ self.circumradius(simplex) >=self.alpha for simplex in prefiltered      ]   ]
 
-        _ids = np.unique(alpha_shape)
+        #print utilities.lap()
+        _ids = np.unique(a_shape.flatten())
 
-        # remove the indices corresponding to the 8 additional points
-        #ids =_ids
-        ids = _ids[_ids<len(points)-8]
+        # remove the indices corresponding to the 8 additional points, which have extraid==-1
+        ids = _ids[np.logical_and(_ids>=0 , _ids < nrealpoints)]
 
+        #print utilities.lap()
         return ids
 
     def _assign_layers(self):
@@ -211,12 +202,11 @@ class GITIM(pytim.PYTIM):
 
         """
         # this can be used later to shift back to the original shift
-        self.reference_position=self.universe.atoms[0].position[:]
-
+        self.original_positions=np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 
         if(self.cluster_cut is not None): # groups have been checked already in _sanity_checks()
-            labels,counts,n_neigh = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],self.universe.dimensions[:6],self.molecular)
+            labels,counts,n_neigh = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],self.universe.dimensions[:6],self.cluster_threshold_density,self.molecular)
             labels = np.array(labels)
             label_max = np.argmax(counts) # the label of atoms in the largest cluster
             ids_max   = np.where(labels==label_max)[0]  # the indices (within the group) of the
@@ -225,10 +215,18 @@ class GITIM(pytim.PYTIM):
 
         else:
             self.cluster_group=self.itim_group ;
+
+        if self.symmetry=='planar':
+            utilities.centerbox(self.universe,center_direction=self.normal)
+            self.center(self.cluster_group,self.normal)
+            utilities.centerbox(self.universe,center_direction=self.normal)
         if self.symmetry=='spherical':
             self.center(self.cluster_group,'x',halfbox_shift=False)
             self.center(self.cluster_group,'y',halfbox_shift=False)
             self.center(self.cluster_group,'z',halfbox_shift=False)
+            self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+
+
 
         # first we label all atoms in itim_group to be in the gas phase
         self.itim_group.atoms.bfactors = 0.5
@@ -242,7 +240,10 @@ class GITIM(pytim.PYTIM):
         alpha_ids = self.alpha_shape(self.alpha)
 
         # only the 1st layer is implemented in gitim so far
-        self._layers[0] = self.cluster_group[alpha_ids]
+        if self.molecular == True:
+            self._layers[0] = self.cluster_group[alpha_ids].residues.atoms
+        else:
+            self._layers[0] = self.cluster_group[alpha_ids]
 
         for layer in self._layers:
                 layer.bfactors = 1

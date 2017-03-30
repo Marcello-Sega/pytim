@@ -18,16 +18,19 @@ class ITIM(pytim.PYTIM):
     """ Identifies the interfacial molecules at macroscopically
         flat interfaces.
 
-        :param Universe universe:      the MDAnalysis universe
-        :param float mesh:             the grid spacing used for the testlines
-        :param float alpha:            the probe sphere radius
-        :param str normal:             the macroscopic interface normal direction 'x','y' or 'z' (by default is 'guess')
-        :param AtomGroup itim_group:   identify the interfacial molecules from this group
-        :param dict radii_dict:        dictionary with the atomic radii of the elements in the itim_group.
-                                       If None is supplied, the default one (from GROMOS 43a1) will be used.
-        :param int max_layers:         the number of layers to be identified
-        :param bool info:              print additional info
-        :param bool multiproc:         parallel version (default: True. Switch off for debugging)
+        :param Universe universe:               the MDAnalysis universe
+        :param float mesh:                      the grid spacing used for the testlines
+        :param float alpha:                     the probe sphere radius
+        :param str normal:                      the macroscopic interface normal direction 'x','y' or 'z' (by default is 'guess')
+        :param AtomGroup itim_group:            identify the interfacial molecules from this group
+        :param dict radii_dict:                 dictionary with the atomic radii of the elements in the itim_group.
+                                                If None is supplied, the default one (from MDAnalysis) will be used.
+        :param int max_layers:                  the number of layers to be identified
+        :param float cluster_cut:               cutoff used for neighbors or density-based cluster search (default: None disables the cluster analysis) 
+        :param float cluster_threshold_density: Number density threshold for the density-based cluster search. 'auto' determines the threshold automatically. Default: None uses simple neighbors cluster search, if cluster_cut is not None
+        :param bool molecular:                  Switches between search of interfacial molecules / atoms (default: True)
+        :param bool info:                       print additional info
+        :param bool multiproc:                  parallel version (default: True. Switch off for debugging)
 
         Example:
 
@@ -102,6 +105,7 @@ class ITIM(pytim.PYTIM):
         self._define_groups()
 
         self._assign_normal(normal)
+
         self.assign_radii(radii_dict)
         self._sanity_checks()
 
@@ -112,14 +116,6 @@ class ITIM(pytim.PYTIM):
 
         self._assign_layers()
 
-    def _assign_normal(self,normal):
-
-        assert self.itim_group is not None, self.UNDEFINED_ITIM_GROUP
-        if normal=='guess':
-            self.normal=utilities.guess_normal(self.universe,self.itim_group)
-        else:
-            assert normal in self.directions_dict, self.WRONG_DIRECTION
-            self.normal = self.directions_dict[normal]
 
     def _assign_mesh(self):
         """ determine a mesh size for the testlines that is compatible with the simulation box
@@ -259,7 +255,7 @@ class ITIM(pytim.PYTIM):
                             dtype=int);
 
         # this can be used later to shift back to the original shift
-        self.reference_position=self.universe.atoms[0].position[:]
+        self.original_positions=np.copy(self.universe.atoms.positions[:])
 
         self.universe.atoms.pack_into_box()
 

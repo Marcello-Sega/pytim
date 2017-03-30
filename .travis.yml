@@ -1,5 +1,9 @@
 language: python
 
+branches:
+  except:
+  - dev
+
 matrix:
     include:
         - os: linux
@@ -14,7 +18,7 @@ before_install:
     - if [[ "$TRAVIS_OS_NAME" == "osx"   ]] ; then pip install --upgrade pip               ; fi
     - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; then sudo apt-get install liblapack-dev -y   ; fi
 
-install: 
+install:
 - pip install Sphinx>=1.4.3
 - pip install matplotlib
 - pip install cython

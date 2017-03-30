@@ -33,7 +33,7 @@ class PYTIM(object):
     __metaclass__ = ABCMeta
 
     directions_dict={0:'x',1:'y',2:'z','x':'x','y':'y','z':'z','X':'x','Y':'y','Z:':'z'}
-    symmetry_dict={'cylindrical':'cylindrical','spherical':'spherical'}
+    symmetry_dict={'cylindrical':'cylindrical','spherical':'spherical','planar':'planar'}
 
     ALPHA_NEGATIVE = "parameter alpha must be positive"
     ALPHA_LARGE= "parameter alpha must be smaller than the smaller box side"
@@ -50,7 +50,7 @@ class PYTIM(object):
     WRONG_DIRECTION="Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
     CENTERING_FAILURE="Cannot center the group in the box. Wrong direction supplied?"
 
-    def writepdb(self,filename='layers.pdb',centered='origin',multiframe=True):
+    def writepdb(self,filename='layers.pdb',centered='no',multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
             to the layers with different beta factor.
 
@@ -70,41 +70,39 @@ class PYTIM(object):
             >>> interface.writepdb('layers.pdb',centered='no')
 
         """
-        center_options=['no','middle','origin']
+        center_options=['no','middle','origin',False,True]
         if centered not in center_options:
-            centered='origin'
+            centered='no'
+        if centered == False: centered='no'
+        if centered == True : centered='middle' 
         try:
             if centered=='no':
-                original_pos = self.universe.atoms.positions[:]
-                translation = self.reference_position - self.universe.atoms[0].position[:]
-                self.universe.atoms.translate(translation)
-                self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
-
-            if centered=='middle' and self.symmetry=='planar':
-                original_pos = self.universe.atoms.positions[:]
-                translation = [0,0,0]
-                translation[self.normal] = self.universe.dimensions[self.normal]/2.
-                self.universe.atoms.translate(translation)
-                self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
-
+                self.universe.atoms.positions=self.original_positions
+    
+            if centered=='middle': 
+                # NOTE: this assumes that all method relying on 'planar' symmetry must center the interface along the normal
+                if self.symmetry=='planar':
+                    translation = [0,0,0]
+                    translation[self.normal] = self.universe.dimensions[self.normal]/2.
+                    self.universe.atoms.positions+=np.array(translation)
+                    self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+    
             PDB=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
-
+    
             PDB.write(self.universe.atoms)
-
-            if centered=='no' or centered=='middle':
-                self.universe.atoms.positions=original_pos
+    
         except:
             print("Error writing pdb file")
 
-    def savepdb(self,filename='layers.pdb',centered=True,multiframe=True):
+    def savepdb(self,filename='layers.pdb',centered='no',multiframe=True):
         """ An alias to :func:`writepdb`
         """
         self.writepdb(filename,centered,multiframe)
 
     def assign_radii(self,radii_dict):
         try:
-            _groups = self.extra_cluster_groups[:] # deep copy
+            _groups = np.copy(self.extra_cluster_groups[:])
         except:
             _groups = []
         _groups.append(self.itim_group)
@@ -134,11 +132,21 @@ class PYTIM(object):
                         print("!! Pass a dictionary of radii (in Angstrom) with the option radii_dict")
                         print("!! for example: r={'"+_atype+"':1.2,...} ; inter=pytim.ITIM(u,radii_dict=r)")
 
-                _g.radii=_radii[:] #deep copy
+                _g.radii=np.copy(_radii[:])
 
                 assert not np.any(np.equal(_g.radii,None)) , self.UNDEFINED_RADIUS
                 del _radii
                 del _types
+
+    def _assign_normal(self,normal):
+        assert self.symmetry=='planar', "Error: wrong symmetry for normal assignement"
+        assert self.itim_group is not None, self.UNDEFINED_ITIM_GROUP
+        if normal=='guess':
+            self.normal=utilities.guess_normal(self.universe,self.itim_group)
+        else:
+            assert normal in self.directions_dict, self.WRONG_DIRECTION
+            self.normal = self.directions_dict[normal]
+
 
     def center(self, group, direction=None, halfbox_shift=True):
         """

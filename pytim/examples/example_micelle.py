@@ -11,7 +11,7 @@ radii     = pytim_data.vdwradii(G43A1_TOP)
 
 interface = pytim.GITIM(u,itim_group=g,molecular=False,symmetry='spherical',alpha=2.5,)
 
-layer     = interface.layers(1)
+layer     = interface.layers[0]
 
 interface.writepdb('gitim.pdb',centered=False)
 

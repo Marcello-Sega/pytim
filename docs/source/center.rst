@@ -30,36 +30,39 @@ If you want to save a local copy of the file, you just need to use this code fra
     u         = mda.Universe(pytim.datafiles.WATER_GRO)
     u.atoms.write('centering1.pdb')
 
-**Default, centering at the origin**
 
-When initializing/computing the interface, Pytim internally centers the interface in different ways, depending whether :class:`~pytim.itim.ITIM` or :class:`~pytim.gitim.GITIM` is used. For planar interfaces, by default the middle of the liquid phase is moved to the origin along the surface normal, while the positions along other directions are placed in the box. In our case, the result is:
+When initializing/computing the interface, Pytim internally centers the interface in different ways, depending whether :class:`~pytim.itim.ITIM` or :class:`~pytim.gitim.GITIM` is used. When the configuration with the surface layers information is written to file using :meth:`~pytim.itim.writepdb`, the system can be shifted so that the liquid phase is placed at different positions.
 
-.. code-block:: python
+**Default, no centering**
 
-    interface = pytim.ITIM(u)
-    interface.writepdb('centering2.pdb')
-
-
-.. image:: centering2.png
-   :width: 35%
-   :align: center
-
-This comes handy to quickly discriminate between upper and lower surface atoms, to spot immediately the middle of the liquid phase, or to verify that the automatic centering method behaved as expected.
-
-**No centering**
-
-If the option `centered='no'` is passed to :meth:`~pytim.itim.ITIM..writepdb`, then the first atom of the system is kept at its original position (i.e., no shift is applied) although the system is always put into the basic cell. 
+If the (default) option `centered='no'` is used, then all atomic positions are kept the same as in the input file.
+This is like the initial case, however with information on the surface molecules added to the pdb.
 
 .. code-block:: python
 
     interface.writepdb('centering3.pdb',centered='no')
 
 
-This is like the initial case, however with information on the surface molecules added to the pdb.
 
 .. image:: centering3.png
    :width: 35%
    :align: center
+
+**Centering at the origin**
+	
+The system can be shifted so that the liquid phase is placed across the origin of the normal axis, using the option `centered=origin`.
+This comes handy to quickly discriminate between upper and lower surface atoms, to spot immediately the middle of the liquid phase, or to verify that the automatic centering method behaved as expected.
+
+.. code-block:: python
+
+    interface = pytim.ITIM(u)
+    interface.writepdb('centering2.pdb',centered='origin')
+
+
+.. image:: centering2.png
+   :width: 35%
+   :align: center
+
 
 **Centering in the middle**
 
