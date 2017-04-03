@@ -25,13 +25,43 @@ package for reading/writing trajectories, and work therefore seamlessly for a nu
 as well as common structure file formats such as XYZ or PDB (have a look at the [complete list](https://pythonhosted.org/MDAnalysis/documentation_pages/coordinates/init.html#id1))
 
 
-to install the package and the documentation:
+# How to install the package and the documentation? 
 
+1. Make sure you have an up-to-date version of cython, numpy, scipy and MDAnalysis:
+
+``` 
+pip install --user --upgrade cython numpy scipy MDAnalysis
+```
+
+2. Download and install pytim
 
 ```
+git clone https://github.com/Marcello-Sega/pytim.git
+cd pytim
 python setup.py install --user
-(cd docs/ ; make html)
 ```
+
+# Trouble installing ? 
+
+Some of the most common issues are the following:
+
+**Problem**: The system does not let me write (even using `sudo`) some files
+
+**Solution**: You're most likely running under a recent version of OS-X. Always install packages as user (`pip install <package> --user`
+
+**Problem**: cKDTree complains about the `boxsize` parameter
+
+**Solution**: the version of `scipy` must be >= 0.18
+
+
+**Problem**: Even though I've upgraded `scipy`, I keep getting problems about `boxsize`
+
+**Solution**: You should tell python where to find packages by setting the variable `$PYTHONPATH` 
+
+**Problem**: some error message mentioning `... file was built for x86_64 which is not the architecture being linked (i386)`
+
+**Solution**: use `export ARCHFLAGS='-arch x86_64'` before installing
+
 
 
 
