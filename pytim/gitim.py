@@ -11,7 +11,7 @@ from   scipy.spatial     import cKDTree
 from   scipy.spatial     import Delaunay
 from   scipy.spatial     import distance
 from   scipy.interpolate import LinearNDInterpolator
-import itertools 
+import itertools
 from __builtin__         import zip as builtin_zip
 from   pytim             import utilities
 import pytim
@@ -54,7 +54,6 @@ class GITIM(pytim.PYTIM):
         #TODO add type checking for each MDA class passed
 
         # dynamic monkey patch to change the behavior of the frame property
-        pytim.PatchTrajectory(universe.trajectory,self)
 
         self.universe=universe
         self.cluster_threshold_density = cluster_threshold_density
@@ -88,6 +87,7 @@ class GITIM(pytim.PYTIM):
         self.use_kdtree    = True
         self.use_multiproc = multiproc
 
+        pytim.PatchTrajectory(universe.trajectory,self)
         self._assign_layers()
 
     def _assign_symmetry(self,symmetry):

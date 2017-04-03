@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-""" Module: itim
-    ============
+""" Module: WC
+    ==========
 """
 
 from   multiprocessing   import Process, Queue
@@ -14,23 +14,13 @@ from __builtin__         import zip as builtin_zip
 from   pytim             import utilities
 import pytim
 
-class ITIM(pytim.PYTIM):
-    """ Identifies the interfacial molecules at macroscopically
-        flat interfaces.
+class WC(pytim.PYTIM):
+    """ Identifies the interface using the Willard-Chandler method
 
-        :param Universe universe:               the MDAnalysis universe
-        :param float mesh:                      the grid spacing used for the testlines
-        :param float alpha:                     the probe sphere radius
-        :param str normal:                      the macroscopic interface normal direction 'x','y' or 'z' (by default is 'guess')
-        :param AtomGroup itim_group:            identify the interfacial molecules from this group
-        :param dict radii_dict:                 dictionary with the atomic radii of the elements in the itim_group.
-                                                If None is supplied, the default one (from MDAnalysis) will be used.
-        :param int max_layers:                  the number of layers to be identified
-        :param float cluster_cut:               cutoff used for neighbors or density-based cluster search (default: None disables the cluster analysis)
-        :param float cluster_threshold_density: Number density threshold for the density-based cluster search. 'auto' determines the threshold automatically. Default: None uses simple neighbors cluster search, if cluster_cut is not None
-        :param bool molecular:                  Switches between search of interfacial molecules / atoms (default: True)
-        :param bool info:                       print additional info
-        :param bool multiproc:                  parallel version (default: True. Switch off for debugging)
+        :param Universe universe:      the MDAnalysis universe
+        :param float mesh:             the grid spacing
+        :param float density:          the threshold density (default 'auto' uses the average between the maximum and minimum density measured uing a coarse-grained g)
+        :param AtomGroup itim_group:   identify the interface from this group
 
         Example:
 
@@ -39,9 +29,8 @@ class ITIM(pytim.PYTIM):
         >>> from pytim.datafiles import *
         >>>
         >>> u         = mda.Universe(WATER_GRO)
-        >>> oxygens   = u.select_atoms("name OW")
         >>>
-        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=False)
+        >>> interface = pytim.WC(u, mesh=1.0)
         >>>
         >>> print interface.layers[0,0]  # first layer, upper
         <AtomGroup with 406 atoms>
@@ -50,29 +39,9 @@ class ITIM(pytim.PYTIM):
     @property
     def layers(self):
 
-        """ Access the layers as numpy arrays of AtomGroups
-
-        The object can be sliced as usual with numpy arrays, so, for example:
-
-        >>> interface.layers[0,:]  # upper side (0), all layers
-        array([<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
-               <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>], dtype=object)
-
-        >>> interface.layers[1,0]  # lower side (1), first layer (0)
-        <AtomGroup with 406 atoms>
-
-        >>> interface.layers[:,0:3] # 1st - 3rd layer (0:3), on both sides
-        array([[<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
-                <AtomGroup with 414 atoms>],
-               [<AtomGroup with 406 atoms>, <AtomGroup with 418 atoms>,
-                <AtomGroup with 399 atoms>]], dtype=object)
-
-        >>> interface.layers[1,0:4:2] # 1st - 4th layer, with a stride of 2 (0:4:2), lower side (1)
-        array([<AtomGroup with 406 atoms>, <AtomGroup with 399 atoms>], dtype=object)
-
+        """ The WC method does not allow to identify surface molecules directly.
         """
-        return self._layers
-
+        return None
 
     def __init__(self,universe,mesh=0.4,alpha=2.0,normal='guess',itim_group=None,radii_dict=None,
                  max_layers=1,cluster_cut=None,cluster_threshold_density=None, molecular=True,extra_cluster_groups=None,
@@ -80,6 +49,8 @@ class ITIM(pytim.PYTIM):
 
         #TODO add type checking for each MDA class passed
 
+        # dynamic monkey patch to change the behavior of the frame property
+        pytim.PatchTrajectory(universe.trajectory,self)
 
         self.symmetry='planar'
         self.universe=universe
@@ -103,7 +74,6 @@ class ITIM(pytim.PYTIM):
         self._define_groups()
 
         self._assign_normal(normal)
-
         self.assign_radii(radii_dict)
         self._sanity_checks()
 
@@ -112,9 +82,16 @@ class ITIM(pytim.PYTIM):
         self.use_kdtree    = True
         self.use_multiproc = multiproc
 
-        pytim.PatchTrajectory(universe.trajectory,self)
         self._assign_layers()
 
+    def _assign_normal(self,normal):
+
+        assert self.itim_group is not None, self.UNDEFINED_ITIM_GROUP
+        if normal=='guess':
+            self.normal=utilities.guess_normal(self.universe,self.itim_group)
+        else:
+            assert normal in self.directions_dict, self.WRONG_DIRECTION
+            self.normal = self.directions_dict[normal]
 
     def _assign_mesh(self):
         """ determine a mesh size for the testlines that is compatible with the simulation box
@@ -199,7 +176,7 @@ class ITIM(pytim.PYTIM):
                     if self.molecular == True:
                         # we first select the (unique) residues corresponding to _inlayer_group, and then
                         # we create  group of the atoms belonging to them, with _inlayer_group.residues.atoms
-                        _tmp   = _inlayer_group.residues.atoms
+                        _tmp   = _inlayer_group.residues.atoms[:]
                         # and we copy it back to _inlayer_group
                         _inlayer_group = _tmp
                         # now we need the indices within the cluster_group, of those atoms which are in the
@@ -254,7 +231,7 @@ class ITIM(pytim.PYTIM):
                             dtype=int);
 
         # this can be used later to shift back to the original shift
-        self.original_positions=np.copy(self.universe.atoms.positions[:])
+        self.reference_position=self.universe.atoms[0].position[:]
 
         self.universe.atoms.pack_into_box()
 
@@ -296,7 +273,7 @@ class ITIM(pytim.PYTIM):
             # so far, it justs exploit a simple scheme splitting
             # the calculation between the two sides. Would it be
             # possible to implement easily 2d domain decomposition?
-            proc=[None,None]
+            proc=[[],[]]
             queue = [ Queue() , Queue() ]
             proc[up]  = Process(target=self._assign_one_side,
                                 args=(up,sort[::-1],_x,_y,_z,_radius,queue[up]))
@@ -306,14 +283,12 @@ class ITIM(pytim.PYTIM):
             for p in proc: p.start()
             for uplow  in [up,low]:
                 for index,group in enumerate(queue[uplow].get()):
-                    # cannot use self._layers[uplow][index] = group, otherwise info about universe is lost (do not know why yet)
-                    # must use self._layers[uplow][index] = self.universe.atoms[group.ids]
-                    self._layers[uplow][index] = self.universe.atoms[group.ids]
+                    self._layers[uplow,index] = group
             for p in proc: p.join()
         else:
             for index,group in enumerate(self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)):
                 self._layers[up][index] = group
-            for index,group in enumerate(self._assign_one_side(low,sort[::],_x,_y,_z,_radius)):
+            for index,group in enumerate(self._assign_one_side(low,sort,_x,_y,_z,_radius)):
                 self._layers[low][index] = group
 
 

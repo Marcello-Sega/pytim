@@ -15,9 +15,9 @@ def PatchTrajectory(trajectory,interface):
 
     class PatchedTrajectory(trajectory.__class__):
 
-        def read_next_timestep(self,ts=None):
+        def _read_next_timestep(self,ts=None):
             self.interface._assign_layers()
-            self.original_read_next_timestep(ts=ts)
+            return self.original_read_next_timestep(ts=ts)
 
     oldname  = trajectory.__class__.__name__
     oldmodule= trajectory.__class__.__module__
@@ -74,24 +74,24 @@ class PYTIM(object):
         if centered not in center_options:
             centered='no'
         if centered == False: centered='no'
-        if centered == True : centered='middle' 
+        if centered == True : centered='middle'
         try:
             if centered=='no':
                 self.universe.atoms.positions=self.original_positions
-    
-            if centered=='middle': 
+
+            if centered=='middle':
                 # NOTE: this assumes that all method relying on 'planar' symmetry must center the interface along the normal
                 if self.symmetry=='planar':
                     translation = [0,0,0]
                     translation[self.normal] = self.universe.dimensions[self.normal]/2.
                     self.universe.atoms.positions+=np.array(translation)
                     self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
-    
+
             PDB=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
-    
+
             PDB.write(self.universe.atoms)
-    
+
         except:
             print("Error writing pdb file")
 
