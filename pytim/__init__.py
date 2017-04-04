@@ -16,8 +16,9 @@ def PatchTrajectory(trajectory,interface):
     class PatchedTrajectory(trajectory.__class__):
 
         def _read_next_timestep(self,ts=None):
+            tmp = self.original_read_next_timestep(ts=ts)
             self.interface._assign_layers()
-            return self.original_read_next_timestep(ts=ts)
+            return tmp
 
     oldname  = trajectory.__class__.__name__
     oldmodule= trajectory.__class__.__module__
