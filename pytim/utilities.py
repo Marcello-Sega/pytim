@@ -179,6 +179,7 @@ def do_cluster_analysis_DBSCAN(group,cluster_cut,box,threshold_density=None,mole
     tree = cKDTree(points,boxsize=box[:6])
     neighborhoods = np.array( [ np.array(neighbors)
                             for neighbors in tree.query_ball_point(points, cluster_cut,n_jobs=-1) ] )
+    assert len(neighborhoods.shape) is 1, "Error in do_cluster_analysis_DBSCAN(), the cutoff is probably too small"
     if molecular==False:
         n_neighbors = np.array([len(neighbors)
                                 for neighbors in neighborhoods])

@@ -259,7 +259,8 @@ class ITIM(pytim.PYTIM):
         self.universe.atoms.pack_into_box()
 
         if(self.cluster_cut is not None): # groups have been checked already in _sanity_checks()
-            labels,counts,n_neigh = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],self.universe.dimensions[:6],self.cluster_threshold_density,self.molecular)
+            box = np.copy(self.universe.dimensions[:6])
+            labels,counts,n_neigh = utilities.do_cluster_analysis_DBSCAN(self.itim_group,self.cluster_cut[0],box,self.cluster_threshold_density,self.molecular)
             labels = np.array(labels)
             label_max = np.argmax(counts) # the label of atoms in the largest cluster
             ids_max   = np.where(labels==label_max)[0]  # the indices (within the group) of the
