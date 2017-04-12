@@ -194,7 +194,8 @@ def do_cluster_analysis_DBSCAN(group,cluster_cut,box,threshold_density=None,mole
         avg_neighbors = (min_neighbors + max_neighbors)/2.
         modes = 2
         centroid,_ = vq.kmeans2(n_neighbors*1.0, modes , iter=10, check_finite=False)
-        min_samples   = np.mean(centroid)
+        #min_samples   = np.mean(centroid)
+        min_samples   = np.max(centroid)
 
     labels = -np.ones(points.shape[0], dtype=np.intp)
     counts = np.zeros(points.shape[0], dtype=np.intp)

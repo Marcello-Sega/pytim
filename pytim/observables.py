@@ -516,10 +516,10 @@ class Profile(object):
 
     """
 
-    def __init__(self,group,direction='z',observable=None,interface=None,center_group=None,center_in_zero=False):
+    def __init__(self,group,direction='z',observable=None,interface=None,center_group=None):
         #TODO: the directions are handled differently, fix it in the code
         _dir = {'x':0,'y':1,'z':2}
-        self.halfbox_shift = center_in_zero
+        self.halfbox_shift = True
         self.group         = group
         assert isinstance(group,AtomGroup) , "The first argument passed to Profile() must be an AtomGroup."
         self.universe      = group.universe
@@ -541,17 +541,35 @@ class Profile(object):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
         self._box=self.universe.dimensions[:3]
+        self.do_rebox=False
+
+        # We need to decide if we have to rebox particles or not. If the trajectory is patched, it means
+        # that the coordinates have been centered using the default scheme of each method, and we can handle this.
+        # Otherwise, we rebox.
+
+        try:
+            id(self.universe.trajectory.interface)>0
+            _range =[-self._box[self._dir]/2.,self._box[self._dir]/2.]
+            self.do_rebox=False
+        except:
+            _range =[0.,self._box[self._dir]]
+            self.do_rebox=True
+
         if self.interface is None:
             # non-intrinsic quantities are sampled
-            utilities.centerbox(self.universe,center_direction=self._dir,halfbox_shift=self.halfbox_shift)
-            _pos    = self.pos[self._dir](self.group)
+            _pos    = np.copy(self.pos[self._dir](self.group)) # TODO: check if this was returning already a new object
+            try:
+                id(self.universe.trajectory)>0
+                self.universe.atoms.positions=np.copy(self.oldpos)
+            except:
+                pass
+
+            if self.do_rebox==True:
+                _pos[_pos>self._box]-=self._box[_pos>self._box]
+                _pos[_pos<=0]       +=self._box[_pos<=0]
         else:
             _pos    = IntrinsicDistance(self.interface).compute(self.group)
 
-        if self.halfbox_shift==True:
-            _range =[-self._box[self._dir]/2.,self._box[self._dir]/2.]
-        else:
-            _range =[0.,self._box[self._dir]]
         _values = self.observable.compute(self.group)
         _nbins  = int(self.universe.trajectory.ts.dimensions[self._dir]/self.binsize)
         # we need to make sure that the number of bins is odd, so that the central one encompasses

@@ -132,7 +132,14 @@ class GITIM(pytim.PYTIM):
         M      = (r_i[0] - r_i)[1:]
         s      = ((r_i2[0] - r_i2[1:] - d_2[0] + d_2))/2.
 
-        u      = np.dot(np.linalg.inv(M),d)
+        try:
+            u      = np.dot(np.linalg.inv(M),d)
+        except np.linalg.linalg.LinAlgError as err:
+            if 'Singular matrix' in err.message:
+                print "Warning, singular matrix for ",r_i
+                return 0 # TODO is this correct? The singular matrix most likely comes out of points alinged in the plane
+            else:
+                raise
         v      = r_i[1]-r_i[0]
 
         A      = - (R_i[0] - np.dot(u,v) )
@@ -142,7 +149,10 @@ class GITIM(pytim.PYTIM):
         R.append( ( A - B )/C )
         R=np.array(R)
         positiveR = R[R>=0]
-        return np.min(positiveR) if positiveR.size == 1 else 0
+        if positiveR.size == 1:
+            return np.min(positiveR)
+        else:
+            return 1e6
 
     def alpha_shape(self,alpha):
         #print  utilities.lap()
@@ -172,6 +182,7 @@ class GITIM(pytim.PYTIM):
                 # [0,0,0],[0,0,1],[0,1,0],...,[1,1,1]
                 tmp = np.array(np.array(list(np.binary_repr(dim,width=3)),dtype=np.int8),dtype=np.float)
                 tmp *=(box+delta)
+                tmp += (np.random.random(3)-0.5)*box*1e-8 # the random gitter (rescaled to be small wrt the box) is added to prevent coplanar points
                 tmp[tmp<box/2.]-=delta
                 tmp=np.reshape(tmp,(1,3))
                 extrapoints=np.append(extrapoints,tmp,axis=0)

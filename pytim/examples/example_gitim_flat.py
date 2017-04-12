@@ -8,7 +8,7 @@ u         = mda.Universe(WATER_GRO)
 
 radii     = pytim_data.vdwradii(G43A1_TOP)
 
-interface = pytim.GITIM(u,molecular=True,symmetry='planar',alpha=2.5)
+interface = pytim.GITIM(u,molecular=True,symmetry='planar',alpha=2.5, cluster_cut=3.5, cluster_threshold_density='auto')
 
 layers     = interface.layers[:]
 print layers
