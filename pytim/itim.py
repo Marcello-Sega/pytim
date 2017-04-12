@@ -90,6 +90,7 @@ class ITIM(pytim.PYTIM):
         self._layers=np.empty([2,max_layers],dtype=type(universe.atoms))
         self.info=info
         self.normal=None
+        self.PDB={}
         try:
             self.all_atoms = self.universe.select_atoms('all')
         except:

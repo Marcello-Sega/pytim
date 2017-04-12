@@ -56,7 +56,7 @@ class PYTIM(object):
             to the layers with different beta factor.
 
             :param filename:   string  -- the output file name
-            :param origin:     string  -- 'origin', 'middle', or 'no'
+            :param centered:   string  -- 'origin', 'middle', or 'no'
             :param multiframe: boolean -- append to pdb file if True
 
             Example: save the positions (centering the interface in the cell) without appending
@@ -87,11 +87,13 @@ class PYTIM(object):
                     translation[self.normal] = self.universe.dimensions[self.normal]/2.
                     self.universe.atoms.positions+=np.array(translation)
                     self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
-
-            PDB=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
+            try:
+                id(self.PDB[filename])>0
+            except:
+                self.PDB[filename]=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
 
-            PDB.write(self.universe.atoms)
+            self.PDB[filename].write(self.universe.atoms)
 
         except:
             print("Error writing pdb file")
