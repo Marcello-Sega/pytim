@@ -88,7 +88,8 @@ class PYTIM(object):
                     self.universe.atoms.positions+=np.array(translation)
                     self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
             try:
-                id(self.PDB[filename])>0
+                id(self.PDB[filename])>0 # it exists already, let's add information about the box, as MDAnalysis forgets to do so for successive frames. TODO MDA version check here!
+                self.PDB[filename].CRYST1(self.PDB[filename].convert_dimensions_to_unitcell(self.universe.trajectory.ts))
             except:
                 self.PDB[filename]=MDAnalysis.Writer(filename, multiframe=True, bonds=False,
                             n_atoms=self.universe.atoms.n_atoms)
