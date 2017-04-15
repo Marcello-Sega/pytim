@@ -43,7 +43,7 @@ class ITIM(pytim.PYTIM):
         >>>
         >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=False)
         >>>
-        >>> print interface.layers[0,0]  # first layer, upper
+        >>> print repr(interface.layers[0,0])  # first layer, upper
         <AtomGroup with 406 atoms>
 
     """
@@ -78,8 +78,7 @@ class ITIM(pytim.PYTIM):
                  max_layers=1,cluster_cut=None,cluster_threshold_density=None, molecular=True,extra_cluster_groups=None,
                  info=False,multiproc=True):
 
-        #TODO add type checking for each MDA class passed
-
+        self._basic_checks(universe)
 
         self.symmetry='planar'
         self.universe=universe
@@ -204,8 +203,9 @@ class ITIM(pytim.PYTIM):
                         # and we copy it back to _inlayer_group
                         _inlayer_group = _tmp
                         # now we need the indices within the cluster_group, of those atoms which are in the
-                        # molecular layer group
-                        _indices = np.flatnonzero(np.in1d(self.cluster_group.atoms.ids,_inlayer_group.atoms.ids))
+                        # molecular layer group;
+                        # NOTE that from MDAnalysis 0.16, .ids runs from 1->N (was 0->N-1 in 0.15), we use now .indices
+                        _indices = np.flatnonzero(np.in1d(self.cluster_group.atoms.indices,_inlayer_group.atoms.indices))
                         # and update the tagged, sorted atoms
                         self._seen[uplow][_indices] = layer + 1
 
@@ -277,9 +277,9 @@ class ITIM(pytim.PYTIM):
         utilities.centerbox(self.universe,center_direction=self.normal)
 
         # first we label all atoms in itim_group to be in the gas phase
-        self.itim_group.atoms.bfactors = 0.5
+        self.LabelLayer(self.itim_group.atoms, 0.5)
         # then all atoms in the largest group are labelled as liquid-like
-        self.cluster_group.atoms.bfactors = 0
+        self.LabelLayer(self.cluster_group.atoms, 0)
 
         _radius=self.cluster_group.radii
         self._seen=[[],[]]
@@ -308,8 +308,8 @@ class ITIM(pytim.PYTIM):
             for uplow  in [up,low]:
                 for index,group in enumerate(queue[uplow].get()):
                     # cannot use self._layers[uplow][index] = group, otherwise info about universe is lost (do not know why yet)
-                    # must use self._layers[uplow][index] = self.universe.atoms[group.ids]
-                    self._layers[uplow][index] = self.universe.atoms[group.ids]
+                    # must use self._layers[uplow][index] = self.universe.atoms[group.indices]
+                    self._layers[uplow][index] = self.universe.atoms[group.indices]
             for p in proc: p.join()
         else:
             for index,group in enumerate(self._assign_one_side(up,sort[::-1],_x,_y,_z,_radius)):
@@ -318,10 +318,10 @@ class ITIM(pytim.PYTIM):
                 self._layers[low][index] = group
 
 
-        # assign bfactors to all layers
+        # assign labels to all layers. This can be the bfactor or the tempfactor property, depending on the MDA version
         for uplow in [up,low]:
             for _nlayer,_layer in enumerate(self._layers[uplow]):
-                _layer.bfactors = _nlayer+1
+                self.LabelLayer(_layer, _nlayer+1)
 
         # reset the interpolator
         self._interpolator=None

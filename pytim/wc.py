@@ -32,7 +32,7 @@ class WC(pytim.PYTIM):
         >>>
         >>> interface = pytim.WC(u, mesh=1.0)
         >>>
-        >>> print interface.layers[0,0]  # first layer, upper
+        >>> print repr(interface.layers[0,0])  # first layer, upper
         <AtomGroup with 406 atoms>
 
     """

@@ -20,20 +20,31 @@ Example
     >>> import pytim
     >>> from pytim.datafiles import *
     >>> u = mda.Universe(METHANOL_GRO)
+    ...
 
-    Since no information is carried by the file format on the radii, we have
-
-        >>> print u.residues[0].atoms.radii
-        [None None None]
-
-    the atom types will assigned by MDAnalysis are the first letter in the
+    the atom types assigned by MDAnalysis are the first letter in the
     atom name:
 
     >>> print u.residues[0].atoms.types
     ['M' 'O' 'H']
 
-    By initializing the interface, Pytim will associate standard radii to the matching types, and an average radius to the non-matching ones. If this
-    is not the wanted behavior, one has usually the following two options:
+    By initializing the interface, Pytim will associate standard radii to the matching types, and an average radius to the non-matching ones.
+
+    >>> u = mda.Universe(METHANOL_GRO)
+    ...
+
+    >>> interface = pytim.ITIM(u,cluster_cut=5.0)
+    !!                              WARNING
+    !! No appropriate radius was found for the atomtype M
+    !! Using the average radius (1.20714285714) as a fallback option...
+    !! Pass a dictionary of radii (in Angstrom) with the option radii_dict
+    !! for example: r={'M':1.2,...} ; inter=pytim.ITIM(u,radii_dict=r)
+
+
+    >>> print u.residues[0].atoms.radii
+    [ 1.20714286  1.05        0.4       ]
+
+ If this is not the wanted behavior, one has usually the following two options:
 
 **Case 1**
     We know exactly what the atomic radii should be.
@@ -45,6 +56,8 @@ Example
     >>> u = mda.Universe(METHANOL_GRO)
     >>> mydict    = {'M':1.6, 'O':1.5, 'H':0.0}
     >>> interface = pytim.ITIM(u,cluster_cut=5.0,radii_dict=mydict)
+    >>> print u.residues[0].atoms.radii
+    [ 1.6  1.5  0. ]
 
 **Case 2**
     We don't know exactly the atomic radii, but we don't want to use just the standard values.

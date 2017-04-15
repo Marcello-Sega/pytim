@@ -6,9 +6,13 @@
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy import stats
+try: # MDA >=0.16
+    from  MDAnalysis.core.groups import *
+except: # MDA 0.15
+    from MDAnalysis.core.AtomGroup import *
+
 from MDAnalysis.analysis import rdf
 from MDAnalysis.lib import distances
-from MDAnalysis.core.AtomGroup import *
 from itertools import chain
 import pytim
 import utilities
@@ -33,20 +37,19 @@ class Observable(object):
     def fold_atom_around_first_atom_in_residue(self,atom):
         # let's thake the first atom in the residue as the origin
         box=self.u.trajectory.ts.dimensions[0:3]
-        pos = atom.position - atom.residue[0].position
+        pos = atom.position - atom.residue.atoms[0].position
         pos[pos>= box/2.]-=box[pos>= box/2.]
         pos[pos<-box/2.]+=box[pos<-box/2.]
         return pos
 
     def fold_around_first_atom_in_residue(self,inp):
         pos=[]
-        t = type(inp)
 
-        if t is Atom:
+        if isinstance(inp,Atom):
                 pos.append(self.fold_atom_around_first_atom_in_residue(inp))
-        elif t is AtomGroup or \
-                t is Residue or \
-                t is ResidueGroup:
+        elif isinstance(inp, AtomGroup) or \
+                isinstance(inp, Residue) or \
+                isinstance(inp, ResidueGroup):
                 for atom in inp.atoms:
                     pos.append(self.fold_atom_around_first_atom_in_residue(atom))
         else:
@@ -58,7 +61,7 @@ class Observable(object):
         pass
 
 
-class InterRDF(rdf.InterRDF):
+class RDF(object):
     """ Calculates a radial distribution function of some observable from two groups.
 
         The two functions must return an array (of scalars or of vectors)
@@ -72,35 +75,46 @@ class InterRDF(rdf.InterRDF):
 
         :param AtomGroup g1:            1st group
         :param AtomGroup g2:            2nd group
+        :param double range:            compute the rdf up to this distance. If 'full' is supplied (default) computes it up to half of the smallest box side.
         :param int nbins:               number of bins
-        :param ??? exclusion_block:
-        :param int start:               first frame
-        :param int stop:                last frame
-        :param int step:                frame stride
         :param char excluded_dir:       project position vectors onto the plane orthogonal to 'z','y' or 'z' (TODO not used here, check & remove)
-        :param Observable observable:        observable calculated on the atoms in g1
-        :param Observable observable2:       observable calculated on the atoms in g2
+        :param Observable observable:   observable calculated on the atoms in g1
+        :param Observable observable2:  observable calculated on the atoms in g2
         :param array weights:           weights to be applied to the distribution function (mutually exclusive with observable/observable2)
 
     """
 
-    def __init__(self, g1, g2,
-                 nbins=75, range=(0.0, 15.0), exclusion_block=None,
+    def __init__(self, universe,
+                 nbins=75, range='full', exclusion_block=None,
                  start=None, stop=None, step=None,excluded_dir='z',
                  observable=None,observable2=None,weights=None):
-        rdf.InterRDF.__init__(self, g1, g2, nbins=nbins, range=range,
-                              exclusion_block=exclusion_block,
-                              start=start, stop=stop, step=step)
+        if range is 'full':
+            self.range=np.min(universe.dimensions[:3])
+        else:
+            self.range=range
+        self.rdf_settings = {'bins': nbins,
+                             'range': (0.,self.range)}
+        self.universe = universe
         self.nsamples=0
         self.observable=observable
         self.observable2=observable2
         self.weights=weights
+        self.n_frames = 0
+        self.volume=0.0
+        count, edges = np.histogram([-1,-1], **self.rdf_settings)
+        self.count = count * 0.0
+        self.edges = edges
+        self.bins = 0.5 * (edges[:-1] + edges[1:])
 
-    def _single_frame(self):
+    def sample(self,g1,g2):
+        self.n_frames +=1
+        self.g1 = g1
+        self.g2 = g2
+        self._ts=self.universe.trajectory.ts
         if (self.observable is not None or
             self.observable2 is not None) and \
             self.weights is not None:
-            raise Exception("Error, cannot specify both a function and weights in InterRDF()" )
+            raise Exception("Error, cannot specify both a function and weights in RDF()" )
         if self.observable is not None or self.observable2 is not None:
             if self.observable2 is None:
                 self.observable2 = self.observable
@@ -108,7 +122,7 @@ class InterRDF(rdf.InterRDF):
                 fg1 = self.observable.compute(self.g1)
                 fg2 = self.observable2.compute(self.g2)
                 if len(fg1)!=len(self.g1) or len(fg2)!=len(self.g2):
-                    raise Exception ("Error, the observable passed to InterRDF should output an array (of scalar or vectors) the same size of the group")
+                    raise Exception ("Error, the observable passed to RDF should output an array (of scalar or vectors) the same size of the group")
                 # both are (arrays of) scalars
                 if len(fg1.shape)==1 and len(fg2.shape)==1:
                     _weights = np.outer(fg1,fg2)
@@ -117,44 +131,44 @@ class InterRDF(rdf.InterRDF):
                 # TODO: tests on the second dimension...
                     _weights = np.dot(fg1,fg2.T)
                 else :
-                    raise Exception("Erorr, shape of the observable output not handled in InterRDF")
+                    raise Exception("Error, shape of the observable output not handled in RDF")
                 # numpy.histogram accepts negative weights
                 self.rdf_settings['weights']=_weights
         if self.weights is not None:
-            raise Exception("Weights not implemented yet in InterRDF")
+            raise Exception("Weights not implemented yet in RDF")
 
-        #
+        # This still uses MDA's distance_array. Pro: works also in triclinic boxes. Con: could be faster (?)
+        _distances = np.zeros((len(self.g1), len(self.g2)), dtype=np.float64)
         distances.distance_array(self.g1.positions, self.g2.positions,
-                                 box=self.u.dimensions, result=self._result)
-        ## temporary solution, before we rewrite the RDF code as independent from MDA.
-        # Maybe exclude same molecule distances
-        if self._exclusion_mask is not None:
-            self._exclusion_mask[:] = self._maxrange
+                                 box=self.universe.dimensions, result=_distances)
 
-        count = np.histogram(self._result, **self.rdf_settings)[0]
+        count = np.histogram(_distances, **self.rdf_settings)[0]
         self.count += count
 
         try:
             self.volume += self._ts.volume
         except:
-            self.volume += self.u.dimensions[0]*self.u.dimensions[1]*self.u.dimensions[2]
-
-
-
-
-    def sample(self,ts):
-        self._ts=ts
-        self._single_frame()
+            self.volume += self.universe.dimensions[0]*self.universe.dimensions[1]*self.universe.dimensions[2]
         self.nsamples+=1
 
-    def normalize(self):
-        self._conclude() # TODO fix variable group size; remove blocks support
-            # undo the normalization in InterRDF._conclude()
-        if self.nsamples>0:
-                self.rdf *= self.nframes**2 / self.nsamples**2 ;
+    @property
+    def rdf(self):
+        nA = len(self.g1)
+        nB = len(self.g2)
+        N = nA * nB
+        # Volume in each radial shell
+        vol = 4./3. * np.pi * np.power(self.edges[1:], 3) - np.power(self.edges[:-1], 3)
+
+        # Average number density
+        box_vol = self.volume / self.n_frames
+        density = N / box_vol
+
+        self._rdf = self.count / (density * vol * self.n_frames)
+
+        return self._rdf
 
 
-class InterRDF2D(InterRDF):
+class RDF2D(RDF):
     """ Calculates a radial distribution function of some observable from two groups, projected on a plane.
 
         The two functions must return an array (of scalars or of vectors)
@@ -182,18 +196,14 @@ class InterRDF2D(InterRDF):
         >>> from pytim.datafiles import *
         >>>
         >>> u = mda.Universe(WATER_GRO,WATER_XTC)
-        >>> L = np.min(u.dimensions[:3])
         >>> oxygens = u.select_atoms("name OW")
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
-        >>>
+        >>> rdf = observables.RDF2D(u,nbins=120)
         >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,radii_dict=radii,cluster_cut=3.5)
         >>>
         >>> for ts in u.trajectory[::50] :
         ...     layer=interface.layers[0,1]
-        ...     if ts.frame==0 :
-        ...         rdf = observables.InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
-        ...     rdf.sample(ts)
-        >>> rdf.normalize()
+        ...     rdf.sample(layer,layer)
         >>> rdf.rdf[0]=0.0
         >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf)))  #doctest:+SKIP
 
@@ -212,12 +222,10 @@ class InterRDF2D(InterRDF):
             oxygens = u.select_atoms("name OW")
             radii=pytim_data.vdwradii(G43A1_TOP)
             interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4,multiproc=True,radii_dict=radii,cluster_cut=3.5)
-            for ts in u.trajectory[::5] :
+            rdf=pytim.observables.RDF2D(u,nbins=120)
+            for ts in u.trajectory[::50] :
                 layer=interface.layers[0,1]
-                if ts.frame==0 :
-                    rdf=pytim.observables.InterRDF2D(layer,layer,range=(0.,L/2.),nbins=120)
-                rdf.sample(ts)
-            rdf.normalize()
+                rdf.sample(layer,layer)
             rdf.rdf[0]=0.0
             plt.plot(rdf.bins, rdf.rdf)
             plt.show()
@@ -225,11 +233,11 @@ class InterRDF2D(InterRDF):
 
     """
 
-    def __init__(self, g1, g2,
-                 nbins=75, range=(0.0, 15.0), exclusion_block=None,
+    def __init__(self, universe,
+                 nbins=75, range='full', exclusion_block=None,
                  start=None, stop=None, step=None,excluded_dir='z',
                  true2D=False, observable=None):
-        InterRDF.__init__(self, g1, g2,nbins=nbins, range=range,
+        RDF.__init__(self, universe,nbins=nbins, range=range,
                           exclusion_block=exclusion_block,
                           start=start, stop=stop, step=step,
                           observable=observable)
@@ -241,31 +249,40 @@ class InterRDF2D(InterRDF):
         if excluded_dir is 'x':
                 self.excluded_dir=0
 
-    def _single_frame(self):
+    def sample(self,g1,g2):
+        self.n_frames+=1
         excl=self.excluded_dir
-        p1=self.g1.positions
-        p2=self.g2.positions
         if self.true2D:
-                p1[:,excl]=0
-                p2[:,excl]=0
-        self.g1.positions=p1
-        self.g2.positions=p2
-        InterRDF._single_frame(self)
+            p1=g1.positions
+            p2=g2.positions
+            self._p1=np.copy(p1)
+            self._p2=np.copy(p2)
+            p1[:,excl]=0
+            p2[:,excl]=0
+        RDF.sample(self,g1,g2)
+        if self.true2D:
+            self.g1.positions = np.copy(self._p1)
+            self.g1.positions = np.copy(self._p2)
         # TODO: works only for rectangular boxes
         # we subtract the volume added for the 3d case,
         # and we add the surface
         self.volume += self._ts.volume*(1./self._ts.dimensions[excl]-1.)
 
-    def _conclude(self):
-        InterRDF._conclude(self)
-        correction = 4./3.*np.pi * (np.power(self.edges[1:], 3) -
-                                    np.power(self.edges[:-1], 3))
-        correction /= np.pi * (np.power(self.edges[1:], 2) -
-                               np.power(self.edges[:-1], 2))
-        rdf = self.rdf * correction
-        self.rdf = rdf
+    @property
+    def rdf(self):
+        nA = len(self.g1)
+        nB = len(self.g2)
+        N = nA * nB
+        # Volume in each radial shell
+        vol = 4.0 * np.pi * np.power(self.edges[1:], 2) - np.power(self.edges[:-1], 2)
 
+        # Average number density
+        box_vol = self.volume / self.n_frames
+        density = N / box_vol
 
+        self._rdf = self.count / (density * vol * self.n_frames)
+
+        return self._rdf
 
 
 class LayerTriangulation(Observable):
@@ -479,7 +496,7 @@ class Profile(object):
         >>>
         >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5)
         >>>
-        >>> for ts in u.trajectory[:]:
+        >>> for ts in u.trajectory[::50]:
         ...     interface.center(oxygens)
         ...     profile.sample()
         >>>
@@ -506,7 +523,7 @@ class Profile(object):
 
             interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5)
 
-            for ts in u.trajectory[:]:
+            for ts in u.trajectory[::50]:
                 interface.center(oxygens)
                 profile.sample()
 
@@ -519,8 +536,9 @@ class Profile(object):
     def __init__(self,group,direction='z',observable=None,interface=None,center_group=None):
         #TODO: the directions are handled differently, fix it in the code
         _dir = {'x':0,'y':1,'z':2}
-        self.halfbox_shift = True
+        self.halfbox_shift = False
         self.group         = group
+
         assert isinstance(group,AtomGroup) , "The first argument passed to Profile() must be an AtomGroup."
         self.universe      = group.universe
         self.center_group  = center_group
@@ -565,9 +583,9 @@ class Profile(object):
                 pass
 
             if self.do_rebox==True:
-                condition = _pos>self._box[self._dir]
+                condition = _pos>=self._box[self._dir]
                 _pos[condition]-=self._box[self._dir]
-                condition = _pos<=0
+                condition = _pos<0
                 _pos[condition]+=self._box[self._dir]
         else:
             _pos    = IntrinsicDistance(self.interface).compute(self.group)

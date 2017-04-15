@@ -3,15 +3,15 @@
 import MDAnalysis as mda
 import pytim
 from   pytim.datafiles import *
+import numpy as np
 
 u          = mda.Universe(WATER_GRO)
 oxygens    = u.select_atoms("name OW")
+g=oxygens
 radii      = pytim_data.vdwradii(G43A1_TOP)
-
-interface  = pytim.ITIM(u,alpha=2.,itim_group=oxygens,max_layers=4)#,multiproc=True,radii_dict=radii,cluster_groups=oxygens,cluster_cut=3.5)
-
-layer      = interface.layers('upper',1)  # first layer, upper side
-print ("Interface computed. Upper layer:\n %s out of %s" % (layer,oxygens))
+interface  = pytim.ITIM(u,alpha=2.,max_layers=4,molecular=False)
+layer      = interface.layers[0,0]  # first layer, upper side
+print repr(interface.layers[0,0])
 
 interface.writepdb('layers.pdb',centered=False)
 

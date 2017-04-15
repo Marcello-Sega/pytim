@@ -39,7 +39,7 @@ class testsuite1():
     >>> # OBSERVABLES TEST: 2
     >>> u=mda.Universe(_TEST_PROFILE_GRO)
     >>> o=observables.Number()
-    >>> p=observables.Profile(direction='x',group=u.atoms,observable=o)
+    >>> p=observables.Profile(u.atoms,direction='x',observable=o)
     >>> p.sample()
     >>> low,up,avg =  p.get_values(binwidth=1.0)
     >>> print(low[0:3])

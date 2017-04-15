@@ -4,9 +4,9 @@ Observables
 
 Radial Distribution Functions
 #############################
-.. autoclass:: pytim.observables.InterRDF
+.. autoclass:: pytim.observables.RDF
     :members:
-.. autoclass:: pytim.observables.InterRDF2D
+.. autoclass:: pytim.observables.RDF2D
     :members:
 
 

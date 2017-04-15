@@ -42,7 +42,7 @@ class GITIM(pytim.PYTIM):
         >>> interface =pytim.GITIM(u,itim_group=g,molecular=False,symmetry='spherical',alpha=2.5,)
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
-        >>> print layer
+        >>> print repr(layer)
         <AtomGroup with 558 atoms>
 
     """
@@ -51,9 +51,9 @@ class GITIM(pytim.PYTIM):
                  max_layers=1,cluster_cut=None,cluster_threshold_density=None,molecular=True,extra_cluster_groups=None,
                  info=False,multiproc=True):
 
-        #TODO add type checking for each MDA class passed
 
-        # dynamic monkey patch to change the behavior of the frame property
+
+        self._basic_checks(universe)
 
         self.universe=universe
         self.cluster_threshold_density = cluster_threshold_density
@@ -153,7 +153,7 @@ class GITIM(pytim.PYTIM):
         if positiveR.size == 1:
             return np.min(positiveR)
         else:
-            return 1e6
+            return 0.0
 
     def alpha_shape(self,alpha):
         #print  utilities.lap()
@@ -183,7 +183,7 @@ class GITIM(pytim.PYTIM):
                 # [0,0,0],[0,0,1],[0,1,0],...,[1,1,1]
                 tmp = np.array(np.array(list(np.binary_repr(dim,width=3)),dtype=np.int8),dtype=np.float)
                 tmp *=(box+delta)
-                tmp += (np.random.random(3)-0.5)*box*1e-8 # the random gitter (rescaled to be small wrt the box) is added to prevent coplanar points
+                #tmp += (np.random.random(3)-0.5)*box*1e-8 # the random gitter (rescaled to be small wrt the box) is added to prevent coplanar points
                 tmp[tmp<box/2.]-=delta
                 tmp=np.reshape(tmp,(1,3))
                 extrapoints=np.append(extrapoints,tmp,axis=0)
