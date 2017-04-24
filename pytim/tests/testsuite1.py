@@ -26,7 +26,7 @@ class testsuite1():
     >>> interface = pytim.ITIM(u, alpha=100000.0, max_layers=1,multiproc=False)
     Traceback (most recent call last):
         ...
-    AssertionError: parameter alpha in pytim.itim.ITIM must be smaller than the smaller box side
+    AssertionError: parameter alpha must be smaller than the smaller box side
 
 
     >>> # OBSERVABLES TEST: 1
