@@ -33,10 +33,11 @@ before_install:
 
 install:
 - pip install codecov
+- pip install pytest-cov
 - pip install Sphinx>=1.4.3
 - pip install matplotlib
 - pip install cython
 - pip install MDAnalysis==$MDAv
 - pip install .
 # command to run tests
-script: codecov ; cd docs ; make doctest
+script: py.test --cov=./ --doctest-modules ;  codecov ; cd docs ; make doctest
