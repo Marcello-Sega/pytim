@@ -73,7 +73,7 @@ with md.Writer(pdbtrj, multiframe=True, bonds=False, n_atoms=u.atoms.n_atoms) as
 			exit()
 		X, Y = np.meshgrid(Tedge[0:-1], Pedge[0:-1])
 		if do_plot:
-			if image==None:
+			if image is None:
 				norm = cm.colors.Normalize(vmax=abs(H).max(), vmin=-abs(H).max())
 				#image = plt.imshow(H, interpolation='nearest', origin='low',extent=[Tedge[0], Tedge[-1], Pedge[0], Pedge[-1]],animated=True)
 				plt.draw()

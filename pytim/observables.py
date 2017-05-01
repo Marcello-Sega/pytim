@@ -609,10 +609,10 @@ class Profile(object):
         # Statistics will be poor at the boundaries, but like that we don't loose information
         _max_bins  = np.max(map(lambda x: len(x),self.sampled_bins))
         _max_size  = _max_bins * self.binsize
-        if(binwidth==None and nbins==None):
+        if(binwidth is None and nbins is None):
             _nbins = _max_bins
         else:
-            if binwidth==None:
+            if binwidth is None:
                 _nbins = nbins
             else:
                 _nbins = _max_size/binwidth
