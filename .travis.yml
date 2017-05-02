@@ -33,6 +33,7 @@ before_install:
 
 install:
 - pip install codecov
+- pip install pylama
 - pip install pytest-cov
 - pip install Sphinx>=1.4.3
 - pip install matplotlib
