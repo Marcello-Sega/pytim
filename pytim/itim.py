@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
+
 """ Module: itim
     ============
 """
@@ -15,22 +16,33 @@ import pytim
 
 
 class ITIM(pytim.PYTIM):
-    """ Identifies the interfacial molecules at macroscopically
-        flat interfaces.
+    """Identifies interfacial molecules at macroscopically flat interfaces.
 
-        :param Universe universe:               the MDAnalysis universe
-        :param float mesh:                      the grid spacing used for the testlines
-        :param float alpha:                     the probe sphere radius
-        :param str normal:                      the macroscopic interface normal direction 'x','y' or 'z' (by default is 'guess')
-        :param AtomGroup itim_group:            identify the interfacial molecules from this group
-        :param dict radii_dict:                 dictionary with the atomic radii of the elements in the itim_group.
-                                                If None is supplied, the default one (from MDAnalysis) will be used.
-        :param int max_layers:                  the number of layers to be identified
-        :param float cluster_cut:               cutoff used for neighbors or density-based cluster search (default: None disables the cluster analysis)
-        :param float cluster_threshold_density: Number density threshold for the density-based cluster search. 'auto' determines the threshold automatically. Default: None uses simple neighbors cluster search, if cluster_cut is not None
-        :param bool molecular:                  Switches between search of interfacial molecules / atoms (default: True)
-        :param bool info:                       print additional info
-        :param bool multiproc:                  parallel version (default: True. Switch off for debugging)
+        :param Universe universe: the MDAnalysis universe
+        :param float mesh:        the grid spacing used for the testlines
+        :param float alpha:       the probe sphere radius
+        :param str normal:        the macroscopic interface normal direction\
+                                  'x','y' or 'z' (by default is 'guess')
+        :param AtomGroup itim_group: identify the interfacial molecules from\
+                                     this group
+        :param dict radii_dict:   dictionary with the atomic radii of the\
+                                  elements in the itim_group. If None is\
+                                  supplied, the default one (from MDAnalysis)\
+                                  will be used.
+        :param int max_layers:    the number of layers to be identified
+        :param float cluster_cut: cutoff used for neighbors or density-based\
+                                  cluster search (default: None disables the\
+                                  cluster analysis)
+        :param float cluster_threshold_density: Number density threshold for\
+                                  the density-based cluster search. 'auto'\
+                                  determines the threshold automatically.\
+                                  Default: None uses simple neighbors cluster\
+                                  search, if cluster_cut is not None
+        :param bool molecular:    Switches between search of interfacial\
+                                  molecules / atoms (default: True)
+        :param bool info:         print additional info
+        :param bool multiproc:    parallel version (default: True. Switch off\
+                                  for debugging)
 
         Example:
 
@@ -49,13 +61,14 @@ class ITIM(pytim.PYTIM):
     """
     @property
     def layers(self):
-        """ Access the layers as numpy arrays of AtomGroups
+        """Access the layers as numpy arrays of AtomGroups.
 
         The object can be sliced as usual with numpy arrays, so, for example:
 
         >>> interface.layers[0,:]  # upper side (0), all layers
         array([<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
-               <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>], dtype=object)
+               <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>],\
+ dtype=object)
 
         >>> interface.layers[1,0]  # lower side (1), first layer (0)
         <AtomGroup with 406 atoms>
@@ -66,15 +79,18 @@ class ITIM(pytim.PYTIM):
                [<AtomGroup with 406 atoms>, <AtomGroup with 418 atoms>,
                 <AtomGroup with 399 atoms>]], dtype=object)
 
-        >>> interface.layers[1,0:4:2] # 1st - 4th layer, with a stride of 2 (0:4:2), lower side (1)
-        array([<AtomGroup with 406 atoms>, <AtomGroup with 399 atoms>], dtype=object)
+        >>> interface.layers[1,0:4:2] # side 1, layers 1-4 & stride 2 (0:4:2)
+        array([<AtomGroup with 406 atoms>, <AtomGroup with 399 atoms>],\
+ dtype=object)
 
         """
         return self._layers
 
-    def __init__(self, universe, mesh=0.4, alpha=2.0, normal='guess', itim_group=None, radii_dict=None,
-                 max_layers=1, cluster_cut=None, cluster_threshold_density=None, molecular=True, extra_cluster_groups=None,
-                 info=False, multiproc=True):
+    def __init__(self, universe, mesh=0.4, alpha=2.0, normal='guess',
+                 itim_group=None, radii_dict=None, max_layers=1,
+                 cluster_cut=None, cluster_threshold_density=None,
+                 molecular=True, extra_cluster_groups=None, info=False,
+                 multiproc=True):
 
         self._basic_checks(universe)
 
@@ -114,8 +130,8 @@ class ITIM(pytim.PYTIM):
         self._assign_layers()
 
     def _assign_mesh(self):
-        """ determine a mesh size for the testlines that is compatible with the simulation box
-        """
+        """determine a mesh size for the testlines that is compatible with the
+        simulation box."""
         box = utilities.get_box(self.universe, self.normal)
         self.mesh_nx = int(np.ceil(box[0] / self.target_mesh))
         self.mesh_ny = int(np.ceil(box[1] / self.target_mesh))
@@ -125,8 +141,8 @@ class ITIM(pytim.PYTIM):
         if(self.use_kdtree == True):
             _x, _y = np.mgrid[0:box[0]:self.mesh_dx, 0:box[1]:self.mesh_dy]
             self.meshpoints = builtin_zip(_x.ravel(), _y.ravel())
-            # cKDTree requires a box vetor with length double the dimension, see other note
-            # in this module
+            # cKDTree requires a box vetor with length double the dimension,
+            #  see other note in this module
             _box = np.zeros(4)
             _box[:2] = box[:2]
             self.meshtree = cKDTree(self.meshpoints, boxsize=_box)
@@ -136,7 +152,7 @@ class ITIM(pytim.PYTIM):
         if (self.use_kdtree == True):  # this is True by default
             return self.meshtree.query_ball_point(
                 [_x[atom], _y[atom]], _radius[atom] + self.alpha)
-        else:  # For some large configurations this fails. Don't switch off use_kdtree
+        else:  # For some large configurations this fails. Don't switch off
             _dist = _radius[atom] + self.alpha + self.delta
             index_x = np.arange(
                 np.floor((_x[atom] - _dist) / self.mesh_dx),
@@ -146,7 +162,8 @@ class ITIM(pytim.PYTIM):
                 np.floor((_y[atom] - _dist) / self.mesh_dy),
                 np.ceil((_y[atom] + _dist) / self.mesh_dy)
             )
-            _distmap = ((index_x * self.mesh_dx - _x[atom]).reshape(len(index_x), 1)**2 +
+            _distmap = ((index_x * self.mesh_dx - _x[atom]).reshape(
+                        len(index_x), 1)**2 +
                         (index_y * self.mesh_dy - _y[atom])**2)
 
             _xx, _yy = np.where(_distmap <= (self.alpha + _radius[atom])**2)
@@ -201,14 +218,15 @@ class ITIM(pytim.PYTIM):
                     _inlayer_group = self.cluster_group[_inlayer_indices]
 
                     if self.molecular == True:
-                        # we first select the (unique) residues corresponding to _inlayer_group, and then
-                        # we create  group of the atoms belonging to them, with
+                        # we first select the (unique) residues corresponding
+                        # to _inlayer_group, and then we create  group of the
+                        # atoms belonging to them, with
                         # _inlayer_group.residues.atoms
                         _tmp = _inlayer_group.residues.atoms
                         # and we copy it back to _inlayer_group
                         _inlayer_group = _tmp
-                        # now we need the indices within the cluster_group, of those atoms which are in the
-                        # molecular layer group;
+                        # now we need the indices within the cluster_group,
+                        # of the atoms in the molecular layer group;
                         # NOTE that from MDAnalysis 0.16, .ids runs from 1->N
                         # (was 0->N-1 in 0.15), we use now .indices
                         _indices = np.flatnonzero(
@@ -245,26 +263,25 @@ class ITIM(pytim.PYTIM):
             self.universe.dimensions[:3]), self.MESH_LARGE
 
         if(self.cluster_cut is not None):
-            assert len(self.cluster_cut) == 1 or len(self.cluster_cut) == 1 + \
+            assert len(self.cluster_cut) == 1 or len(self.cluster_cut) == 1 +\
                 len(self.extra_cluster_groups), self.MISMATCH_CLUSTER_SEARCH
         else:
-            assert self.extra_cluster_groups is None, self.UNDEFINED_CLUSTER_SEARCH
+            assert self.extra_cluster_groups is None,\
+                self.UNDEFINED_CLUSTER_SEARCH
 
         try:
             np.arange(int(self.alpha / self.target_mesh))
         except BaseException:
             print(
-                "Error while initializing ITIM: alpha ({0:f}) too large or mesh ({1:f}) too small".format(
+                "Error while initializing ITIM: alpha ({0:f}) too large or\
+                  mesh ({1:f}) too small".format(
                     *
                     self.alpha),
                 self.target_mesh)
             raise ValueError
 
     def _assign_layers(self):
-        """ Determine the ITIM layers.
-
-
-        """
+        """Determine the ITIM layers."""
         self._assign_mesh()
         delta = self.delta
         mesh_dx = self.mesh_dx
@@ -272,18 +289,20 @@ class ITIM(pytim.PYTIM):
         up = 0
         low = 1
         self.layers_ids = [[], []]  # upper, lower
-        self.mask = np.zeros((2, self.max_layers, self.mesh_nx * self.mesh_ny),
-                             dtype=int)
+        size = (2, self.max_layers, self.mesh_nx * self.mesh_ny)
+        self.mask = np.zeros(size, dtype=int)
 
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])
 
         self.universe.atoms.pack_into_box()
-
-        if(self.cluster_cut is not None):  # groups have been checked already in _sanity_checks()
+        # groups have been checked already in _sanity_checks()
+        if(self.cluster_cut is not None):
             box = np.copy(self.universe.dimensions[:6])
             labels, counts, n_neigh = utilities.do_cluster_analysis_DBSCAN(
-                self.itim_group, self.cluster_cut[0], box, self.cluster_threshold_density, self.molecular)
+                self.itim_group, self.cluster_cut[0], box,
+                self.cluster_threshold_density, self.molecular
+            )
             labels = np.array(labels)
             # the label of atoms in the largest cluster
             label_max = np.argmax(counts)
@@ -324,18 +343,22 @@ class ITIM(pytim.PYTIM):
             proc = [None, None]
             queue = [Queue(), Queue()]
             proc[up] = Process(target=self._assign_one_side,
-                               args=(up, sort[::-1], _x, _y, _z, _radius, queue[up]))
+                               args=(up, sort[::-1], _x, _y, _z,
+                                     _radius, queue[up]))
             proc[low] = Process(target=self._assign_one_side,
-                                args=(low, sort[::], _x, _y, _z, _radius, queue[low]))
+                                args=(low, sort[::], _x, _y, _z,
+                                      _radius, queue[low]))
 
             for p in proc:
                 p.start()
             for uplow in [up, low]:
                 for index, group in enumerate(queue[uplow].get()):
-                    # cannot use self._layers[uplow][index] = group, otherwise info about universe is lost (do not know why yet)
+                    # cannot use self._layers[uplow][index] = group, otherwise
+                    # info about universe is lost (do not know why yet)
                     # must use self._layers[uplow][index] =
                     # self.universe.atoms[group.indices]
-                    self._layers[uplow][index] = self.universe.atoms[group.indices]
+                    self._layers[uplow][index] =\
+                        self.universe.atoms[group.indices]
             for p in proc:
                 p.join()
         else:
@@ -354,58 +377,3 @@ class ITIM(pytim.PYTIM):
 
         # reset the interpolator
         self._interpolator = None
-
-    def triangulate_layer(self, layer=1):
-        """ Triangulate a layer
-
-            :param int layer:  (default: 1) triangulate this layer (on both sides of the interface)
-            :return list triangulations:  a list of two Delaunay triangulations, which are also stored in self.surface_triangulation
-        """
-        assert len(self._layers[0]) >= layer, self.UNDEFINED_LAYER
-
-        box = self.universe.dimensions[:3]
-
-        upper = self._layers[0][layer - 1]
-        lower = self._layers[1][layer - 1]
-
-        upperpos = self._generate_periodic_border_2d(upper)
-        lowerpos = self._generate_periodic_border_2d(lower)
-
-        self.surface_triangulation = [None, None]
-        self.trimmed_surface_triangles = [None, None]
-        self.triangulation_points = [None, None]
-        self.surface_triangulation[0] = Delaunay(upperpos[:, 0:2])
-        self.surface_triangulation[1] = Delaunay(lowerpos[:, 0:2])
-        self.triangulation_points[0] = upperpos[:]
-        self.triangulation_points[1] = lowerpos[:]
-        self.trimmed_surface_triangles[0] = utilities.trim_triangulated_surface(
-            self.surface_triangulation[0], box)
-        self.trimmed_surface_triangles[1] = utilities.trim_triangulated_surface(
-            self.surface_triangulation[1], box)
-        return self.surface_triangulation
-
-    def _initialize_distance_interpolator(self, layer):
-        if self._interpolator is None:
-            # we don't know if previous triangulations have been done on the same
-            # layer, so just in case we repeat it here. This can be fixed in principle
-            # with a switch
-            self.triangulate_layer(layer)
-
-            self._interpolator = [None, None]
-            self._interpolator[0] = LinearNDInterpolator(self.surface_triangulation[0],
-                                                         self.triangulation_points[0][:, 2])
-            self._interpolator[1] = LinearNDInterpolator(self.surface_triangulation[1],
-                                                         self.triangulation_points[1][:, 2])
-
-    def interpolate_surface(self, positions, layer):
-        self._initialize_distance_interpolator(layer)
-        upper_set = positions[positions[:, 2] >= 0]
-        lower_set = positions[positions[:, 2] < 0]
-        # interpolated values of upper/lower_set on the upper/lower surface
-        upper_int = self._interpolator[0](upper_set[:, 0:2])
-        lower_int = self._interpolator[1](lower_set[:, 0:2])
-        # copy everything back to one array with the correct order
-        elevation = np.zeros(len(positions))
-        elevation[np.where(positions[:, 2] >= 0)] = upper_int
-        elevation[np.where(positions[:, 2] < 0)] = lower_int
-        return elevation

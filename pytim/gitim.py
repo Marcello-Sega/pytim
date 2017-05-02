@@ -41,7 +41,7 @@ class GITIM(pytim.PYTIM):
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
         >>>
         >>> interface =pytim.GITIM(u,itim_group=g,molecular=False,\
-        ... symmetry='spherical',alpha=2.5)
+                symmetry='spherical',alpha=2.5)
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print repr(layer)
@@ -296,67 +296,6 @@ class GITIM(pytim.PYTIM):
 
         # reset the interpolator
         self._interpolator = None
-
-    def triangulate_layer(self, layer=1):
-        """Triangulate a layer.
-
-        :param int layer:  (default: 1) triangulate this layer (on both sides\
-                           of the interface)
-        :return list triangulations:  a list of two Delaunay triangulations,\
-                           which are also stored in self.surf_triang
-        """
-        assert len(self._layers[0]) >= layer, self.UNDEFINED_LAYER
-
-        box = self.universe.dimensions[:3]
-
-        upper = self._layers[0][layer - 1]
-        lower = self._layers[1][layer - 1]
-
-        upperpos = self._generate_periodic_border_2d(upper)
-        lowerpos = self._generate_periodic_border_2d(lower)
-
-        self.surf_triang = [None, None]
-        self.trimmed_surf_triangs = [None, None]
-        self.triangulation_points = [None, None]
-        self.surf_triang[0] = Delaunay(upperpos[:, 0:2])
-        self.surf_triang[1] = Delaunay(lowerpos[:, 0:2])
-        self.triangulation_points[0] = upperpos[:]
-        self.triangulation_points[1] = lowerpos[:]
-        self.trimmed_surf_triangs[0] = utilities.trim_triangulated_surface(
-            self.surf_triang[0], box
-        )
-        self.trimmed_surf_triangs[1] = utilities.trim_triangulated_surface(
-            self.surf_triang[1], box
-        )
-        return self.surf_triang
-
-    def _initialize_distance_interpolator(self, layer):
-        if self._interpolator is None:
-            # we don't know if previous triangulations have been done on the
-            # same layer, so just in case we repeat it here. This can be fixed
-            # in principl with a switch
-            self.triangulate_layer(layer)
-
-            self._interpolator = [None, None]
-            self._interpolator[0] = LinearNDInterpolator(
-                self.surf_triang[0],
-                self.triangulation_points[0][:, 2])
-            self._interpolator[1] = LinearNDInterpolator(
-                self.surf_triang[1],
-                self.triangulation_points[1][:, 2])
-
-    def interpolate_surface(self, positions, layer):
-        self._initialize_distance_interpolator(layer)
-        upper_set = positions[positions[:, 2] >= 0]
-        lower_set = positions[positions[:, 2] < 0]
-        # interpolated values of upper/lower_set on the upper/lower surface
-        upper_int = self._interpolator[0](upper_set[:, 0:2])
-        lower_int = self._interpolator[1](lower_set[:, 0:2])
-        # copy everything back to one array with the correct order
-        elevation = np.zeros(len(positions))
-        elevation[np.where(positions[:, 2] >= 0)] = upper_int
-        elevation[np.where(positions[:, 2] < 0)] = lower_int
-        return elevation
 
     @property
     def layers(self):
