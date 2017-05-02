@@ -5,14 +5,11 @@
     ============
 """
 
-from multiprocessing import Process, Queue
 import numpy as np
-from scipy.spatial import cKDTree
 from scipy.spatial import Delaunay
 from scipy.spatial import distance
 from scipy.interpolate import LinearNDInterpolator
 import itertools
-from __builtin__ import zip as builtin_zip
 from pytim import utilities
 import pytim
 
@@ -48,9 +45,21 @@ class GITIM(pytim.PYTIM):
 
     """
 
-    def __init__(self, universe, alpha=2.0, symmetry='spherical', normal='guess', itim_group=None, radii_dict=None,
-                 max_layers=1, cluster_cut=None, cluster_threshold_density=None, molecular=True, extra_cluster_groups=None,
-                 info=False, multiproc=True):
+    def __init__(
+            self,
+            universe,
+            alpha=2.0,
+            symmetry='spherical',
+            normal='guess',
+            itim_group=None,
+            radii_dict=None,
+            max_layers=1,
+            cluster_cut=None,
+            cluster_threshold_density=None,
+            molecular=True,
+            extra_cluster_groups=None,
+            info=False,
+            multiproc=True):
 
         self._basic_checks(universe)
 
@@ -133,7 +142,7 @@ class GITIM(pytim.PYTIM):
         d_2 = d**2
 
         M = (r_i[0] - r_i)[1:]
-        s = ((r_i2[0] - r_i2[1:] - d_2[0] + d_2)) / 2.
+        #s = ((r_i2[0] - r_i2[1:] - d_2[0] + d_2)) / 2.
 
         try:
             u = np.dot(np.linalg.inv(M), d)
@@ -262,14 +271,13 @@ class GITIM(pytim.PYTIM):
         # then all atoms in the larges group are labelled as liquid-like
         self.cluster_group.atoms.bfactors = 0
 
-        _radius = self.cluster_group.radii
         size = len(self.cluster_group.positions)
         self._seen = np.zeros(size, dtype=np.int8)
 
         alpha_ids = self.alpha_shape(self.alpha)
 
         # only the 1st layer is implemented in gitim so far
-        if self.molecular == True:
+        if self.molecular:
             self._layers[0] = self.cluster_group[alpha_ids].residues.atoms
         else:
             self._layers[0] = self.cluster_group[alpha_ids]
@@ -317,10 +325,10 @@ class GITIM(pytim.PYTIM):
             self.triangulate_layer(layer)
 
             self._interpolator = [None, None]
-            self._interpolator[0] = LinearNDInterpolator(self.surface_triangulation[0],
-                                                         self.triangulation_points[0][:, 2])
-            self._interpolator[1] = LinearNDInterpolator(self.surface_triangulation[1],
-                                                         self.triangulation_points[1][:, 2])
+            self._interpolator[0] = LinearNDInterpolator(
+                self.surface_triangulation[0], self.triangulation_points[0][:, 2])
+            self._interpolator[1] = LinearNDInterpolator(
+                self.surface_triangulation[1], self.triangulation_points[1][:, 2])
 
     def interpolate_surface(self, positions, layer):
         self._initialize_distance_interpolator(layer)
