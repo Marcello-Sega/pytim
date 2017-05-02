@@ -214,7 +214,7 @@ class ITIM(pytim.PYTIM):
 
                     _layers.append(_inlayer_group)
                     break
-        if(queue==None):
+        if(queue is None):
             return _layers
         else:
             queue.put(_layers)
@@ -378,7 +378,7 @@ class ITIM(pytim.PYTIM):
         return self.surface_triangulation
 
     def _initialize_distance_interpolator(self,layer):
-        if self._interpolator == None :
+        if self._interpolator is None :
             # we don't know if previous triangulations have been done on the same
             # layer, so just in case we repeat it here. This can be fixed in principle
             # with a switch
