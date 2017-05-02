@@ -2,6 +2,7 @@
 [![GitHub tags](https://img.shields.io/github/tag/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/)
 [![GitHub issues](https://img.shields.io/github/issues/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/issues)
 [![codecov](https://codecov.io/gh/Marcello-Sega/pytim/branch/master/graph/badge.svg)](https://codecov.io/gh/Marcello-Sega/pytim)
+[![Code Issues](https://www.quantifiedcode.com/api/v1/project/51f51927f0f3478ba65d5647dc4723a4/badge.svg)](https://www.quantifiedcode.com/app/project/51f51927f0f3478ba65d5647dc4723a4)
 
 
 # Disclaimer
