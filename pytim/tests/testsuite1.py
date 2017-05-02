@@ -20,9 +20,28 @@ class Testsuite1():
     >>> u         = mda.Universe(WATER_GRO)
     >>> oxygens   = u.select_atoms("name OW")
     >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4)
+    >>> print len(interface.layers[0,0])
+    780
+    >>> del interface
+    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4, multiproc=False)
+    >>> print len(interface.layers[0,0])
+    780
     >>> del interface
 
-    >>> # TEST:2 large probe sphere radius
+    >>> # TEST:2 basic functionality
+    >>> u=None
+    >>> interface = pytim.GITIM(u)
+    Traceback (most recent call last):
+        ...
+    AssertionError: You must pass an MDAnalysis Universe
+
+    >>> interface = pytim.ITIM(u)
+    Traceback (most recent call last):
+        ...
+    AssertionError: You must pass an MDAnalysis Universe
+
+    >>> # TEST:3 large probe sphere radius
+    >>> u         = mda.Universe(WATER_GRO)
     >>> interface = pytim.ITIM(u, alpha=100000.0, max_layers=1,multiproc=False)
     Traceback (most recent call last):
         ...
