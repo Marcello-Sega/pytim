@@ -237,7 +237,7 @@ class ITIM(pytim.PYTIM):
         try:
             np.arange(int(self.alpha/self.target_mesh))
         except:
-            print("Error while initializing ITIM: alpha (%f) too large or mesh (%f) too small" % self.alpha,self.target_mesh)
+            print("Error while initializing ITIM: alpha ({0:f}) too large or mesh ({1:f}) too small".format(*self.alpha),self.target_mesh)
             raise ValueError
 
 
