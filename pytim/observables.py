@@ -622,6 +622,7 @@ class Profile(object):
             _range = [-self._box[self._dir]/2.,self._box[self._dir]/2.]
         else:
             _range = [0,self._box[self._dir]]
+
         _avg,_bins,_binnumber = stats.binned_statistic(list(chain.from_iterable(self.sampled_bins  )),
                                             list(chain.from_iterable(self.sampled_values)),
                                             range=_range,
