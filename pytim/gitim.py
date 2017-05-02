@@ -5,30 +5,30 @@
     ============
 """
 
-from multiprocessing import Process, Queue
 import numpy as np
-from scipy.spatial import cKDTree
 from scipy.spatial import Delaunay
 from scipy.spatial import distance
 from scipy.interpolate import LinearNDInterpolator
 import itertools
-from __builtin__ import zip as builtin_zip
 from pytim import utilities
 import pytim
 
 
 class GITIM(pytim.PYTIM):
-    """ Identifies the interfacial molecules at macroscopically
-        flat interfaces.
+    """Identifies interfacial molecules at macroscopically flat interfaces.
 
         :param Universe universe:      the MDAnalysis universe
         :param float alpha:            the probe sphere radius
-        :param AtomGroup itim_group:   identify the interfacial molecules from this group
-        :param dict radii_dict:        dictionary with the atomic radii of the elements in the itim_group.
-                                       If None is supplied, the default one (from GROMOS 43a1) will be used.
+        :param AtomGroup itim_group:   identify the interfacial molecules\
+                                       from this group
+        :param dict radii_dict:        dictionary with the atomic radii of\
+                                       the elements in the itim_group.
+                                       If None is supplied, the default one\
+                                       (from GROMOS 43a1) will be used.
         :param int max_layers:         the number of layers to be identified
         :param bool info:              print additional info
-        :param bool multiproc:         parallel version (default: True. Switch off for debugging)
+        :param bool multiproc:         parallel version (default: True. \
+                                       Switch off for debugging)
 
         Example:
 
@@ -40,7 +40,8 @@ class GITIM(pytim.PYTIM):
         >>> g       = u.select_atoms('resname DPC')
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
         >>>
-        >>> interface =pytim.GITIM(u,itim_group=g,molecular=False,symmetry='spherical',alpha=2.5,)
+        >>> interface =pytim.GITIM(u,itim_group=g,molecular=False,\
+        ... symmetry='spherical',alpha=2.5)
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print repr(layer)
@@ -48,9 +49,21 @@ class GITIM(pytim.PYTIM):
 
     """
 
-    def __init__(self, universe, alpha=2.0, symmetry='spherical', normal='guess', itim_group=None, radii_dict=None,
-                 max_layers=1, cluster_cut=None, cluster_threshold_density=None, molecular=True, extra_cluster_groups=None,
-                 info=False, multiproc=True):
+    def __init__(
+            self,
+            universe,
+            alpha=2.0,
+            symmetry='spherical',
+            normal='guess',
+            itim_group=None,
+            radii_dict=None,
+            max_layers=1,
+            cluster_cut=None,
+            cluster_threshold_density=None,
+            molecular=True,
+            extra_cluster_groups=None,
+            info=False,
+            multiproc=True):
 
         self._basic_checks(universe)
 
@@ -91,11 +104,9 @@ class GITIM(pytim.PYTIM):
         self._assign_layers()
 
     def _assign_symmetry(self, symmetry):
-
         assert self.itim_group is not None, self.UNDEFINED_ITIM_GROUP
         if symmetry == 'guess':
             assert False, "To be implemented"
-            # self.normal=utilities.guess_symmetry(self.universe,self.itim_group)
         else:
             assert symmetry in self.symmetry_dict, self.WRONG_DIRECTION
             self.symmetry = symmetry
@@ -107,17 +118,22 @@ class GITIM(pytim.PYTIM):
             self.universe.dimensions[:3]), self.ALPHA_LARGE
 
         if(self.cluster_cut is not None):
-            assert len(self.cluster_cut) == 1 or len(self.cluster_cut) == 1 + \
+            assert len(self.cluster_cut) == 1 or \
+                len(self.cluster_cut) == 1 + \
                 len(self.extra_cluster_groups), self.MISMATCH_CLUSTER_SEARCH
         else:
-            assert self.extra_cluster_groups is None, self.UNDEFINED_CLUSTER_SEARCH
+            assert self.extra_cluster_groups is None,\
+                self.UNDEFINED_CLUSTER_SEARCH
 
     @staticmethod
     def alpha_prefilter(triangulation, alpha):
         t = triangulation
         threshold = 2. * alpha
-        return t.simplices[[np.max(distance.cdist(t.points[simplex], t.points[simplex], 'euclidean'))
-                            >= threshold + 2. * np.min(t.radii[simplex]) for simplex in t.simplices]]
+        return t.simplices[[np.max(distance.cdist(t.points[simplex],
+                                                  t.points[simplex],
+                                                  'euclidean')) >=
+                            threshold + 2. * np.min(t.radii[simplex])
+                            for simplex in t.simplices]]
 
     def circumradius(self, simplex):
 
@@ -128,19 +144,20 @@ class GITIM(pytim.PYTIM):
         r_i = points[simplex]
         rad_i = radii[simplex]
         d = (rad_i[0] - rad_i)[1:]
-
-        r_i2 = np.sum(r_i**2, axis=1)
-        d_2 = d**2
-
         M = (r_i[0] - r_i)[1:]
-        s = ((r_i2[0] - r_i2[1:] - d_2[0] + d_2)) / 2.
+
+        # r_i2 = np.sum(r_i**2, axis=1)
+        # d_2 = d**2
+        # s = ((r_i2[0] - r_i2[1:] - d_2[0] + d_2)) / 2.
 
         try:
             u = np.dot(np.linalg.inv(M), d)
         except np.linalg.linalg.LinAlgError as err:
             if 'Singular matrix' in err.message:
                 print "Warning, singular matrix for ", r_i
-                return 0  # TODO is this correct? The singular matrix most likely comes out of points alinged in the plane
+                # TODO is this correct? The singular matrix most likely comes
+                # out of points alinged in the plane
+                return 0
             else:
                 raise
         v = r_i[1] - r_i[0]
@@ -170,12 +187,13 @@ class GITIM(pytim.PYTIM):
                 # this needs some explanation:
                 # if shift ==0  -> the condition is always true
                 # if shift ==1  -> the condition is x > box - delta
-                # if shift ==-1 -> the condition is -x > 0 - delta -> x < delta
+                # if shift ==-1 -> the condition is -x > 0 - delta -> x <delta
                 # Requiring np.all() to be true makes the logical and returns
                 # (axis=1) True for all indices whose atoms satisfy the
                 # condition
-                selection = np.all(
-                    shift * points >= shift * shift * ((box + shift * box) / 2. - delta), axis=1)
+                selection = np.all(shift * points >= shift * shift *
+                                   ((box + shift * box) / 2. - delta),
+                                   axis=1)
                 # add the new points at the border of the box
                 extrapoints = np.append(
                     extrapoints, points[selection] - shift * box, axis=0)
@@ -225,17 +243,17 @@ class GITIM(pytim.PYTIM):
         return ids
 
     def _assign_layers(self):
-        """ Determine the GITIM layers.
-
-
-        """
+        """Determine the GITIM layers."""
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 
-        if(self.cluster_cut is not None):  # groups have been checked already in _sanity_checks()
+        if(self.cluster_cut is not None):
+            # groups have been checked already in _sanity_checks()
             labels, counts, n_neigh = utilities.do_cluster_analysis_DBSCAN(
-                self.itim_group, self.cluster_cut[0], self.universe.dimensions[:6], self.cluster_threshold_density, self.molecular)
+                self.itim_group, self.cluster_cut[0],
+                self.universe.dimensions[:6],
+                self.cluster_threshold_density, self.molecular)
             labels = np.array(labels)
             # the label of atoms in the largest cluster
             label_max = np.argmax(counts)
@@ -262,14 +280,13 @@ class GITIM(pytim.PYTIM):
         # then all atoms in the larges group are labelled as liquid-like
         self.cluster_group.atoms.bfactors = 0
 
-        _radius = self.cluster_group.radii
         size = len(self.cluster_group.positions)
         self._seen = np.zeros(size, dtype=np.int8)
 
         alpha_ids = self.alpha_shape(self.alpha)
 
         # only the 1st layer is implemented in gitim so far
-        if self.molecular == True:
+        if self.molecular:
             self._layers[0] = self.cluster_group[alpha_ids].residues.atoms
         else:
             self._layers[0] = self.cluster_group[alpha_ids]
@@ -281,10 +298,12 @@ class GITIM(pytim.PYTIM):
         self._interpolator = None
 
     def triangulate_layer(self, layer=1):
-        """ Triangulate a layer
+        """Triangulate a layer.
 
-            :param int layer:  (default: 1) triangulate this layer (on both sides of the interface)
-            :return list triangulations:  a list of two Delaunay triangulations, which are also stored in self.surface_triangulation
+        :param int layer:  (default: 1) triangulate this layer (on both sides\
+                           of the interface)
+        :return list triangulations:  a list of two Delaunay triangulations,\
+                           which are also stored in self.surf_triang
         """
         assert len(self._layers[0]) >= layer, self.UNDEFINED_LAYER
 
@@ -296,31 +315,35 @@ class GITIM(pytim.PYTIM):
         upperpos = self._generate_periodic_border_2d(upper)
         lowerpos = self._generate_periodic_border_2d(lower)
 
-        self.surface_triangulation = [None, None]
-        self.trimmed_surface_triangles = [None, None]
+        self.surf_triang = [None, None]
+        self.trimmed_surf_triangs = [None, None]
         self.triangulation_points = [None, None]
-        self.surface_triangulation[0] = Delaunay(upperpos[:, 0:2])
-        self.surface_triangulation[1] = Delaunay(lowerpos[:, 0:2])
+        self.surf_triang[0] = Delaunay(upperpos[:, 0:2])
+        self.surf_triang[1] = Delaunay(lowerpos[:, 0:2])
         self.triangulation_points[0] = upperpos[:]
         self.triangulation_points[1] = lowerpos[:]
-        self.trimmed_surface_triangles[0] = utilities.trim_triangulated_surface(
-            self.surface_triangulation[0], box)
-        self.trimmed_surface_triangles[1] = utilities.trim_triangulated_surface(
-            self.surface_triangulation[1], box)
-        return self.surface_triangulation
+        self.trimmed_surf_triangs[0] = utilities.trim_triangulated_surface(
+            self.surf_triang[0], box
+        )
+        self.trimmed_surf_triangs[1] = utilities.trim_triangulated_surface(
+            self.surf_triang[1], box
+        )
+        return self.surf_triang
 
     def _initialize_distance_interpolator(self, layer):
         if self._interpolator is None:
-            # we don't know if previous triangulations have been done on the same
-            # layer, so just in case we repeat it here. This can be fixed in principle
-            # with a switch
+            # we don't know if previous triangulations have been done on the
+            # same layer, so just in case we repeat it here. This can be fixed
+            # in principl with a switch
             self.triangulate_layer(layer)
 
             self._interpolator = [None, None]
-            self._interpolator[0] = LinearNDInterpolator(self.surface_triangulation[0],
-                                                         self.triangulation_points[0][:, 2])
-            self._interpolator[1] = LinearNDInterpolator(self.surface_triangulation[1],
-                                                         self.triangulation_points[1][:, 2])
+            self._interpolator[0] = LinearNDInterpolator(
+                self.surf_triang[0],
+                self.triangulation_points[0][:, 2])
+            self._interpolator[1] = LinearNDInterpolator(
+                self.surf_triang[1],
+                self.triangulation_points[1][:, 2])
 
     def interpolate_surface(self, positions, layer):
         self._initialize_distance_interpolator(layer)
@@ -337,9 +360,10 @@ class GITIM(pytim.PYTIM):
 
     @property
     def layers(self):
-        """ Access the layers as numpy arrays of AtomGroups
+        """Access the layers as numpy arrays of AtomGroups.
 
         The object can be sliced as usual with numpy arrays.
+
         """
         return self._layers
 
