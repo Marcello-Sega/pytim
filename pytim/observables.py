@@ -7,9 +7,9 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy import stats
 try: # MDA >=0.16
-    from  MDAnalysis.core.groups import *
+    from  MDAnalysis.core.groups import Atom,AtomGroup,Residue,ResidueGroup
 except: # MDA 0.15
-    from MDAnalysis.core.AtomGroup import *
+    from MDAnalysis.core.AtomGroup import Atom,AtomGroup,Residue,ResidueGroup
 
 from MDAnalysis.analysis import rdf
 from MDAnalysis.lib import distances
@@ -47,9 +47,7 @@ class Observable(object):
 
         if isinstance(inp,Atom):
                 pos.append(self.fold_atom_around_first_atom_in_residue(inp))
-        elif isinstance(inp, AtomGroup) or \
-                isinstance(inp, Residue) or \
-                isinstance(inp, ResidueGroup):
+        elif isinstance(inp, (AtomGroup,Residue,ResidueGroup)):
                 for atom in inp.atoms:
                     pos.append(self.fold_atom_around_first_atom_in_residue(atom))
         else:
@@ -153,15 +151,15 @@ class RDF(object):
 
     @property
     def rdf(self):
-        nA = len(self.g1)
-        nB = len(self.g2)
-        N = nA * nB
+        na = len(self.g1)
+        nb = len(self.g2)
+        n = na * nb
         # Volume in each radial shell
         vol = 4./3. * np.pi * np.power(self.edges[1:], 3) - np.power(self.edges[:-1], 3)
 
         # Average number density
         box_vol = self.volume / self.n_frames
-        density = N / box_vol
+        density = n / box_vol
 
         self._rdf = self.count / (density * vol * self.n_frames)
 
@@ -270,15 +268,15 @@ class RDF2D(RDF):
 
     @property
     def rdf(self):
-        nA = len(self.g1)
-        nB = len(self.g2)
-        N = nA * nB
+        na = len(self.g1)
+        nb = len(self.g2)
+        n = na * nb
         # Volume in each radial shell
         vol = 4.0 * np.pi * np.power(self.edges[1:], 2) - np.power(self.edges[:-1], 2)
 
         # Average number density
         box_vol = self.volume / self.n_frames
-        density = N / box_vol
+        density = n / box_vol
 
         self._rdf = self.count / (density * vol * self.n_frames)
 
@@ -405,12 +403,12 @@ class NumberOfResidues(Observable):
         :returns: one, for each residue in the group
 
         """
-        residueNames = np.unique(inp.atoms.resnames)
+        residue_names = np.unique(inp.atoms.resnames)
         tmp = np.zeros(len(inp))
 
-        for name in residueNames:
-             atomId = np.where(inp.resnames==name)[0][0]
-             tmp[ inp.resnames==name ] = 1./len(inp[atomId].residue.atoms)
+        for name in residue_names:
+             atom_id = np.where(inp.resnames==name)[0][0]
+             tmp[ inp.resnames==name ] = 1./len(inp[atom_id].residue.atoms)
 
         return tmp
 

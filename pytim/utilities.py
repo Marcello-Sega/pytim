@@ -3,9 +3,8 @@
 import MDAnalysis
 from timeit import default_timer as timer
 import numpy as np
-from scipy.spatial import *
 from dbscan import dbscan_inner
-from scipy.spatial import Delaunay
+from scipy.spatial import Delaunay,cKDTree
 from scipy.interpolate import griddata
 from scipy.cluster import vq
 from MDAnalysis.topology import tables
@@ -168,7 +167,7 @@ def do_cluster_analysis_DBSCAN(group,cluster_cut,box,threshold_density=None,mole
     """
     if isinstance(threshold_density,type(None)):
         min_samples = 2
-    if isinstance(threshold_density,float) or isinstance(threshold_density,int):
+    if isinstance(threshold_density,(float,int)):
         min_samples = threshold_density * 4./3. * np.pi * cluster_cut**3
         if min_samples < 2 :
             min_samples = 2

@@ -4,7 +4,7 @@
     ==================
 """
 
-class testsuite1():
+class Testsuite1():
 
     """
     This is a collection of basic tests to check

@@ -11,7 +11,10 @@ from   difflib import get_close_matches
 
 
 def PatchTrajectory(trajectory,interface):
+    """ Patch the MDAnalysis trajectory class
 
+        this patch makes makes the layer assignement being automatically called whenever a new frame is loaded.
+    """
     trajectory.interface = interface
     trajectory.original_read_next_timestep = trajectory._read_next_timestep
 
@@ -53,7 +56,7 @@ class PYTIM(object):
     WRONG_DIRECTION="Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
     CENTERING_FAILURE="Cannot center the group in the box. Wrong direction supplied?"
 
-    def LabelLayer(self,group,value):
+    def label_layer(self,group,value):
         if LooseVersion(self._MDAversion) <= LooseVersion('0.15'):
             group.bfactors = value
         else:
@@ -83,8 +86,8 @@ class PYTIM(object):
 
             if 'altLocs' not in dir(universe.atoms):
                 from MDAnalysis.core.topologyattrs import AltLocs
-                altLocs=np.array([' ']*len(universe.atoms))
-                universe.add_TopologyAttr(AltLocs(altLocs))
+                altlocs=np.array([' ']*len(universe.atoms))
+                universe.add_TopologyAttr(AltLocs(altlocs))
 
             if 'icodes' not in dir(universe.residues):
                 from MDAnalysis.core.topologyattrs import ICodes
@@ -95,6 +98,30 @@ class PYTIM(object):
                 from MDAnalysis.core.topologyattrs import Occupancies
                 occupancies=np.ones(len(universe.atoms))
                 universe.add_TopologyAttr(Occupancies(occupancies))
+
+    def _generate_periodic_border_2d(self, group):
+        _box = utilities.get_box(group.universe,self.normal)
+
+        positions=utilities.get_pos(group,self.normal)
+
+        shift=np.diagflat(_box)
+
+        eps = min(2.*self.alpha,_box[0],_box[1])
+        L = [eps,eps]
+        U = [_box[0] - eps  , _box[1] - eps  ]
+
+        pos=positions[:]
+        low_x= positions[positions[:,0]<=L[0]]+shift[0]
+        low_y= positions[positions[:,1]<=L[1]]+shift[1]
+        upp_x= positions[positions[:,0]>=U[0]]-shift[0]
+        upp_y= positions[positions[:,1]>=U[1]]-shift[1]
+
+        low_x_low_y = positions[np.logical_and(positions[:,0]<=L[0], positions[:,1]<=L[1])] + (shift[0]+shift[1])
+        upp_x_upp_y = positions[np.logical_and(positions[:,0]>=U[0], positions[:,1]>=U[1])] - (shift[0]+shift[1])
+        low_x_upp_y = positions[np.logical_and(positions[:,0]<=L[0], positions[:,1]>=U[1])] + (shift[0]-shift[1])
+        upp_x_low_y = positions[np.logical_and(positions[:,0]>=U[0], positions[:,1]<=L[1])] - (shift[0]-shift[1])
+
+        return np.concatenate((pos,low_x,low_y,upp_x,upp_y,low_x_low_y,upp_x_upp_y,low_x_upp_y,upp_x_low_y))
 
 
     def writepdb(self,filename='layers.pdb',centered='no',multiframe=True):

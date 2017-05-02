@@ -59,12 +59,14 @@ __all__ = [
     "_TEST_PROFILE_GRO", # test file
 ]
 
+
 from pkg_resources import resource_filename
 import re as re
 
 
 class Data(object):
-
+    """" a class for storing/accessing configurations, trajectories, topologies
+    """
     @property
     def config(self):
         labels = [label for label,val in self.type.iteritems() if val == 'config']
@@ -105,8 +107,7 @@ class Data(object):
     nm2angs=10.0
 
     def vdwradii(self,filename):
-        if self.type[filename] == 'topol':
-            if self.format[filename] == 'GMX':
+        if self.type[filename] == 'topol' and self.format[filename] == 'GMX':
                 with open(filename) as _f:
                     scan=False
                     _radii=dict()

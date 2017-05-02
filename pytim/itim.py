@@ -7,8 +7,7 @@
 
 from   multiprocessing   import Process, Queue
 import numpy             as np
-from   scipy.spatial     import cKDTree
-from   scipy.spatial     import Delaunay
+from   scipy.spatial     import cKDTree,Delaunay
 from   scipy.interpolate import LinearNDInterpolator
 from __builtin__         import zip as builtin_zip
 from   pytim             import utilities
@@ -277,9 +276,9 @@ class ITIM(pytim.PYTIM):
         utilities.centerbox(self.universe,center_direction=self.normal)
 
         # first we label all atoms in itim_group to be in the gas phase
-        self.LabelLayer(self.itim_group.atoms, 0.5)
+        self.label_layer(self.itim_group.atoms, 0.5)
         # then all atoms in the largest group are labelled as liquid-like
-        self.LabelLayer(self.cluster_group.atoms, 0)
+        self.label_layer(self.cluster_group.atoms, 0)
 
         _radius=self.cluster_group.radii
         self._seen=[[],[]]
@@ -321,34 +320,11 @@ class ITIM(pytim.PYTIM):
         # assign labels to all layers. This can be the bfactor or the tempfactor property, depending on the MDA version
         for uplow in [up,low]:
             for _nlayer,_layer in enumerate(self._layers[uplow]):
-                self.LabelLayer(_layer, _nlayer+1)
+                self.label_layer(_layer, _nlayer+1)
 
         # reset the interpolator
         self._interpolator=None
 
-    def _generate_periodic_border_2D(self, group):
-        _box = utilities.get_box(group.universe,self.normal)
-
-        positions=utilities.get_pos(group,self.normal)
-
-        shift=np.diagflat(_box)
-
-        eps = min(2.*self.alpha,_box[0],_box[1])
-        L = [eps,eps]
-        U = [_box[0] - eps  , _box[1] - eps  ]
-
-        pos=positions[:]
-        Lx= positions[positions[:,0]<=L[0]]+shift[0]
-        Ly= positions[positions[:,1]<=L[1]]+shift[1]
-        Ux= positions[positions[:,0]>=U[0]]-shift[0]
-        Uy= positions[positions[:,1]>=U[1]]-shift[1]
-
-        LxLy = positions[np.logical_and(positions[:,0]<=L[0], positions[:,1]<=L[1])] + (shift[0]+shift[1])
-        UxUy = positions[np.logical_and(positions[:,0]>=U[0], positions[:,1]>=U[1])] - (shift[0]+shift[1])
-        LxUy = positions[np.logical_and(positions[:,0]<=L[0], positions[:,1]>=U[1])] + (shift[0]-shift[1])
-        UxLy = positions[np.logical_and(positions[:,0]>=U[0], positions[:,1]<=L[1])] - (shift[0]-shift[1])
-
-        return np.concatenate((pos,Lx,Ly,Ux,Uy,LxLy,UxUy,LxUy,UxLy))
 
     def triangulate_layer(self,layer=1):
         """ Triangulate a layer
@@ -363,8 +339,8 @@ class ITIM(pytim.PYTIM):
         upper = self._layers[0][layer-1]
         lower = self._layers[1][layer-1]
 
-        upperpos = self._generate_periodic_border_2D(upper)
-        lowerpos = self._generate_periodic_border_2D(lower)
+        upperpos = self._generate_periodic_border_2d(upper)
+        lowerpos = self._generate_periodic_border_2d(lower)
 
         self.surface_triangulation = [None,None]
         self.trimmed_surface_triangles = [None,None]
