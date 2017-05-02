@@ -41,5 +41,5 @@ install:
 - pip install MDAnalysis==$MDAv
 - pip install .
 # command to run tests
-script: cd docs ; make doctest
+script: (cd docs ; make doctest)
 after_script: py.test --cov=./pytim --doctest-modules ;  codecov ;
