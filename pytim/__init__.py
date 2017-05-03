@@ -305,27 +305,26 @@ class PYTIM(object):
         return self.surf_triang
 
     def _initialize_distance_interpolator(self, layer):
-        if self._interpolator is None:
-            # we don't know if previous triangulations have been done on the
-            # same layer, so just in case we repeat it here. This can be fixed
-            # in principl with a switch
-            self.triangulate_layer(layer)
+        #if self._interpolator is None:
+        # we don't know if previous triangulations have been done on the
+        # same layer, so just in case we repeat it here. This can be fixed
+        # in principl with a switch
+        self.triangulate_layer(layer)
 
-            self._interpolator = [None, None]
-            self._interpolator[0] = LinearNDInterpolator(
-                self.surf_triang[0],
-                self.triangulation_points[0][:, 2])
-            self._interpolator[1] = LinearNDInterpolator(
-                self.surf_triang[1],
-                self.triangulation_points[1][:, 2])
+        self._interpolator0 = LinearNDInterpolator(
+            self.surf_triang[0],
+            self.triangulation_points[0][:, 2])
+        self._interpolator1= LinearNDInterpolator(
+            self.surf_triang[1],
+            self.triangulation_points[1][:, 2])
 
     def interpolate_surface(self, positions, layer):
         self._initialize_distance_interpolator(layer)
         upper_set = positions[positions[:, 2] >= 0]
         lower_set = positions[positions[:, 2] < 0]
         # interpolated values of upper/lower_set on the upper/lower surface
-        upper_int = self._interpolator[0](upper_set[:, 0:2])
-        lower_int = self._interpolator[1](lower_set[:, 0:2])
+        upper_int = self._interpolator0(upper_set[:, 0:2])
+        lower_int = self._interpolator1(lower_set[:, 0:2])
         # copy everything back to one array with the correct order
         elevation = np.zeros(len(positions))
         elevation[np.where(positions[:, 2] >= 0)] = upper_int
