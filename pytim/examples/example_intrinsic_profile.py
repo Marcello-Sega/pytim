@@ -10,7 +10,7 @@ u         = mda.Universe(WATER_GRO,WATER_XTC)
 oxygens   = u.select_atoms("name OW")
 radii     = pytim_data.vdwradii(G43A1_TOP)
 
-number    = observables.Number(u)
+number    = observables.Number()
 interface = pytim.ITIM(u,alpha=2.)
 
 profile   = observables.Profile(group=oxygens,observable=number, interface=interface)
