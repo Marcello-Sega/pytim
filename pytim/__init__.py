@@ -305,18 +305,18 @@ class PYTIM(object):
         return self.surf_triang
 
     def _initialize_distance_interpolator(self, layer):
-        #if self._interpolator is None:
-        # we don't know if previous triangulations have been done on the
-        # same layer, so just in case we repeat it here. This can be fixed
-        # in principl with a switch
-        self.triangulate_layer(layer)
+            if self._interpolator is None:
+            # we don't know if previous triangulations have been done on the
+            # same layer, so just in case we repeat it here. This can be fixed
+            # in principl with a switch
+            self.triangulate_layer(layer)
 
-        self._interpolator0 = LinearNDInterpolator(
-            self.surf_triang[0],
-            self.triangulation_points[0][:, 2])
-        self._interpolator1= LinearNDInterpolator(
-            self.surf_triang[1],
-            self.triangulation_points[1][:, 2])
+            self._interpolator0 = LinearNDInterpolator(
+                self.surf_triang[0],
+                self.triangulation_points[0][:, 2])
+            self._interpolator1= LinearNDInterpolator(
+                self.surf_triang[1],
+                self.triangulation_points[1][:, 2])
 
     def interpolate_surface(self, positions, layer):
         self._initialize_distance_interpolator(layer)
