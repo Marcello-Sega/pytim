@@ -70,6 +70,17 @@ class PYTIM(object):
     WRONG_DIRECTION = "Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
     CENTERING_FAILURE = "Cannot center the group in the box. Wrong direction supplied?"
 
+    def __init__(self):
+        self.cluster_cut = None
+        self.extra_cluster_groups = None
+        self.itim_group = None
+        self.radii_dict = None
+        self.max_layers = 1
+        self.cluster_threshold_density = None
+        self.molecular=True
+        self.info=False
+        self.multiproc=True
+
     def label_layer(self, group, value):
         if LooseVersion(self._MDAversion) <= LooseVersion('0.15'):
             group.bfactors = value
@@ -440,8 +451,7 @@ class PYTIM(object):
         # we first make sure cluster_cut is either None, or an array
         if self.cluster_cut is not None and\
             not isinstance(self.cluster_cut, (list, tuple, np.ndarray)):
-            if isinstance(self.cluster_cut, int) or\
-                isinstance(self.cluster_cut, float):
+            if isinstance(self.cluster_cut, (int, float)):
                 self.cluster_cut = np.array([float(self.cluster_cut)])
         # same with extra_cluster_groups
         if self.extra_cluster_groups is not None and\
