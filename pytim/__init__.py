@@ -89,11 +89,14 @@ class PYTIM(object):
 
     def _basic_checks(self, universe):
         self._MDAversion = MDAnalysis.__version__
+
+        try:
+            self.all_atoms = universe.select_atoms('all')
+        except BaseException:
+            raise Exception(self.WRONG_UNIVERSE)
+
         assert LooseVersion(self._MDAversion) >= LooseVersion(
             '0.15'), "Must use MDAnalysis  >= 0.15"
-
-        assert isinstance(
-    universe, Universe), "You must pass an MDAnalysis Universe"
 
         if LooseVersion(self._MDAversion) >= LooseVersion(
             '0.16'):  # new topology system
@@ -466,6 +469,7 @@ class PYTIM(object):
 
 from pytim.itim import ITIM
 from pytim.gitim import GITIM
+from pytim.willard_chandler import WillardChandler
 from pytim import observables, utilities
 from pytim.datafiles import *
 

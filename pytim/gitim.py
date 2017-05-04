@@ -75,10 +75,6 @@ class GITIM(pytim.PYTIM):
         self.info = info
         self.normal = None
         self.PDB = {}
-        try:
-            self.all_atoms = self.universe.select_atoms('all')
-        except BaseException:
-            raise Exception(self.WRONG_UNIVERSE)
         self.molecular = molecular
 
         self.cluster_cut = cluster_cut
@@ -112,7 +108,8 @@ class GITIM(pytim.PYTIM):
             self.symmetry = symmetry
 
     def _sanity_checks(self):
-
+        """ basic checks to be performed after the initialization
+        """
         assert self.alpha > 0, self.ALPHA_NEGATIVE
         assert self.alpha < np.amin(
             self.universe.dimensions[:3]), self.ALPHA_LARGE
@@ -179,27 +176,10 @@ class GITIM(pytim.PYTIM):
         box = self.universe.dimensions[:3]
         delta = 2. * self.alpha + 1e-6
         points = self.cluster_group.positions[:]
-        extrapoints = np.copy(points)
         nrealpoints = len(points)
-        extraids = np.arange(len(points), dtype=np.int)
-        for shift in np.array(list(itertools.product([1, -1, 0], repeat=3))):
-            if(np.sum(shift * shift)):  # avoid [0,0,0]
-                # this needs some explanation:
-                # if shift ==0  -> the condition is always true
-                # if shift ==1  -> the condition is x > box - delta
-                # if shift ==-1 -> the condition is -x > 0 - delta -> x <delta
-                # Requiring np.all() to be true makes the logical and returns
-                # (axis=1) True for all indices whose atoms satisfy the
-                # condition
-                selection = np.all(shift * points >= shift * shift *
-                                   ((box + shift * box) / 2. - delta),
-                                   axis=1)
-                # add the new points at the border of the box
-                extrapoints = np.append(
-                    extrapoints, points[selection] - shift * box, axis=0)
-                # we keep track of the original ids.
-                extraids = np.append(extraids, np.where(selection)[0])
-
+        extrapoints, extraids = utilities.generate_periodic_border_3d(
+            points, box, delta
+        )
         # add points at the vertices of the expanded (by 2 alpha) box
         for dim in range(8):
                 # [0,0,0],[0,0,1],[0,1,0],...,[1,1,1]

@@ -33,12 +33,13 @@ class Testsuite1():
     >>> interface = pytim.GITIM(u)
     Traceback (most recent call last):
         ...
-    AssertionError: You must pass an MDAnalysis Universe
+    Exception: Wrong Universe passed to ITIM class
+
 
     >>> interface = pytim.ITIM(u)
     Traceback (most recent call last):
         ...
-    AssertionError: You must pass an MDAnalysis Universe
+    Exception: Wrong Universe passed to ITIM class
 
     >>> # TEST:3 large probe sphere radius
     >>> u         = mda.Universe(WATER_GRO)
