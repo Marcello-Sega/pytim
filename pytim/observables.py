@@ -56,7 +56,7 @@ class Observable(object):
         return np.array(pos)
 
     @abstractmethod
-    def compute(self, input):
+    def compute(self, inp):
         pass
 
 
@@ -74,7 +74,7 @@ class RDF(object):
             f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
 
 
-    :param double range:  compute the rdf up to this distance. If 'full' is \
+    :param double max_radius:  compute the rdf up to this distance. If 'full' is \
                           supplied (default) computes it up to half of the  \
                           smallest box side.
     :param int nbins:     number of bins
@@ -89,15 +89,15 @@ class RDF(object):
     """
 
     def __init__(self, universe,
-                 nbins=75, range='full', exclusion_block=None,
+                 nbins=75, max_radius='full', exclusion_block=None,
                  start=None, stop=None, step=None, excluded_dir='z',
                  observable=None, observable2=None, weights=None):
-        if range is 'full':
-            self.range = np.min(universe.dimensions[:3])
+        if max_radius is 'full':
+            self.max_radius = np.min(universe.dimensions[:3])
         else:
-            self.range = range
+            self.max_radius = max_radius
         self.rdf_settings = {'bins': nbins,
-                             'range': (0., self.range)}
+                             'range': (0., self.max_radius)}
         self.universe = universe
         self.nsamples = 0
         self.observable = observable
@@ -250,10 +250,10 @@ class RDF2D(RDF):
     """
 
     def __init__(self, universe,
-                 nbins=75, range='full', exclusion_block=None,
+                 nbins=75, max_radius='full', exclusion_block=None,
                  start=None, stop=None, step=None, excluded_dir='z',
                  true2D=False, observable=None):
-        RDF.__init__(self, universe, nbins=nbins, range=range,
+        RDF.__init__(self, universe, nbins=nbins, max_radius=max_radius,
                      exclusion_block=exclusion_block,
                      start=start, stop=stop, step=step,
                      observable=observable)
@@ -330,7 +330,7 @@ class LayerTriangulation(Observable):
         self.return_triangulation = return_triangulation
         self.return_statistics = return_statistics
 
-    def compute(self, input=None):
+    def compute(self, inp=None):
         """Triangulate a layer on both sides of the interface.
 
             Example:
@@ -390,7 +390,7 @@ class IntrinsicDistance(Observable):
         self.return_triangulation = return_triangulation
         self.layer = layer
 
-    def compute(self, input):
+    def compute(self, inp):
         """Compute the intrinsic distance of a set of points from the first
         layers.
 
@@ -400,13 +400,13 @@ class IntrinsicDistance(Observable):
         Example: TODO
 
         """
-        t = type(input)
+        t = type(inp)
         if t is np.ndarray:
-            positions = input
+            positions = inp
         if t is Atom:
-            positions = input.position
+            positions = inp.position
         if t is AtomGroup:
-            positions = input.positions
+            positions = inp.positions
         elevation = self.interface.interpolate_surface(positions, self.layer)
         assert np.sum(np.isnan(
             elevation)) == 0, "Internal error: a point has fallen outside"\
