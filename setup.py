@@ -6,7 +6,7 @@
 # Always prefer setuptools over distutils
 from   setuptools import find_packages
 # To use a consistent encoding
-from   codecs import open
+import codecs
 import os
 import sys
 
@@ -23,7 +23,7 @@ dbscan = Extension("dbscan", ["pytim/_dbscan_inner.pyx"], language="c++",
 here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
-with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
+with codecs.open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 # This fixes the default architecture flags of Apple's python
