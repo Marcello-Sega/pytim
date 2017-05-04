@@ -90,16 +90,16 @@ class Data(object):
         self.format=dict()
         self.description=dict()
 
-    def add(self,label,type,format,desc):
+    def add(self,label,filetype,fileformat,desc):
         self._label.append(label)
         if label[0] is not '_':
             self.label.append(label)
         self.file[label]       = globals()[label]
         file = self.file[label]
-        self.type[file]=type
-        self.type[label]=type
-        self.format[file]=format
-        self.format[label]=format
+        self.type[file]=filetype
+        self.type[label]=filetype
+        self.format[file]=fileformat
+        self.format[label]=fileformat
         self.description[file]=desc
         self.description[label]=desc
 
