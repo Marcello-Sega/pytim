@@ -104,10 +104,7 @@ class ITIM(pytim.PYTIM):
         self.info = info
         self.normal = None
         self.PDB = {}
-        try:
-            self.all_atoms = self.universe.select_atoms('all')
-        except BaseException:
-            raise Exception(self.WRONG_UNIVERSE)
+
         self.molecular = molecular
 
         self.cluster_cut = cluster_cut
@@ -247,7 +244,8 @@ class ITIM(pytim.PYTIM):
             queue.put(_layers)
 
     def _sanity_checks(self):
-
+        """ basic checks to be performed after the initialization
+        """
         assert isinstance(
             self.alpha, float) or isinstance(
             self.alpha, int), self.ALPHA_NAN
