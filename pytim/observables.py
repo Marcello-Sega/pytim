@@ -12,7 +12,6 @@ except BaseException:
     from MDAnalysis.core.AtomGroup import Atom, AtomGroup, Residue,\
         ResidueGroup
 
-from MDAnalysis.analysis import rdf
 from MDAnalysis.lib import distances
 from itertools import chain
 import pytim
