@@ -41,5 +41,10 @@ install:
 - pip install MDAnalysis==$MDAv
 - pip install .
 # command to run tests
-script: (cd docs ; make doctest)
-after_script: py.test --cov=./pytim --doctest-modules ;  codecov ;
+script: (cd docs ; make doctest )
+
+after_success:
+  if ([ "$TRAVIS_OS_NAME" == "linux" ] && [ "$MDAv" == "0.16" ]) ; then
+        py.test --cov=./pytim --doctest-modules ;  codecov ;
+  fi
+
