@@ -344,7 +344,6 @@ class LayerTriangulation(Observable):
         """
         stats = []
         self.interface.triangulate_layer(self.layer)
-        box = self.interface.universe.dimensions[:3]
         if self.return_triangulation is True and \
             self.return_statistics is False:
             return self.interface.surface_triangulation
@@ -701,7 +700,7 @@ class Profile(object):
             _range = [-self._box[self._dir] / 2., self._box[self._dir] / 2.]
         else:
             _range = [0, self._box[self._dir]]
-        avg, bins, binnumber = stats.binned_statistic(
+        avg, bins, _ = stats.binned_statistic(
             list(
                 chain.from_iterable(
                     self.sampled_bins)), list(
@@ -709,7 +708,6 @@ class Profile(object):
                     self.sampled_values)), range=_range, statistic='sum', 
                 bins=nbins)
         avg[np.isnan(avg)] = 0.0
-        binsize = bins[1] - bins[0]
         vol = np.prod(self._box) / nbins
         return [bins[0:-1], bins[1:], avg / len(self.sampled_values) / vol]
 
