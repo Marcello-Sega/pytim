@@ -230,7 +230,7 @@ class GITIM(pytim.PYTIM):
 
         if(self.cluster_cut is not None):
             # groups have been checked already in _sanity_checks()
-            labels, counts, n_neigh = utilities.do_cluster_analysis_DBSCAN(
+            labels, counts, _ = utilities.do_cluster_analysis_DBSCAN(
                 self.itim_group, self.cluster_cut[0],
                 self.universe.dimensions[:6],
                 self.cluster_threshold_density, self.molecular)

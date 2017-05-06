@@ -281,9 +281,6 @@ class ITIM(pytim.PYTIM):
     def _assign_layers(self):
         """Determine the ITIM layers."""
         self._assign_mesh()
-        delta = self.delta
-        mesh_dx = self.mesh_dx
-        mesh_dy = self.mesh_dy
         up = 0
         low = 1
         self.layers_ids = [[], []]  # upper, lower

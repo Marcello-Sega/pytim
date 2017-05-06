@@ -401,7 +401,7 @@ class PYTIM(object):
         else:
             _range =(0., dim[direction])
 
-        histo, edges =np.histogram(_pos_group, bins=10, range=_range,
+        histo, _ =np.histogram(_pos_group, bins=10, range=_range,
                                    density=True)
 
         max_val =np.amax(histo)

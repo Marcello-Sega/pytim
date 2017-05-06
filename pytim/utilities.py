@@ -88,8 +88,9 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
     if x is not None or y is not None or z is not None:
         for index, val in enumerate((x, y, z)):
             try:
-                # let's just try to rebox all directions. Will succeed only for those which are not None
-                # the >= convention is needed for cKDTree
+                # let's just try to rebox all directions. Will succeed only
+                # for those which are not None. The >= convention is needed
+                # for cKDTree
                 val[val >= dim[index] - shift[index]] -= dim[index]
                 val[val < -dim[index] - shift[index]] += dim[index]
             except:
@@ -108,7 +109,7 @@ def guess_normal(universe, group):
 
     delta = []
     for direction in range(0, 3):
-        histo, edges = np.histogram(group.positions[:, direction], bins=5,
+        histo, _ = np.histogram(group.positions[:, direction], bins=5,
                                  range=(0, dim[direction]),
                                  density=True);
         max_val = np.amax(histo)
@@ -118,17 +119,21 @@ def guess_normal(universe, group):
 
 
 def trim_triangulated_surface(tri, box):
-    """ Reduce a surface triangulation that has been extended to allow for periodic boundary conditions
-        to the primary cell.
+    """ Reduce a surface triangulation that has been extended to\
+        allow for periodic boundary conditions\
+	    to the primary cell.
 
-        The simplices within the primary cell are those with at least two vertices within the cell boundaries.
+	    The simplices within the primary cell are those with at\
+	    least two vertices within the cell boundaries.
 
         :param Delaunay tri: a 2D triangulation
         :param ndarray  box: box cell parameters
         :returns ndarray simplices: the simplices within the primary cell.
     """
-    return tri.simplices[np.where((np.logical_and(tri.points[tri.simplices] <= box[0:2],
-                                                  tri.points[tri.simplices] > [0, 0]).sum(axis=2) >= 2).sum(axis=1) >= 2)]
+    condition = np.logical_and(tri.points[tri.simplices] <= box[0:2],
+                               tri.points[tri.simplices] > [0, 0])
+    sum1 = condition.sum(axis=2)
+    return tri.simplices[np.where((sum1 >= 2).sum(axis=1) >= 2)]
 
 
 def triangulated_surface_stats(tri2d, points3d):
@@ -137,7 +142,8 @@ def triangulated_surface_stats(tri2d, points3d):
         Implemented statistics are: surface area
 
         :param tri2d             : indices of triangles vertices
-        :param ndarray  points3d : the heigth of each vertex along the third dimension
+        :param ndarray  points3d : the heigth of each vertex along the third\
+                                   dimension
         :returns list stats      : the statistics :  [surface_area]
     """
 
@@ -154,22 +160,23 @@ def triangulated_surface_stats(tri2d, points3d):
 
 
 def _init_NN_search(group, box):
-    # NOTE: boxsize shape must be (6,), and the last three elements are overwritten in cKDTree:
+    # NOTE: boxsize shape must be (6,), and the last three elements are
+    #       overwritten in cKDTree:
     #   boxsize_arr = np.empty(2 * self.m, dtype=np.float64)
     #   boxsize_arr[:] = boxsize
     #   boxsize_arr[self.m:] = 0.5 * boxsize_arr[:self.m]
 
     # TODO: handle macroscopic normal different from z
-    # NOTE: coords in cKDTree must be in [0,L), but pytim uses [-L/2,L/2) on the 3rd axis.
-    # We shift them here
+    # NOTE: coords in cKDTree must be in [0,L), but pytim uses [-L/2,L/2) on
+    # the 3rd axis. We shift them here
     shift = np.array([0., 0., box[2]]) / 2.
     pos = group.positions[:] + shift
     return cKDTree(pos, boxsize=box[:6], copy_data=True)
 
 
 def generate_grid_in_box(box, npoints):
-    """ generate an homogenous grid of npoints^3 points that spans the
-        complete box. 
+    """generate an homogenous grid of npoints^3 points that spans the
+       complete box.
     """
     x_ = np.linspace(0., box[0], npoints)
     y_ = np.linspace(0., box[1], npoints)
@@ -181,14 +188,14 @@ def generate_grid_in_box(box, npoints):
 
 
 def write_vtk_scalar_grid(filename, grid_size, spacing, scalars):
-    """ write in a vtk file a scalar field on a rectangular grid
+    """write in a vtk file a scalar field on a rectangular grid
 
-        :param string filename: the filename
-        :param int grid_size: number of points along one side of the the cubic\
-                              grid along one dimension
-        :param array spacing: a (3,) array with the point spacing along the 3\
-                              directions
-        :param array scalars: a (grid_size,) array with the scalar field values
+       :param string filename: the filename
+       :param int grid_size: number of points along one side of the the cubic\
+                             grid along one dimension
+       :param array spacing: a (3,) array with the point spacing along the 3\
+                             directions
+       :param array scalars: a (grid_size,) array with the scalar field values
     """
     str_size = str(grid_size)
     f = open(filename, "w")
@@ -233,7 +240,7 @@ def write_vtk_points(filename, pos, color=None,radius=None):
     if color is not None:
         f.write("COLOR_SCALARS color 3\n")
         for c in color:
-            f.write('{:1.2f} '.format(c[0]) + '{:1.2f} '.format(c[1]) + 
+            f.write('{:1.2f} '.format(c[0]) + '{:1.2f} '.format(c[1]) +
                     '{:1.2f} '.format(c[2]) +"\n")
 
     f.close()
@@ -275,9 +282,9 @@ def _NN_query(kdtree, position, qrange):
     return kdtree.query_ball_point(position, qrange, n_jobs=-1)
 
 def generate_periodic_border_3d(points, box, delta):
-    """ Selects the pparticles within a skin depth delta from the 
+    """ Selects the pparticles within a skin depth delta from the
         simulation box, and replicates them to mimic periodic
-        boundary conditions. Returns all points (original + 
+        boundary conditions. Returns all points (original +
         periodic copies) and the indices of the original particles
     """
     extrapoints=np.copy(points)
@@ -329,9 +336,12 @@ def do_cluster_analysis_DBSCAN(
 
     tree=cKDTree(points, boxsize=box[:6])
     neighborhoods=np.array([np.array(neighbors)
-                            for neighbors in tree.query_ball_point(points, cluster_cut, n_jobs=-1)])
+                            for neighbors in tree.query_ball_point(
+                                              points, cluster_cut, n_jobs=-1)]
+                                             )
     assert len(
-    neighborhoods.shape) is 1, "Error in do_cluster_analysis_DBSCAN(), the cutoff is probably too small"
+    neighborhoods.shape) is 1, "Error in do_cluster_analysis_DBSCAN(),\
+                                the cutoff is probably too small"
     if molecular == False:
         n_neighbors=np.array([len(neighbors)
                                 for neighbors in neighborhoods])
@@ -340,13 +350,14 @@ def do_cluster_analysis_DBSCAN(
                                     for neighbors in neighborhoods])
 
     if isinstance(threshold_density, str):
-        assert threshold_density == 'auto', "Internal error: wrong parameter 'threshold_density' passed to do_cluster_analysis_DBSCAN"
+        assert threshold_density == 'auto',\
+                "Internal error: wrong parameter 'threshold_density' passed\
+                 to do_cluster_analysis_DBSCAN"
         max_neighbors=np.max(n_neighbors)
         min_neighbors=np.min(n_neighbors)
-        avg_neighbors=(min_neighbors + max_neighbors) / 2.
         modes=2
-        centroid, _=vq.kmeans2(n_neighbors *
-     1.0, modes, iter=10, check_finite=False)
+        centroid, _=vq.kmeans2(n_neighbors * 1.0, modes, iter=10,
+                               check_finite=False)
         # min_samples   = np.mean(centroid)
         min_samples=np.max(centroid)
 
