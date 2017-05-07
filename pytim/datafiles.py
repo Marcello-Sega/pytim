@@ -23,6 +23,9 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
     MICELLE_PDB          DPC micelle
     WATERSMALL_GRO       small SPC water/vapour interface
     WATER_GRO            SPC water/vapour interface
+    WATER_PDB            SPC water/vapour interface
+    WATER_XYZ            SPC water/vapour interface
+
 
 
     Example: list all topologies
@@ -48,6 +51,8 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 
 __all__ = [
     "WATER_GRO",             # GROMACS single frame, water/vapour interface
+    "WATER_PDB",             # PDB single frame, water/vapour interface, same as WATER_GRO
+    "WATER_XYZ",             # XYZ single frame, water/vapour interface, same as WATER_GRO
     "WATERSMALL_GRO",        # GROMACS single frame, water/vapour interface
     "METHANOL_GRO",          # XYZ, single frame, methanol/vapour interface with molecules in the vapour phase
     "ILBENZENE_GRO",         # Ionic liquid/benzene, partial miscibility
@@ -138,6 +143,12 @@ pytim_data=Data()
 ##       in the package_data option (a glob like 'data/*' is usually enough)
 WATER_GRO      = resource_filename('pytim', 'data/water.gro')
 pytim_data.add('WATER_GRO'  ,  'config', 'GRO', 'SPC water/vapour interface')
+
+WATER_PDB      = resource_filename('pytim', 'data/water.pdb')
+pytim_data.add('WATER_PDB'  ,  'config', 'PDB', 'SPC water/vapour interface')
+
+WATER_XYZ      = resource_filename('pytim', 'data/water.xyz')
+pytim_data.add('WATER_XYZ'  ,  'config', 'XYZ', 'SPC water/vapour interface')
 
 MICELLE_PDB    = resource_filename('pytim', 'data/micelle.pdb')
 pytim_data.add('MICELLE_PDB',  'config', 'GRO','DPC micelle')
