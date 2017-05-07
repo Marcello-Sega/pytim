@@ -13,4 +13,6 @@ interface = pytim.WillardChandler(u,itim_group=g,alpha=3.0,
                                    density_basename="dens",
                                    particles_basename="atoms",
                                    surface_basename="surf")
+R,_,_,_ = pytim.utilities.fit_sphere(interface.triangulated_surface[0])
+print "Radius={:.3f}".format(R)
 
