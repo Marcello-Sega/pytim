@@ -368,6 +368,19 @@ def do_cluster_analysis_DBSCAN(
     dbscan_inner(core_samples, neighborhoods, labels, counts)
     return labels, counts, n_neighbors
 
+def fit_sphere(points):
+    px = points[::,0]
+    py = points[::,1]
+    pz = points[::,2]
+    f=np.sum(points*points,axis=1)
+    A = np.zeros((len(points),4))
+    A[:,0] = 2.*px
+    A[:,1] = 2.*py
+    A[:,2] = 2.*pz
+    A[:,3] = 1.
+    C = np.dot(np.linalg.pinv(A), f)
+    radius = np.sqrt(C[0]*C[0]+C[1]*C[1]+C[2]*C[2]+C[3])
+    return radius, C[0], C[1], C[2]
 
 # colormap from http://jmol.sourceforge.net/jscolors/
 colormap = {
