@@ -2,17 +2,16 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 import MDAnalysis as mda
 import pytim
-from   pytim.datafiles import *
+from pytim.datafiles import *
 
-u         = mda.Universe(WATER_GRO)
+u = mda.Universe(WATER_GRO)
 
-radii     = pytim_data.vdwradii(G43A1_TOP)
+radii = pytim_data.vdwradii(G43A1_TOP)
 
-interface = pytim.GITIM(u,molecular=True,symmetry='planar',alpha=2.5, cluster_cut=3.5, cluster_threshold_density='auto')
+interface = pytim.GITIM(u, molecular=True, symmetry='planar',
+                        alpha=2.5, cluster_cut=3.5, cluster_threshold_density='auto')
 
-layers     = interface.layers[:]
+layers = interface.layers[:]
 print repr(layers)
 
-interface.writepdb('gitim_flat.pdb',centered='middle')
-
-
+interface.writepdb('gitim_flat.pdb', centered='middle')

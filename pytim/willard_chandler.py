@@ -149,7 +149,7 @@ class WillardChandler(pytim.PYTIM):
             volume, None,
             spacing=tuple(spacing)
         )
-        self.triangulated_surface = [verts,faces]
+        self.triangulated_surface = [verts, faces]
         self.surface_area = measure.mesh_surface_area(verts, faces)
         verts += spacing / 2.
 
