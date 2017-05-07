@@ -55,7 +55,7 @@ def get_pos(group=None, normal=2):
         return np.roll(pos, 1, axis=1)
 
 
-def centerbox(universe, x=None, y=None, z=None, vector=None,
+def centerbox(universe, x=None, y=None, z=None,
               center_direction=2, halfbox_shift=True):
     # in ITIM, the system is always centered at 0 along the normal direction (halfbox_shift==True)
     # To center to the middle of the box along all directions, set
@@ -71,21 +71,13 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
     shift = np.array([0., 0., 0.])
     if halfbox_shift == True:
         shift[center_direction] = dim[center_direction] / 2.
-    # we rebox the atoms in universe, and not a vector
-    if x is None and y is None and z is None and vector is None:
+    # we rebox the atoms in universe
+    if x is None and y is None and z is None:
         stack = True;
         x = get_x(universe.atoms)
         y = get_y(universe.atoms)
         z = get_z(universe.atoms)
-    if x is None and y is None and z is None and vector is not None:
-         try:
-            vector[vector >= dim[center_direction] -
-     shift[center_direction]] -= dim[center_direction]
-            vector[vector < -dim[center_direction] -
-                shift[center_direction]] += dim[center_direction]
-         except:
-            pass
-    if x is not None or y is not None or z is not None:
+    else: # rebox the coordinates passed to the function
         for index, val in enumerate((x, y, z)):
             try:
                 # let's just try to rebox all directions. Will succeed only
@@ -367,6 +359,20 @@ def do_cluster_analysis_DBSCAN(
     core_samples=np.asarray(n_neighbors >= min_samples, dtype=np.uint8)
     dbscan_inner(core_samples, neighborhoods, labels, counts)
     return labels, counts, n_neighbors
+
+def fit_sphere(points):
+    px = points[::,0]
+    py = points[::,1]
+    pz = points[::,2]
+    f=np.sum(points*points,axis=1)
+    A = np.zeros((len(points),4))
+    A[:,0] = 2.*px
+    A[:,1] = 2.*py
+    A[:,2] = 2.*pz
+    A[:,3] = 1.
+    C = np.dot(np.linalg.pinv(A), f)
+    radius = np.sqrt(C[0]*C[0]+C[1]*C[1]+C[2]*C[2]+C[3])
+    return radius, C[0], C[1], C[2]
 
 
 # colormap from http://jmol.sourceforge.net/jscolors/
