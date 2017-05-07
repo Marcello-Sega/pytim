@@ -187,64 +187,64 @@ class RDF2D(RDF):
     """Calculates a radial distribution function of some observable from two
     groups, projected on a plane.
 
-        The two functions must return an array (of scalars or of vectors)
-        having the same size of the group. The scalar product between the
-        two functions is used to weight the distriution function.
+    The two functions must return an array (of scalars or of vectors)
+    having the same size of the group. The scalar product between the
+    two functions is used to weight the distriution function.
 
-        :param int nbins:         number of bins
-        :param char excluded_dir: project position vectors onto the plane\
-                                  orthogonal to 'z','y' or 'z' 
-        :param Observable observable:   observable for group 1 
-        :param Observable observable2:  observable for group 2 
-        :param array weights: weights to be applied to the distribution\
-                              function (mutually exclusive with\
-                              observable/observable2)
+    :param int nbins:         number of bins
+    :param char excluded_dir: project position vectors onto the plane\
+                              orthogonal to 'z','y' or 'z' 
+    :param Observable observable:   observable for group 1 
+    :param Observable observable2:  observable for group 2 
+    :param array weights: weights to be applied to the distribution\
+                          function (mutually exclusive with\
+                          observable/observable2)
 
-        Example:
+    Example:
 
-        >>> import MDAnalysis as mda
-        >>> import numpy as np
-        >>> import pytim
-        >>> from pytim import *
-        >>> from pytim.datafiles import *
-        >>>
-        >>> u = mda.Universe(WATER_GRO,WATER_XTC)
-        >>> oxygens = u.select_atoms("name OW")
-        >>> radii=pytim_data.vdwradii(G43A1_TOP)
-        >>> rdf = observables.RDF2D(u,nbins=120)
-        >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,\
-            max_layers=4,radii_dict=radii,cluster_cut=3.5)
-        >>>
-        >>> for ts in u.trajectory[::50] :
-        ...     layer=interface.layers[0,1]
-        ...     rdf.sample(layer,layer)
-        >>> rdf.rdf[0]=0.0
-        >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf))) 
+    >>> import MDAnalysis as mda
+    >>> import numpy as np
+    >>> import pytim
+    >>> from pytim import *
+    >>> from pytim.datafiles import *
+    >>>
+    >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+    >>> oxygens = u.select_atoms("name OW")
+    >>> radii=pytim_data.vdwradii(G43A1_TOP)
+    >>> rdf = observables.RDF2D(u,nbins=120)
+    >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,\
+        max_layers=4,radii_dict=radii,cluster_cut=3.5)
+    >>>
+    >>> for ts in u.trajectory[::50] :
+    ...     layer=interface.layers[0,1]
+    ...     rdf.sample(layer,layer)
+    >>> rdf.rdf[0]=0.0
+    >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf))) 
 
 
-        This results in the following RDF:
+    This results in the following RDF:
 
-        .. plot::
+    .. plot::
 
-            import MDAnalysis as mda
-            import numpy as np
-            import pytim
-            import matplotlib.pyplot as plt
-            from   pytim.datafiles import *
-            u = mda.Universe(WATER_GRO,WATER_XTC)
-            L = np.min(u.dimensions[:3])
-            oxygens = u.select_atoms("name OW")
-            radii=pytim_data.vdwradii(G43A1_TOP)
-            interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,\
-                                   max_layers=4,radii_dict=radii,\
-                                   cluster_cut=3.5)
-            rdf=pytim.observables.RDF2D(u,nbins=120)
-            for ts in u.trajectory[::50] :
-                layer=interface.layers[0,1]
-                rdf.sample(layer,layer)
-            rdf.rdf[0]=0.0
-            plt.plot(rdf.bins, rdf.rdf)
-            plt.show()
+        import MDAnalysis as mda
+        import numpy as np
+        import pytim
+        import matplotlib.pyplot as plt
+        from   pytim.datafiles import *
+        u = mda.Universe(WATER_GRO,WATER_XTC)
+        L = np.min(u.dimensions[:3])
+        oxygens = u.select_atoms("name OW")
+        radii=pytim_data.vdwradii(G43A1_TOP)
+        interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,\
+                               max_layers=4,radii_dict=radii,\
+                               cluster_cut=3.5)
+        rdf=pytim.observables.RDF2D(u,nbins=120)
+        for ts in u.trajectory[::50] :
+            layer=interface.layers[0,1]
+            rdf.sample(layer,layer)
+        rdf.rdf[0]=0.0
+        plt.plot(rdf.bins, rdf.rdf)
+        plt.show()
 
     """
 
@@ -371,13 +371,13 @@ class LayerTriangulation(Observable):
 class IntrinsicDistance(Observable):
     """Initialize the intrinsic distance calculation.
 
-        :param Universe universe: the MDAnalysis universe
-        :param ITIM    interface: compute the intrinsic distance with respect\
-                                  to this interface
-        :param int     layer: (default: 1) compute the intrinsic distance\
-                              with respect to this layer of the interface
-        :param bool    return_triangulation: (default: False) return the\
-                       Delaunay triangulation used for the interpolation
+    :param Universe universe: the MDAnalysis universe
+    :param ITIM    interface: compute the intrinsic distance with respect\
+                              to this interface
+    :param int     layer: (default: 1) compute the intrinsic distance\
+                          with respect to this layer of the interface
+    :param bool    return_triangulation: (default: False) return the\
+                   Delaunay triangulation used for the interpolation
 
     Example: TODO
 
@@ -533,65 +533,65 @@ class Profile(object):
     """Calculates the profile (normal, or intrinsic) of a given observable
     across the simulation box.
 
-        :param AtomGroup  group:        calculate the profile based on\
-                                        this group
-        :param str        direction:    'x','y', or 'z' : calculate the\
-                                        profile along this direction
-        :param Observable observable:   calculate the profile of this\
-                                        quantity. If None is supplied, it \
-                                        defaults to the number density
-        :param ITIM       interface:    if provided, calculate the intrinsic\
-                                        profile with respect to the first\
-                                        layers
-        :param AtomGroup  center_group: if `interface` is not provided, this\
-                                        optional group can be supplied to\
-                                        center the system
+    :param AtomGroup  group:        calculate the profile based on\
+                                    this group
+    :param str        direction:    'x','y', or 'z' : calculate the\
+                                    profile along this direction
+    :param Observable observable:   calculate the profile of this\
+                                    quantity. If None is supplied, it \
+                                    defaults to the number density
+    :param ITIM       interface:    if provided, calculate the intrinsic\
+                                    profile with respect to the first\
+                                    layers
+    :param AtomGroup  center_group: if `interface` is not provided, this\
+                                    optional group can be supplied to\
+                                    center the system
 
-        Example:
+    Example:
 
-        >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
-        >>> oxygens = u.select_atoms("name OW")
-        >>> radii=pytim_data.vdwradii(G43A1_TOP)
-        >>>
-        >>> obs     = observables.Number()
-        >>> profile = observables.Profile(group=oxygens,observable=obs)
-        >>>
-        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5)
-        >>>
-        >>> for ts in u.trajectory[::50]:
-        ...     interface.center(oxygens)
-        ...     profile.sample()
-        >>>
-        >>> low, up, avg = profile.get_values(binwidth=1.0)
-        >>> np.savetxt('profile.dat',list(zip(low,up,avg)))
+    >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
+    >>> oxygens = u.select_atoms("name OW")
+    >>> radii=pytim_data.vdwradii(G43A1_TOP)
+    >>>
+    >>> obs     = observables.Number()
+    >>> profile = observables.Profile(group=oxygens,observable=obs)
+    >>>
+    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5)
+    >>>
+    >>> for ts in u.trajectory[::50]:
+    ...     interface.center(oxygens)
+    ...     profile.sample()
+    >>>
+    >>> low, up, avg = profile.get_values(binwidth=1.0)
+    >>> np.savetxt('profile.dat',list(zip(low,up,avg)))
 
 
-        This results in the following profile:
+    This results in the following profile:
 
-        .. plot::
+    .. plot::
 
-            import MDAnalysis as mda
-            import numpy as np
-            import pytim
-            import matplotlib.pyplot as plt
-            from   pytim.datafiles   import *
+        import MDAnalysis as mda
+        import numpy as np
+        import pytim
+        import matplotlib.pyplot as plt
+        from   pytim.datafiles   import *
 
-            u       = mda.Universe(WATER_GRO,WATER_XTC)
-            oxygens = u.select_atoms("name OW")
-            radii=pytim_data.vdwradii(G43A1_TOP)
+        u       = mda.Universe(WATER_GRO,WATER_XTC)
+        oxygens = u.select_atoms("name OW")
+        radii=pytim_data.vdwradii(G43A1_TOP)
 
-            obs     = pytim.observables.Number()
-            profile = pytim.observables.Profile(group=oxygens,observable=obs)
+        obs     = pytim.observables.Number()
+        profile = pytim.observables.Profile(group=oxygens,observable=obs)
 
-            interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5)
+        interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5)
 
-            for ts in u.trajectory[::50]:
-                interface.center(oxygens)
-                profile.sample()
+        for ts in u.trajectory[::50]:
+            interface.center(oxygens)
+            profile.sample()
 
-            low, up, avg = profile.get_values(binwidth=1.0)
-            plt.plot((low+up)/2., avg)
-            plt.show()
+        low, up, avg = profile.get_values(binwidth=1.0)
+        plt.plot((low+up)/2., avg)
+        plt.show()
 
     """
 

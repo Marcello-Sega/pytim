@@ -142,10 +142,10 @@ def triangulated_surface_stats(tri2d, points3d):
 
         Implemented statistics are: surface area
 
-        :param tri2d             : indices of triangles vertices
-        :param ndarray  points3d : the heigth of each vertex along the third\
-                                   dimension
-        :returns list stats      : the statistics :  [surface_area]
+        :param ndarray tri2d : indices of triangles vertices
+        :param ndarray points3d : the heigth of each vertex along the third\
+                                  dimension
+        :returns list stats : the statistics :  [surface_area]
     """
 
     # TODO: write a more efficient routine ?
@@ -378,6 +378,7 @@ def do_cluster_analysis_DBSCAN(
 
 def fit_sphere(points):
     """ least square fit of a sphere through a set of points.
+
         :param ndarray points: a (N,3) array
         :returns radius, center_x, center_y, center_z
     """
