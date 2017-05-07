@@ -127,8 +127,8 @@ class RDF(object):
                 fg2 = self.observable2.compute(self.g2)
                 if len(fg1) != len(self.g1) or len(fg2) != len(self.g2):
                     raise Exception(
-                        "Error, the observable passed to RDF should output"\
-                        "an array (of scalar or vectors) the same size of"\
+                        "Error, the observable passed to RDF should output"
+                        "an array (of scalar or vectors) the same size of"
                         "the group")
                 # both are (arrays of) scalars
                 if len(fg1.shape) == 1 and len(fg2.shape) == 1:
@@ -139,7 +139,7 @@ class RDF(object):
                     _weights = np.dot(fg1, fg2.T)
                 else:
                     raise Exception(
-                        "Error, shape of the observable output not handled"\
+                        "Error, shape of the observable output not handled"
                         "in RDF")
                 # numpy.histogram accepts negative weights
                 self.rdf_settings['weights'] = _weights
@@ -345,7 +345,7 @@ class LayerTriangulation(Observable):
         stats = []
         self.interface.triangulate_layer(self.layer)
         if self.return_triangulation is True and \
-            self.return_statistics is False:
+                self.return_statistics is False:
             return self.interface.surface_triangulation
         if self.return_statistics is True:
             stats_up = utilities.triangulated_surface_stats(
@@ -615,9 +615,9 @@ class Profile(object):
             self.observable = Number()
         self.observable = observable
         self._dir = _dir[direction]
-        self.binsize = 0.1  # this is used for internal calculations, the 
-                            # output binsize can be specified in 
-                            # self.get_values()
+        self.binsize = 0.1  # this is used for internal calculations, the
+        # output binsize can be specified in
+        # self.get_values()
 
         self.interface = interface
         if self.interface is not None:
@@ -632,9 +632,9 @@ class Profile(object):
         self._box = self.universe.dimensions[:3]
         self.do_rebox = False
 
-        # We need to decide if we have to rebox particles or not. 
-        # If the trajectory is patched, it means that the coordinates have 
-        # been centered using the default scheme of each method, and we can 
+        # We need to decide if we have to rebox particles or not.
+        # If the trajectory is patched, it means that the coordinates have
+        # been centered using the default scheme of each method, and we can
         # handle this. Otherwise, we rebox.
 
         try:
@@ -666,8 +666,8 @@ class Profile(object):
         _values = self.observable.compute(self.group)
         _nbins = int(
             self.universe.trajectory.ts.dimensions[self._dir] / self.binsize)
-        # we need to make sure that the number of bins is odd, so that the 
-        # central one encompasses zero (to make the delta-function 
+        # we need to make sure that the number of bins is odd, so that the
+        # central one encompasses zero (to make the delta-function
         # contribution appear always in this bin)
         if(_nbins % 2 > 0):
             _nbins -= 1
@@ -705,8 +705,8 @@ class Profile(object):
                 chain.from_iterable(
                     self.sampled_bins)), list(
                 chain.from_iterable(
-                    self.sampled_values)), range=_range, statistic='sum', 
-                bins=nbins)
+                    self.sampled_values)), range=_range, statistic='sum',
+            bins=nbins)
         avg[np.isnan(avg)] = 0.0
         vol = np.prod(self._box) / nbins
         return [bins[0:-1], bins[1:], avg / len(self.sampled_values) / vol]
