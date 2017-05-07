@@ -6,7 +6,7 @@ import numpy as np
 import itertools
 from dbscan import dbscan_inner
 from scipy.spatial import Delaunay, cKDTree
-from scipy.stats import  gaussian_kde
+from scipy.stats import gaussian_kde
 from scipy.interpolate import griddata
 from scipy.cluster import vq
 from MDAnalysis.topology import tables
@@ -22,6 +22,7 @@ def lap(show=False):
         if show:
             print("LAP >>> " + str(dt))
         return dt
+
 
 def get_box(universe, normal=2):
     box = universe.coord.dimensions[0:3]
@@ -55,7 +56,7 @@ def get_pos(group=None, normal=2):
         return np.roll(pos, 1, axis=1)
 
 
-def centerbox(universe, x=None, y=None, z=None, vector=None,
+def centerbox(universe, x=None, y=None, z=None,
               center_direction=2, halfbox_shift=True):
     # in ITIM, the system is always centered at 0 along the normal direction (halfbox_shift==True)
     # To center to the middle of the box along all directions, set
@@ -66,26 +67,18 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
     if center_direction in dirdict:
         center_direction = dirdict[center_direction]
     assert center_direction in [
-    0, 1, 2], "Wrong direction supplied to centerbox"
+        0, 1, 2], "Wrong direction supplied to centerbox"
 
     shift = np.array([0., 0., 0.])
     if halfbox_shift == True:
         shift[center_direction] = dim[center_direction] / 2.
-    # we rebox the atoms in universe, and not a vector
-    if x is None and y is None and z is None and vector is None:
-        stack = True;
+    # we rebox the atoms in universe
+    if x is None and y is None and z is None:
+        stack = True
         x = get_x(universe.atoms)
         y = get_y(universe.atoms)
         z = get_z(universe.atoms)
-    if x is None and y is None and z is None and vector is not None:
-         try:
-            vector[vector >= dim[center_direction] -
-     shift[center_direction]] -= dim[center_direction]
-            vector[vector < -dim[center_direction] -
-                shift[center_direction]] += dim[center_direction]
-         except:
-            pass
-    if x is not None or y is not None or z is not None:
+    else:  # rebox the coordinates passed to the function
         for index, val in enumerate((x, y, z)):
             try:
                 # let's just try to rebox all directions. Will succeed only
@@ -110,8 +103,8 @@ def guess_normal(universe, group):
     delta = []
     for direction in range(0, 3):
         histo, _ = np.histogram(group.positions[:, direction], bins=5,
-                                 range=(0, dim[direction]),
-                                 density=True);
+                                range=(0, dim[direction]),
+                                density=True);
         max_val = np.amax(histo)
         min_val = np.amin(histo)
         delta.append(np.sqrt((max_val - min_val)**2))
@@ -121,10 +114,10 @@ def guess_normal(universe, group):
 def trim_triangulated_surface(tri, box):
     """ Reduce a surface triangulation that has been extended to\
         allow for periodic boundary conditions\
-	    to the primary cell.
+            to the primary cell.
 
-	    The simplices within the primary cell are those with at\
-	    least two vertices within the cell boundaries.
+            The simplices within the primary cell are those with at\
+            least two vertices within the cell boundaries.
 
         :param Delaunay tri: a 2D triangulation
         :param ndarray  box: box cell parameters
@@ -203,11 +196,11 @@ def write_vtk_scalar_grid(filename, grid_size, spacing, scalars):
     f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
     f.write(str_size + " " + str_size + " " + str_size + " " + "\n")
     f.write("SPACING " +
-    str(spacing[2]) +
-    " " +
-    str(spacing[1]) +
-    " " +
-     str(spacing[0]))
+            str(spacing[2]) +
+            " " +
+            str(spacing[1]) +
+            " " +
+            str(spacing[0]))
     f.write("\n")
     f.write("ORIGIN 0.000000 0.000000 0.000000\n")
     f.write("POINT_DATA " + str(len(scalars)) + "\n")
@@ -217,7 +210,7 @@ def write_vtk_scalar_grid(filename, grid_size, spacing, scalars):
     f.close()
 
 
-def write_vtk_points(filename, pos, color=None,radius=None):
+def write_vtk_points(filename, pos, color=None, radius=None):
     """ write in a vtk file the positions of particles
 
         :param string filename: the filename
@@ -233,17 +226,18 @@ def write_vtk_points(filename, pos, color=None,radius=None):
     for i in range(npos):
         f.write("1 " + str(i) + "\n")
     if radius is not None:
-        f.write("\nPOINT_DATA "+str(len(pos)) + "\nSCALARS radius float 1\n")
+        f.write("\nPOINT_DATA " + str(len(pos)) + "\nSCALARS radius float 1\n")
         f.write("LOOKUP_TABLE default\n")
         for rad in radius:
-            f.write(str(rad)  + "\n")
+            f.write(str(rad) + "\n")
     if color is not None:
         f.write("COLOR_SCALARS color 3\n")
         for c in color:
             f.write('{:1.2f} '.format(c[0]) + '{:1.2f} '.format(c[1]) +
-                    '{:1.2f} '.format(c[2]) +"\n")
+                    '{:1.2f} '.format(c[2]) + "\n")
 
     f.close()
+
 
 def write_vtk_triangulation(filename, vertices, triangles):
     """ write in a vtk file a triangulation
@@ -257,29 +251,33 @@ def write_vtk_triangulation(filename, vertices, triangles):
     f.write("DATASET UNSTRUCTURED_GRID\n")
     f.write("POINTS " + str(len(vertices)) + " float\n")
     for point in vertices:
-        f.write(str(point[2]) + " " + str(point[1]) + " " + str(point[0])+"\n")
+        f.write(str(point[2]) + " " + str(point[1]) +
+                " " + str(point[0]) + "\n")
     f.write("\nCELLS " + str(len(triangles)) +
             " " + str(4 * len(triangles)) + "\n")
     for vertex in triangles:
         f.write("3 " + str(vertex[0]) + " " +
-                str(vertex[1]) + " " + str(vertex[2])+"\n")
+                str(vertex[1]) + " " + str(vertex[2]) + "\n")
     f.write("\nCELL_TYPES " + str(len(triangles)) + "\n")
     for vertex in triangles:
         f.write("5\n")
 
+
 def vtk_consecutive_filename(universe, basename):
-    frame=universe.trajectory.frame
-    filename=basename + '.' + str(frame) + '.vtk'
+    frame = universe.trajectory.frame
+    filename = basename + '.' + str(frame) + '.vtk'
     return filename
 
+
 def density_map(pos, grid, sigma):
-    values=np.vstack([pos[:, 0], pos[:, 1], pos[:, 2]])
-    kernel=gaussian_kde(values, bw_method=sigma / values.std(ddof=1))
+    values = np.vstack([pos[:, 0], pos[:, 1], pos[:, 2]])
+    kernel = gaussian_kde(values, bw_method=sigma / values.std(ddof=1))
     return kernel, values.std(ddof=1)
 
 
 def _NN_query(kdtree, position, qrange):
     return kdtree.query_ball_point(position, qrange, n_jobs=-1)
+
 
 def generate_periodic_border_3d(points, box, delta):
     """ Selects the pparticles within a skin depth delta from the
@@ -287,9 +285,9 @@ def generate_periodic_border_3d(points, box, delta):
         boundary conditions. Returns all points (original +
         periodic copies) and the indices of the original particles
     """
-    extrapoints=np.copy(points)
-    nrealpoints=len(points)
-    extraids=np.arange(len(points), dtype=np.int)
+    extrapoints = np.copy(points)
+    nrealpoints = len(points)
+    extraids = np.arange(len(points), dtype=np.int)
     for shift in np.array(list(itertools.product([1, -1, 0], repeat=3))):
         if(np.sum(shift * shift)):  # avoid [0,0,0]
             # this needs some explanation:
@@ -299,18 +297,19 @@ def generate_periodic_border_3d(points, box, delta):
             # Requiring np.all() to be true makes the logical and returns
             # (axis=1) True for all indices whose atoms satisfy the
             # condition
-            selection=np.all(shift * points >= shift * shift *
+            selection = np.all(shift * points >= shift * shift *
                                ((box + shift * box) / 2. - delta),
                                axis=1)
             # add the new points at the border of the box
-            extrapoints=np.append(
+            extrapoints = np.append(
                 extrapoints, points[selection] - shift * box, axis=0)
             # we keep track of the original ids.
-            extraids=np.append(extraids, np.where(selection)[0])
+            extraids = np.append(extraids, np.where(selection)[0])
     return extrapoints, extraids
 
+
 def do_cluster_analysis_DBSCAN(
-    group, cluster_cut, box, threshold_density=None, molecular=True):
+        group, cluster_cut, box, threshold_density=None, molecular=True):
     """ Performs a cluster analysis using DBSCAN
 
         :returns [labels,counts]: lists of the id of the cluster to which\
@@ -325,161 +324,174 @@ def do_cluster_analysis_DBSCAN(
 
     """
     if isinstance(threshold_density, type(None)):
-        min_samples=2
+        min_samples = 2
     if isinstance(threshold_density, (float, int)):
-        min_samples=threshold_density * 4. / 3. * np.pi * cluster_cut**3
+        min_samples = threshold_density * 4. / 3. * np.pi * cluster_cut**3
         if min_samples < 2:
-            min_samples=2
+            min_samples = 2
 
     # TODO: extra_cluster_groups are not yet implemented
-    points=group.atoms.positions[:]
+    points = group.atoms.positions[:]
 
-    tree=cKDTree(points, boxsize=box[:6])
-    neighborhoods=np.array([np.array(neighbors)
-                            for neighbors in tree.query_ball_point(
-                                              points, cluster_cut, n_jobs=-1)]
-                                             )
+    tree = cKDTree(points, boxsize=box[:6])
+    neighborhoods = np.array([np.array(neighbors)
+                              for neighbors in tree.query_ball_point(
+        points, cluster_cut, n_jobs=-1)]
+    )
     assert len(
-    neighborhoods.shape) is 1, "Error in do_cluster_analysis_DBSCAN(),\
+        neighborhoods.shape) is 1, "Error in do_cluster_analysis_DBSCAN(),\
                                 the cutoff is probably too small"
     if molecular == False:
-        n_neighbors=np.array([len(neighbors)
+        n_neighbors = np.array([len(neighbors)
                                 for neighbors in neighborhoods])
     else:
-        n_neighbors=np.array([len(np.unique(group[neighbors].resids))
-                                    for neighbors in neighborhoods])
+        n_neighbors = np.array([len(np.unique(group[neighbors].resids))
+                                for neighbors in neighborhoods])
 
     if isinstance(threshold_density, str):
         assert threshold_density == 'auto',\
-                "Internal error: wrong parameter 'threshold_density' passed\
+            "Internal error: wrong parameter 'threshold_density' passed\
                  to do_cluster_analysis_DBSCAN"
-        max_neighbors=np.max(n_neighbors)
-        min_neighbors=np.min(n_neighbors)
-        modes=2
-        centroid, _=vq.kmeans2(n_neighbors * 1.0, modes, iter=10,
-                               check_finite=False)
+        max_neighbors = np.max(n_neighbors)
+        min_neighbors = np.min(n_neighbors)
+        modes = 2
+        centroid, _ = vq.kmeans2(n_neighbors * 1.0, modes, iter=10,
+                                 check_finite=False)
         # min_samples   = np.mean(centroid)
-        min_samples=np.max(centroid)
+        min_samples = np.max(centroid)
 
-    labels=-np.ones(points.shape[0], dtype=np.intp)
-    counts=np.zeros(points.shape[0], dtype=np.intp)
+    labels = -np.ones(points.shape[0], dtype=np.intp)
+    counts = np.zeros(points.shape[0], dtype=np.intp)
 
-    core_samples=np.asarray(n_neighbors >= min_samples, dtype=np.uint8)
+    core_samples = np.asarray(n_neighbors >= min_samples, dtype=np.uint8)
     dbscan_inner(core_samples, neighborhoods, labels, counts)
     return labels, counts, n_neighbors
 
 
+def fit_sphere(points):
+    px = points[::, 0]
+    py = points[::, 1]
+    pz = points[::, 2]
+    f = np.sum(points * points, axis=1)
+    A = np.zeros((len(points), 4))
+    A[:, 0] = 2. * px
+    A[:, 1] = 2. * py
+    A[:, 2] = 2. * pz
+    A[:, 3] = 1.
+    C = np.dot(np.linalg.pinv(A), f)
+    radius = np.sqrt(C[0] * C[0] + C[1] * C[1] + C[2] * C[2] + C[3])
+    return radius, C[0], C[1], C[2]
+
+
 # colormap from http://jmol.sourceforge.net/jscolors/
 colormap = {
-      'H':  [255,255,255],
-      'He': [217,255,255],
-      'Li': [204,128,255],
-      'Be': [194,255,0],
-      'B':  [255,181,181],
-      'C':  [144,144,144],
-      'N':  [48,80,248],
-      'O':  [255,13,13],
-      'F':  [144,224,80],
-      'Ne': [179,227,245],
-      'Na': [171,92,242],
-      'Mg': [138,255,0],
-      'Al': [191,166,166],
-      'Si': [240,200,160],
-      'P':  [255,128,0],
-      'S':  [255,255,48],
-      'Cl': [31,240,31],
-      'Ar': [128,209,227],
-      'K':  [143,64,212],
-      'Ca': [61,255,0],
-      'Sc': [230,230,230],
-      'Ti': [191,194,199],
-      'V':  [166,166,171],
-      'Cr': [138,153,199],
-      'Mn': [156,122,199],
-      'Fe': [224,102,51],
-      'Co': [240,144,160],
-      'Ni': [80,208,80],
-      'Cu': [200,128,51],
-      'Zn': [125,128,176],
-      'Ga': [194,143,143],
-      'Ge': [102,143,143],
-      'As': [189,128,227],
-      'Se': [255,161,0],
-      'Br': [166,41,41],
-      'Kr': [92,184,209],
-      'Rb': [112,46,176],
-      'Sr': [0,255,0],
-      'Y':  [148,255,255],
-      'Zr': [148,224,224],
-      'Nb': [115,194,201],
-      'Mo': [84,181,181],
-      'Tc': [59,158,158],
-      'Ru': [36,143,143],
-      'Rh': [10,125,140],
-      'Pd': [0,105,133],
-      'Ag': [192,192,192],
-      'Cd': [255,217,143],
-      'In': [166,117,115],
-      'Sn': [102,128,128],
-      'Sb': [158,99,181],
-      'Te': [212,122,0],
-      'I':  [148,0,148],
-      'Xe': [66,158,176],
-      'Cs': [87,23,143],
-      'Ba': [0,201,0],
-      'La': [112,212,255],
-      'Ce': [255,255,199],
-      'Pr': [217,255,199],
-      'Nd': [199,255,199],
-      'Pm': [163,255,199],
-      'Sm': [143,255,199],
-      'Eu': [97,255,199],
-      'Gd': [69,255,199],
-      'Tb': [48,255,199],
-      'Dy': [31,255,199],
-      'Ho': [0,255,156],
-      'Er': [0,230,117],
-      'Tm': [0,212,82],
-      'Yb': [0,191,56],
-      'Lu': [0,171,36],
-      'Hf': [77,194,255],
-      'Ta': [77,166,255],
-      'W':  [33,148,214],
-      'Re': [38,125,171],
-      'Os': [38,102,150],
-      'Ir': [23,84,135],
-      'Pt': [208,208,224],
-      'Au': [255,209,35],
-      'Hg': [184,184,208],
-      'Tl': [166,84,77],
-      'Pb': [87,89,97],
-      'Bi': [158,79,181],
-      'Po': [171,92,0],
-      'At': [117,79,69],
-      'Rn': [66,130,150],
-      'Fr': [66,0,102],
-      'Ra': [0,125,0],
-      'Ac': [112,171,250],
-      'Th': [0,186,255],
-      'Pa': [0,161,255],
-      'U':  [0,143,255],
-      'Np': [0,128,255],
-      'Pu': [0,107,255],
-      'Am': [84,92,242],
-      'Cm': [120,92,227],
-      'Bk': [138,79,227],
-      'Cf': [161,54,212],
-      'Es': [179,31,212],
-      'Fm': [179,31,186],
-      'Md': [179,13,166],
-      'No': [189,13,135],
-      'Lr': [199,0,102],
-      'Rf': [204,0,89],
-      'Db': [209,0,79],
-      'Sg': [217,0,69],
-      'Bh': [224,0,56],
-      'Hs': [230,0,46],
-      'Mt': [235,0,38]
+    'H':  [255, 255, 255],
+    'He': [217, 255, 255],
+    'Li': [204, 128, 255],
+    'Be': [194, 255, 0],
+    'B':  [255, 181, 181],
+    'C':  [144, 144, 144],
+    'N':  [48, 80, 248],
+    'O':  [255, 13, 13],
+    'F':  [144, 224, 80],
+    'Ne': [179, 227, 245],
+    'Na': [171, 92, 242],
+    'Mg': [138, 255, 0],
+    'Al': [191, 166, 166],
+    'Si': [240, 200, 160],
+    'P':  [255, 128, 0],
+    'S':  [255, 255, 48],
+    'Cl': [31, 240, 31],
+    'Ar': [128, 209, 227],
+    'K':  [143, 64, 212],
+    'Ca': [61, 255, 0],
+    'Sc': [230, 230, 230],
+    'Ti': [191, 194, 199],
+    'V':  [166, 166, 171],
+    'Cr': [138, 153, 199],
+    'Mn': [156, 122, 199],
+    'Fe': [224, 102, 51],
+    'Co': [240, 144, 160],
+    'Ni': [80, 208, 80],
+    'Cu': [200, 128, 51],
+    'Zn': [125, 128, 176],
+    'Ga': [194, 143, 143],
+    'Ge': [102, 143, 143],
+    'As': [189, 128, 227],
+    'Se': [255, 161, 0],
+    'Br': [166, 41, 41],
+    'Kr': [92, 184, 209],
+    'Rb': [112, 46, 176],
+    'Sr': [0, 255, 0],
+    'Y':  [148, 255, 255],
+    'Zr': [148, 224, 224],
+    'Nb': [115, 194, 201],
+    'Mo': [84, 181, 181],
+    'Tc': [59, 158, 158],
+    'Ru': [36, 143, 143],
+    'Rh': [10, 125, 140],
+    'Pd': [0, 105, 133],
+    'Ag': [192, 192, 192],
+    'Cd': [255, 217, 143],
+    'In': [166, 117, 115],
+    'Sn': [102, 128, 128],
+    'Sb': [158, 99, 181],
+    'Te': [212, 122, 0],
+    'I':  [148, 0, 148],
+    'Xe': [66, 158, 176],
+    'Cs': [87, 23, 143],
+    'Ba': [0, 201, 0],
+    'La': [112, 212, 255],
+    'Ce': [255, 255, 199],
+    'Pr': [217, 255, 199],
+    'Nd': [199, 255, 199],
+    'Pm': [163, 255, 199],
+    'Sm': [143, 255, 199],
+    'Eu': [97, 255, 199],
+    'Gd': [69, 255, 199],
+    'Tb': [48, 255, 199],
+    'Dy': [31, 255, 199],
+    'Ho': [0, 255, 156],
+    'Er': [0, 230, 117],
+    'Tm': [0, 212, 82],
+    'Yb': [0, 191, 56],
+    'Lu': [0, 171, 36],
+    'Hf': [77, 194, 255],
+    'Ta': [77, 166, 255],
+    'W':  [33, 148, 214],
+    'Re': [38, 125, 171],
+    'Os': [38, 102, 150],
+    'Ir': [23, 84, 135],
+    'Pt': [208, 208, 224],
+    'Au': [255, 209, 35],
+    'Hg': [184, 184, 208],
+    'Tl': [166, 84, 77],
+    'Pb': [87, 89, 97],
+    'Bi': [158, 79, 181],
+    'Po': [171, 92, 0],
+    'At': [117, 79, 69],
+    'Rn': [66, 130, 150],
+    'Fr': [66, 0, 102],
+    'Ra': [0, 125, 0],
+    'Ac': [112, 171, 250],
+    'Th': [0, 186, 255],
+    'Pa': [0, 161, 255],
+    'U':  [0, 143, 255],
+    'Np': [0, 128, 255],
+    'Pu': [0, 107, 255],
+    'Am': [84, 92, 242],
+    'Cm': [120, 92, 227],
+    'Bk': [138, 79, 227],
+    'Cf': [161, 54, 212],
+    'Es': [179, 31, 212],
+    'Fm': [179, 31, 186],
+    'Md': [179, 13, 166],
+    'No': [189, 13, 135],
+    'Lr': [199, 0, 102],
+    'Rf': [204, 0, 89],
+    'Db': [209, 0, 79],
+    'Sg': [217, 0, 69],
+    'Bh': [224, 0, 56],
+    'Hs': [230, 0, 46],
+    'Mt': [235, 0, 38]
 }
-
-
