@@ -472,7 +472,6 @@ class PYTIM(object):
 from pytim.itim import ITIM
 from pytim.gitim import GITIM
 from pytim.willard_chandler import WillardChandler
-from pytim import observables, utilities
-from pytim.datafiles import *
+from pytim import observables, utilities,datafiles
 
 #__all__ = [ 'itim' , 'gitim' , 'observables', 'datafiles', 'utilities']
