@@ -81,6 +81,7 @@ class PYTIM(object):
         self.molecular = True
         self.info = False
         self.multiproc = True
+        self.interpolator = None
 
     def label_layer(self, group, value):
         if LooseVersion(self._MDAversion) <= LooseVersion('0.15'):

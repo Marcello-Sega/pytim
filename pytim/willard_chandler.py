@@ -48,7 +48,7 @@ class WillardChandler(pytim.PYTIM):
         self.layers = None
         return None
 
-    def writepdb(self):
+    def writepdb(self,filename='layers.pdb',centered='no',multiframe=True):
         """The method does not identify layers."""
         pass
 
