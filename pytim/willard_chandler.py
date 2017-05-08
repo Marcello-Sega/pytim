@@ -53,7 +53,33 @@ class WillardChandler(pytim.PYTIM):
         pass
 
     def _sanity_checks(self):
-        """basic checks to be performed after the initialization."""
+        """ Basic checks to be performed after the initialization.
+
+            We test them also here in the docstring:
+            >>> import pytim 
+            >>> import MDAnalysis as mda
+            >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
+            >>>
+            >>> pytim.WillardChandler(u,alpha=-1.0)
+
+            Traceback (most recent call last):
+            ...
+            ValueError: parameter alpha must be positive
+
+            >>> pytim.WillardChandler(u,alpha=-1000000)
+
+            Traceback (most recent call last):
+            ...
+            ValueError: parameter alpha must be smaller than the smaller box side
+
+            >>> pytim.WillardChandler(u,mesh=-1)
+
+            Traceback (most recent call last):
+            ...
+            ValueError: parameter mesh must be positive
+    
+        """            
+
         if self.alpha < 0:
             raise ValueError(self.ALPHA_NEGATIVE)
         if self.alpha >= np.amin(self.universe.dimensions[:3]):
@@ -78,6 +104,7 @@ class WillardChandler(pytim.PYTIM):
 
         self._basic_checks(universe)
         self.cluster_cut = None
+        # TODO make a uniform grid for non-cubic boxes, use part of _assign_mesh() from itim.py
         self.mesh = mesh
         self.extra_cluster_groups = None
         self.universe = universe
