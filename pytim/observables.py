@@ -109,8 +109,6 @@ class RDF(object):
                               (TODO not used here, check & remove)
     :param Observable observable:  observable for first group
     :param Observable observable2: observable for second group
-    :param array weights: weights to be applied to the distribution function\
-                          (mutually exclusive with observable/observable2)
 
     Example:
 
@@ -139,12 +137,26 @@ class RDF(object):
     >>> np.savetxt('RDF3D.dat', np.column_stack((rdf.bins,rdf.rdf)))
 
 
+    Note that one needs to specify neither both groups, not both observables.
+    If only the first group (observable) is specified, the second is assumed
+    to be the same as the first, as in the following example:
+
+    >>> rdf1 = observables.RDF(u,observable=nres)
+    >>> rdf2 = observables.RDF(u,observable=nres)
+    >>> rdf3 = observables.RDF(u,observable=nres,observable2=nres)
+    >>>
+    >>> rdf1.sample(layer)
+    >>> rdf2.sample(layer,layer)
+    >>> rdf3.sample(layer,layer)
+    >>> print np.all(rdf1.rdf[:]==rdf2.rdf[:]),np.all(rdf1.rdf[:]==rdf3.rdf[:])
+    True True
+
     """
 
     def __init__(self, universe,
                  nbins=75, max_radius='full', exclusion_block=None,
                  start=None, stop=None, step=None, excluded_dir='z',
-                 observable=None, observable2=None, weights=None):
+                 observable=None, observable2=None):
         if max_radius is 'full':
             self.max_radius = np.min(universe.dimensions[:3])
         else:
@@ -154,8 +166,11 @@ class RDF(object):
         self.universe = universe
         self.nsamples = 0
         self.observable = observable
-        self.observable2 = observable2
-        self.weights = weights
+        if observable2 is None:
+            self.observable2 = observable
+        else:
+            self.observable2 = observable2
+
         self.n_frames = 0
         self.volume = 0.0
         count, edges = np.histogram([-1, -1], **self.rdf_settings)
@@ -163,42 +178,43 @@ class RDF(object):
         self.edges = edges
         self.bins = 0.5 * (edges[:-1] + edges[1:])
 
-    def sample(self, g1, g2):
+    def sample(self, g1, g2=None):
         self.n_frames += 1
         self.g1 = g1
-        self.g2 = g2
-        self._ts = self.universe.trajectory.ts
-        if (self.observable is not None or
-                self.observable2 is not None) and \
-                self.weights is not None:
-            raise Exception(
-                "Error, cannot specify both a function and weights in RDF()")
-        if self.observable is not None or self.observable2 is not None:
-            if self.observable2 is None:
-                self.observable2 = self.observable
+        if g2 is None:
+            self.g2 = self.g1
+        else:
+            self.g2 = g2
 
-                fg1 = self.observable.compute(self.g1)
+        self._ts = self.universe.trajectory.ts
+
+
+        if self.observable is not  None:
+            # determine weights, otherwise assumes number of atoms (default)
+            fg1 = self.observable.compute(self.g1)
+            if (self.g1 == self.g2 and self.observable == self.observable2):
+                fg2 = fg1
+            else:
                 fg2 = self.observable2.compute(self.g2)
-                if len(fg1) != len(self.g1) or len(fg2) != len(self.g2):
-                    raise Exception(
-                        "Error, the observable passed to RDF should output"
-                        "an array (of scalar or vectors) the same size of"
-                        "the group")
-                # both are (arrays of) scalars
-                if len(fg1.shape) == 1 and len(fg2.shape) == 1:
-                    _weights = np.outer(fg1, fg2)
-                # both are (arrays of) vectors
-                elif len(fg1.shape) == 2 and len(fg2.shape) == 2:
-                    # TODO: tests on the second dimension...
-                    _weights = np.dot(fg1, fg2.T)
-                else:
-                    raise Exception(
-                        "Error, shape of the observable output not handled"
-                        "in RDF")
-                # numpy.histogram accepts negative weights
-                self.rdf_settings['weights'] = _weights
-        if self.weights is not None:
-            raise Exception("Weights not implemented yet in RDF")
+
+            if len(fg1) != len(self.g1) or len(fg2) != len(self.g2):
+                raise Exception(
+                    "Error, the observable passed to RDF should output"
+                    "an array (of scalar or vectors) the same size of"
+                    "the group")
+            # both are (arrays of) scalars
+            if len(fg1.shape) == 1 and len(fg2.shape) == 1:
+                _weights = np.outer(fg1, fg2)
+            # both are (arrays of) vectors
+            elif len(fg1.shape) == 2 and len(fg2.shape) == 2:
+                # TODO: tests on the second dimension...
+                _weights = np.dot(fg1, fg2.T)
+            else:
+                raise Exception(
+                    "Error, shape of the observable output not handled"
+                    "in RDF")
+            # numpy.histogram accepts negative weights
+            self.rdf_settings['weights'] = _weights
 
         # This still uses MDA's distance_array. Pro: works also in triclinic
         # boxes. Con: could be faster (?)
@@ -250,9 +266,6 @@ class RDF2D(RDF):
                               orthogonal to 'z','y' or 'z'
     :param Observable observable:   observable for group 1
     :param Observable observable2:  observable for group 2
-    :param array weights: weights to be applied to the distribution\
-                          function (mutually exclusive with\
-                          observable/observable2)
 
     Example:
 
