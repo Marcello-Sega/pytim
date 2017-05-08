@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod, abstractproperty
 from distutils.version import LooseVersion
 import numpy as np
 from scipy.spatial import Delaunay
+from scipy.interpolate import LinearNDInterpolator
 import MDAnalysis
 from MDAnalysis import Universe
 from MDAnalysis.topology import tables

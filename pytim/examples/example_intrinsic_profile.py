@@ -17,8 +17,10 @@ profile = observables.Profile(
     group=oxygens, observable=number, interface=interface)
 
 for t in u.trajectory[::]:
-    print t.frame
+    print t.frame,
     profile.sample()
+
+print ""
 
 bins, avg = profile.profile(binwidth=0.1)
 np.savetxt('intrdist.dat', list(zip(bins, avg)), fmt=['%.5f', '%e'])
