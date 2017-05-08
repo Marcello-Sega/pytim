@@ -111,27 +111,33 @@ class RDF(object):
     :param Observable observable2: observable for second group
     :param array weights: weights to be applied to the distribution function\
                           (mutually exclusive with observable/observable2)
+
     Example:
 
     >>> import MDAnalysis as mda
     >>> import numpy as np
     >>> import pytim
+    >>> from pytim import observables
     >>> from pytim.datafiles import *
     >>>
     >>> u = mda.Universe(WATER_GRO,WATER_XTC)
     >>> oxygens = u.select_atoms("name OW")
-    >>> radii=pytim_data.vdwradii(G43A1_TOP)
-    >>> rdf = observables.RDF(u,nbins=120)
+    >>> radii = pytim_data.vdwradii(G43A1_TOP)
+    >>>
     >>> nres = observables.NumberOfResidues()
-    >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,\
-        max_layers=4,radii_dict=radii,cluster_cut=3.5,\
+    >>>
+    >>> rdf = observables.RDF(u,nbins=120,\
         observable=nres,observable2=nres)
+    >>>
+    >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,\
+        max_layers=4,radii_dict=radii,cluster_cut=3.5)
     >>>
     >>> for ts in u.trajectory[::50] :
     ...     layer=interface.layers[0,1]
     ...     rdf.sample(layer,layer)
     >>> rdf.rdf[0]=0.0
     >>> np.savetxt('RDF3D.dat', np.column_stack((rdf.bins,rdf.rdf)))
+
 
     """
 

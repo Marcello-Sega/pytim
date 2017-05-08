@@ -13,8 +13,9 @@ obs = observables.Number(u)
 profile = observables.Profile(oxygens, observable=obs)
 
 for ts in u.trajectory[:]:
-    utilities.center(u, oxygens)
+  #  utilities.center(u, oxygens)
     profile.sample()
 
-bins, avg = profile.profile(binwidth=1.0)
+lower, upper,  avg = profile.get_values(binwidth=1.0)
+bins=(lower+upper)/2.
 np.savetxt('profile.dat', list(zip(bins, avg)))
