@@ -380,8 +380,10 @@ def fit_sphere(points):
     """ least square fit of a sphere through a set of points.
 
         :param ndarray points: a (N,3) array
-        :returns radius, center_x, center_y, center_z
+        :returns list: radius, center_x, center_y, center_z
+
     """
+
     px = points[::, 0]
     py = points[::, 1]
     pz = points[::, 2]
