@@ -331,9 +331,11 @@ class RDF2D(RDF):
         if excluded_dir is 'x':
             self.excluded_dir = 0
 
-    def sample(self, g1, g2):
+    def sample(self, g1, g2=None):
         self.n_frames += 1
         excl = self.excluded_dir
+        if g2 is None:
+            g2 = g1
         if self.true2D:
             p1 = g1.positions
             p2 = g2.positions
