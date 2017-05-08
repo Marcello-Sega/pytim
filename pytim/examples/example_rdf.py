@@ -16,7 +16,7 @@ interface = pytim.ITIM(u, alpha=2., itim_group=oxygens,
 
 for ts in u.trajectory[::5]:
     print ("frame " + str(ts.frame) + " / " + str(len(u.trajectory)))
-    layer = interface.layers('upper', 1)
+    layer = interface.layers[0,0]
     if ts.frame == 0:
         rdf = InterRDF2D(layer, layer, range=(0., L / 2.), nbins=120)
     rdf.sample(ts)
