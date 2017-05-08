@@ -376,3 +376,13 @@ texinfo_documents = [
 # texinfo_no_detailmenu = False
 autodoc_member_order = 'bysource'
 
+# -- Customization to Sphinx autodoc generation ------------------------------
+import sphinx.ext.autodoc
+
+def dont_skip_any_doctests(app, what, name, obj, skip, options):
+    return False
+
+if 'doctest' in sys.argv:
+    def setup(app):
+        app.connect('autodoc-skip-member', dont_skip_any_doctests)
+
