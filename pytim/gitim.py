@@ -88,7 +88,7 @@ class GITIM(pytim.PYTIM):
             self._assign_normal(normal)
 
         self.assign_radii(radii_dict)
-        self._sanity_checks()
+        self.sanity_checks()
 
         self.grid = None
         self.use_threads = False
@@ -108,32 +108,24 @@ class GITIM(pytim.PYTIM):
                 raise ValueError(self.WRONG_DIRECTION)
             self.symmetry = symmetry
 
-    def _sanity_checks(self):
+    def sanity_checks(self):
         """ Basic checks to be performed after the initialization.
 
             We test them also here in the docstring:
+
             >>> import pytim 
             >>> import MDAnalysis as mda
             >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
             >>>
             >>> pytim.GITIM(u,alpha=-1.0)
-
             Traceback (most recent call last):
             ...
             ValueError: parameter alpha must be positive
 
             >>> pytim.GITIM(u,alpha=-1000000)
-
             Traceback (most recent call last):
             ...
             ValueError: parameter alpha must be smaller than the smaller box side
-
-            >>> pytim.GITIM(u,mesh=-1)
-
-            Traceback (most recent call last):
-            ...
-            ValueError: parameter mesh must be positive
-            
 
         """
         if self.alpha < 0:
@@ -260,7 +252,7 @@ class GITIM(pytim.PYTIM):
         self.universe.atoms.pack_into_box()
 
         if(self.cluster_cut is not None):
-            # groups have been checked already in _sanity_checks()
+            # groups have been checked already in sanity_checks()
             labels, counts, _ = utilities.do_cluster_analysis_DBSCAN(
                 self.itim_group, self.cluster_cut[0],
                 self.universe.dimensions[:6],
