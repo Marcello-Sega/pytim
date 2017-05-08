@@ -469,8 +469,10 @@ class IntrinsicDistance(Observable):
 class Number(Observable):
     """The number of atoms."""
 
-    def __init__(self):
-        pass
+    def __init__(self,*arg,**kwarg):
+        """ No need to pass a universe for this observable. We accept
+            extra arguments not to fail if they are passed anyway by mistake.
+        """
 
     def compute(self, inp):
         """Compute the observable.
@@ -493,7 +495,10 @@ class NumberOfResidues(Observable):
 
     """
 
-    def __init__(self):
+    def __init__(self,*arg,**karg):
+        """ No need to pass a universe for this observable. We accept
+            extra arguments not to fail if they are passed anyway by mistake.
+        """
         pass
 
     def compute(self, inp):
