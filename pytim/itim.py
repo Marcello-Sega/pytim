@@ -144,38 +144,8 @@ class ITIM(pytim.PYTIM):
             self.meshtree = cKDTree(self.meshpoints, boxsize=_box)
 
     def _touched_lines(self, atom, _x, _y, _z, _radius):
-        # NOTE: kdtree might be slower than bucketing in some cases
-        if (self.use_kdtree == True):  # this is True by default
-            return self.meshtree.query_ball_point(
+        return self.meshtree.query_ball_point(
                 [_x[atom], _y[atom]], _radius[atom] + self.alpha)
-        else:  # For some large configurations this fails. Don't switch off
-            _dist = _radius[atom] + self.alpha + self.delta
-            index_x = np.arange(
-                np.floor((_x[atom] - _dist) / self.mesh_dx),
-                np.ceil((_x[atom] + _dist) / self.mesh_dx)
-            )
-            index_y = np.arange(
-                np.floor((_y[atom] - _dist) / self.mesh_dy),
-                np.ceil((_y[atom] + _dist) / self.mesh_dy)
-            )
-            _distmap = ((index_x * self.mesh_dx - _x[atom]).reshape(
-                        len(index_x), 1)**2 +
-                        (index_y * self.mesh_dy - _y[atom])**2)
-
-            _xx, _yy = np.where(_distmap <= (self.alpha + _radius[atom])**2)
-
-            # now we need to go back to the real space map. Whenever
-            # index_x (or index_y) is < 0 || > box we need to wrap it to
-            # the other end of the box.
-            sel_x = index_x[_xx]
-            sel_y = index_y[_yy]
-            sel_x[sel_x < 0] += self.mesh_nx
-            sel_y[sel_y < 0] += self.mesh_ny
-            sel_x[sel_x >= self.mesh_nx] -= self.mesh_nx
-            sel_y[sel_y >= self.mesh_ny] -= self.mesh_ny
-            print np.array([sel_x, sel_y]).astype(int)
-            return np.ravel_multi_index(np.array([sel_x, sel_y]).astype(
-                int), (self.mesh_nx, self.mesh_ny))
 
     def _assign_one_side(self, uplow, sorted_atoms, _x, _y, _z,
                          _radius, queue=None):
@@ -278,7 +248,21 @@ class ITIM(pytim.PYTIM):
             raise ValueError
 
     def _assign_layers(self):
-        """Determine the ITIM layers."""
+        """ Determine the ITIM layers.
+
+            Note that the multiproc option is mainly for debugging purposes:
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
+            >>> inter = pytim.ITIM(u,multiproc=True)
+            >>> test1 = len(inter.layers[0,0])
+            >>> inter = pytim.ITIM(u,multiproc=False)
+            >>> test2 = len(inter.layers[0,0])
+            >>> len(test1)==len(test2)
+            True
+
+        """
+
         self._assign_mesh()
         up = 0
         low = 1
