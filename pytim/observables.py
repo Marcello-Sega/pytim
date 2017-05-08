@@ -398,7 +398,7 @@ class LayerTriangulation(Observable):
         self.interface.triangulate_layer(self.layer)
         if self.return_triangulation is True and \
                 self.return_statistics is False:
-            return self.interface.surface_triangulation
+            return self.interface.surf_triang
         if self.return_statistics is True:
             stats_up = utilities.triangulated_surface_stats(
                 self.interface.trimmed_surf_triangs[0],
@@ -415,7 +415,7 @@ class LayerTriangulation(Observable):
             else:
                 return [
                     stats,
-                    self.interface.surface_triangulation,
+                    self.interface.surf_triang,
                     self.interface.triangulation_points,
                     self.interface.trimmed_surf_triangs]
 

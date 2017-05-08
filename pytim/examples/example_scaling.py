@@ -7,6 +7,11 @@ from pytim.datafiles import *
 from pytim import utilities
 import matplotlib.pyplot as plt
 
+from distutils.version import LooseVersion
+if LooseVersion(self._MDAversion) > LooseVersion('0.15'):
+    print "This works only with MDAnalysis <=0.15"
+else:
+    exit()
 
 def plot():
     data = np.loadtxt('timings.dat')

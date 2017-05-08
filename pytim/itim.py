@@ -9,7 +9,6 @@
 from multiprocessing import Process, Queue
 import numpy as np
 from scipy.spatial import cKDTree, Delaunay
-from scipy.interpolate import LinearNDInterpolator
 from __builtin__ import zip as builtin_zip
 from pytim import utilities
 import pytim
