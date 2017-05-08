@@ -23,9 +23,27 @@ import utilities
 # should be done by the user beforehand,
 # or implemented in specific classes.
 
-
 class Observable(object):
-    """Instantiate an observable."""
+    """ Instantiate an observable.
+
+        This is a metaclass: it can be used to define observables that
+        will behave "properly" with other classes/function in this module (e.g.
+        by being called from an RDF object). A simple example is:
+
+        >>> import pytim
+        >>> import MDAnalysis as mda
+        >>>
+        >>> class TotalNumberOfParticles(observables.Observable):
+        >>>     def compute(self):
+        >>>         return len(self.u.atoms)
+        >>>
+        >>> u = mda.Universe(WATER_GRO)
+        >>> o = TotalNumberOfParticles(u)
+        >>> print o.compute()
+        12000
+
+    """
+
     __metaclass__ = ABCMeta
 
     def __init__(self, universe, options='',):
@@ -34,7 +52,12 @@ class Observable(object):
 
     # TODO: add proper whole-molecule reconstruction
     def fold_atom_around_first_atom_in_residue(self, atom):
-        # let's thake the first atom in the residue as the origin
+        """ remove pbcs and puts an atom back close to the first one
+            in the same residue. Does not check connectivity (works only
+            for molecules smaller than box/2
+        """
+
+        # let's take the first atom in the residue as the origin
         box = self.u.trajectory.ts.dimensions[0:3]
         pos = atom.position - atom.residue.atoms[0].position
         pos[pos >= box / 2.] -= box[pos >= box / 2.]
@@ -42,6 +65,10 @@ class Observable(object):
         return pos
 
     def fold_around_first_atom_in_residue(self, inp):
+        """ same as fold_atom_around_first_atom_in_residue()
+            but for groups of atoms.
+        """
+
         pos = []
 
         if isinstance(inp, Atom):
@@ -84,6 +111,27 @@ class RDF(object):
     :param Observable observable2: observable for second group
     :param array weights: weights to be applied to the distribution function\
                           (mutually exclusive with observable/observable2)
+    Example:
+
+    >>> import MDAnalysis as mda
+    >>> import numpy as np
+    >>> import pytim
+    >>> from pytim.datafiles import *
+    >>>
+    >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+    >>> oxygens = u.select_atoms("name OW")
+    >>> radii=pytim_data.vdwradii(G43A1_TOP)
+    >>> rdf = observables.RDF(u,nbins=120)
+    >>> nres = observables.NumberOfResidues()
+    >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,\
+        max_layers=4,radii_dict=radii,cluster_cut=3.5,\
+        observable=nres,observable2=nres)
+    >>>
+    >>> for ts in u.trajectory[::50] :
+    ...     layer=interface.layers[0,1]
+    ...     rdf.sample(layer,layer)
+    >>> rdf.rdf[0]=0.0
+    >>> np.savetxt('RDF3D.dat', np.column_stack((rdf.bins,rdf.rdf)))
 
     """
 
@@ -193,9 +241,9 @@ class RDF2D(RDF):
 
     :param int nbins:         number of bins
     :param char excluded_dir: project position vectors onto the plane\
-                              orthogonal to 'z','y' or 'z' 
-    :param Observable observable:   observable for group 1 
-    :param Observable observable2:  observable for group 2 
+                              orthogonal to 'z','y' or 'z'
+    :param Observable observable:   observable for group 1
+    :param Observable observable2:  observable for group 2
     :param array weights: weights to be applied to the distribution\
                           function (mutually exclusive with\
                           observable/observable2)
@@ -219,7 +267,7 @@ class RDF2D(RDF):
     ...     layer=interface.layers[0,1]
     ...     rdf.sample(layer,layer)
     >>> rdf.rdf[0]=0.0
-    >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf))) 
+    >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf)))
 
 
     This results in the following RDF:
@@ -303,18 +351,28 @@ class RDF2D(RDF):
 
 class LayerTriangulation(Observable):
     """Computes the triangulation of the surface and some associated
-    quantities.
+       quantities.
 
-    :param Universe universe: the MDAnalysis universe
-    :param ITIM    interface: compute the triangulation with respect to it
-    :param int     layer: (default: 1) compute the triangulation with respect\
-                   to this layer of the interface
-    :param bool    return_triangulation: (default: True) return the Delaunay\
-                   triangulation used for the interpolation
-    :param bool    return_statistics: (default: True) return the Delaunay\
-                   triangulation used for the interpolation
+       :param Universe universe: the MDAnalysis universe
+       :param ITIM    interface: compute the triangulation with respect to it
+       :param int     layer: (default: 1) compute the triangulation with respect\
+                      to this layer of the interface
+       :param bool    return_triangulation: (default: True) return the Delaunay\
+                      triangulation used for the interpolation
+       :param bool    return_statistics: (default: True) return the Delaunay\
+                      triangulation used for the interpolation
 
-    :returns Observable LayerTriangulation:
+       :returns Observable LayerTriangulation:
+
+
+       Example:
+
+       >>> interface = pytim.ITIM(mda.Universe(WATER_GRO))
+       >>> surface   = observables.LayerTriangulation(\
+                           interface,return_triangulation=False)
+       >>> stats     = surface.compute()
+       >>> print ("Surface= {:04.1f} A^2".format(stats[0]))
+       Surface= 7317.1 A^2
 
     """
 
@@ -330,18 +388,6 @@ class LayerTriangulation(Observable):
         self.return_statistics = return_statistics
 
     def compute(self, inp=None):
-        """Triangulate a layer on both sides of the interface.
-
-            Example:
-
-            >>> interface = pytim.ITIM(mda.Universe(WATER_GRO))
-            >>> surface   = observables.LayerTriangulation(\
-                                interface,return_triangulation=False)
-            >>> stats     = surface.compute()
-            >>> print ("Surface= {:04.1f} A^2".format(stats[0]))
-            Surface= 7317.1 A^2
-
-        """
         stats = []
         self.interface.triangulate_layer(self.layer)
         if self.return_triangulation is True and \
@@ -489,8 +535,8 @@ class Orientation(Observable):
         :returns: the orientation vectors
 
         For each triplet of positions A1,A2,A3, computes the unit vector
-        beteeen A2-A1 and  A3-A1 or, if the option 'normal' is passed at 
-        initialization, the unit vector normal to the plane spanned by the 
+        beteeen A2-A1 and  A3-A1 or, if the option 'normal' is passed at
+        initialization, the unit vector normal to the plane spanned by the
         three vectors
 
         """
