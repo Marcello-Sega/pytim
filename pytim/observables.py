@@ -473,9 +473,9 @@ class IntrinsicDistance(Observable):
         if t is AtomGroup:
             positions = inp.positions
         elevation = self.interface.interpolate_surface(positions, self.layer)
-        assert np.sum(np.isnan(
-            elevation)) == 0, "Internal error: a point has fallen outside"\
-                              "the convex hull"
+        if not (np.sum(np.isnan(elevation)) == 0):
+            raise Exception("Internal error: a point has fallen outside"\
+                            "the convex hull")
         # positive values are outside the surface, negative inside
         distance = (positions[:, 2] - elevation) * np.sign(positions[:, 2])
         if not self.return_triangulation:
@@ -679,8 +679,9 @@ class Profile(object):
         self.halfbox_shift = False
         self.group = group
 
-        assert isinstance(group, AtomGroup), "The first argument passed to "\
-                                             "Profile() must be an AtomGroup."
+        if not isinstance(group, AtomGroup):
+            raise TypeError("The first argument passed to "\
+                            "Profile() must be an AtomGroup.")
         self.universe = group.universe
         self.center_group = center_group
         if observable is None:
@@ -751,7 +752,9 @@ class Profile(object):
         self.sampled_bins.append(_bins[1:] - self.binsize / 2.)
 
     def get_values(self, binwidth=None, nbins=None):
-        assert self.sampled_values, "No profile sampled so far."
+        if not self.sampled_values:
+            raise UserWarning("No profile sampled so far")
+            return [[0],[0],[0]]
         # we use the largest box (largest number of bins) as reference.
         # Statistics will be poor at the boundaries, but like that we don't
         # loose information

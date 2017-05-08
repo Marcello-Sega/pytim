@@ -97,8 +97,8 @@ class PYTIM(object):
         except BaseException:
             raise Exception(self.WRONG_UNIVERSE)
 
-        assert LooseVersion(self._MDAversion) >= LooseVersion(
-            '0.15'), "Must use MDAnalysis  >= 0.15"
+        if LooseVersion(self._MDAversion) < LooseVersion('0.15'):
+            raise Exception("Must use MDAnalysis  >= 0.15")
 
         if LooseVersion(self._MDAversion) >= LooseVersion(
                 '0.16'):  # new topology system
@@ -284,8 +284,8 @@ class PYTIM(object):
 
                 _g.radii = np.copy(_radii[:])
 
-                assert not np.any(np.equal(_g.radii, None)),\
-                    self.UNDEFINED_RADIUS
+                if np.any(np.equal(_g.radii, None)) :
+                    raise ValueError(self.UNDEFINED_RADIUS)
                 del _radii
                 del _types
 
@@ -297,7 +297,8 @@ class PYTIM(object):
         :return list triangulations:  a list of two Delaunay triangulations,\
                            which are also stored in self.surf_triang
         """
-        assert len(self._layers[0]) >= layer, self.UNDEFINED_LAYER
+        if layer > len(self._layers[0]): 
+            raise ValueError(self.UNDEFINED_LAYER)
 
         box = self.universe.dimensions[:3]
 
@@ -351,14 +352,16 @@ class PYTIM(object):
         return elevation
 
     def _assign_normal(self, normal):
-        assert self.symmetry == 'planar',\
-            "Error: wrong symmetry for normal assignement"
-        assert self.itim_group is not None, self.UNDEFINED_ITIM_GROUP
+        if not (self.symmetry == 'planar'):
+            raise ValueError(" wrong symmetry for normal assignement")
+        if self.itim_group is None:
+            raise TypeError(self.UNDEFINED_ITIM_GROUP)
         if normal == 'guess':
             self.normal = utilities.guess_normal(self.universe,
                                                  self.itim_group)
         else:
-            assert normal in self.directions_dict, self.WRONG_DIRECTION
+            if not (normal in self.directions_dict):
+                raise ValueError(self.WRONG_DIRECTION)
             self.normal = self.directions_dict[normal]
 
     def center(self, group, direction=None, halfbox_shift=True):
@@ -382,7 +385,8 @@ class PYTIM(object):
         dim = group.universe.coord.dimensions
         total_shift = 0
 
-        assert direction in self.directions_dict, self.WRONG_DIRECTION
+        if not (direction in self.directions_dict):
+            raise ValueError(self.WRONG_DIRECTION)
         _dir = self.directions_dict[direction]
         if _dir == 'x':
             direction = 0
@@ -415,7 +419,8 @@ class PYTIM(object):
         # let's first avoid crossing pbc with the liquid phase. This can fail:
         while(histo[0] > delta or histo[-1] > delta):
             total_shift += shift
-            assert total_shift < dim[direction], self.CENTERING_FAILURE
+            if total_shift >= dim[direction]:
+                raise ValueError(self.CENTERING_FAILURE)
             _pos_group += shift
             if _dir == 'x':
                 utilities.centerbox(group.universe, x=_pos_group,

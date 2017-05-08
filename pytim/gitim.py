@@ -99,27 +99,34 @@ class GITIM(pytim.PYTIM):
         self._assign_layers()
 
     def _assign_symmetry(self, symmetry):
-        assert self.itim_group is not None, self.UNDEFINED_ITIM_GROUP
+        if self.itim_group is None:
+            raise TypeError(self.UNDEFINED_ITIM_GROUP)
         if symmetry == 'guess':
-            assert False, "To be implemented"
+            raise ValueError( "symmetry 'guess' To be implemented")
         else:
-            assert symmetry in self.symmetry_dict, self.WRONG_DIRECTION
+            if not (symmetry in self.symmetry_dict):
+                raise ValueError(self.WRONG_DIRECTION)
             self.symmetry = symmetry
 
     def _sanity_checks(self):
         """ basic checks to be performed after the initialization
         """
-        assert self.alpha > 0, self.ALPHA_NEGATIVE
-        assert self.alpha < np.amin(
-            self.universe.dimensions[:3]), self.ALPHA_LARGE
+        if self.alpha < 0:
+            raise ValueError(self.ALPHA_NEGATIVE)
+        if self.alpha >= np.amin(self.universe.dimensions[:3]):
+            raise ValueError(self.ALPHA_LARGE)
 
         if(self.cluster_cut is not None):
-            assert len(self.cluster_cut) == 1 or \
-                len(self.cluster_cut) == 1 + \
-                len(self.extra_cluster_groups), self.MISMATCH_CLUSTER_SEARCH
+            elements = len(self.cluster_cut) 
+            try:
+                extraelements = len(self.extra_cluster_groups) 
+            except TypeError:
+                extraelements = -1
+            if  not (elements == 1 or elements == 1 + extraelements):
+                raise  StandardError(self.MISMATCH_CLUSTER_SEARCH)
         else:
-            assert self.extra_cluster_groups is None,\
-                self.UNDEFINED_CLUSTER_SEARCH
+            if self.extra_cluster_groups is not None:
+                raise ValueError(self.UNDEFINED_CLUSTER_SEARCH)
 
     @staticmethod
     def alpha_prefilter(triangulation, alpha):

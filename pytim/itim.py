@@ -203,7 +203,8 @@ class ITIM(pytim.PYTIM):
                         self._seen[uplow][_indices] = layer + 1
 
                     # one of the two layers (upper,lower) or both are empty
-                    assert _inlayer_group, self.EMPTY_LAYER
+                    if not _inlayer_group:
+                        raise Exception(self.EMPTY_LAYER)
 
                     _layers.append(_inlayer_group)
                     break
@@ -215,26 +216,33 @@ class ITIM(pytim.PYTIM):
     def _sanity_checks(self):
         """ basic checks to be performed after the initialization
         """
-        assert isinstance(
-            self.alpha, float) or isinstance(
-            self.alpha, int), self.ALPHA_NAN
-        assert self.alpha > 0, self.ALPHA_NEGATIVE
-        assert self.alpha < np.amin(
-            self.universe.dimensions[:3]), self.ALPHA_LARGE
+        if not (isinstance(self.alpha, float) or 
+                isinstance(self.alpha, int)):
+            raise TypeError(self.ALPHA_NAN)
+        if self.alpha < 0:
+            raise ValueError(self.ALPHA_NEGATIVE)
+        if self.alpha >= np.amin(self.universe.dimensions[:3]):
+            raise ValueError(self.ALPHA_LARGE)
 
-        assert isinstance(
-            self.target_mesh, int) or isinstance(
-            self.target_mesh, float), self.MESH_NAN
-        assert self.target_mesh > 0, self.MESH_NEGATIVE
-        assert self.target_mesh < np.amin(
-            self.universe.dimensions[:3]), self.MESH_LARGE
+        if not (isinstance(self.target_mesh, int) or 
+                isinstance(self.target_mesh, float)):
+            raise TypeError(self.MESH_NAN)
+        if self.target_mesh <= 0:
+            raise ValueError(self.MESH_NEGATIVE)
+        if self.target_mesh >= np.amin(self.universe.dimensions[:3]):
+            raise ValueError(self.MESH_LARGE)
 
         if(self.cluster_cut is not None):
-            assert len(self.cluster_cut) == 1 or len(self.cluster_cut) == 1 +\
-                len(self.extra_cluster_groups), self.MISMATCH_CLUSTER_SEARCH
+            elements = len(self.cluster_cut)
+            try:
+                extraelements = len(self.extra_cluster_groups) 
+            except TypeError:
+                extraelements = -1
+            if not(elements == 1 or elements == 1 + extraelements):
+                raise StandardError(self.MISMATCH_CLUSTER_SEARCH)
         else:
-            assert self.extra_cluster_groups is None,\
-                self.UNDEFINED_CLUSTER_SEARCH
+            if self.extra_cluster_groups is not None:
+                raise ValueError(self.UNDEFINED_CLUSTER_SEARCH)
 
         try:
             np.arange(int(self.alpha / self.target_mesh))
