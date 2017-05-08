@@ -63,4 +63,5 @@ except:
 # save to pdf and visualize interactively
 plt.savefig("surfaces.pdf")
 print("surface triangulation saved in surfaces.pdf")
-plt.show()
+# uncomment the following line to see it interactively
+#plt.show()

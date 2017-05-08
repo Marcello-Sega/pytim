@@ -22,7 +22,8 @@ for t in u.trajectory[::]:
 
 print ""
 
-bins, avg = profile.profile(binwidth=0.1)
+low, up, avg = profile.get_values(binwidth=0.1)
+bins = (low+up)/2.
 np.savetxt('intrdist.dat', list(zip(bins, avg)), fmt=['%.5f', '%e'])
 
 # the maximum, excluding the delta contribution
@@ -47,4 +48,5 @@ except:
 
 plt.savefig("intrinsic.pdf")
 print("Intrinsic profile saved in intrinsic.pdf")
-plt.show()
+# uncomment the following line to see it interactively
+#plt.show()
