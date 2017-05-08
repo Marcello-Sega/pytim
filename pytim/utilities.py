@@ -66,8 +66,8 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
     dirdict = {'x': 0, 'y': 1, 'z': 2}
     if center_direction in dirdict:
         center_direction = dirdict[center_direction]
-    assert center_direction in [
-        0, 1, 2], "Wrong direction supplied to centerbox"
+    if not (center_direction in [0, 1, 2]):
+        raise ValueError("Wrong direction supplied to centerbox")
 
     shift = np.array([0., 0., 0.])
     if halfbox_shift == True:
@@ -346,9 +346,9 @@ def do_cluster_analysis_DBSCAN(
                               for neighbors in tree.query_ball_point(
         points, cluster_cut, n_jobs=-1)]
     )
-    assert len(
-        neighborhoods.shape) is 1, "Error in do_cluster_analysis_DBSCAN(),\
-                                the cutoff is probably too small"
+    if not (len(neighborhoods.shape) is 1):
+        raise ValueError("Error in do_cluster_analysis_DBSCAN(), the cutoff\
+                          is probably too small")
     if molecular == False:
         n_neighbors = np.array([len(neighbors)
                                 for neighbors in neighborhoods])
@@ -357,9 +357,9 @@ def do_cluster_analysis_DBSCAN(
                                 for neighbors in neighborhoods])
 
     if isinstance(threshold_density, str):
-        assert threshold_density == 'auto',\
-            "Internal error: wrong parameter 'threshold_density' passed\
-                 to do_cluster_analysis_DBSCAN"
+        if not (threshold_density == 'auto'):
+            raise ValueError("Wrong value of 'threshold_density' passed\
+                              to do_cluster_analysis_DBSCAN() ")
         max_neighbors = np.max(n_neighbors)
         min_neighbors = np.min(n_neighbors)
         modes = 2
