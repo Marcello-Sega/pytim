@@ -52,7 +52,7 @@ class WillardChandler(pytim.PYTIM):
         """The method does not identify layers."""
         pass
 
-    def sanity_checks(self):
+    def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
 
             We test them also here in the docstring:
@@ -113,7 +113,7 @@ class WillardChandler(pytim.PYTIM):
         self.surface_basename = surface_basename
 
         self.assign_radii(radii_dict)
-        self.sanity_checks()
+        self._sanity_checks()
 
         self._define_groups()
 

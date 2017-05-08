@@ -115,7 +115,7 @@ class ITIM(pytim.PYTIM):
         self._assign_normal(normal)
 
         self.assign_radii(radii_dict)
-        self.sanity_checks()
+        self._sanity_checks()
 
         self.grid = None
         self.use_threads = False
@@ -213,7 +213,7 @@ class ITIM(pytim.PYTIM):
         else:
             queue.put(_layers)
 
-    def sanity_checks(self):
+    def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
 
             We test them also here in the docstring:
@@ -304,7 +304,7 @@ class ITIM(pytim.PYTIM):
         self.original_positions = np.copy(self.universe.atoms.positions[:])
 
         self.universe.atoms.pack_into_box()
-        # groups have been checked already in sanity_checks()
+        # groups have been checked already in _sanity_checks()
         if(self.cluster_cut is not None):
             box = np.copy(self.universe.dimensions[:6])
             labels, counts, n_neigh = utilities.do_cluster_analysis_DBSCAN(

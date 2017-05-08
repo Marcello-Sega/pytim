@@ -88,7 +88,7 @@ class GITIM(pytim.PYTIM):
             self._assign_normal(normal)
 
         self.assign_radii(radii_dict)
-        self.sanity_checks()
+        self._sanity_checks()
 
         self.grid = None
         self.use_threads = False
@@ -108,7 +108,7 @@ class GITIM(pytim.PYTIM):
                 raise ValueError(self.WRONG_DIRECTION)
             self.symmetry = symmetry
 
-    def sanity_checks(self):
+    def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
 
             We test them also here in the docstring:
@@ -252,7 +252,7 @@ class GITIM(pytim.PYTIM):
         self.universe.atoms.pack_into_box()
 
         if(self.cluster_cut is not None):
-            # groups have been checked already in sanity_checks()
+            # groups have been checked already in _sanity_checks()
             labels, counts, _ = utilities.do_cluster_analysis_DBSCAN(
                 self.itim_group, self.cluster_cut[0],
                 self.universe.dimensions[:6],
