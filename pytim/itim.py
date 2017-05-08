@@ -115,7 +115,7 @@ class ITIM(pytim.PYTIM):
         self._assign_normal(normal)
 
         self.assign_radii(radii_dict)
-        self._sanity_checks()
+        self.sanity_checks()
 
         self.grid = None
         self.use_threads = False
@@ -213,28 +213,26 @@ class ITIM(pytim.PYTIM):
         else:
             queue.put(_layers)
 
-    def _sanity_checks(self):
+    def sanity_checks(self):
         """ Basic checks to be performed after the initialization.
 
             We test them also here in the docstring:
+
             >>> import pytim 
             >>> import MDAnalysis as mda
             >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
             >>>
             >>> pytim.ITIM(u,alpha=-1.0)
-
             Traceback (most recent call last):
             ...
             ValueError: parameter alpha must be positive
 
             >>> pytim.ITIM(u,alpha=-1000000)
-
             Traceback (most recent call last):
             ...
             ValueError: parameter alpha must be smaller than the smaller box side
 
             >>> pytim.ITIM(u,mesh=-1)
-
             Traceback (most recent call last):
             ...
             ValueError: parameter mesh must be positive
@@ -306,7 +304,7 @@ class ITIM(pytim.PYTIM):
         self.original_positions = np.copy(self.universe.atoms.positions[:])
 
         self.universe.atoms.pack_into_box()
-        # groups have been checked already in _sanity_checks()
+        # groups have been checked already in sanity_checks()
         if(self.cluster_cut is not None):
             box = np.copy(self.universe.dimensions[:6])
             labels, counts, n_neigh = utilities.do_cluster_analysis_DBSCAN(
