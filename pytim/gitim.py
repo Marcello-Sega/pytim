@@ -112,28 +112,20 @@ class GITIM(pytim.PYTIM):
         """ Basic checks to be performed after the initialization.
 
             We test them also here in the docstring:
+
             >>> import pytim 
             >>> import MDAnalysis as mda
             >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
             >>>
             >>> pytim.GITIM(u,alpha=-1.0)
-
             Traceback (most recent call last):
             ...
             ValueError: parameter alpha must be positive
 
             >>> pytim.GITIM(u,alpha=-1000000)
-
             Traceback (most recent call last):
             ...
             ValueError: parameter alpha must be smaller than the smaller box side
-
-            >>> pytim.GITIM(u,mesh=-1)
-
-            Traceback (most recent call last):
-            ...
-            ValueError: parameter mesh must be positive
-            
 
         """
         if self.alpha < 0:

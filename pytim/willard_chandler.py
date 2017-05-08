@@ -56,24 +56,22 @@ class WillardChandler(pytim.PYTIM):
         """ Basic checks to be performed after the initialization.
 
             We test them also here in the docstring:
+
             >>> import pytim 
             >>> import MDAnalysis as mda
             >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
             >>>
             >>> pytim.WillardChandler(u,alpha=-1.0)
-
             Traceback (most recent call last):
             ...
             ValueError: parameter alpha must be positive
 
             >>> pytim.WillardChandler(u,alpha=-1000000)
-
             Traceback (most recent call last):
             ...
             ValueError: parameter alpha must be smaller than the smaller box side
 
             >>> pytim.WillardChandler(u,mesh=-1)
-
             Traceback (most recent call last):
             ...
             ValueError: parameter mesh must be positive
