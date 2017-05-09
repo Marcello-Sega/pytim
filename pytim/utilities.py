@@ -93,7 +93,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
         z = get_z(universe.atoms)
     if x is None and y is None and z is None and vector is not None:
         try:
-            vector = rebox(vector,dim[center_directoin],shift[center_direction])
+            vector = rebox(vector,dim[center_direction],shift[center_direction])
         except Exception:
             pass
     if x is not None or y is not None or z is not None:
