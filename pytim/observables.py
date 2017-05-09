@@ -756,13 +756,12 @@ class Profile(object):
         # loose information
         max_bins = np.max(map(len, self.sampled_bins))
         max_size = max_bins * self.binsize
-        if(binwidth is None and nbins is None):
+        
+        if binwidth is not None: #overrides nbins
+            nbins = max_size / binwidth
+        if nbins is None: #means also binwidth must be none
             nbins = max_bins
-        else:
-            if binwidth is None:
-                nbins = nbins
-            else:
-                nbins = max_size / binwidth
+            
         if(nbins % 2 > 0):
             nbins += 1
 
