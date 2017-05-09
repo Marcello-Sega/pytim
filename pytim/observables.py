@@ -440,17 +440,14 @@ class IntrinsicDistance(Observable):
                               to this interface
     :param int     layer: (default: 1) compute the intrinsic distance\
                           with respect to this layer of the interface
-    :param bool    return_triangulation: (default: False) return the\
-                   Delaunay triangulation used for the interpolation
 
     Example: TODO
 
     """
 
-    def __init__(self, interface, layer=1, return_triangulation=False):
+    def __init__(self, interface, layer=1):
         Observable.__init__(self, interface.universe)
         self.interface = interface
-        self.return_triangulation = return_triangulation
         self.layer = layer
 
     def compute(self, inp):
@@ -460,29 +457,20 @@ class IntrinsicDistance(Observable):
         :param ndarray positions: compute the intrinsic distance for this set\
                                   of points
 
-
         """
-        t = type(inp)
-        if t is np.ndarray:
+        if isinstance(inp,np.ndarray):
             positions = inp
-        if t is Atom:
+        if isinstance(inp, Atom):
             positions = inp.position
-        if t is AtomGroup:
+        if isinstance(inp,AtomGroup):
             positions = inp.positions
         elevation = self.interface.interpolate_surface(positions, self.layer)
         if not (np.sum(np.isnan(elevation)) == 0):
-            raise Exception("Internal error: a point has fallen outside"\
+            raise Warning("Internal error: a point has fallen outside"\
                             "the convex hull")
         # positive values are outside the surface, negative inside
         distance = (positions[:, 2] - elevation) * np.sign(positions[:, 2])
-        if not self.return_triangulation:
-            return distance
-        else:
-            return [
-                distance,
-                interface.surface_triangulation[0],
-                interface.surface_triangulation[1]]
-
+        return distance
 
 class Number(Observable):
     """The number of atoms."""
