@@ -460,22 +460,18 @@ class PYTIM(object):
     def layers(self):
         pass
 
-    def _define_groups(self):
-        # we first make sure cluster_cut is either None, or an array
-        if self.cluster_cut is not None and\
-                not isinstance(self.cluster_cut, (list, tuple, np.ndarray)):
-            if isinstance(self.cluster_cut, (int, float)):
-                self.cluster_cut = np.array([float(self.cluster_cut)])
-        # same with extra_cluster_groups
-        if self.extra_cluster_groups is not None and\
-            not isinstance(self.extra_cluster_groups,
-                           (list, tuple, np.ndarray)):
-            self.extra_cluster_groups = [self.extra_cluster_groups]
-
-        # fallback for itim_group
-        if self.itim_group is None:
-            self.itim_group = self.all_atoms
-
+    def _define_groups(self):                                                   
+        # we first make sure cluster_cut is either None, or an array            
+        if isinstance(self.cluster_cut, (int, float)):                          
+                self.cluster_cut = np.array([float(self.cluster_cut)])          
+        # same with extra_cluster_groups                                        
+        if not isinstance(self.extra_cluster_groups,                            
+                           (list, tuple, np.ndarray,type(None))):               
+            self.extra_cluster_groups = [self.extra_cluster_groups]             
+                                                                                
+        # fallback for itim_group                                               
+        if self.itim_group is None:                                             
+            self.itim_group = self.all_atoms                                    
 
 from pytim.itim import ITIM
 from pytim.gitim import GITIM
