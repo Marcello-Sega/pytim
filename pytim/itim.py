@@ -247,7 +247,7 @@ class ITIM(pytim.PYTIM):
             raise TypeError(self.MESH_NAN)
         if self.target_mesh <= 0:
             raise ValueError(self.MESH_NEGATIVE)
-        if self.target_mesh >= np.amin(self.universe.dimensions[:3]):
+        if self.target_mesh >= np.amin(self.universe.dimensions[:3])/2.:
             raise ValueError(self.MESH_LARGE)
 
         try:
