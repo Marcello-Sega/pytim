@@ -148,7 +148,7 @@ def triangulated_surface_stats(tri2d, points3d):
         :returns list stats : the statistics :  [surface_area]
     """
 
-    # TODO: write a more efficient routine ?
+    # NOTE: would it be possible to write a more efficient routine ?
     # some advanced indexing here...
     # points3d[reduced] is an array of shape (x,3,3)
     # we need to subtract the first of the three vectors
