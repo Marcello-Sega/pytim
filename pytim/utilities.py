@@ -236,12 +236,13 @@ def write_vtk_points(filename, pos, color=None, radius=None):
     f.close()
 
 
-def write_vtk_triangulation(filename, vertices, triangles):
+def write_vtk_triangulation(filename, vertices, triangles,normals=None):
     """ write in a vtk file a triangulation
 
         :param string filename: the filename
         :param array vertices: (N,3) array of floats for N vertices
         :param array triangles: (M,3) array of indices to the vertices
+        :param array triangles: (M,3) array of normal vectors 
     """
     f = open(filename, "w")
     f.write("# vtk DataFile Version 2.0\nkernel\nASCII\n")
@@ -252,12 +253,18 @@ def write_vtk_triangulation(filename, vertices, triangles):
 
     f.write("\nCELLS " + str(len(triangles)) +
             " " + str(4 * len(triangles)) + "\n")
-    for vertex in triangles:
-        f.write(_vtk_format_vector(vertex)+ "\n")
+    for index in triangles:
+        f.write("3 "+_vtk_format_vector(index,format_str="{:d}")+ "\n")
 
     f.write("\nCELL_TYPES " + str(len(triangles)) + "\n")
     for vertex in triangles:
         f.write("5\n")
+
+    if normals is not None:
+        f.write("\nPOINT_DATA "+str(len(vertices))+"\n")
+        f.write("NORMALS normals float\n")
+        for n in normals:
+            f.write(_vtk_format_vector(n,format_str="{:f}") + "\n")
 
 
 def vtk_consecutive_filename(universe, basename):

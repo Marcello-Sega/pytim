@@ -125,12 +125,12 @@ class WillardChandler(pytim.PYTIM):
                                                       self.particles_basename)
         utilities.write_vtk_points(filename, pos, color=color, radius=radii)
 
-    def dump_triangulation(self, vertices, triangles):
+    def dump_triangulation(self, vertices, triangles,normals=None):
         """save a triangulation on a vtk file named consecutively using the
         frame number."""
         filename = utilities.vtk_consecutive_filename(self.universe,
                                                       self.surface_basename)
-        utilities.write_vtk_triangulation(filename, vertices, triangles)
+        utilities.write_vtk_triangulation(filename, vertices, triangles,normals)
 
     def _assign_layers(self):
         """There are no layers in the Willard-Chandler method.
@@ -171,6 +171,6 @@ class WillardChandler(pytim.PYTIM):
         if self.particles_basename is not None:
             self.dump_points(pos)
         if self.surface_basename is not None:
-            self.dump_triangulation(verts, faces)
+            self.dump_triangulation(verts, faces, normals)
 
 #
