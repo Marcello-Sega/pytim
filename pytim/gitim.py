@@ -113,7 +113,7 @@ class GITIM(pytim.PYTIM):
 
             We test them also here in the docstring:
 
-            >>> import pytim 
+            >>> import pytim
             >>> import MDAnalysis as mda
             >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
             >>>
@@ -130,7 +130,7 @@ class GITIM(pytim.PYTIM):
         """
         self._sanity_check_alpha()
         self._sanity_check_cluster_cut()
-        
+
     @staticmethod
     def alpha_prefilter(triangulation, alpha):
         t = triangulation
