@@ -104,9 +104,6 @@ class RDF(object):
                           supplied (default) computes it up to half of the  \
                           smallest box side.
     :param int nbins:     number of bins
-    :param char excluded_dir: project position vectors onto the plane\
-                              orthogonal to 'z','y' or 'z'\
-                              (TODO not used here, check & remove)
     :param Observable observable:  observable for first group
     :param Observable observable2: observable for second group
 
@@ -154,8 +151,8 @@ class RDF(object):
     """
 
     def __init__(self, universe,
-                 nbins=75, max_radius='full', exclusion_block=None,
-                 start=None, stop=None, step=None, excluded_dir='z',
+                 nbins=75, max_radius='full',
+                 start=None, stop=None, step=None,
                  observable=None, observable2=None):
         if max_radius is 'full':
             self.max_radius = np.min(universe.dimensions[:3])
@@ -316,11 +313,10 @@ class RDF2D(RDF):
     """
 
     def __init__(self, universe,
-                 nbins=75, max_radius='full', exclusion_block=None,
+                 nbins=75, max_radius='full',
                  start=None, stop=None, step=None, excluded_dir='z',
                  true2D=False, observable=None):
         RDF.__init__(self, universe, nbins=nbins, max_radius=max_radius,
-                     exclusion_block=exclusion_block,
                      start=start, stop=stop, step=step,
                      observable=observable)
         self.true2D = true2D
@@ -347,7 +343,6 @@ class RDF2D(RDF):
         if self.true2D:
             self.g1.positions = np.copy(self._p1)
             self.g1.positions = np.copy(self._p2)
-        # TODO: works only for rectangular boxes
         # we subtract the volume added for the 3d case,
         # and we add the surface
         self.volume += self._ts.volume * (1. / self._ts.dimensions[excl] - 1.)
@@ -410,20 +405,19 @@ class LayerTriangulation(Observable):
 
     def compute(self, inp=None):
         stats = []
+        layer_stats = [None,None]
         self.interface.triangulate_layer(self.layer)
         if self.return_triangulation is True and \
                 self.return_statistics is False:
             return self.interface.surf_triang
         if self.return_statistics is True:
-            stats_up = utilities.triangulated_surface_stats(
-                self.interface.trimmed_surf_triangs[0],
-                self.interface.triangulation_points[0])
-            stats_low = utilities.triangulated_surface_stats(
-                self.interface.trimmed_surf_triangs[1],
-                self.interface.triangulation_points[1])
+            for layer in [0,1]:
+                layer_stats[layer] = utilities.triangulated_surface_stats(
+                    self.interface.trimmed_surf_triangs[layer],
+                    self.interface.triangulation_points[layer])
             # this average depends on what is in the stats, it can't be done
             # automatically
-            stats.append(stats_up[0] + stats_low[0])
+            stats.append(layer_stats[0][0] + layer_stats[1][0])
             # add here new stats other than total area
             if self.return_triangulation is False:
                 return stats
@@ -462,7 +456,6 @@ class IntrinsicDistance(Observable):
         :param ndarray positions: compute the intrinsic distance for this set\
                                   of points
 
-        Example: TODO
 
         """
         t = type(inp)
@@ -571,7 +564,7 @@ class Orientation(Observable):
         pos = flat.reshape(len(flat) / 3, 3)
         a = pos[1::3] - pos[0::3]
         b = pos[2::3] - pos[0::3]
-        # TODO: can this be vectorized?
+
         if 'normal' in self.options:
             v = np.cross(a, b)
         else:
@@ -591,11 +584,7 @@ class MolecularOrientation(Observable):
         TODO: document and check if the function needs to be modified
 
         """
-        t = type(inp)
-        # TODO: checks for other types?
-        if t is AtomGroup and len(inp) != 3 * len(inp.residues):
-            # TODO: we take automatically the first three if more than three
-            # are supplied?
+        if isinstance( inp, AtomGroup) and len(inp) != 3 * len(inp.residues):
             inp = inp.residues
         pos = self.fold_around_first_atom_in_residue(inp)
         return Orientation().compute(pos)
@@ -699,6 +688,12 @@ class Profile(object):
         self.sampled_bins = []
         self.pos = [utilities.get_x, utilities.get_y, utilities.get_z]
 
+    def _set_range(self,shift=False):
+        _range = [0., self._box[self._dir]]
+        if shift:
+            _range -= self._box[self._dir]/2.
+        return _range
+
     def sample(self):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
@@ -712,10 +707,10 @@ class Profile(object):
 
         try:
             id(self.universe.trajectory.interface) > 0
-            _range = [-self._box[self._dir] / 2., self._box[self._dir] / 2.]
+            _range = self._set_range(shift=True)
             self.do_rebox = False
-        except BaseException:
-            _range = [0., self._box[self._dir]]
+        except Exception:
+            _range = self._set_range(shift=False)
             self.do_rebox = True
 
         if self.interface is None:
@@ -767,11 +762,8 @@ class Profile(object):
         if(nbins % 2 > 0):
             nbins += 1
 
-        # TODO sanity check on binwidth and nbins missing
-        if self.halfbox_shift is True:
-            _range = [-self._box[self._dir] / 2., self._box[self._dir] / 2.]
-        else:
-            _range = [0, self._box[self._dir]]
+        _range = self._set_range(shift=self.halfbox_shift)
+
         avg, bins, _ = stats.binned_statistic(
             list(
                 chain.from_iterable(
