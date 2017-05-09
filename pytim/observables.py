@@ -328,7 +328,7 @@ class RDF2D(RDF):
         if excluded_dir is 'x':
             self.excluded_dir = 0
 
-    def sample(self, g1, g2=None):
+    def sample(self, g1=None, g2=None):
         self.n_frames += 1
         _ts = self.universe.trajectory.ts
         excl = self.excluded_dir
@@ -712,9 +712,9 @@ class Profile(object):
         # handle this. Otherwise, we rebox.
 
         try:
-            id(self.universe.trajectory.interface) > 0
-            _range = self._set_range(shift=True)
-            self.do_rebox = False
+            if id(self.universe.trajectory.interface):
+                _range = self._set_range(shift=True)
+                self.do_rebox = False
         except Exception:
             _range = self._set_range(shift=False)
             self.do_rebox = True
@@ -724,8 +724,8 @@ class Profile(object):
             # TODO: check if this was returning already a new object
             _pos = np.copy(self.pos[self._dir](self.group))
             try:
-                id(self.universe.trajectory) > 0
-                self.universe.atoms.positions = np.copy(self.oldpos)
+                if id(self.universe.trajectory):
+                    self.universe.atoms.positions = np.copy(self.oldpos)
             except BaseException:
                 pass
 
