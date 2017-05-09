@@ -37,13 +37,13 @@ def get_coord(coord,group=None,normal=2):
     return group.positions[:, (coord + 1 + normal) % 3]
 
 def get_x(group=None, normal=2):
-    get_coord(0,group=group,normal=normal)
+    return get_coord(0,group=group,normal=normal)
 
 def get_y(group=None, normal=2):
-    get_coord(1,group=group,normal=normal)
+    return get_coord(1,group=group,normal=normal)
     
 def get_z(group=None, normal=2):
-    get_coord(2,group=group,normal=normal)
+    return get_coord(2,group=group,normal=normal)
 
 
 def get_pos(group=None, normal=2):
