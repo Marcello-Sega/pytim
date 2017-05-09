@@ -22,7 +22,6 @@ print("The total triangulated surface has an area of {:04.1f} Angstrom^2".format
 
 try:
     # plot the triangulation using matplotlib
-    import matplotlib
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     import matplotlib.tri as mtplt_tri
