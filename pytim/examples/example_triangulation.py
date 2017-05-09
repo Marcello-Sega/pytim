@@ -26,7 +26,7 @@ try:
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     import matplotlib.tri as mtplt_tri
-    
+
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.set_xlim([0, box[0]])
