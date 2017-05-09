@@ -27,7 +27,7 @@ try:
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     import matplotlib.tri as mtplt_tri
-except:
+except Exception:
     print ("mpl_toolkits is needed for the graphical part of this example, you might need to upgrade matplotlib to v. 2.0")
     exit()
 try:
@@ -57,8 +57,8 @@ try:
         ax.set_xlabel(r'$x/\AA$')
         ax.set_ylabel(r'$y/\AA$')
         ax.set_zlabel(r'$z/\AA$')
-    except:
-        pass
+    except Exception:
+        print "not able to use latex"
 
     # save to pdf and visualize interactively
     plt.savefig("surfaces.pdf")

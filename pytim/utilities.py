@@ -84,7 +84,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
                    shift[center_direction]] -= dim[center_direction]
             vector[vector < -dim[center_direction] -
                    shift[center_direction]] += dim[center_direction]
-        except:
+        except Exception:
             pass
     if x is not None or y is not None or z is not None:
         for index, val in enumerate((x, y, z)):
@@ -94,7 +94,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
                 # for cKDTree
                 val[val >= dim[index] - shift[index]] -= dim[index]
                 val[val < -dim[index] - shift[index]] += dim[index]
-            except:
+            except Exception:
                 pass
     if stack:
         universe.coord.positions = np.column_stack((x, y, z))

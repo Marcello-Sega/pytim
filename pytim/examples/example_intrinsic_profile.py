@@ -45,11 +45,11 @@ try:
         plt.rc('font', family='serif')
         plt.xlabel(r'$\xi/\AA$')
         plt.ylabel(r'$\rho  \AA^3$')
-    except:
-        pass
+    except Exception:
+        print "not able to use latex"
 
     plt.savefig("intrinsic.pdf")
     print("Intrinsic profile saved in intrinsic.pdf")
     plt.show()
-except:
+except Exception:
     print "this is not run for code coverage"
