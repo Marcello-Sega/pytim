@@ -79,7 +79,7 @@ class WillardChandler(pytim.PYTIM):
         """
         self._sanity_check_alpha()
         self._sanity_check_cluster_cut()
-        
+
     def __init__(self, universe, alpha=2.0, mesh=30, itim_group=None,
                  radii_dict=None, surface_basename=None,
                  particles_basename=None, density_basename=None):

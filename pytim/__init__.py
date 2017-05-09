@@ -111,7 +111,7 @@ class PYTIM(object):
             values = np.array([value] * len(group))
             universe.add_TopologyAttr(missing_class(values))
 
-    def _sanity_check_alpha(self):            
+    def _sanity_check_alpha(self):
         if self.alpha < 0:
             raise ValueError(self.ALPHA_NEGATIVE)
         if self.alpha >= np.amin(self.universe.dimensions[:3]):
@@ -119,9 +119,9 @@ class PYTIM(object):
 
     def _sanity_check_cluster_cut(self):
         if(self.cluster_cut is not None):
-            elements = len(self.cluster_cut) 
+            elements = len(self.cluster_cut)
             try:
-                extraelements = len(self.extra_cluster_groups) 
+                extraelements = len(self.extra_cluster_groups)
             except TypeError:
                 extraelements = -1
             if  not (elements == 1 or elements == 1 + extraelements):
@@ -129,8 +129,8 @@ class PYTIM(object):
         else:
             if self.extra_cluster_groups is not None:
                 raise ValueError(self.UNDEFINED_CLUSTER_SEARCH)
-                
-                
+
+
     def _basic_checks(self, universe):
         self._MDAversion = MDAnalysis.__version__
         LooseV = LooseVersion(self._MDAversion)
@@ -357,7 +357,7 @@ class PYTIM(object):
                 self._interpolator[layer] = LinearNDInterpolator(
                     self.surf_triang[layer],
                     self.triangulation_points[layer][:, 2])
-            
+
     def interpolate_surface(self, positions, layer):
         self._initialize_distance_interpolator(layer)
         upper_set = positions[positions[:, 2] >= 0]
@@ -435,8 +435,8 @@ class PYTIM(object):
         max_val = np.amax(histo)
         min_val = np.amin(histo)
         # NOTE maybe allow user to set different values
-        delta = min_val + (max_val - min_val) / 3.  
-        
+        delta = min_val + (max_val - min_val) / 3.
+
         # let's first avoid crossing pbc with the liquid phase. This can fail:
         while(histo[0] > delta or histo[-1] > delta):
             total_shift += shift
@@ -480,18 +480,18 @@ class PYTIM(object):
     def layers(self):
         pass
 
-    def _define_groups(self):                                                   
-        # we first make sure cluster_cut is either None, or an array            
-        if isinstance(self.cluster_cut, (int, float)):                          
-                self.cluster_cut = np.array([float(self.cluster_cut)])          
-        # same with extra_cluster_groups                                        
-        if not isinstance(self.extra_cluster_groups,                            
-                           (list, tuple, np.ndarray,type(None))):               
-            self.extra_cluster_groups = [self.extra_cluster_groups]             
-                                                                                
-        # fallback for itim_group                                               
-        if self.itim_group is None:                                             
-            self.itim_group = self.all_atoms                                    
+    def _define_groups(self):
+        # we first make sure cluster_cut is either None, or an array
+        if isinstance(self.cluster_cut, (int, float)):
+                self.cluster_cut = np.array([float(self.cluster_cut)])
+        # same with extra_cluster_groups
+        if not isinstance(self.extra_cluster_groups,
+                           (list, tuple, np.ndarray,type(None))):
+            self.extra_cluster_groups = [self.extra_cluster_groups]
+
+        # fallback for itim_group
+        if self.itim_group is None:
+            self.itim_group = self.all_atoms
 
 from pytim.itim import ITIM
 from pytim.gitim import GITIM

@@ -746,11 +746,10 @@ class Profile(object):
     def get_values(self, binwidth=None, nbins=None):
         if not self.sampled_values:
             raise UserWarning("No profile sampled so far")
-            return [[0],[0],[0]]
         # we use the largest box (largest number of bins) as reference.
         # Statistics will be poor at the boundaries, but like that we don't
         # loose information
-        max_bins = np.max(map(lambda x: len(x), self.sampled_bins))
+        max_bins = np.max(map(len, self.sampled_bins))
         max_size = max_bins * self.binsize
         if(binwidth is None and nbins is None):
             nbins = max_bins

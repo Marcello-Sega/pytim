@@ -41,7 +41,7 @@ def get_x(group=None, normal=2):
 
 def get_y(group=None, normal=2):
     return get_coord(1,group=group,normal=normal)
-    
+
 def get_z(group=None, normal=2):
     return get_coord(2,group=group,normal=normal)
 
@@ -63,10 +63,10 @@ def rebox(pos, edge, shift):
     """
     condition =  pos >= edge - shift
     pos[condition] -= edge
-    
+
     condition =  pos < 0 - shift
     pos[condition] += edge
-    
+
     return pos
 
 def centerbox(universe, x=None, y=None, z=None, vector=None,
