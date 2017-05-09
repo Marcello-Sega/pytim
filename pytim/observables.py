@@ -174,17 +174,18 @@ class RDF(object):
         self.count = count * 0.0
         self.edges = edges
         self.bins = 0.5 * (edges[:-1] + edges[1:])
+        self.g1 = self.universe.atoms
+        self.g2 = None
+        self._rdf = None
 
-    def sample(self, g1, g2=None):
+    def sample(self, g1=None, g2=None):
         self.n_frames += 1
-        self.g1 = g1
+        if g1 is not None:
+            self.g1 = g1
         if g2 is None:
             self.g2 = self.g1
         else:
             self.g2 = g2
-
-        self._ts = self.universe.trajectory.ts
-
 
         if self.observable is not  None:
             # determine weights, otherwise assumes number of atoms (default)
@@ -226,7 +227,7 @@ class RDF(object):
         self.count += count
 
         try:
-            self.volume += self._ts.volume
+            self.volume += self.universe.trajectory.ts.volume
         except BaseException:
             self.volume += self.universe.dimensions[0] * \
                 self.universe.dimensions[1] * self.universe.dimensions[2]
@@ -329,23 +330,24 @@ class RDF2D(RDF):
 
     def sample(self, g1, g2=None):
         self.n_frames += 1
+        _ts = self.universe.trajectory.ts
         excl = self.excluded_dir
         if g2 is None:
             g2 = g1
         if self.true2D:
             p1 = g1.positions
             p2 = g2.positions
-            self._p1 = np.copy(p1)
-            self._p2 = np.copy(p2)
+            _p1 = np.copy(p1)
+            _p2 = np.copy(p2)
             p1[:, excl] = 0
             p2[:, excl] = 0
         RDF.sample(self, g1, g2)
         if self.true2D:
-            self.g1.positions = np.copy(self._p1)
-            self.g1.positions = np.copy(self._p2)
+            self.g1.positions = np.copy(_p1)
+            self.g1.positions = np.copy(_p2)
         # we subtract the volume added for the 3d case,
         # and we add the surface
-        self.volume += self._ts.volume * (1. / self._ts.dimensions[excl] - 1.)
+        self.volume += _ts.volume * (1. / _ts.dimensions[excl] - 1.)
 
     @property
     def rdf(self):
@@ -398,6 +400,8 @@ class LayerTriangulation(Observable):
             layer=1,
             return_triangulation=True,
             return_statistics=True):
+
+        Observable.__init__(self, interface.universe)
         self.interface = interface
         self.layer = layer
         self.return_triangulation = return_triangulation
@@ -445,6 +449,7 @@ class IntrinsicDistance(Observable):
     """
 
     def __init__(self, interface, layer=1, return_triangulation=False):
+        Observable.__init__(self, interface.universe)
         self.interface = interface
         self.return_triangulation = return_triangulation
         self.layer = layer
@@ -487,6 +492,7 @@ class Number(Observable):
         """ No need to pass a universe for this observable. We accept
             extra arguments not to fail if they are passed anyway by mistake.
         """
+        Observable.__init__(self, None)
 
     def compute(self, inp):
         """Compute the observable.
@@ -513,7 +519,7 @@ class NumberOfResidues(Observable):
         """ No need to pass a universe for this observable. We accept
             extra arguments not to fail if they are passed anyway by mistake.
         """
-        pass
+        Observable.__init__(self, None)
 
     def compute(self, inp):
         """Compute the observable.
@@ -544,7 +550,7 @@ class Orientation(Observable):
     """
 
     def __init__(self, options=''):
-        self.options = options
+        Observable.__init__(self, None, options=options)
 
     def compute(self, pos):
         """Compute the observable.
