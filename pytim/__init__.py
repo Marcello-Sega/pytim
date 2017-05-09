@@ -201,12 +201,12 @@ class PYTIM(object):
             >>> interface.writepdb('layers.pdb',centered='no')
 
         """
-
+        options={'no':False,False:False,'middle':True,True:True}
         try:
-            if centered in ['no', False]:
+            if options[centered] == False:
                 self.universe.atoms.positions = self.original_positions
 
-            if centered in ['middle', True]:
+            if options[centered] == True:
                 # NOTE: this assumes that all method relying on 'planar'
                 # symmetry must center the interface along the normal
                 box = self.universe.dimensions[self.normal]
@@ -225,8 +225,8 @@ class PYTIM(object):
                     )
                 )
             except BaseException:
-                for bondvalue in [None,False]:
-                    try:  # MDA v 0.16
+                for bondvalue in [None,False]: # different MDA versions use different values
+                    try:
                         self.PDB[filename] = MDAnalysis.Writer(
                          filename, multiframe=True,
                          bonds=bondvalue, n_atoms=self.universe.atoms.n_atoms
