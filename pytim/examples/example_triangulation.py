@@ -64,5 +64,5 @@ try:
     plt.savefig("surfaces.pdf")
     print("surface triangulation saved in surfaces.pdf")
     plt.show()
-except:
+except Exception:
     print "this is not run for code coverage"

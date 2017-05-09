@@ -48,7 +48,7 @@ class WillardChandler(pytim.PYTIM):
         self.layers = None
         return None
 
-    def writepdb(self,filename='layers.pdb',centered='no',multiframe=True):
+    def writepdb(self, filename='layers.pdb', centered='no', multiframe=True):
         """The method does not identify layers."""
         pass
 
@@ -57,7 +57,7 @@ class WillardChandler(pytim.PYTIM):
 
             We test them also here in the docstring:
 
-            >>> import pytim 
+            >>> import pytim
             >>> import MDAnalysis as mda
             >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
             >>>
@@ -75,8 +75,8 @@ class WillardChandler(pytim.PYTIM):
             Traceback (most recent call last):
             ...
             ValueError: parameter mesh must be positive
-    
-        """            
+
+        """
 
         if self.alpha < 0:
             raise ValueError(self.ALPHA_NEGATIVE)
@@ -87,7 +87,7 @@ class WillardChandler(pytim.PYTIM):
             elements = len(self.cluster_cut)
 
             try:
-                extraelements = len(self.extra_cluster_groups) 
+                extraelements = len(self.extra_cluster_groups)
             except TypeError:
                 extraelements = -1
             if not(elements == 1 or elements == 1 + extraelements):
@@ -102,7 +102,8 @@ class WillardChandler(pytim.PYTIM):
 
         self._basic_checks(universe)
         self.cluster_cut = None
-        # TODO make a uniform grid for non-cubic boxes, use part of _assign_mesh() from itim.py
+        # TODO make a uniform grid for non-cubic boxes, use part of
+        # _assign_mesh() from itim.py
         self.mesh = mesh
         self.extra_cluster_groups = None
         self.universe = universe

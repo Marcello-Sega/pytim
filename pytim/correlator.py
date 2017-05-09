@@ -21,7 +21,7 @@ class Correlator(object):
 
         self.a1 = a1
         self.a2 = a2
-        if (type(self.a2) != type(None)):
+        if self.a2 is not None:
             self.mode = 'cross-correlation'
         else:
             self.mode = 'auto-correlation'
