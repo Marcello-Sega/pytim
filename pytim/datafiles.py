@@ -79,15 +79,15 @@ class Data(object):
 
     @property
     def config(self):
-        self._generate_data_property('config')
+        return self._generate_data_property('config')
 
     @property
     def topol(self):
-        self._generate_data_property('topol')
+        return self._generate_data_property('topol')
 
     @property
     def traj(self):
-        self._generate_data_property('traj')
+        return self._generate_data_property('traj')
 
     def __init__(self):
         self._label=list()
