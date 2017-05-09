@@ -251,7 +251,7 @@ class PYTIM(object):
             _groups = []
         _groups.append(self.itim_group)
         for _g in _groups:
-            # TODO: add a switch to use the atom name instead of the type!
+            # NOTE: maybe add a switch to use the atom name instead of the type
             if _g is not None:
                 _types = np.copy(_g.types)
                 if not (np.any(np.equal(_g.radii, None)) or
