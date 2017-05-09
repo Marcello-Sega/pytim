@@ -72,7 +72,7 @@ import re as re
 class Data(object):
     """" a class for storing/accessing configurations, trajectories, topologies
     """
-    
+
     def _generate_data_property(self,name):
         labels = [label for label,val in self.type.iteritems() if val == name]
         return list(  set(labels) & set(self.label)   )
