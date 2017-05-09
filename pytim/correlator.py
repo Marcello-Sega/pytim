@@ -62,7 +62,7 @@ class Correlator(object):
         self.a1 = np.append(self.a1,self.a1[:]*0)  # zero padding
         fa1 = np.fft.fft(self.a1)
 
-        if not isinstance(self.a2, type(None): # do cross-corr
+        if not isinstance(self.a2, type(None)): # do cross-corr
             self.a2 = np.append(self.a2,self.a2[:]*0)
             fa2 = np.fft.fft(self.a2)
         else:                             # do auto-corr
