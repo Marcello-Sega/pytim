@@ -294,7 +294,6 @@ def generate_periodic_border_3d(points, box, delta):
         periodic copies) and the indices of the original particles
     """
     extrapoints = np.copy(points)
-    nrealpoints = len(points)
     extraids = np.arange(len(points), dtype=np.int)
     for shift in np.array(list(itertools.product([1, -1, 0], repeat=3))):
         if(np.sum(shift * shift)):  # avoid [0,0,0]
@@ -360,8 +359,6 @@ def do_cluster_analysis_DBSCAN(
         if not (threshold_density == 'auto'):
             raise ValueError("Wrong value of 'threshold_density' passed\
                               to do_cluster_analysis_DBSCAN() ")
-        max_neighbors = np.max(n_neighbors)
-        min_neighbors = np.min(n_neighbors)
         modes = 2
         centroid, _ = vq.kmeans2(n_neighbors * 1.0, modes, iter=10,
                                  check_finite=False)

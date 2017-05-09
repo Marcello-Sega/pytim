@@ -162,11 +162,9 @@ class WillardChandler(pytim.PYTIM):
         pos = self.itim_group.positions
         box = self.universe.dimensions[:3]
         delta = 2. * self.alpha + 1e-6
-        extrapoints, _ = utilities.generate_periodic_border_3d(
-            pos, box, delta
-        )
+        utilities.generate_periodic_border_3d(pos, box, delta)
         grid = utilities.generate_grid_in_box(box, self.mesh)
-        kernel, std = utilities.density_map(pos, grid, self.alpha)
+        kernel, _ = utilities.density_map(pos, grid, self.alpha)
         field = kernel(grid)
 
         # Thomas Lewiner, Helio Lopes, Antonio Wilson Vieira and Geovan
