@@ -1,16 +1,12 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-import MDAnalysis
 from timeit import default_timer as timer
 import numpy as np
 import itertools
 from dbscan import dbscan_inner
-from scipy.spatial import Delaunay, cKDTree
+from scipy.spatial import cKDTree
 from scipy.stats import gaussian_kde
-from scipy.interpolate import griddata
 from scipy.cluster import vq
-from MDAnalysis.topology import tables
-
 
 def lap(show=False):
     if not hasattr(lap, "tic"):

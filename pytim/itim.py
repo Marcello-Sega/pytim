@@ -8,7 +8,7 @@
 
 from multiprocessing import Process, Queue
 import numpy as np
-from scipy.spatial import cKDTree, Delaunay
+from scipy.spatial import cKDTree
 from __builtin__ import zip as builtin_zip
 from pytim import utilities
 import pytim

@@ -7,7 +7,6 @@
 """
 
 import numpy as np
-from scipy.spatial import Delaunay
 from skimage import measure
 from pytim import utilities
 import pytim
