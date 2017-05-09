@@ -238,13 +238,9 @@ class ITIM(pytim.PYTIM):
             ValueError: parameter mesh must be positive
             
         """
-        if not (isinstance(self.alpha, float) or 
-                isinstance(self.alpha, int)):
-            raise TypeError(self.ALPHA_NAN)
-        if self.alpha < 0:
-            raise ValueError(self.ALPHA_NEGATIVE)
-        if self.alpha >= np.amin(self.universe.dimensions[:3]):
-            raise ValueError(self.ALPHA_LARGE)
+
+        self._sanity_check_alpha()
+        self._sanity_check_cluster_cut()
 
         if not (isinstance(self.target_mesh, int) or 
                 isinstance(self.target_mesh, float)):
@@ -253,18 +249,6 @@ class ITIM(pytim.PYTIM):
             raise ValueError(self.MESH_NEGATIVE)
         if self.target_mesh >= np.amin(self.universe.dimensions[:3]):
             raise ValueError(self.MESH_LARGE)
-
-        if(self.cluster_cut is not None):
-            elements = len(self.cluster_cut)
-            try:
-                extraelements = len(self.extra_cluster_groups) 
-            except TypeError:
-                extraelements = -1
-            if not(elements == 1 or elements == 1 + extraelements):
-                raise StandardError(self.MISMATCH_CLUSTER_SEARCH)
-        else:
-            if self.extra_cluster_groups is not None:
-                raise ValueError(self.UNDEFINED_CLUSTER_SEARCH)
 
         try:
             np.arange(int(self.alpha / self.target_mesh))
