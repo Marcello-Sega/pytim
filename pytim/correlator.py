@@ -77,27 +77,11 @@ class Correlator(object):
         """ Return time elapsed after last invocation.
             On first invocation, it is the time elapsed
             since __init__
-
-            Example:
-
-            >>> from time import sleep
-        >>> c2 = Correlator()
-        >>> sleep(2)
-        >>> print c2.lap()
-        2.00517892838
-
-        >>> c2 = Correlator()
-        >>> sleep(2)
-        >>> c2.lap()
-        >>> sleep(3)
-        >>> print c2.lap()
-        3.00523400307
-
-    """
-    toc=timer()
-    dt = toc-self.tic
-    self.tic=toc
-    return dt
+        """
+        toc=timer()
+        dt = toc-self.tic
+        self.tic=toc
+        return dt
 
 
 if __name__ == "__main__":
