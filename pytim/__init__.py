@@ -225,16 +225,14 @@ class PYTIM(object):
                     )
                 )
             except BaseException:
-                try:  # MDA v 0.16
-                    self.PDB[filename] = MDAnalysis.Writer(
-                        filename, multiframe=True,
-                        bonds=None, n_atoms=self.universe.atoms.n_atoms
-                    )
-                except BaseException:
-                    self.PDB[filename] = MDAnalysis.Writer(
-                        filename, multiframe=True,
-                        bonds=False, n_atoms=self.universe.atoms.n_atoms
-                    )
+                for bondvalue in [None,False]:
+                    try:  # MDA v 0.16
+                        self.PDB[filename] = MDAnalysis.Writer(
+                         filename, multiframe=True,
+                         bonds=bondvalue, n_atoms=self.universe.atoms.n_atoms
+                        )
+                    except Exception:
+                        pass
 
             self.PDB[filename].write(self.universe.atoms)
 
