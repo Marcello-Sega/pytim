@@ -333,7 +333,7 @@ class PYTIM(object):
             self.triangulate_layer(layer)
 
             self._interpolator = [None, None]
-            for layer in [0,1]
+            for layer in [0,1]:
                 self._interpolator[layer] = LinearNDInterpolator(
                     self.surf_triang[layer],
                     self.triangulation_points[layer][:, 2])
