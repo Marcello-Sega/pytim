@@ -257,8 +257,7 @@ def write_vtk_triangulation(filename, vertices, triangles,normals=None):
         f.write("3 "+_vtk_format_vector(index,format_str="{:d}")+ "\n")
 
     f.write("\nCELL_TYPES " + str(len(triangles)) + "\n")
-    for vertex in triangles:
-        f.write("5\n")
+    f.write("5\n"*len(triangles))
 
     if normals is not None:
         f.write("\nPOINT_DATA "+str(len(vertices))+"\n")
