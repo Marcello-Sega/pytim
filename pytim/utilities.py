@@ -55,20 +55,19 @@ def get_pos(group=None, normal=2):
     if normal == 1:
         return np.roll(pos, 1, axis=1)
 
-def rebox(vector, box, direction,shift=[0,0,0]):
-    """ rebox a vector
-        :param ndarray vector: the vector to be reboxed
-        :param ndarray box: the simulation box
-        :param int direction: the direction along which to rebox
-        :param ndarray shift: additional shift
+def rebox(pos, edge, shift):
+    """ rebox a vector along one dimension
+        :param ndarray pos: the array of components to be reboxed
+        :param float edge: the simulation box edge
+        :param float shift: additional shift
     """
-    condition =  vector >= box[direction] - shift[direction]
-    vector[condition] -= box[direction]
+    condition =  pos >= edge - shift
+    pos[condition] -= edge
     
-    condition =  vector < 0 - shift[direction]
-    vector[condition] += box[direction]
+    condition =  pos < 0 - shift
+    pos[condition] += edge
     
-    return vector
+    return pos
 
 def centerbox(universe, x=None, y=None, z=None, vector=None,
               center_direction=2, halfbox_shift=True):
@@ -94,7 +93,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
         z = get_z(universe.atoms)
     if x is None and y is None and z is None and vector is not None:
         try:
-            vector = rebox(vector,dim[:3],center_direction,shift)
+            vector = rebox(vector,dim[center_directoin],shift[center_direction])
         except Exception:
             pass
     if x is not None or y is not None or z is not None:
@@ -103,7 +102,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
                 # let's just try to rebox all directions. Will succeed only
                 # for those which are not None. The >= convention is needed
                 # for cKDTree
-                val = rebox(val,dim,index,shift)
+                val = rebox(val,dim[index],shift[index])
             except Exception:
                 pass
     if stack:
