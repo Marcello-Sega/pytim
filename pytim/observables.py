@@ -179,13 +179,12 @@ class RDF(object):
 
     def sample(self, g1=None, g2=None):
         self.n_frames += 1
+        self.g2 = g2
         if g1 is not None:
             self.g1 = g1
         if g2 is None:
-            self.g2 = self.g1
-        else:
-            self.g2 = g2
-
+            self.g2 = self.g1 #all atoms by default (see __init__)
+            
         if self.observable is not  None:
             # determine weights, otherwise assumes number of atoms (default)
             fg1 = self.observable.compute(self.g1)
@@ -410,9 +409,7 @@ class LayerTriangulation(Observable):
         stats = []
         layer_stats = [None,None]
         self.interface.triangulate_layer(self.layer)
-        if self.return_triangulation is True and \
-                self.return_statistics is False:
-            return self.interface.surf_triang
+        
         if self.return_statistics is True:
             for layer in [0,1]:
                 layer_stats[layer] = utilities.triangulated_surface_stats(
@@ -422,14 +419,15 @@ class LayerTriangulation(Observable):
             # automatically
             stats.append(layer_stats[0][0] + layer_stats[1][0])
             # add here new stats other than total area
-            if self.return_triangulation is False:
-                return stats
-            else:
-                return [
+        if self.return_triangulation is False:
+            return stats
+        else:
+            return [
                     stats,
                     self.interface.surf_triang,
                     self.interface.triangulation_points,
-                    self.interface.trimmed_surf_triangs]
+                    self.interface.trimmed_surf_triangs
+                   ]
 
 
 class IntrinsicDistance(Observable):
@@ -440,17 +438,14 @@ class IntrinsicDistance(Observable):
                               to this interface
     :param int     layer: (default: 1) compute the intrinsic distance\
                           with respect to this layer of the interface
-    :param bool    return_triangulation: (default: False) return the\
-                   Delaunay triangulation used for the interpolation
 
     Example: TODO
 
     """
 
-    def __init__(self, interface, layer=1, return_triangulation=False):
+    def __init__(self, interface, layer=1):
         Observable.__init__(self, interface.universe)
         self.interface = interface
-        self.return_triangulation = return_triangulation
         self.layer = layer
 
     def compute(self, inp):
@@ -460,29 +455,20 @@ class IntrinsicDistance(Observable):
         :param ndarray positions: compute the intrinsic distance for this set\
                                   of points
 
-
         """
-        t = type(inp)
-        if t is np.ndarray:
+        if isinstance(inp,np.ndarray):
             positions = inp
-        if t is Atom:
+        if isinstance(inp, Atom):
             positions = inp.position
-        if t is AtomGroup:
+        if isinstance(inp,AtomGroup):
             positions = inp.positions
         elevation = self.interface.interpolate_surface(positions, self.layer)
         if not (np.sum(np.isnan(elevation)) == 0):
-            raise Exception("Internal error: a point has fallen outside"\
+            raise Warning("Internal error: a point has fallen outside"\
                             "the convex hull")
         # positive values are outside the surface, negative inside
         distance = (positions[:, 2] - elevation) * np.sign(positions[:, 2])
-        if not self.return_triangulation:
-            return distance
-        else:
-            return [
-                distance,
-                interface.surface_triangulation[0],
-                interface.surface_triangulation[1]]
-
+        return distance
 
 class Number(Observable):
     """The number of atoms."""
@@ -756,13 +742,12 @@ class Profile(object):
         # loose information
         max_bins = np.max(map(len, self.sampled_bins))
         max_size = max_bins * self.binsize
-        if(binwidth is None and nbins is None):
+        
+        if binwidth is not None: #overrides nbins
+            nbins = max_size / binwidth
+        if nbins is None: #means also binwidth must be none
             nbins = max_bins
-        else:
-            if binwidth is None:
-                nbins = nbins
-            else:
-                nbins = max_size / binwidth
+            
         if(nbins % 2 > 0):
             nbins += 1
 
