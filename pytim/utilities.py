@@ -159,22 +159,6 @@ def triangulated_surface_stats(tri2d, points3d):
     area = np.linalg.norm(np.cross(v[:, 1], v[:, 2]), axis=1).sum() / 2.
     return [area]
 
-
-def _init_NN_search(group, box):
-    # NOTE: boxsize shape must be (6,), and the last three elements are
-    #       overwritten in cKDTree:
-    #   boxsize_arr = np.empty(2 * self.m, dtype=np.float64)
-    #   boxsize_arr[:] = boxsize
-    #   boxsize_arr[self.m:] = 0.5 * boxsize_arr[:self.m]
-
-    # TODO: handle macroscopic normal different from z
-    # NOTE: coords in cKDTree must be in [0,L), but pytim uses [-L/2,L/2) on
-    # the 3rd axis. We shift them here
-    shift = np.array([0., 0., box[2]]) / 2.
-    pos = group.positions[:] + shift
-    return cKDTree(pos, boxsize=box[:6], copy_data=True)
-
-
 def generate_grid_in_box(box, npoints):
     """generate an homogenous grid of npoints^3 points that spans the
        complete box.
@@ -337,7 +321,7 @@ def do_cluster_analysis_DBSCAN(
         if min_samples < 2:
             min_samples = 2
 
-    # TODO: extra_cluster_groups are not yet implemented
+    # NOTE: extra_cluster_groups are not yet implemented
     points = group.atoms.positions[:]
 
     tree = cKDTree(points, boxsize=box[:6])
