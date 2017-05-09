@@ -119,7 +119,7 @@ class PYTIM(object):
 
     def _sanity_check_cluster_cut(self):
         elements = 0
-        extraelements = 0
+        extraelements = -1 
         if(self.cluster_cut is not None):
             elements = len(self.cluster_cut)
         if(self.extra_cluster_groups is not None):
