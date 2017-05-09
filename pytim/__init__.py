@@ -10,6 +10,7 @@ import MDAnalysis
 from MDAnalysis import Universe
 from MDAnalysis.topology import tables
 from difflib import get_close_matches
+import importlib
 
 
 def PatchTrajectory(trajectory, interface):
@@ -89,48 +90,58 @@ class PYTIM(object):
         else:
             group.tempfactors = value
 
-    def _basic_checks(self, universe):
-        self._MDAversion = MDAnalysis.__version__
+    def _check_missing_attribute(self, name, classname, group, value, universe):
+        """ Add an attribute, which is necessary for pytim but
+            missing from the present topology.
 
-        try:
-            self.all_atoms = universe.select_atoms('all')
-        except BaseException:
-            raise Exception(self.WRONG_UNIVERSE)
+            An example of how the code below would expand is:
 
-        if LooseVersion(self._MDAversion) < LooseVersion('0.15'):
-            raise Exception("Must use MDAnalysis  >= 0.15")
-
-        if LooseVersion(self._MDAversion) >= LooseVersion(
-                '0.16'):  # new topology system
             if 'radii' not in dir(universe.atoms):
                 from MDAnalysis.core.topologyattrs import Radii
                 radii = np.zeros(len(universe.atoms)) * np.nan
                 universe.add_TopologyAttr(Radii(radii))
 
-            if 'tempfactors' not in dir(universe.atoms):
-                from MDAnalysis.core.topologyattrs import Tempfactors
-                tempfactors = np.zeros(len(universe.atoms))
-                universe.add_TopologyAttr(Tempfactors(tempfactors))
+             * MDAnalysis.core.topologyattrs ->  self.topologyattrs
+             * Radii -> missing_class
+             * radii -> values
+        """
 
-            if 'bfactors' not in dir(universe.atoms):
-                from MDAnalysis.core.topologyattrs import Bfactors
-                bfactors = np.zeros(len(universe.atoms))
-                universe.add_TopologyAttr(Bfactors(bfactors))
+        if name not in dir(universe.atoms):
+            missing_class = getattr(self.topologyattrs, classname)
+            values = np.array([value] * len(group))
+            universe.add_TopologyAttr(missing_class(values))
 
-            if 'altLocs' not in dir(universe.atoms):
-                from MDAnalysis.core.topologyattrs import AltLocs
-                altlocs = np.array([' '] * len(universe.atoms))
-                universe.add_TopologyAttr(AltLocs(altlocs))
+    def _basic_checks(self, universe):
+        self._MDAversion = MDAnalysis.__version__
+        LooseV = LooseVersion(self._MDAversion)
+        V015 = LooseVersion('0.15')
+        V016 = LooseVersion('0.16')
+        try:
+            self.all_atoms = universe.select_atoms('all')
+        except BaseException:
+            raise Exception(self.WRONG_UNIVERSE)
 
-            if 'icodes' not in dir(universe.residues):
-                from MDAnalysis.core.topologyattrs import ICodes
-                icodes = np.array([' '] * len(universe.residues))
-                universe.add_TopologyAttr(ICodes(icodes))
+        if LooseV < V015:
+            raise Exception("Must use MDAnalysis  >= 0.15")
 
-            if 'occupancies' not in dir(universe.atoms):
-                from MDAnalysis.core.topologyattrs import Occupancies
-                occupancies = np.ones(len(universe.atoms))
-                universe.add_TopologyAttr(Occupancies(occupancies))
+        if LooseV >= V016:  # new topology system
+
+            self.topologyattrs = importlib.import_module(
+                'MDAnalysis.core.topologyattrs'
+            )
+
+            self._check_missing_attribute('radii', 'Radii', universe.atoms,
+                                          np.nan, universe)
+            self._check_missing_attribute('tempfactors', 'Tempfactors',
+                                          universe.atoms, 0, universe)
+            self._check_missing_attribute('bfactors', 'Bfactors',
+                                          universe.atoms, 0, universe)
+            self._check_missing_attribute('altLocs', 'AltLocs',
+                                          universe.atoms, ' ', universe)
+            self._check_missing_attribute('icodes', 'ICodes',
+                                          universe.residues, ' ', universe)
+            self._check_missing_attribute('occupancies', 'Occupancies',
+                                          universe.atoms, 1, universe)
 
     def _generate_periodic_border_2d(self, group):
         _box = utilities.get_box(group.universe, self.normal)
@@ -141,13 +152,14 @@ class PYTIM(object):
 
         eps = min(2. * self.alpha, _box[0], _box[1])
         L = [eps, eps]
+        low = [None, None]
+        upp = [None, None]
         U = [_box[0] - eps, _box[1] - eps]
 
         pos = positions[:]
-        low_x = positions[positions[:, 0] <= L[0]] + shift[0]
-        low_y = positions[positions[:, 1] <= L[1]] + shift[1]
-        upp_x = positions[positions[:, 0] >= U[0]] - shift[0]
-        upp_y = positions[positions[:, 1] >= U[1]] - shift[1]
+        for xy in [0, 1]:
+            low[xy] = positions[positions[:, xy] <= L[xy]] + shift[xy]
+            upp[xy] = positions[positions[:, xy] >= U[xy]] - shift[xy]
 
         low_x_low_y = positions[np.logical_and(
             positions[:, 0] <= L[0], positions[:, 1] <= L[1])] + (shift[0] + shift[1])
@@ -160,10 +172,10 @@ class PYTIM(object):
 
         return np.concatenate(
             (pos,
-             low_x,
-             low_y,
-             upp_x,
-             upp_y,
+             low[0],
+             low[1],
+             upp[0],
+             upp[1],
              low_x_low_y,
              upp_x_upp_y,
              low_x_upp_y,
@@ -192,15 +204,11 @@ class PYTIM(object):
         center_options = ['no', 'middle', 'origin', False, True]
         if centered not in center_options:
             centered = 'no'
-        if centered == False:
-            centered = 'no'
-        if centered == True:
-            centered = 'middle'
         try:
-            if centered == 'no':
+            if centered in ['no', False]:
                 self.universe.atoms.positions = self.original_positions
 
-            if centered == 'middle':
+            if centered in ['middle', True]:
                 # NOTE: this assumes that all method relying on 'planar'
                 # symmetry must center the interface along the normal
                 if self.symmetry == 'planar':
@@ -212,9 +220,8 @@ class PYTIM(object):
                         self.universe.dimensions[:3])
             try:
                 # it exists already, let's add information about the box, as
-                # MDAnalysis forgets to do so for successive frames. TODO MDA
-                # version check here!
-                id(self.PDB[filename]) > 0
+                # MDAnalysis forgets to do so for successive frames. A bugfix
+                # should be on the way for the next version...
                 self.PDB[filename].CRYST1(
                     self.PDB[filename].convert_dimensions_to_unitcell(
                         self.universe.trajectory.ts
@@ -284,7 +291,7 @@ class PYTIM(object):
 
                 _g.radii = np.copy(_radii[:])
 
-                if np.any(np.equal(_g.radii, None)) :
+                if np.any(np.equal(_g.radii, None)):
                     raise ValueError(self.UNDEFINED_RADIUS)
                 del _radii
                 del _types
@@ -297,7 +304,7 @@ class PYTIM(object):
         :return list triangulations:  a list of two Delaunay triangulations,\
                            which are also stored in self.surf_triang
         """
-        if layer > len(self._layers[0]): 
+        if layer > len(self._layers[0]):
             raise ValueError(self.UNDEFINED_LAYER)
 
         box = self.universe.dimensions[:3]
@@ -479,6 +486,6 @@ class PYTIM(object):
 from pytim.itim import ITIM
 from pytim.gitim import GITIM
 from pytim.willard_chandler import WillardChandler
-from pytim import observables, utilities,datafiles
+from pytim import observables, utilities, datafiles
 
 #__all__ = [ 'itim' , 'gitim' , 'observables', 'datafiles', 'utilities']
