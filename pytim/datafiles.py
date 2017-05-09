@@ -72,20 +72,22 @@ import re as re
 class Data(object):
     """" a class for storing/accessing configurations, trajectories, topologies
     """
+    
+    def _generate_data_property(self,name):
+        labels = [label for label,val in self.type.iteritems() if val == name]
+        return list(  set(labels) & set(self.label)   )
+
     @property
     def config(self):
-        labels = [label for label,val in self.type.iteritems() if val == 'config']
-        return list(  set(labels) & set(self.label)   )
+        return self._generate_data_property('config')
 
     @property
     def topol(self):
-        labels = [label for label,val in self.type.iteritems() if val == 'topol']
-        return list(  set(labels) & set(self.label)   )
+        return self._generate_data_property('topol')
 
     @property
     def traj(self):
-        labels = [label for label,val in self.type.iteritems() if val == 'traj']
-        return list(  set(labels) & set(self.label)   )
+        return self._generate_data_property('traj')
 
     def __init__(self):
         self._label=list()
