@@ -225,11 +225,14 @@ class PYTIM(object):
                     )
                 )
             except BaseException:
-                bondvalue={LooseVersion('0.15'):False, LooseVersion('0.16'):None}
+                if LooseVersion(self._MDAversion) > LooseVersion('0.15'):
+                    bondvalue = False
+                else:
+                    bondvalue = None
                 self.PDB[filename] = MDAnalysis.Writer(
                                         filename, multiframe=True,
                                         n_atoms=self.universe.atoms.n_atoms,
-                                        bonds=bondvalue[self._MDAversion] 
+                                        bonds=bondvalue
                                      )
             self.PDB[filename].write(self.universe.atoms)
 
