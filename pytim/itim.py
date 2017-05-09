@@ -218,7 +218,7 @@ class ITIM(pytim.PYTIM):
 
             We test them also here in the docstring:
 
-            >>> import pytim 
+            >>> import pytim
             >>> import MDAnalysis as mda
             >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
             >>>
@@ -236,13 +236,13 @@ class ITIM(pytim.PYTIM):
             Traceback (most recent call last):
             ...
             ValueError: parameter mesh must be positive
-            
+
         """
 
         self._sanity_check_alpha()
         self._sanity_check_cluster_cut()
 
-        if not (isinstance(self.target_mesh, int) or 
+        if not (isinstance(self.target_mesh, int) or
                 isinstance(self.target_mesh, float)):
             raise TypeError(self.MESH_NAN)
         if self.target_mesh <= 0:

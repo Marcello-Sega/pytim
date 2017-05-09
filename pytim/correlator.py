@@ -62,14 +62,12 @@ class Correlator(object):
         self.a1 = np.append(self.a1,self.a1[:]*0)  # zero padding
         fa1 = np.fft.fft(self.a1)
 
-        if (type(self.a2) != type(None)): # do cross-corr
+        if not isinstance(self.a2, type(None): # do cross-corr
             self.a2 = np.append(self.a2,self.a2[:]*0)
             fa2 = np.fft.fft(self.a2)
-            pass
         else:                             # do auto-corr
             self.a2 = self.a1             # pointer to data in a1
             fa2     = fa1
-            pass
 
         # Doing fft on a1 and a2
         return np.real(  (np.fft.fft(fa2*np.conj(fa1))[:size] + np.fft.fft(fa1*np.conj(fa2))[:size]) / norm / len(fa1) ) / 2.
@@ -95,11 +93,11 @@ class Correlator(object):
         >>> print c2.lap()
         3.00523400307
 
-	"""
-	toc=timer()
-	dt = toc-self.tic
-	self.tic=toc
-	return dt
+    """
+    toc=timer()
+    dt = toc-self.tic
+    self.tic=toc
+    return dt
 
 
 if __name__ == "__main__":
