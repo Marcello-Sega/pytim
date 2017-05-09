@@ -111,6 +111,26 @@ class PYTIM(object):
             values = np.array([value] * len(group))
             universe.add_TopologyAttr(missing_class(values))
 
+    def _sanity_check_alpha(self):            
+        if self.alpha < 0:
+            raise ValueError(self.ALPHA_NEGATIVE)
+        if self.alpha >= np.amin(self.universe.dimensions[:3]):
+            raise ValueError(self.ALPHA_LARGE)
+
+    def _sanity_check_cluster_cut(self):
+        if(self.cluster_cut is not None):
+            elements = len(self.cluster_cut) 
+            try:
+                extraelements = len(self.extra_cluster_groups) 
+            except TypeError:
+                extraelements = -1
+            if  not (elements == 1 or elements == 1 + extraelements):
+                raise  StandardError(self.MISMATCH_CLUSTER_SEARCH)
+        else:
+            if self.extra_cluster_groups is not None:
+                raise ValueError(self.UNDEFINED_CLUSTER_SEARCH)
+                
+                
     def _basic_checks(self, universe):
         self._MDAversion = MDAnalysis.__version__
         LooseV = LooseVersion(self._MDAversion)
