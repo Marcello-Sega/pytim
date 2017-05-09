@@ -333,13 +333,11 @@ class PYTIM(object):
             self.triangulate_layer(layer)
 
             self._interpolator = [None, None]
-            self._interpolator[0] = LinearNDInterpolator(
-                self.surf_triang[0],
-                self.triangulation_points[0][:, 2])
-            self._interpolator[1] = LinearNDInterpolator(
-                self.surf_triang[1],
-                self.triangulation_points[1][:, 2])
-
+            for layer in [0,1]
+                self._interpolator[layer] = LinearNDInterpolator(
+                    self.surf_triang[layer],
+                    self.triangulation_points[layer][:, 2])
+            
     def interpolate_surface(self, positions, layer):
         self._initialize_distance_interpolator(layer)
         upper_set = positions[positions[:, 2] >= 0]
