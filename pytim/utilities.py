@@ -242,7 +242,7 @@ def write_vtk_triangulation(filename, vertices, triangles,normals=None):
         :param string filename: the filename
         :param array vertices: (N,3) array of floats for N vertices
         :param array triangles: (M,3) array of indices to the vertices
-        :param array triangles: (M,3) array of normal vectors 
+        :param array triangles: (M,3) array of normal vectors
     """
     f = open(filename, "w")
     f.write("# vtk DataFile Version 2.0\nkernel\nASCII\n")
