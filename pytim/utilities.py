@@ -37,13 +37,13 @@ def get_coord(coord,group=None,normal=2):
     return group.positions[:, (coord + 1 + normal) % 3]
 
 def get_x(group=None, normal=2):
-    get_coord(0,group=group,normal=normal)
+    return get_coord(0,group=group,normal=normal)
 
 def get_y(group=None, normal=2):
-    get_coord(1,group=group,normal=normal)
+    return get_coord(1,group=group,normal=normal)
     
 def get_z(group=None, normal=2):
-    get_coord(2,group=group,normal=normal)
+    return get_coord(2,group=group,normal=normal)
 
 
 def get_pos(group=None, normal=2):
@@ -55,6 +55,19 @@ def get_pos(group=None, normal=2):
     if normal == 1:
         return np.roll(pos, 1, axis=1)
 
+def rebox(pos, edge, shift):
+    """ rebox a vector along one dimension
+        :param ndarray pos: the array of components to be reboxed
+        :param float edge: the simulation box edge
+        :param float shift: additional shift
+    """
+    condition =  pos >= edge - shift
+    pos[condition] -= edge
+    
+    condition =  pos < 0 - shift
+    pos[condition] += edge
+    
+    return pos
 
 def centerbox(universe, x=None, y=None, z=None, vector=None,
               center_direction=2, halfbox_shift=True):
@@ -80,10 +93,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
         z = get_z(universe.atoms)
     if x is None and y is None and z is None and vector is not None:
         try:
-            vector[vector >= dim[center_direction] -
-                   shift[center_direction]] -= dim[center_direction]
-            vector[vector < -dim[center_direction] -
-                   shift[center_direction]] += dim[center_direction]
+            vector = rebox(vector,dim[center_directoin],shift[center_direction])
         except Exception:
             pass
     if x is not None or y is not None or z is not None:
@@ -92,8 +102,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
                 # let's just try to rebox all directions. Will succeed only
                 # for those which are not None. The >= convention is needed
                 # for cKDTree
-                val[val >= dim[index] - shift[index]] -= dim[index]
-                val[val < -dim[index] - shift[index]] += dim[index]
+                val = rebox(val,dim[index],shift[index])
             except Exception:
                 pass
     if stack:
@@ -148,7 +157,7 @@ def triangulated_surface_stats(tri2d, points3d):
         :returns list stats : the statistics :  [surface_area]
     """
 
-    # TODO: write a more efficient routine ?
+    # NOTE: would it be possible to write a more efficient routine ?
     # some advanced indexing here...
     # points3d[reduced] is an array of shape (x,3,3)
     # we need to subtract the first of the three vectors
@@ -158,22 +167,6 @@ def triangulated_surface_stats(tri2d, points3d):
     # non-zero vectors of each triplet
     area = np.linalg.norm(np.cross(v[:, 1], v[:, 2]), axis=1).sum() / 2.
     return [area]
-
-
-def _init_NN_search(group, box):
-    # NOTE: boxsize shape must be (6,), and the last three elements are
-    #       overwritten in cKDTree:
-    #   boxsize_arr = np.empty(2 * self.m, dtype=np.float64)
-    #   boxsize_arr[:] = boxsize
-    #   boxsize_arr[self.m:] = 0.5 * boxsize_arr[:self.m]
-
-    # TODO: handle macroscopic normal different from z
-    # NOTE: coords in cKDTree must be in [0,L), but pytim uses [-L/2,L/2) on
-    # the 3rd axis. We shift them here
-    shift = np.array([0., 0., box[2]]) / 2.
-    pos = group.positions[:] + shift
-    return cKDTree(pos, boxsize=box[:6], copy_data=True)
-
 
 def generate_grid_in_box(box, npoints):
     """generate an homogenous grid of npoints^3 points that spans the
@@ -187,6 +180,12 @@ def generate_grid_in_box(box, npoints):
     grid = np.append(grid, z.reshape(-1, 1), axis=1)
     return grid.T
 
+
+def _vtk_format_vector(vector, format_str="{:f}"):
+    formatted = ''
+    for element in vector:
+        formatted += format_str.format(element)+' '
+    return formatted
 
 def write_vtk_scalar_grid(filename, grid_size, spacing, scalars):
     """write in a vtk file a scalar field on a rectangular grid
@@ -203,12 +202,8 @@ def write_vtk_scalar_grid(filename, grid_size, spacing, scalars):
     f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
     f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
     f.write(str_size + " " + str_size + " " + str_size + " " + "\n")
-    f.write("SPACING " +
-            str(spacing[2]) +
-            " " +
-            str(spacing[1]) +
-            " " +
-            str(spacing[0]))
+    spacing_str = _vtk_format_vector(spacing)
+    f.write("SPACING " + spacing_str + "\n")
     f.write("\n")
     f.write("ORIGIN 0.000000 0.000000 0.000000\n")
     f.write("POINT_DATA " + str(len(scalars)) + "\n")
@@ -241,9 +236,7 @@ def write_vtk_points(filename, pos, color=None, radius=None):
     if color is not None:
         f.write("COLOR_SCALARS color 3\n")
         for c in color:
-            f.write('{:1.2f} '.format(c[0]) + '{:1.2f} '.format(c[1]) +
-                    '{:1.2f} '.format(c[2]) + "\n")
-
+            f.write(_vtk_format_vector(c,format_str="{:1.2f}") + "\n")
     f.close()
 
 
@@ -259,13 +252,13 @@ def write_vtk_triangulation(filename, vertices, triangles):
     f.write("DATASET UNSTRUCTURED_GRID\n")
     f.write("POINTS " + str(len(vertices)) + " float\n")
     for point in vertices:
-        f.write(str(point[2]) + " " + str(point[1]) +
-                " " + str(point[0]) + "\n")
+        f.write(_vtk_format_vector(point[::-1])+ "\n")
+
     f.write("\nCELLS " + str(len(triangles)) +
             " " + str(4 * len(triangles)) + "\n")
     for vertex in triangles:
-        f.write("3 " + str(vertex[0]) + " " +
-                str(vertex[1]) + " " + str(vertex[2]) + "\n")
+        f.write(_vtk_format_vector(vertex)+ "\n")
+
     f.write("\nCELL_TYPES " + str(len(triangles)) + "\n")
     for vertex in triangles:
         f.write("5\n")
@@ -337,7 +330,7 @@ def do_cluster_analysis_DBSCAN(
         if min_samples < 2:
             min_samples = 2
 
-    # TODO: extra_cluster_groups are not yet implemented
+    # NOTE: extra_cluster_groups are not yet implemented
     points = group.atoms.positions[:]
 
     tree = cKDTree(points, boxsize=box[:6])

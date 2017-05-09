@@ -729,10 +729,7 @@ class Profile(object):
                 pass
 
             if self.do_rebox:
-                condition = _pos >= self._box[self._dir]
-                _pos[condition] -= self._box[self._dir]
-                condition = _pos < 0
-                _pos[condition] += self._box[self._dir]
+                utilities.rebox(_pos,self._box[self._dir],0)
         else:
             _pos = IntrinsicDistance(self.interface).compute(self.group)
 
