@@ -14,7 +14,6 @@ except BaseException:
 
 from MDAnalysis.lib import distances
 from itertools import chain
-import pytim
 import utilities
 # we try here to have no options passed
 # to the observables, so that classes are
