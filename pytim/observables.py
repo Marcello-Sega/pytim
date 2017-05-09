@@ -179,13 +179,12 @@ class RDF(object):
 
     def sample(self, g1=None, g2=None):
         self.n_frames += 1
+        self.g2 = g2
         if g1 is not None:
             self.g1 = g1
         if g2 is None:
-            self.g2 = self.g1
-        else:
-            self.g2 = g2
-
+            self.g2 = self.g1 #all atoms by default (see __init__)
+            
         if self.observable is not  None:
             # determine weights, otherwise assumes number of atoms (default)
             fg1 = self.observable.compute(self.g1)
