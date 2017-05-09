@@ -222,42 +222,37 @@ class PYTIM(object):
 
         """
         options={'no':False,False:False,'middle':True,True:True}
+        if options[centered] == False:
+            self.universe.atoms.positions = self.original_positions
+
+        if options[centered] == True:
+            # NOTE: this assumes that all method relying on 'planar'
+            # symmetry must center the interface along the normal
+            box = self.universe.dimensions[self.normal]
+            translation = [0, 0, 0]
+            translation[self.normal] = box / 2.
+            self.universe.atoms.positions += np.array(translation)
+            self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
         try:
-            if options[centered] == False:
-                self.universe.atoms.positions = self.original_positions
-
-            if options[centered] == True:
-                # NOTE: this assumes that all method relying on 'planar'
-                # symmetry must center the interface along the normal
-                box = self.universe.dimensions[self.normal]
-                translation = [0, 0, 0]
-                translation[self.normal] = box / 2.
-                self.universe.atoms.positions += np.array(translation)
-                self.universe.atoms.pack_into_box(
-                self.universe.dimensions[:3])
-            try:
-                # it exists already, let's add information about the box, as
-                # MDAnalysis forgets to do so for successive frames. A bugfix
-                # should be on the way for the next version...
-                self.PDB[filename].CRYST1(
-                    self.PDB[filename].convert_dimensions_to_unitcell(
-                        self.universe.trajectory.ts
-                    )
+            # it exists already, let's add information about the box, as
+            # MDAnalysis forgets to do so for successive frames. A bugfix
+            # should be on the way for the next version...
+            self.PDB[filename].CRYST1(
+                self.PDB[filename].convert_dimensions_to_unitcell(
+                    self.universe.trajectory.ts
                 )
-            except BaseException:
-                if LooseVersion(self._MDAversion) > LooseVersion('0.15'):
-                    bondvalue = None
-                else:
-                    bondvalue = False
-                self.PDB[filename] = MDAnalysis.Writer(
-                                        filename, multiframe=True,
-                                        n_atoms=self.universe.atoms.n_atoms,
-                                        bonds=bondvalue
-                                     )
-            self.PDB[filename].write(self.universe.atoms)
-
+            )
         except BaseException:
-            print("Error writing pdb file")
+            if LooseVersion(self._MDAversion) > LooseVersion('0.15'):
+                bondvalue = None
+            else:
+                bondvalue = False
+            self.PDB[filename] = MDAnalysis.Writer(
+                                    filename, multiframe=True,
+                                    n_atoms=self.universe.atoms.n_atoms,
+                                    bonds=bondvalue
+                                 )
+        self.PDB[filename].write(self.universe.atoms)
 
     def savepdb(self, filename='layers.pdb', centered='no', multiframe=True):
         """ An alias to :func:`writepdb`
