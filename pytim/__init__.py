@@ -201,9 +201,7 @@ class PYTIM(object):
             >>> interface.writepdb('layers.pdb',centered='no')
 
         """
-        center_options = ['no', 'middle', 'origin', False, True]
-        if centered not in center_options:
-            centered = 'no'
+
         try:
             if centered in ['no', False]:
                 self.universe.atoms.positions = self.original_positions
@@ -211,13 +209,12 @@ class PYTIM(object):
             if centered in ['middle', True]:
                 # NOTE: this assumes that all method relying on 'planar'
                 # symmetry must center the interface along the normal
-                if self.symmetry == 'planar':
-                    box = self.universe.dimensions[self.normal]
-                    translation = [0, 0, 0]
-                    translation[self.normal] = box / 2.
-                    self.universe.atoms.positions += np.array(translation)
-                    self.universe.atoms.pack_into_box(
-                        self.universe.dimensions[:3])
+                box = self.universe.dimensions[self.normal]
+                translation = [0, 0, 0]
+                translation[self.normal] = box / 2.
+                self.universe.atoms.positions += np.array(translation)
+                self.universe.atoms.pack_into_box(
+                self.universe.dimensions[:3])
             try:
                 # it exists already, let's add information about the box, as
                 # MDAnalysis forgets to do so for successive frames. A bugfix
