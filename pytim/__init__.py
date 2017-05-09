@@ -118,18 +118,15 @@ class PYTIM(object):
             raise ValueError(self.ALPHA_LARGE)
 
     def _sanity_check_cluster_cut(self):
+        elements = 0
+        extraelements = 0
         if(self.cluster_cut is not None):
             elements = len(self.cluster_cut)
-            try:
-                extraelements = len(self.extra_cluster_groups)
-            except TypeError:
-                extraelements = -1
-            if  not (elements == 1 or elements == 1 + extraelements):
+        if(self.extra_cluster_groups is not None):
+            extraelements = len(self.extra_cluster_groups)
+            
+        if  not (elements == 1 or elements == 1 + extraelements):
                 raise  StandardError(self.MISMATCH_CLUSTER_SEARCH)
-        else:
-            if self.extra_cluster_groups is not None:
-                raise ValueError(self.UNDEFINED_CLUSTER_SEARCH)
-
 
     def _basic_checks(self, universe):
         self._MDAversion = MDAnalysis.__version__
