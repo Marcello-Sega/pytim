@@ -20,17 +20,13 @@ stats, tri, points, trim = surface.compute()
 print("The total triangulated surface has an area of {:04.1f} Angstrom^2".format(
     stats[0]))
 
-
-# plot the triangulation using matplotlib
 try:
+    # plot the triangulation using matplotlib
     import matplotlib
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     import matplotlib.tri as mtplt_tri
-except Exception:
-    print ("mpl_toolkits is needed for the graphical part of this example, you might need to upgrade matplotlib to v. 2.0")
-    exit()
-try:
+    
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.set_xlim([0, box[0]])
@@ -65,4 +61,4 @@ try:
     print("surface triangulation saved in surfaces.pdf")
     plt.show()
 except Exception:
-    print "this is not run for code coverage"
+    print "exception for code coverage"
