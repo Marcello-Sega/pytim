@@ -414,8 +414,9 @@ class PYTIM(object):
 
         max_val = np.amax(histo)
         min_val = np.amin(histo)
-        delta = min_val + (max_val - min_val) / 3.  # TODO test different cases
-
+        # NOTE maybe allow user to set different values
+        delta = min_val + (max_val - min_val) / 3.  
+        
         # let's first avoid crossing pbc with the liquid phase. This can fail:
         while(histo[0] > delta or histo[-1] > delta):
             total_shift += shift
