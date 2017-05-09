@@ -181,6 +181,12 @@ def generate_grid_in_box(box, npoints):
     return grid.T
 
 
+def _vtk_format_vector(vector, format_str="{:f}"):
+    formatted = ''
+    for element in vector:
+        formatted += format_str.format(element)+' '
+    return formatted
+
 def write_vtk_scalar_grid(filename, grid_size, spacing, scalars):
     """write in a vtk file a scalar field on a rectangular grid
 
@@ -196,12 +202,8 @@ def write_vtk_scalar_grid(filename, grid_size, spacing, scalars):
     f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
     f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
     f.write(str_size + " " + str_size + " " + str_size + " " + "\n")
-    f.write("SPACING " +
-            str(spacing[2]) +
-            " " +
-            str(spacing[1]) +
-            " " +
-            str(spacing[0]))
+    spacing_str = _vtk_format_vector(spacing)
+    f.write("SPACING " + spacing_str + "\n")
     f.write("\n")
     f.write("ORIGIN 0.000000 0.000000 0.000000\n")
     f.write("POINT_DATA " + str(len(scalars)) + "\n")
@@ -234,9 +236,7 @@ def write_vtk_points(filename, pos, color=None, radius=None):
     if color is not None:
         f.write("COLOR_SCALARS color 3\n")
         for c in color:
-            f.write('{:1.2f} '.format(c[0]) + '{:1.2f} '.format(c[1]) +
-                    '{:1.2f} '.format(c[2]) + "\n")
-
+            f.write(_vtk_format_vector(c,format_str="{:1.2f}") + "\n")
     f.close()
 
 
@@ -252,13 +252,13 @@ def write_vtk_triangulation(filename, vertices, triangles):
     f.write("DATASET UNSTRUCTURED_GRID\n")
     f.write("POINTS " + str(len(vertices)) + " float\n")
     for point in vertices:
-        f.write(str(point[2]) + " " + str(point[1]) +
-                " " + str(point[0]) + "\n")
+        f.write(_vtk_format_vector(point[::-1])+ "\n")
+
     f.write("\nCELLS " + str(len(triangles)) +
             " " + str(4 * len(triangles)) + "\n")
     for vertex in triangles:
-        f.write("3 " + str(vertex[0]) + " " +
-                str(vertex[1]) + " " + str(vertex[2]) + "\n")
+        f.write(_vtk_format_vector(vertex)+ "\n")
+
     f.write("\nCELL_TYPES " + str(len(triangles)) + "\n")
     for vertex in triangles:
         f.write("5\n")
