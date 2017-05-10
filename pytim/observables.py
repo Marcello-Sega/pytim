@@ -184,7 +184,7 @@ class RDF(object):
             self.g1 = g1
         if g2 is None:
             self.g2 = self.g1 #all atoms by default (see __init__)
-            
+
         if self.observable is not  None:
             # determine weights, otherwise assumes number of atoms (default)
             fg1 = self.observable.compute(self.g1)
@@ -409,7 +409,7 @@ class LayerTriangulation(Observable):
         stats = []
         layer_stats = [None,None]
         self.interface.triangulate_layer(self.layer)
-        
+
         if self.return_statistics is True:
             for layer in [0,1]:
                 layer_stats[layer] = utilities.triangulated_surface_stats(
@@ -611,7 +611,6 @@ class Profile(object):
     >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5)
     >>>
     >>> for ts in u.trajectory[::50]:
-    ...     interface.center(oxygens)
     ...     profile.sample()
     >>>
     >>> low, up, avg = profile.get_values(binwidth=1.0)
@@ -638,7 +637,6 @@ class Profile(object):
         interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5)
 
         for ts in u.trajectory[::50]:
-            interface.center(oxygens)
             profile.sample()
 
         low, up, avg = profile.get_values(binwidth=1.0)
@@ -742,12 +740,12 @@ class Profile(object):
         # loose information
         max_bins = np.max(map(len, self.sampled_bins))
         max_size = max_bins * self.binsize
-        
+
         if binwidth is not None: #overrides nbins
             nbins = max_size / binwidth
         if nbins is None: #means also binwidth must be none
             nbins = max_bins
-            
+
         if(nbins % 2 > 0):
             nbins += 1
 

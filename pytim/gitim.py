@@ -236,22 +236,7 @@ class GITIM(pytim.PYTIM):
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 
-        if(self.cluster_cut is not None):
-            # groups have been checked already in _sanity_checks()
-            labels, counts, _ = utilities.do_cluster_analysis_DBSCAN(
-                self.itim_group, self.cluster_cut[0],
-                self.universe.dimensions[:6],
-                self.cluster_threshold_density, self.molecular)
-            labels = np.array(labels)
-            # the label of atoms in the largest cluster
-            label_max = np.argmax(counts)
-            # the indices (within the group) of the
-            ids_max = np.where(labels == label_max)[0]
-            # atoms belonging to the largest cluster
-            self.cluster_group = self.itim_group[ids_max]
-
-        else:
-            self.cluster_group = self.itim_group
+        self._define_cluster_group()
 
         if self.symmetry == 'planar':
             utilities.centerbox(self.universe, center_direction=self.normal)

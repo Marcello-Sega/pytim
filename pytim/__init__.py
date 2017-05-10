@@ -119,12 +119,12 @@ class PYTIM(object):
 
     def _sanity_check_cluster_cut(self):
         elements = 0
-        extraelements = -1 
+        extraelements = -1
         if(self.cluster_cut is not None):
             elements = len(self.cluster_cut)
         if(self.extra_cluster_groups is not None):
             extraelements = len(self.extra_cluster_groups)
-            
+
         if  not (elements == 1 or elements == 1 + extraelements):
                 raise  StandardError(self.MISMATCH_CLUSTER_SEARCH)
 
@@ -218,6 +218,8 @@ class PYTIM(object):
             >>> interface.writepdb('layers.pdb',centered='no')
 
         """
+
+        temp_pos = np.copy(self.universe.atoms.positions)
         options={'no':False,False:False,'middle':True,True:True}
         if options[centered] == False:
             self.universe.atoms.positions = self.original_positions
@@ -250,6 +252,7 @@ class PYTIM(object):
                                     bonds=bondvalue
                                  )
         self.PDB[filename].write(self.universe.atoms)
+        self.universe.atoms.positions = np.copy(temp_pos)
 
     def savepdb(self, filename='layers.pdb', centered='no', multiframe=True):
         """ An alias to :func:`writepdb`
@@ -351,16 +354,25 @@ class PYTIM(object):
                     self.triangulation_points[layer][:, 2])
 
     def interpolate_surface(self, positions, layer):
-        self._initialize_distance_interpolator(layer)
+
         upper_set = positions[positions[:, 2] >= 0]
         lower_set = positions[positions[:, 2] < 0]
-        # interpolated values of upper/lower_set on the upper/lower surface
-        upper_int = self._interpolator[0](upper_set[:, 0:2])
-        lower_int = self._interpolator[1](lower_set[:, 0:2])
-        # copy everything back to one array with the correct order
+
         elevation = np.zeros(len(positions))
-        elevation[np.where(positions[:, 2] >= 0)] = upper_int
-        elevation[np.where(positions[:, 2] < 0)] = lower_int
+        if self.__class__.__name__ == 'ChaconTarazona':
+            upper_interp = self.surf.surface_from_modes(upper_set,self.modes[0])
+            lower_interp = self.surf.surface_from_modes(lower_set,self.modes[1])
+        elif self.__class__.__name__ == 'ITIM':
+            # interpolated values of upper/lower_set on the upper/lower surface
+            self._initialize_distance_interpolator(layer)
+            upper_interp = self._interpolator[0](upper_set[:, 0:2])
+            lower_interp = self._interpolator[1](lower_set[:, 0:2])
+        else:
+            raise StandardError("No interpolation scheme implemented for "+\
+                                self.__class__.__name__)
+        # copy everything back to one array with the correct order
+        elevation[np.where(positions[:, 2] >= 0)] = upper_interp
+        elevation[np.where(positions[:, 2] < 0)]  = lower_interp
         return elevation
 
     def _assign_normal(self, normal):
@@ -375,6 +387,25 @@ class PYTIM(object):
             if not (normal in self.directions_dict):
                 raise ValueError(self.WRONG_DIRECTION)
             self.normal = self.directions_dict[normal]
+
+    def _define_cluster_group(self):
+        if(self.cluster_cut is not None):
+            # groups have been checked already in _sanity_checks()
+            labels, counts, _ = utilities.do_cluster_analysis_DBSCAN(
+                self.itim_group, self.cluster_cut[0],
+                self.universe.dimensions[:6],
+                self.cluster_threshold_density, self.molecular)
+            labels = np.array(labels)
+            # the label of atoms in the largest cluster
+            label_max = np.argmax(counts)
+            # the indices (within the group) of the
+            ids_max = np.where(labels == label_max)[0]
+            # atoms belonging to the largest cluster
+            self.cluster_group = self.itim_group[ids_max]
+
+        else:
+            self.cluster_group = self.itim_group
+
 
     def center(self, group, direction=None, halfbox_shift=True):
         """
@@ -488,6 +519,7 @@ class PYTIM(object):
 from pytim.itim import ITIM
 from pytim.gitim import GITIM
 from pytim.willard_chandler import WillardChandler
+from pytim.chacon_tarazona import ChaconTarazona
 from pytim import observables, utilities, datafiles
 
 #__all__ = [ 'itim' , 'gitim' , 'observables', 'datafiles', 'utilities']
