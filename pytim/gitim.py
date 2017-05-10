@@ -8,7 +8,6 @@
 import numpy as np
 from scipy.spatial import Delaunay
 from scipy.spatial import distance
-import itertools
 from pytim import utilities
 import pytim
 

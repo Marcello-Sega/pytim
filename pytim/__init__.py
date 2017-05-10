@@ -118,22 +118,19 @@ class PYTIM(object):
             raise ValueError(self.ALPHA_LARGE)
 
     def _sanity_check_cluster_cut(self):
+        elements = 0
+        extraelements = -1 
         if(self.cluster_cut is not None):
             elements = len(self.cluster_cut)
-            try:
-                extraelements = len(self.extra_cluster_groups)
-            except TypeError:
-                extraelements = -1
-            if  not (elements == 1 or elements == 1 + extraelements):
+        if(self.extra_cluster_groups is not None):
+            extraelements = len(self.extra_cluster_groups)
+            
+        if  not (elements == 1 or elements == 1 + extraelements):
                 raise  StandardError(self.MISMATCH_CLUSTER_SEARCH)
-        else:
-            if self.extra_cluster_groups is not None:
-                raise ValueError(self.UNDEFINED_CLUSTER_SEARCH)
-
 
     def _basic_checks(self, universe):
         self._MDAversion = MDAnalysis.__version__
-        LooseV = LooseVersion(self._MDAversion)
+        VERS = LooseVersion(self._MDAversion)
         V015 = LooseVersion('0.15')
         V016 = LooseVersion('0.16')
         try:
@@ -141,10 +138,10 @@ class PYTIM(object):
         except BaseException:
             raise Exception(self.WRONG_UNIVERSE)
 
-        if LooseV < V015:
+        if VERS < V015:
             raise Exception("Must use MDAnalysis  >= 0.15")
 
-        if LooseV >= V016:  # new topology system
+        if VERS >= V016:  # new topology system
 
             self.topologyattrs = importlib.import_module(
                 'MDAnalysis.core.topologyattrs'
@@ -222,42 +219,37 @@ class PYTIM(object):
 
         """
         options={'no':False,False:False,'middle':True,True:True}
+        if options[centered] == False:
+            self.universe.atoms.positions = self.original_positions
+
+        if options[centered] == True:
+            # NOTE: this assumes that all method relying on 'planar'
+            # symmetry must center the interface along the normal
+            box = self.universe.dimensions[self.normal]
+            translation = [0, 0, 0]
+            translation[self.normal] = box / 2.
+            self.universe.atoms.positions += np.array(translation)
+            self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
         try:
-            if options[centered] == False:
-                self.universe.atoms.positions = self.original_positions
-
-            if options[centered] == True:
-                # NOTE: this assumes that all method relying on 'planar'
-                # symmetry must center the interface along the normal
-                box = self.universe.dimensions[self.normal]
-                translation = [0, 0, 0]
-                translation[self.normal] = box / 2.
-                self.universe.atoms.positions += np.array(translation)
-                self.universe.atoms.pack_into_box(
-                self.universe.dimensions[:3])
-            try:
-                # it exists already, let's add information about the box, as
-                # MDAnalysis forgets to do so for successive frames. A bugfix
-                # should be on the way for the next version...
-                self.PDB[filename].CRYST1(
-                    self.PDB[filename].convert_dimensions_to_unitcell(
-                        self.universe.trajectory.ts
-                    )
+            # it exists already, let's add information about the box, as
+            # MDAnalysis forgets to do so for successive frames. A bugfix
+            # should be on the way for the next version...
+            self.PDB[filename].CRYST1(
+                self.PDB[filename].convert_dimensions_to_unitcell(
+                    self.universe.trajectory.ts
                 )
-            except BaseException:
-                if LooseVersion(self._MDAversion) > LooseVersion('0.15'):
-                    bondvalue = None
-                else:
-                    bondvalue = False
-                self.PDB[filename] = MDAnalysis.Writer(
-                                        filename, multiframe=True,
-                                        n_atoms=self.universe.atoms.n_atoms,
-                                        bonds=bondvalue
-                                     )
-            self.PDB[filename].write(self.universe.atoms)
-
+            )
         except BaseException:
-            print("Error writing pdb file")
+            if LooseVersion(self._MDAversion) > LooseVersion('0.15'):
+                bondvalue = None
+            else:
+                bondvalue = False
+            self.PDB[filename] = MDAnalysis.Writer(
+                                    filename, multiframe=True,
+                                    n_atoms=self.universe.atoms.n_atoms,
+                                    bonds=bondvalue
+                                 )
+        self.PDB[filename].write(self.universe.atoms)
 
     def savepdb(self, filename='layers.pdb', centered='no', multiframe=True):
         """ An alias to :func:`writepdb`

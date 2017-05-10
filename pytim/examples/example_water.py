@@ -3,7 +3,6 @@
 import MDAnalysis as mda
 import pytim
 from pytim.datafiles import *
-import numpy as np
 
 u = mda.Universe(WATER_GRO)
 oxygens = u.select_atoms("name OW")

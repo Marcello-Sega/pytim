@@ -1,16 +1,12 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-import MDAnalysis
 from timeit import default_timer as timer
 import numpy as np
 import itertools
 from dbscan import dbscan_inner
-from scipy.spatial import Delaunay, cKDTree
+from scipy.spatial import cKDTree
 from scipy.stats import gaussian_kde
-from scipy.interpolate import griddata
 from scipy.cluster import vq
-from MDAnalysis.topology import tables
-
 
 def lap(show=False):
     if not hasattr(lap, "tic"):
@@ -91,11 +87,10 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
         x = get_x(universe.atoms)
         y = get_y(universe.atoms)
         z = get_z(universe.atoms)
+
     if x is None and y is None and z is None and vector is not None:
-        try:
-            vector = rebox(vector,dim[center_direction],shift[center_direction])
-        except Exception:
-            pass
+        vector = rebox(vector,dim[center_direction],shift[center_direction])
+
     if x is not None or y is not None or z is not None:
         for index, val in enumerate((x, y, z)):
             try:
@@ -240,12 +235,13 @@ def write_vtk_points(filename, pos, color=None, radius=None):
     f.close()
 
 
-def write_vtk_triangulation(filename, vertices, triangles):
+def write_vtk_triangulation(filename, vertices, triangles,normals=None):
     """ write in a vtk file a triangulation
 
         :param string filename: the filename
         :param array vertices: (N,3) array of floats for N vertices
         :param array triangles: (M,3) array of indices to the vertices
+        :param array triangles: (M,3) array of normal vectors
     """
     f = open(filename, "w")
     f.write("# vtk DataFile Version 2.0\nkernel\nASCII\n")
@@ -256,12 +252,17 @@ def write_vtk_triangulation(filename, vertices, triangles):
 
     f.write("\nCELLS " + str(len(triangles)) +
             " " + str(4 * len(triangles)) + "\n")
-    for vertex in triangles:
-        f.write(_vtk_format_vector(vertex)+ "\n")
+    for index in triangles:
+        f.write("3 "+_vtk_format_vector(index,format_str="{:d}")+ "\n")
 
     f.write("\nCELL_TYPES " + str(len(triangles)) + "\n")
-    for vertex in triangles:
-        f.write("5\n")
+    f.write("5\n"*len(triangles))
+
+    if normals is not None:
+        f.write("\nPOINT_DATA "+str(len(vertices))+"\n")
+        f.write("NORMALS normals float\n")
+        for n in normals:
+            f.write(_vtk_format_vector(n,format_str="{:f}") + "\n")
 
 
 def vtk_consecutive_filename(universe, basename):
@@ -338,7 +339,7 @@ def do_cluster_analysis_DBSCAN(
                               for neighbors in tree.query_ball_point(
         points, cluster_cut, n_jobs=-1)]
     )
-    if not (len(neighborhoods.shape) is 1):
+    if len(neighborhoods.shape) != 1:
         raise ValueError("Error in do_cluster_analysis_DBSCAN(), the cutoff\
                           is probably too small")
     if molecular == False:

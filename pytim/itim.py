@@ -8,7 +8,7 @@
 
 from multiprocessing import Process, Queue
 import numpy as np
-from scipy.spatial import cKDTree, Delaunay
+from scipy.spatial import cKDTree
 from __builtin__ import zip as builtin_zip
 from pytim import utilities
 import pytim
@@ -242,8 +242,7 @@ class ITIM(pytim.PYTIM):
         self._sanity_check_alpha()
         self._sanity_check_cluster_cut()
 
-        if not (isinstance(self.target_mesh, int) or
-                isinstance(self.target_mesh, float)):
+        if not isinstance(self.target_mesh, (int,float)):
             raise TypeError(self.MESH_NAN)
         if self.target_mesh <= 0:
             raise ValueError(self.MESH_NEGATIVE)
