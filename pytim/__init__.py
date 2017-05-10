@@ -130,7 +130,7 @@ class PYTIM(object):
 
     def _basic_checks(self, universe):
         self._MDAversion = MDAnalysis.__version__
-        LooseV = LooseVersion(self._MDAversion)
+        VERS = LooseVersion(self._MDAversion)
         V015 = LooseVersion('0.15')
         V016 = LooseVersion('0.16')
         try:
@@ -138,10 +138,10 @@ class PYTIM(object):
         except BaseException:
             raise Exception(self.WRONG_UNIVERSE)
 
-        if LooseV < V015:
+        if VERS < V015:
             raise Exception("Must use MDAnalysis  >= 0.15")
 
-        if LooseV >= V016:  # new topology system
+        if VERS >= V016:  # new topology system
 
             self.topologyattrs = importlib.import_module(
                 'MDAnalysis.core.topologyattrs'
