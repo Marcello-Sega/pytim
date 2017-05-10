@@ -41,6 +41,13 @@ def get_y(group=None, normal=2):
 def get_z(group=None, normal=2):
     return get_coord(2,group=group,normal=normal)
 
+def compute_compatible_mesh_params(mesh,box):
+    """ given a target mesh size and a box, return the number of grid elements
+        and spacing in each direction, which are commensurate with the box
+    """
+    n = map(int,np.ceil(box / mesh))
+    d = box/n
+    return n,d
 
 def get_pos(group=None, normal=2):
     pos = group.positions[:]
@@ -166,10 +173,15 @@ def triangulated_surface_stats(tri2d, points3d):
 def generate_grid_in_box(box, npoints):
     """generate an homogenous grid of npoints^3 points that spans the
        complete box.
+
+       :param ndarray box: the simulation box edges
+       :param ndarray npoints: the number of points along each direction
+
     """
-    x_ = np.linspace(0., box[0], npoints)
-    y_ = np.linspace(0., box[1], npoints)
-    z_ = np.linspace(0, box[2], npoints)
+
+    x_ = np.linspace(0., box[0], npoints[0])
+    y_ = np.linspace(0., box[1], npoints[1])
+    z_ = np.linspace(0., box[2], npoints[2])
     x, y, z = np.meshgrid(x_, y_, z_, indexing='ij')
     grid = np.append(x.reshape(-1, 1), y.reshape(-1, 1), axis=1)
     grid = np.append(grid, z.reshape(-1, 1), axis=1)
@@ -186,19 +198,17 @@ def write_vtk_scalar_grid(filename, grid_size, spacing, scalars):
     """write in a vtk file a scalar field on a rectangular grid
 
        :param string filename: the filename
-       :param int grid_size: number of points along one side of the the cubic\
-                             grid along one dimension
+       :param array grid_size: number of points in the grid along each\
+                               direction
        :param array spacing: a (3,) array with the point spacing along the 3\
                              directions
        :param array scalars: a (grid_size,) array with the scalar field values
     """
-    str_size = str(grid_size)
     f = open(filename, "w")
     f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
     f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
-    f.write(str_size + " " + str_size + " " + str_size + " " + "\n")
-    spacing_str = _vtk_format_vector(spacing)
-    f.write("SPACING " + spacing_str + "\n")
+    f.write(_vtk_format_vector(grid_size,format_str="{:d}") + "\n")
+    f.write("SPACING " + _vtk_format_vector(spacing) + "\n")
     f.write("\n")
     f.write("ORIGIN 0.000000 0.000000 0.000000\n")
     f.write("POINT_DATA " + str(len(scalars)) + "\n")
