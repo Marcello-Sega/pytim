@@ -339,7 +339,7 @@ def do_cluster_analysis_DBSCAN(
                               for neighbors in tree.query_ball_point(
         points, cluster_cut, n_jobs=-1)]
     )
-    if not (len(neighborhoods.shape) is 1):
+    if len(neighborhoods.shape) != 1:
         raise ValueError("Error in do_cluster_analysis_DBSCAN(), the cutoff\
                           is probably too small")
     if molecular == False:
