@@ -22,23 +22,21 @@ def lap(show=False):
 
 def get_box(universe, normal=2):
     box = universe.coord.dimensions[0:3]
-    if normal == 2:
-        return box
-    if normal == 0:
-        return np.roll(box, 2)
-    if normal == 1:
-        return np.roll(box, 1)
+    return np.roll(box, 2-normal)
 
-def get_coord(coord,group=None,normal=2):
+def get_pos(group,normal=2):
+    return np.roll(group.positions, normal-2,axis=-1)
+
+def get_coord(coord,group,normal=2):
     return group.positions[:, (coord + 1 + normal) % 3]
 
-def get_x(group=None, normal=2):
+def get_x(group, normal=2):
     return get_coord(0,group=group,normal=normal)
 
-def get_y(group=None, normal=2):
+def get_y(group, normal=2):
     return get_coord(1,group=group,normal=normal)
 
-def get_z(group=None, normal=2):
+def get_z(group, normal=2):
     return get_coord(2,group=group,normal=normal)
 
 def compute_compatible_mesh_params(mesh,box):
@@ -48,15 +46,6 @@ def compute_compatible_mesh_params(mesh,box):
     n = map(int,np.ceil(box / mesh))
     d = box/n
     return n,d
-
-def get_pos(group=None, normal=2):
-    pos = group.positions[:]
-    if normal == 2:
-        return pos
-    if normal == 0:
-        return np.roll(pos, 2, axis=1)
-    if normal == 1:
-        return np.roll(pos, 1, axis=1)
 
 def rebox(pos, edge, shift):
     """ rebox a vector along one dimension
@@ -280,16 +269,13 @@ def vtk_consecutive_filename(universe, basename):
     filename = basename + '.' + str(frame) + '.vtk'
     return filename
 
-
 def density_map(pos, grid, sigma):
     values = np.vstack([pos[:, 0], pos[:, 1], pos[:, 2]])
     kernel = gaussian_kde(values, bw_method=sigma / values.std(ddof=1))
     return kernel, values.std(ddof=1)
 
-
 def _NN_query(kdtree, position, qrange):
     return kdtree.query_ball_point(position, qrange, n_jobs=-1)
-
 
 def generate_periodic_border_3d(points, box, delta):
     """ Selects the pparticles within a skin depth delta from the
@@ -317,7 +303,6 @@ def generate_periodic_border_3d(points, box, delta):
             # we keep track of the original ids.
             extraids = np.append(extraids, np.where(selection)[0])
     return extrapoints, extraids
-
 
 def do_cluster_analysis_DBSCAN(
         group, cluster_cut, box, threshold_density=None, molecular=True):
@@ -376,6 +361,63 @@ def do_cluster_analysis_DBSCAN(
     dbscan_inner(core_samples, neighborhoods, labels, counts)
     return labels, counts, n_neighbors
 
+class Surface(object):
+    """ Compute a continuous surface
+    """
+    #TODO: so far includes only methods for CT. Gather also other ones here
+    def __init__(self,box,alpha,normal=2,method='DFT'):
+        self.normal=normal
+        self.alpha=alpha
+        if method == 'DFT':
+            self._compute_q_vectors(box)
+
+    @property
+    def triangulation(self):
+        return self._triangulation
+
+    def update_q_vectors(self,box):
+        if np.any(box!=self.box):
+            self._compute_q_vectors(box)
+
+    def _compute_q_vectors(self,box):
+        self.box = np.roll(box,2-self.normal)
+        nmax = map(int,np.ceil(self.box[0:2]/self.alpha))
+        q_indices = np.mgrid[0:nmax[0],0:nmax[1]]
+        self.q_vectors=q_indices*1.0
+        self.q_vectors[0] *= 2.*np.pi/box[0]
+        self.q_vectors[1] *= 2.*np.pi/box[1]
+        self.modes_shape = self.q_vectors[0].shape
+        qx = self.q_vectors[0][::,0]
+        qy = self.q_vectors[1][0]
+        Qx = np.repeat(qx,len(qy))
+        Qy = np.tile(qy,len(qx))
+        self.Qxy = np.vstack((Qx,Qy)).T
+        self.Q = np.sqrt(np.sum(self.Qxy*self.Qxy,axis=1)[1:])
+
+    @staticmethod
+    def _surface_from_modes(points,q_vectors,modes):
+        elevation = []
+        for point in points:
+            dotp = q_vectors[0]* point[0] + q_vectors[1] * point[1]
+            phase = np.cos(dotp) + 1.j * np.sin(dotp)
+            elevation.append(np.sum((phase*modes).real))
+        return np.array(elevation)
+
+    def surface_from_modes(self,points,modes):
+        return self._surface_from_modes(points,self.q_vectors,modes)
+
+    def surface_modes(self,points):
+        QR = np.dot(self.Qxy, points[::,0:2].T).T
+        # ph[0] is are the phases associated to each of the ~ n^2 modes for particle 0
+        # we exclude the zero mode.
+        ph = (np.cos(QR)+1.j*np.sin(QR)).T[1:].T
+        z = points[::,2]
+        az = np.mean(z)
+        z = z - az
+        A = (ph/self.Q)
+        z = z
+        s = np.dot(np.linalg.pinv(A),z)
+        return np.append(az+0.j,s/self.Q)
 
 def fit_sphere(points):
     """ least square fit of a sphere through a set of points.
@@ -511,3 +553,5 @@ colormap = {
     'Hs': [230, 0, 46],
     'Mt': [235, 0, 38]
 }
+#
+

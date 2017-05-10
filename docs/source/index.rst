@@ -24,6 +24,7 @@
     ITIM
     GITIM
     WillardChandler
+    ChaconTarazona
     observables
     datafiles
     utilities
