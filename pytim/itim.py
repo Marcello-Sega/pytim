@@ -129,10 +129,11 @@ class ITIM(pytim.PYTIM):
         """determine a mesh size for the testlines that is compatible with the
         simulation box."""
         box = utilities.get_box(self.universe, self.normal)
-        self.mesh_nx = int(np.ceil(box[0] / self.target_mesh))
-        self.mesh_ny = int(np.ceil(box[1] / self.target_mesh))
-        self.mesh_dx = box[0] / self.mesh_nx
-        self.mesh_dy = box[1] / self.mesh_ny
+        n,d = utilities.compute_compatible_mesh_params(self.target_mesh,box)
+        self.mesh_nx = n[0]
+        self.mesh_ny = n[1]
+        self.mesh_dx = d[0]
+        self.mesh_dy = d[1]
         self.delta = np.minimum(self.mesh_dx, self.mesh_dy) / 10.
         if(self.use_kdtree == True):
             _x, _y = np.mgrid[0:box[0]:self.mesh_dx, 0:box[1]:self.mesh_dy]

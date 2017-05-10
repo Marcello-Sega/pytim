@@ -23,6 +23,7 @@
 
     ITIM
     GITIM
+    WillardChandler
     observables
     datafiles
     utilities

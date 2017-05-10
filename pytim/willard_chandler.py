@@ -39,6 +39,25 @@ class WillardChandler(pytim.PYTIM):
                               files. Uses the same file name convetion as\
                               surface_basename.
 
+    Example:
+    >>> import MDAnalysis as mda
+    >>> import pytim
+    >>> from pytim.datafiles import *
+    >>>
+    >>> u = mda.Universe(MICELLE_PDB)
+    >>> g = u.select_atoms('resname DPC')
+    >>>
+    >>> radii = pytim_data.vdwradii(G43A1_TOP)
+    >>>
+    >>> interface = pytim.WillardChandler(u, itim_group=g, alpha=3.0,\
+    ...                                   density_basename="dens",\
+    ...                                   particles_basename="atoms",\
+    ...                                   surface_basename="surf")
+    >>> R, _, _, _ = pytim.utilities.fit_sphere(\
+    ...                interface.triangulated_surface[0])
+    >>> print "Radius={:.3f}".format(R)
+    Radius=19.325
+
     """
 
     @property
@@ -79,15 +98,16 @@ class WillardChandler(pytim.PYTIM):
         self._sanity_check_alpha()
         self._sanity_check_cluster_cut()
 
-    def __init__(self, universe, alpha=2.0, mesh=30, itim_group=None,
+    def __init__(self, universe, alpha=2.0, mesh=2.0,
+                 itim_group=None,
                  radii_dict=None, surface_basename=None,
                  particles_basename=None, density_basename=None):
 
         self._basic_checks(universe)
         self.cluster_cut = None
-        # TODO make a uniform grid for non-cubic boxes, use part of
-        # _assign_mesh() from itim.py
         self.mesh = mesh
+        self.spacing = None
+        self.ngrid = None
         self.extra_cluster_groups = None
         self.universe = universe
         self.alpha = alpha
@@ -109,8 +129,7 @@ class WillardChandler(pytim.PYTIM):
         number."""
         filename = utilities.vtk_consecutive_filename(self.universe,
                                                       self.density_basename)
-        spacing = self.universe.dimensions[:3] / self.mesh
-        utilities.write_vtk_scalar_grid(filename, self.mesh, spacing,
+        utilities.write_vtk_scalar_grid(filename, self.ngrid, self.spacing,
                                         densmap)
 
     def dump_points(self, pos):
@@ -147,7 +166,12 @@ class WillardChandler(pytim.PYTIM):
         box = self.universe.dimensions[:3]
         delta = 2. * self.alpha + 1e-6
         utilities.generate_periodic_border_3d(pos, box, delta)
-        grid = utilities.generate_grid_in_box(box, self.mesh)
+        ngrid,spacing = utilities.compute_compatible_mesh_params(
+                                self.mesh,box
+                          )
+        self.spacing = spacing
+        self.ngrid = ngrid
+        grid = utilities.generate_grid_in_box(box, ngrid)
         kernel, _ = utilities.density_map(pos, grid, self.alpha)
         field = kernel(grid)
 
@@ -155,9 +179,8 @@ class WillardChandler(pytim.PYTIM):
         # Tavares. Efficient implementation of Marching Cubes’ cases with
         # topological guarantees. Journal of Graphics Tools 8(2) pp. 1-15
         # (december 2003). DOI: 10.1080/10867651.2003.10487582
-        volume = field.reshape((self.mesh, self.mesh, self.mesh))
+        volume = field.reshape(tuple(ngrid))
 
-        spacing = box / self.mesh
         verts, faces, normals, values = measure.marching_cubes(
             volume, None,
             spacing=tuple(spacing)
