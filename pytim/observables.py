@@ -14,13 +14,14 @@ except BaseException:
 
 from MDAnalysis.lib import distances
 from itertools import chain
-import utilities
+from pytim import utilities
 # we try here to have no options passed
 # to the observables, so that classes are
 # not becoming behemoths that do everything.
 # Simple preprocessing (filtering,...)
 # should be done by the user beforehand,
 # or implemented in specific classes.
+
 
 class Observable(object):
     """ Instantiate an observable.
@@ -183,9 +184,9 @@ class RDF(object):
         if g1 is not None:
             self.g1 = g1
         if g2 is None:
-            self.g2 = self.g1 #all atoms by default (see __init__)
+            self.g2 = self.g1  # all atoms by default (see __init__)
 
-        if self.observable is not  None:
+        if self.observable is not None:
             # determine weights, otherwise assumes number of atoms (default)
             fg1 = self.observable.compute(self.g1)
             if (self.g1 == self.g2 and self.observable == self.observable2):
@@ -407,14 +408,15 @@ class LayerTriangulation(Observable):
 
     def compute(self, inp=None):
         stats = []
-        layer_stats = [None,None]
-        self.interface.triangulate_layer(self.layer)
+        layer_stats = [None, None]
+        surface = self.interface._surfaces[0]
+        surface.triangulation()
 
         if self.return_statistics is True:
-            for layer in [0,1]:
-                layer_stats[layer] = utilities.triangulated_surface_stats(
-                    self.interface.trimmed_surf_triangs[layer],
-                    self.interface.triangulation_points[layer])
+            for side in [0, 1]:
+                layer_stats[side] = utilities.triangulated_surface_stats(
+                    surface.trimmed_surf_triangs[side],
+                    surface.triangulation_points[side])
             # this average depends on what is in the stats, it can't be done
             # automatically
             stats.append(layer_stats[0][0] + layer_stats[1][0])
@@ -423,11 +425,11 @@ class LayerTriangulation(Observable):
             return stats
         else:
             return [
-                    stats,
-                    self.interface.surf_triang,
-                    self.interface.triangulation_points,
-                    self.interface.trimmed_surf_triangs
-                   ]
+                stats,
+                surface.surf_triang,
+                surface.triangulation_points,
+                surface.trimmed_surf_triangs
+            ]
 
 
 class IntrinsicDistance(Observable):
@@ -456,24 +458,13 @@ class IntrinsicDistance(Observable):
                                   of points
 
         """
-        if isinstance(inp,np.ndarray):
-            positions = inp
-        if isinstance(inp, Atom):
-            positions = inp.position
-        if isinstance(inp,AtomGroup):
-            positions = inp.positions
-        elevation = self.interface.interpolate_surface(positions, self.layer)
-        if not (np.sum(np.isnan(elevation)) == 0):
-            raise Warning("Internal error: a point has fallen outside"\
-                            "the convex hull")
-        # positive values are outside the surface, negative inside
-        distance = (positions[:, 2] - elevation) * np.sign(positions[:, 2])
-        return distance
+        return self.interface._surfaces[0].distance(inp)
+
 
 class Number(Observable):
     """The number of atoms."""
 
-    def __init__(self,*arg,**kwarg):
+    def __init__(self, *arg, **kwarg):
         """ No need to pass a universe for this observable. We accept
             extra arguments not to fail if they are passed anyway by mistake.
         """
@@ -500,7 +491,7 @@ class NumberOfResidues(Observable):
 
     """
 
-    def __init__(self,*arg,**karg):
+    def __init__(self, *arg, **karg):
         """ No need to pass a universe for this observable. We accept
             extra arguments not to fail if they are passed anyway by mistake.
         """
@@ -575,7 +566,7 @@ class MolecularOrientation(Observable):
         TODO: document and check if the function needs to be modified
 
         """
-        if isinstance( inp, AtomGroup) and len(inp) != 3 * len(inp.residues):
+        if isinstance(inp, AtomGroup) and len(inp) != 3 * len(inp.residues):
             inp = inp.residues
         pos = self.fold_around_first_atom_in_residue(inp)
         return Orientation().compute(pos)
@@ -658,7 +649,7 @@ class Profile(object):
         self.group = group
 
         if not isinstance(group, AtomGroup):
-            raise TypeError("The first argument passed to "\
+            raise TypeError("The first argument passed to "
                             "Profile() must be an AtomGroup.")
         self.universe = group.universe
         self.center_group = center_group
@@ -677,10 +668,10 @@ class Profile(object):
         self.sampled_bins = []
         self.pos = [utilities.get_x, utilities.get_y, utilities.get_z]
 
-    def _set_range(self,shift=False):
+    def _set_range(self, shift=False):
         _range = [0., self._box[self._dir]]
         if shift:
-            _range -= self._box[self._dir]/2.
+            _range -= self._box[self._dir] / 2.
         return _range
 
     def sample(self):
@@ -713,7 +704,7 @@ class Profile(object):
                 pass
 
             if self.do_rebox:
-                utilities.rebox(_pos,self._box[self._dir],0)
+                utilities.rebox(_pos, self._box[self._dir], 0)
         else:
             _pos = IntrinsicDistance(self.interface).compute(self.group)
 
@@ -741,9 +732,9 @@ class Profile(object):
         max_bins = np.max(map(len, self.sampled_bins))
         max_size = max_bins * self.binsize
 
-        if binwidth is not None: #overrides nbins
+        if binwidth is not None:  # overrides nbins
             nbins = max_size / binwidth
-        if nbins is None: #means also binwidth must be none
+        if nbins is None:  # means also binwidth must be none
             nbins = max_bins
 
         if(nbins % 2 > 0):

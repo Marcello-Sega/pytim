@@ -46,6 +46,7 @@ class GITIM(pytim.PYTIM):
         <AtomGroup with 558 atoms>
 
     """
+    _surface = None
 
     def __init__(
             self,
@@ -63,11 +64,11 @@ class GITIM(pytim.PYTIM):
             info=False,
             multiproc=True):
 
-        self._basic_checks(universe)
+        sanity = pytim.SanityCheck(self)
+        sanity.assign_universe(universe)
+        sanity.assign_alpha(alpha)
 
-        self.universe = universe
         self.cluster_threshold_density = cluster_threshold_density
-        self.alpha = alpha
         self.max_layers = max_layers
         self._layers = np.empty([max_layers], dtype=type(universe.atoms))
         self.info = info
@@ -75,19 +76,13 @@ class GITIM(pytim.PYTIM):
         self.PDB = {}
         self.molecular = molecular
 
-        self.cluster_cut = cluster_cut
-        self.extra_cluster_groups = extra_cluster_groups
-        self.itim_group = itim_group
-
-        self._define_groups()
+        sanity.assign_groups(itim_group, cluster_cut, extra_cluster_groups)
+        sanity.assign_radii(radii_dict)
 
         self._assign_symmetry(symmetry)
 
         if(self.symmetry == 'planar'):
-            self._assign_normal(normal)
-
-        self.assign_radii(radii_dict)
-        self._sanity_checks()
+            sanity.assign_normal(normal)
 
         self.grid = None
         self.use_threads = False
@@ -101,7 +96,7 @@ class GITIM(pytim.PYTIM):
         if self.itim_group is None:
             raise TypeError(self.UNDEFINED_ITIM_GROUP)
         if symmetry == 'guess':
-            raise ValueError( "symmetry 'guess' To be implemented")
+            raise ValueError("symmetry 'guess' To be implemented")
         else:
             if not (symmetry in self.symmetry_dict):
                 raise ValueError(self.WRONG_DIRECTION)
@@ -127,8 +122,6 @@ class GITIM(pytim.PYTIM):
             ValueError: parameter alpha must be smaller than the smaller box side
 
         """
-        self._sanity_check_alpha()
-        self._sanity_check_cluster_cut()
 
     @staticmethod
     def alpha_prefilter(triangulation, alpha):

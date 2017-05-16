@@ -8,6 +8,7 @@ from scipy.spatial import cKDTree
 from scipy.stats import gaussian_kde
 from scipy.cluster import vq
 
+
 def lap(show=False):
     if not hasattr(lap, "tic"):
         lap.tic = timer()
@@ -20,32 +21,49 @@ def lap(show=False):
         return dt
 
 
+def extract_positions(inp):
+    if isinstance(inp, np.ndarray):
+        positions = inp
+    if isinstance(inp, Atom):
+        positions = inp.position
+    if isinstance(inp, AtomGroup):
+        positions = inp.positions
+    return positions
+
+
 def get_box(universe, normal=2):
     box = universe.coord.dimensions[0:3]
-    return np.roll(box, 2-normal)
+    return np.roll(box, 2 - normal)
 
-def get_pos(group,normal=2):
-    return np.roll(group.positions, normal-2,axis=-1)
 
-def get_coord(coord,group,normal=2):
+def get_pos(group, normal=2):
+    return np.roll(group.positions, normal - 2, axis=-1)
+
+
+def get_coord(coord, group, normal=2):
     return group.positions[:, (coord + 1 + normal) % 3]
 
+
 def get_x(group, normal=2):
-    return get_coord(0,group=group,normal=normal)
+    return get_coord(0, group=group, normal=normal)
+
 
 def get_y(group, normal=2):
-    return get_coord(1,group=group,normal=normal)
+    return get_coord(1, group=group, normal=normal)
+
 
 def get_z(group, normal=2):
-    return get_coord(2,group=group,normal=normal)
+    return get_coord(2, group=group, normal=normal)
 
-def compute_compatible_mesh_params(mesh,box):
+
+def compute_compatible_mesh_params(mesh, box):
     """ given a target mesh size and a box, return the number of grid elements
         and spacing in each direction, which are commensurate with the box
     """
-    n = map(int,np.ceil(box / mesh))
-    d = box/n
-    return n,d
+    n = map(int, np.ceil(box / mesh))
+    d = box / n
+    return n, d
+
 
 def rebox(pos, edge, shift):
     """ rebox a vector along one dimension
@@ -53,13 +71,14 @@ def rebox(pos, edge, shift):
         :param float edge: the simulation box edge
         :param float shift: additional shift
     """
-    condition =  pos >= edge - shift
+    condition = pos >= edge - shift
     pos[condition] -= edge
 
-    condition =  pos < 0 - shift
+    condition = pos < 0 - shift
     pos[condition] += edge
 
     return pos
+
 
 def centerbox(universe, x=None, y=None, z=None, vector=None,
               center_direction=2, halfbox_shift=True):
@@ -85,7 +104,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
         z = get_z(universe.atoms)
 
     if x is None and y is None and z is None and vector is not None:
-        vector = rebox(vector,dim[center_direction],shift[center_direction])
+        vector = rebox(vector, dim[center_direction], shift[center_direction])
 
     if x is not None or y is not None or z is not None:
         for index, val in enumerate((x, y, z)):
@@ -93,7 +112,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
                 # let's just try to rebox all directions. Will succeed only
                 # for those which are not None. The >= convention is needed
                 # for cKDTree
-                val = rebox(val,dim[index],shift[index])
+                val = rebox(val, dim[index], shift[index])
             except Exception:
                 pass
     if stack:
@@ -159,6 +178,7 @@ def triangulated_surface_stats(tri2d, points3d):
     area = np.linalg.norm(np.cross(v[:, 1], v[:, 2]), axis=1).sum() / 2.
     return [area]
 
+
 def generate_grid_in_box(box, npoints):
     """generate an homogenous grid of npoints^3 points that spans the
        complete box.
@@ -177,105 +197,144 @@ def generate_grid_in_box(box, npoints):
     return grid.T
 
 
-def _vtk_format_vector(vector, format_str="{:f}"):
-    formatted = ''
-    for element in vector:
-        formatted += format_str.format(element)+' '
-    return formatted
+class vtk:
 
-def write_vtk_scalar_grid(filename, grid_size, spacing, scalars):
-    """write in a vtk file a scalar field on a rectangular grid
+    @staticmethod
+    def write_density(interface, densmap):
+        """save the density on a vtk file named consecutively using the frame
+        number."""
+        filename = utilities.vtk.consecutive_filename(self.universe,
+                                                      self.density_basename)
+        utilities.vtk.write_scalar_grid(filename, self.ngrid, self.spacing,
+                                        densmap)
 
-       :param string filename: the filename
-       :param array grid_size: number of points in the grid along each\
-                               direction
-       :param array spacing: a (3,) array with the point spacing along the 3\
-                             directions
-       :param array scalars: a (grid_size,) array with the scalar field values
-    """
-    f = open(filename, "w")
-    f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
-    f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
-    f.write(_vtk_format_vector(grid_size,format_str="{:d}") + "\n")
-    f.write("SPACING " + _vtk_format_vector(spacing) + "\n")
-    f.write("\n")
-    f.write("ORIGIN 0.000000 0.000000 0.000000\n")
-    f.write("POINT_DATA " + str(len(scalars)) + "\n")
-    f.write("SCALARS kernel floats 1\nLOOKUP_TABLE default\n")
-    for val in scalars:
-        f.write(str(val) + "\n")
-    f.close()
+    def dump_points(self, pos):
+        """save the particles n a vtk file named consecutively using the frame
+        number."""
+        radii = self.itim_group.radii
+        types = self.itim_group.types
+        color = [utilities.colormap[element] for element in types]
+        color = (np.array(color) / 256.).tolist()
 
+        filename = utilities.vtk.consecutive_filename(self.universe,
+                                                      self.particles_basename)
+        utilities.vtk.write_points(filename, pos, color=color, radius=radii)
 
-def write_vtk_points(filename, pos, color=None, radius=None):
-    """ write in a vtk file the positions of particles
+    def dump_triangulation(self, vertices, triangles, normals=None):
+        """save a triangulation on a vtk file named consecutively using the
+        frame number."""
+        filename = utilities.vtk.consecutive_filename(self.universe,
+                                                      self.surface_basename)
+        utilities.vtk.write_triangulation(
+            filename, vertices, triangles, normals)
 
-        :param string filename: the filename
-        :param array pos: the positions to be written to the vtk file
-    """
-    npos = len(pos)
-    f = open(filename, "w")
-    f.write("# vtk DataFile Version 2.0\ntriangles\nASCII\nDATASET POLYDATA\n")
-    f.write("POINTS " + str(len(pos)) + " floats\n")
-    for p in pos:
-        f.write(str(p[2]) + " " + str(p[1]) + " " + str(p[0]) + "\n")
-    f.write("\nVERTICES " + str(len(pos)) + " " + str(len(pos) * 2) + "\n")
-    for i in range(npos):
-        f.write("1 " + str(i) + "\n")
-    if radius is not None:
-        f.write("\nPOINT_DATA " + str(len(pos)) + "\nSCALARS radius float 1\n")
-        f.write("LOOKUP_TABLE default\n")
-        for rad in radius:
-            f.write(str(rad) + "\n")
-    if color is not None:
-        f.write("COLOR_SCALARS color 3\n")
-        for c in color:
-            f.write(_vtk_format_vector(c,format_str="{:1.2f}") + "\n")
-    f.close()
+    @staticmethod
+    def _format_vector(vector, format_str="{:f}"):
+        formatted = ''
+        for element in vector:
+            formatted += format_str.format(element) + ' '
+        return formatted
 
+    @staticmethod
+    def write_scalar_grid(filename, grid_size, spacing, scalars):
+        """write in a vtk file a scalar field on a rectangular grid
 
-def write_vtk_triangulation(filename, vertices, triangles,normals=None):
-    """ write in a vtk file a triangulation
+           :param string filename: the filename
+           :param array grid_size: number of points in the grid along each\
+                                   direction
+           :param array spacing: a (3,) array with the point spacing along the 3\
+                                 directions
+           :param array scalars: a (grid_size,) array with the scalar field values
+        """
+        f = open(filename, "w")
+        f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
+        f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
+        f.write(vtk._format_vector(grid_size, format_str="{:d}") + "\n")
+        f.write("SPACING " + vtk._format_vector(spacing) + "\n")
+        f.write("\n")
+        f.write("ORIGIN 0.000000 0.000000 0.000000\n")
+        f.write("POINT_DATA " + str(len(scalars)) + "\n")
+        f.write("SCALARS kernel floats 1\nLOOKUP_TABLE default\n")
+        for val in scalars:
+            f.write(str(val) + "\n")
+        f.close()
 
-        :param string filename: the filename
-        :param array vertices: (N,3) array of floats for N vertices
-        :param array triangles: (M,3) array of indices to the vertices
-        :param array triangles: (M,3) array of normal vectors
-    """
-    f = open(filename, "w")
-    f.write("# vtk DataFile Version 2.0\nkernel\nASCII\n")
-    f.write("DATASET UNSTRUCTURED_GRID\n")
-    f.write("POINTS " + str(len(vertices)) + " float\n")
-    for point in vertices:
-        f.write(_vtk_format_vector(point[::-1])+ "\n")
+    @staticmethod
+    def write_points(filename, pos, color=None, radius=None):
+        """ write in a vtk file the positions of particles
 
-    f.write("\nCELLS " + str(len(triangles)) +
-            " " + str(4 * len(triangles)) + "\n")
-    for index in triangles:
-        f.write("3 "+_vtk_format_vector(index,format_str="{:d}")+ "\n")
+            :param string filename: the filename
+            :param array pos: the positions to be written to the vtk file
+        """
+        npos = len(pos)
+        f = open(filename, "w")
+        f.write("# vtk DataFile Version 2.0\ntriangles\nASCII\nDATASET POLYDATA\n")
+        f.write("POINTS " + str(len(pos)) + " floats\n")
+        for p in pos:
+            f.write(str(p[2]) + " " + str(p[1]) + " " + str(p[0]) + "\n")
+        f.write("\nVERTICES " + str(len(pos)) + " " + str(len(pos) * 2) + "\n")
+        for i in range(npos):
+            f.write("1 " + str(i) + "\n")
+        if radius is not None:
+            f.write("\nPOINT_DATA " + str(len(pos)) +
+                    "\nSCALARS radius float 1\n")
+            f.write("LOOKUP_TABLE default\n")
+            for rad in radius:
+                f.write(str(rad) + "\n")
+        if color is not None:
+            f.write("COLOR_SCALARS color 3\n")
+            for c in color:
+                f.write(vtk._format_vector(c, format_str="{:1.2f}") + "\n")
+        f.close()
 
-    f.write("\nCELL_TYPES " + str(len(triangles)) + "\n")
-    f.write("5\n"*len(triangles))
+    @staticmethod
+    def write_triangulation(filename, vertices, triangles, normals=None):
+        """ write in a vtk file a triangulation
 
-    if normals is not None:
-        f.write("\nPOINT_DATA "+str(len(vertices))+"\n")
-        f.write("NORMALS normals float\n")
-        for n in normals:
-            f.write(_vtk_format_vector(n,format_str="{:f}") + "\n")
+            :param string filename: the filename
+            :param array vertices: (N,3) array of floats for N vertices
+            :param array triangles: (M,3) array of indices to the vertices
+            :param array triangles: (M,3) array of normal vectors
+        """
+        f = open(filename, "w")
+        f.write("# vtk DataFile Version 2.0\nkernel\nASCII\n")
+        f.write("DATASET UNSTRUCTURED_GRID\n")
+        f.write("POINTS " + str(len(vertices)) + " float\n")
+        for point in vertices:
+            f.write(vtk._format_vector(point[::-1]) + "\n")
 
+        f.write("\nCELLS " + str(len(triangles)) +
+                " " + str(4 * len(triangles)) + "\n")
+        for index in triangles:
+            f.write("3 " + vtk._format_vector(index, format_str="{:d}") + "\n")
 
-def vtk_consecutive_filename(universe, basename):
-    frame = universe.trajectory.frame
-    filename = basename + '.' + str(frame) + '.vtk'
-    return filename
+        f.write("\nCELL_TYPES " + str(len(triangles)) + "\n")
+        f.write("5\n" * len(triangles))
+
+        if normals is not None:
+            f.write("\nPOINT_DATA " + str(len(vertices)) + "\n")
+            f.write("NORMALS normals float\n")
+            for n in normals:
+                f.write(vtk._format_vector(n, format_str="{:f}") + "\n")
+
+    @staticmethod
+    def consecutive_filename(universe, basename):
+        frame = universe.trajectory.frame
+        filename = basename + '.' + str(frame) + '.vtk'
+        return filename
+
+#
+
 
 def density_map(pos, grid, sigma):
     values = np.vstack([pos[:, 0], pos[:, 1], pos[:, 2]])
     kernel = gaussian_kde(values, bw_method=sigma / values.std(ddof=1))
     return kernel, values.std(ddof=1)
 
+
 def _NN_query(kdtree, position, qrange):
     return kdtree.query_ball_point(position, qrange, n_jobs=-1)
+
 
 def generate_periodic_border_3d(points, box, delta):
     """ Selects the pparticles within a skin depth delta from the
@@ -303,6 +362,7 @@ def generate_periodic_border_3d(points, box, delta):
             # we keep track of the original ids.
             extraids = np.append(extraids, np.where(selection)[0])
     return extrapoints, extraids
+
 
 def do_cluster_analysis_DBSCAN(
         group, cluster_cut, box, threshold_density=None, molecular=True):
@@ -361,63 +421,6 @@ def do_cluster_analysis_DBSCAN(
     dbscan_inner(core_samples, neighborhoods, labels, counts)
     return labels, counts, n_neighbors
 
-class Surface(object):
-    """ Compute a continuous surface
-    """
-    #TODO: so far includes only methods for CT. Gather also other ones here
-    def __init__(self,box,alpha,normal=2,method='DFT'):
-        self.normal=normal
-        self.alpha=alpha
-        if method == 'DFT':
-            self._compute_q_vectors(box)
-
-    @property
-    def triangulation(self):
-        return self._triangulation
-
-    def update_q_vectors(self,box):
-        if np.any(box!=self.box):
-            self._compute_q_vectors(box)
-
-    def _compute_q_vectors(self,box):
-        self.box = np.roll(box,2-self.normal)
-        nmax = map(int,np.ceil(self.box[0:2]/self.alpha))
-        q_indices = np.mgrid[0:nmax[0],0:nmax[1]]
-        self.q_vectors=q_indices*1.0
-        self.q_vectors[0] *= 2.*np.pi/box[0]
-        self.q_vectors[1] *= 2.*np.pi/box[1]
-        self.modes_shape = self.q_vectors[0].shape
-        qx = self.q_vectors[0][::,0]
-        qy = self.q_vectors[1][0]
-        Qx = np.repeat(qx,len(qy))
-        Qy = np.tile(qy,len(qx))
-        self.Qxy = np.vstack((Qx,Qy)).T
-        self.Q = np.sqrt(np.sum(self.Qxy*self.Qxy,axis=1)[1:])
-
-    @staticmethod
-    def _surface_from_modes(points,q_vectors,modes):
-        elevation = []
-        for point in points:
-            dotp = q_vectors[0]* point[0] + q_vectors[1] * point[1]
-            phase = np.cos(dotp) + 1.j * np.sin(dotp)
-            elevation.append(np.sum((phase*modes).real))
-        return np.array(elevation)
-
-    def surface_from_modes(self,points,modes):
-        return self._surface_from_modes(points,self.q_vectors,modes)
-
-    def surface_modes(self,points):
-        QR = np.dot(self.Qxy, points[::,0:2].T).T
-        # ph[0] is are the phases associated to each of the ~ n^2 modes for particle 0
-        # we exclude the zero mode.
-        ph = (np.cos(QR)+1.j*np.sin(QR)).T[1:].T
-        z = points[::,2]
-        az = np.mean(z)
-        z = z - az
-        A = (ph/self.Q)
-        z = z
-        s = np.dot(np.linalg.pinv(A),z)
-        return np.append(az+0.j,s/self.Q)
 
 def fit_sphere(points):
     """ least square fit of a sphere through a set of points.
@@ -554,4 +557,3 @@ colormap = {
     'Mt': [235, 0, 38]
 }
 #
-

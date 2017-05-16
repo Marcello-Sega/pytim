@@ -10,8 +10,39 @@ from multiprocessing import Process, Queue
 import numpy as np
 from scipy.spatial import cKDTree
 from __builtin__ import zip as builtin_zip
-from pytim import utilities
+from pytim import utilities, surface
 import pytim
+
+
+class Surface(surface.Surface):
+
+    def distance(self, inp):
+        positions = utilities.extract_positions(inp)
+        return self._distance_flat(positions)
+
+    def interpolation(self, inp):
+        positions = utilities.extract_positions(inp)
+        upper_set = positions[positions[:, 2] >= 0]
+        lower_set = positions[positions[:, 2] < 0]
+
+        elevation = np.zeros(len(positions))
+
+        self._initialize_distance_interpolator_flat(self._layer)
+        upper_interp = self._interpolator[0](upper_set[:, 0:2])
+        lower_interp = self._interpolator[1](lower_set[:, 0:2])
+
+        elevation[np.where(positions[:, 2] >= 0)] = upper_interp
+        elevation[np.where(positions[:, 2] < 0)] = lower_interp
+        return elevation
+
+    def dump(self):
+        pass
+
+    def regular_grid(self):
+        pass
+
+    def triangulation(self, layer=0):
+        return self.triangulate_layer_flat(layer)
 
 
 class ITIM(pytim.PYTIM):
@@ -91,31 +122,25 @@ class ITIM(pytim.PYTIM):
                  molecular=True, extra_cluster_groups=None, info=False,
                  multiproc=True):
 
-        self._basic_checks(universe)
-
         self.symmetry = 'planar'
-        self.universe = universe
+
+        sanity = pytim.SanityCheck(self)
+        sanity.assign_universe(universe)
+        sanity.assign_alpha(alpha)
+        sanity.assign_mesh(mesh)
+
         self.cluster_threshold_density = cluster_threshold_density
-        self.target_mesh = mesh
-        self.alpha = alpha
         self.max_layers = max_layers
         self._layers = np.empty([2, max_layers], dtype=type(universe.atoms))
+        self._surfaces = np.empty(max_layers, dtype=type(Surface))
         self.info = info
         self.normal = None
         self.PDB = {}
-
         self.molecular = molecular
 
-        self.cluster_cut = cluster_cut
-        self.extra_cluster_groups = extra_cluster_groups
-        self.itim_group = itim_group
-
-        self._define_groups()
-
-        self._assign_normal(normal)
-
-        self.assign_radii(radii_dict)
-        self._sanity_checks()
+        sanity.assign_groups(itim_group, cluster_cut, extra_cluster_groups)
+        sanity.assign_normal(normal)
+        sanity.assign_radii(radii_dict)
 
         self.grid = None
         self.use_threads = False
@@ -123,13 +148,14 @@ class ITIM(pytim.PYTIM):
         self.use_multiproc = multiproc
 
         pytim.PatchTrajectory(universe.trajectory, self)
+
         self._assign_layers()
 
     def _assign_mesh(self):
         """determine a mesh size for the testlines that is compatible with the
         simulation box."""
         box = utilities.get_box(self.universe, self.normal)
-        n,d = utilities.compute_compatible_mesh_params(self.target_mesh,box)
+        n, d = utilities.compute_compatible_mesh_params(self.target_mesh, box)
         self.mesh_nx = n[0]
         self.mesh_ny = n[1]
         self.mesh_dx = d[0]
@@ -146,7 +172,7 @@ class ITIM(pytim.PYTIM):
 
     def _touched_lines(self, atom, _x, _y, _z, _radius):
         return self.meshtree.query_ball_point(
-                [_x[atom], _y[atom]], _radius[atom] + self.alpha)
+            [_x[atom], _y[atom]], _radius[atom] + self.alpha)
 
     def _assign_one_side(self, uplow, sorted_atoms, _x, _y, _z,
                          _radius, queue=None):
@@ -240,27 +266,6 @@ class ITIM(pytim.PYTIM):
 
         """
 
-        self._sanity_check_alpha()
-        self._sanity_check_cluster_cut()
-
-        if not isinstance(self.target_mesh, (int,float)):
-            raise TypeError(self.MESH_NAN)
-        if self.target_mesh <= 0:
-            raise ValueError(self.MESH_NEGATIVE)
-        if self.target_mesh >= np.amin(self.universe.dimensions[:3])/2.:
-            raise ValueError(self.MESH_LARGE)
-
-        try:
-            np.arange(int(self.alpha / self.target_mesh))
-        except BaseException:
-            print(
-                "Error while initializing ITIM: alpha ({0:f}) too large or\
-                  mesh ({1:f}) too small".format(
-                    *
-                    self.alpha),
-                self.target_mesh)
-            raise ValueError
-
     def _assign_layers(self):
         """ Determine the ITIM layers.
 
@@ -349,8 +354,10 @@ class ITIM(pytim.PYTIM):
         # assign labels to all layers. This can be the bfactor or the
         # tempfactor property, depending on the MDA version
         for uplow in [up, low]:
-            for _nlayer, _layer in enumerate(self._layers[uplow]):
-                self.label_layer(_layer, _nlayer + 1)
+            for nlayer, layer in enumerate(self._layers[uplow]):
+                self.label_layer(layer, nlayer + 1)
 
-        # reset the interpolator
-        self._interpolator = None
+        for nlayer, layer in enumerate(self._layers[0]):
+            self._surfaces[nlayer] = Surface(self, options={'layer': nlayer})
+
+#

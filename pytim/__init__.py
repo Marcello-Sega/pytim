@@ -4,13 +4,13 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from distutils.version import LooseVersion
 import numpy as np
-from scipy.spatial import Delaunay
 from scipy.interpolate import LinearNDInterpolator
 import MDAnalysis
 from MDAnalysis import Universe
 from MDAnalysis.topology import tables
 from difflib import get_close_matches
 import importlib
+import __builtin__
 
 
 def PatchTrajectory(trajectory, interface):
@@ -35,6 +35,210 @@ def PatchTrajectory(trajectory, interface):
     PatchedTrajectory.__name__ = oldname
     PatchedTrajectory.__module__ = oldmodule
     trajectory.__class__ = PatchedTrajectory
+
+
+def _create_property(property_name, docstring=None,
+                     readonly=False, required=False):
+
+    def getter(self):
+        return self.__getattribute__('_' + property_name)
+
+    def setter(self, value):
+        self.__setattr__('_' + property_name, value)
+
+    if readonly == True:
+        setter = None
+    if required == False:
+        absprop = None
+    else:
+        absprop = abstractproperty(None)
+
+    return property(fget=getter, fset=setter, doc=docstring), absprop
+
+
+class SanityCheck(object):
+
+    def __init__(self, interface):
+        self.interface = interface
+        self.interface._MDAversion = MDAnalysis.__version__
+        self.VERS = LooseVersion(self.interface._MDAversion)
+        self.V015 = LooseVersion('0.15')
+        self.V016 = LooseVersion('0.16')
+        if self.VERS < self.V015:
+            raise Exception("Must use MDAnalysis  >= 0.15")
+
+    def assign_radii(self, radii_dict):
+        try:
+            _groups = np.copy(self.interface.extra_cluster_groups[:])
+        except BaseException:
+            _groups = []
+        _groups.append(self.interface.itim_group)
+        for _g in _groups:
+            # NOTE: maybe add a switch to use the atom name instead of the type
+            if _g is not None:
+                _types = np.copy(_g.types)
+                if not (np.any(np.equal(_g.radii, None)) or
+                        np.any(np.isnan(_g.radii))):  # all radii already set
+                    break
+                if radii_dict is None:
+                    # some radii are not set and no dict provided
+                    _radii_dict = tables.vdwradii
+                else:  # use the provided dict.
+                    _radii_dict = radii_dict
+
+                _radii = np.zeros(len(_g.types))
+                for _atype in np.unique(_types):
+                    try:
+                        matching_type = get_close_matches(
+                            _atype, _radii_dict.keys(), n=1, cutoff=0.1
+                        )
+                        _radii[_types == _atype] = _radii_dict[matching_type[0]]
+                    except BaseException:
+                        avg = np.average(_radii_dict.values())
+                        _radii[_types == _atype] = avg
+
+                        print("!!                              WARNING")
+                        print("!! No appropriate radius was found for the "
+                              "atomtype " + _atype)
+                        print("!! Using the average radius (" + str(avg) + ") "
+                              "as a fallback option...")
+                        print("!! Pass a dictionary of radii (in Angstrom) "
+                              "with the option radii_dict")
+                        print("!! for example: r={'" + _atype + "':1.2,...} ; "
+                              "inter=pytim.ITIM(u,radii_dict=r)")
+
+                _g.radii = np.copy(_radii[:])
+
+                if np.any(np.equal(_g.radii, None)):
+                    raise ValueError(self.interface.UNDEFINED_RADIUS)
+                del _radii
+                del _types
+
+    def assign_mesh(self, mesh):
+        self.interface.target_mesh = mesh
+        if not isinstance(self.interface.target_mesh, (int, float)):
+            raise TypeError(self.interface.MESH_NAN)
+        if self.interface.target_mesh <= 0:
+            raise ValueError(self.interface.MESH_NEGATIVE)
+        if self.interface.target_mesh >= np.amin(self.interface.universe.dimensions[:3]) / 2.:
+            raise ValueError(self.interface.MESH_LARGE)
+
+        try:
+            np.arange(int(self.interface.alpha / self.interface.target_mesh))
+        except BaseException:
+            print(
+                "Error while initializing ITIM: alpha ({0:f}) too large or\
+                  mesh ({1:f}) too small".format(
+                    self.interface.alpha,
+                    self.interface.target_mesh))
+            raise ValueError
+
+    def assign_normal(self, normal):
+        if not (self.interface.symmetry == 'planar'):
+            raise ValueError(" wrong symmetry for normal assignement")
+        if self.interface.itim_group is None:
+            raise TypeError(self.interface.UNDEFINED_ITIM_GROUP)
+        if normal == 'guess':
+            self.interface.normal = utilities.guess_normal(self.interface.universe,
+                                                           self.interface.itim_group)
+        else:
+            if not (normal in self.interface.directions_dict):
+                raise ValueError(self.interface.WRONG_DIRECTION)
+            self.interface.normal = self.interface.directions_dict[normal]
+
+    def _define_groups(self):
+        # we first make sure cluster_cut is either None, or an array
+        if isinstance(self.interface.cluster_cut, (int, float)):
+            self.interface.cluster_cut = np.array(
+                [float(self.interface.cluster_cut)])
+        # same with extra_cluster_groups
+        if not isinstance(self.interface.extra_cluster_groups,
+                          (list, tuple, np.ndarray, type(None))):
+            self.interface.extra_cluster_groups = [
+                self.interface.extra_cluster_groups]
+
+        # fallback for itim_group
+        if self.interface.itim_group is None:
+            self.interface.itim_group = self.interface.all_atoms
+
+    def _missing_attributes(self, universe):
+        if self.VERS >= self.V016:  # new topology system
+            self.topologyattrs = importlib.import_module(
+                'MDAnalysis.core.topologyattrs'
+            )
+            self._check_missing_attribute('radii', 'Radii', universe.atoms,
+                                          np.nan, universe)
+            self._check_missing_attribute('tempfactors', 'Tempfactors',
+                                          universe.atoms, 0, universe)
+            self._check_missing_attribute('bfactors', 'Bfactors',
+                                          universe.atoms, 0, universe)
+            self._check_missing_attribute('altLocs', 'AltLocs',
+                                          universe.atoms, ' ', universe)
+            self._check_missing_attribute('icodes', 'ICodes',
+                                          universe.residues, ' ', universe)
+            self._check_missing_attribute('occupancies', 'Occupancies',
+                                          universe.atoms, 1, universe)
+
+    def _check_missing_attribute(self, name, classname, group, value, universe):
+        """ Add an attribute, which is necessary for pytim but
+            missing from the present topology.
+
+            An example of how the code below would expand is:
+
+            if 'radii' not in dir(universe.atoms):
+                from MDAnalysis.core.topologyattrs import Radii
+                radii = np.zeros(len(universe.atoms)) * np.nan
+                universe.add_TopologyAttr(Radii(radii))
+
+             * MDAnalysis.core.topologyattrs ->  self.topologyattrs
+             * Radii -> missing_class
+             * radii -> values
+        """
+
+        if name not in dir(universe.atoms):
+            missing_class = getattr(self.topologyattrs, classname)
+            values = np.array([value] * len(group))
+            universe.add_TopologyAttr(missing_class(values))
+
+    def assign_universe(self, universe):
+        try:
+            self.interface.all_atoms = universe.select_atoms('all')
+        except BaseException:
+            raise Exception(self.interface.WRONG_UNIVERSE)
+        self.interface.universe = universe
+        self._missing_attributes(self.interface.universe)
+
+    def assign_alpha(self, alpha):
+        try:
+            box = self.interface.universe.dimensions[:3]
+        except:
+            raise Exception("Cannot set alpha before having a simulation box")
+        if alpha < 0:
+            raise ValueError(self.interface.ALPHA_NEGATIVE)
+        if alpha >= np.amin(box):
+            raise ValueError(self.interface.ALPHA_LARGE)
+        self.interface.alpha = alpha
+        return True
+
+    def assign_groups(self, itim_group, cluster_cut, extra_cluster_groups):
+        elements = 0
+        extraelements = -1
+        self.interface.itim_group = itim_group
+        self.interface.cluster_cut = cluster_cut
+        self.interface.extra_cluster_groups = extra_cluster_groups
+
+        self._define_groups()
+        interface = self.interface
+
+        if(interface.cluster_cut is not None):
+            elements = len(interface.cluster_cut)
+        if(interface.extra_cluster_groups is not None):
+            extraelements = len(interface.extra_cluster_groups)
+
+        if not (elements == 1 or elements == 1 + extraelements):
+            raise StandardError(self.interface.MISMATCH_CLUSTER_SEARCH)
+
+        return True
 
 
 class PYTIM(object):
@@ -72,93 +276,63 @@ class PYTIM(object):
     WRONG_DIRECTION = "Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
     CENTERING_FAILURE = "Cannot center the group in the box. Wrong direction supplied?"
 
+    # main properties shared by all implementations of the class
+    # When required=True is passed, the implementation of the class *must*
+    # override the method when instantiating the class (i.e., before __init__)
+    # By default required=False, and the name is set to None
+
+    # interface *must* be created first.
+    alpha, _alpha =\
+        _create_property('alpha', "(float) real space cutoff")
+    layers, _layers =\
+        _create_property('layers', "AtomGroups of atoms in layers")
+    itim_group, _itim_group =\
+        _create_property('itim_group', "(AtomGroup) the group,"
+                         "the surface of which should be computed")
+    cluster_cut, _cluster_cut =\
+        _create_property('cluster_cut', "(real) cutoff for phase"
+                         "identification")
+    molecular, _molecular =\
+        _create_property('molecular', "(bool) wheter to compute"
+                         "surface atoms or surface molecules")
+    surfaces, _surfaces =\
+        _create_property('surfaces', "Surfaces associated to the interface",
+                         readonly=True)
+    info, _info =\
+        _create_property('info', "(bool) print additional information")
+
+    multiproc, _multiproc =\
+        _create_property('multiproc', "(bool) use parallel implementation")
+
+    extra_cluster_groups, _extra_cluster_groups =\
+        _create_property('extra_cluster_groups',
+                         "(ndarray) additional cluster groups")
+    radii_dict, _radii_dict =\
+        _create_property('radii_dict', "(dict) custom atomic radii")
+
+    max_layers, _max_layers =\
+        _create_property('max_layers',
+                         "(int) maximum number of layers to be identified")
+    cluster_threshold_density, _cluster_threshold_density =\
+        _create_property('cluster_threshold_density',
+                         "(float) threshold for the density-based filtering")
+    # TODO: does this belong here ?
+    _interpolator, __interpolator =\
+        _create_property('_interpolator', "(dict) custom atomic radii")
+
+    @abstractmethod
     def __init__(self):
-        self.cluster_cut = None
-        self.extra_cluster_groups = None
-        self.itim_group = None
-        self.radii_dict = None
-        self.max_layers = 1
-        self.cluster_threshold_density = None
-        self.molecular = True
-        self.info = False
-        self.multiproc = True
-        self._interpolator = None
+        pass
+
+    @property
+    def method(self):
+        return self.__class__.__name__
 
     def label_layer(self, group, value):
         if LooseVersion(self._MDAversion) <= LooseVersion('0.15'):
             group.bfactors = value
         else:
             group.tempfactors = value
-
-    def _check_missing_attribute(self, name, classname, group, value, universe):
-        """ Add an attribute, which is necessary for pytim but
-            missing from the present topology.
-
-            An example of how the code below would expand is:
-
-            if 'radii' not in dir(universe.atoms):
-                from MDAnalysis.core.topologyattrs import Radii
-                radii = np.zeros(len(universe.atoms)) * np.nan
-                universe.add_TopologyAttr(Radii(radii))
-
-             * MDAnalysis.core.topologyattrs ->  self.topologyattrs
-             * Radii -> missing_class
-             * radii -> values
-        """
-
-        if name not in dir(universe.atoms):
-            missing_class = getattr(self.topologyattrs, classname)
-            values = np.array([value] * len(group))
-            universe.add_TopologyAttr(missing_class(values))
-
-    def _sanity_check_alpha(self):
-        if self.alpha < 0:
-            raise ValueError(self.ALPHA_NEGATIVE)
-        if self.alpha >= np.amin(self.universe.dimensions[:3]):
-            raise ValueError(self.ALPHA_LARGE)
-
-    def _sanity_check_cluster_cut(self):
-        elements = 0
-        extraelements = -1
-        if(self.cluster_cut is not None):
-            elements = len(self.cluster_cut)
-        if(self.extra_cluster_groups is not None):
-            extraelements = len(self.extra_cluster_groups)
-
-        if  not (elements == 1 or elements == 1 + extraelements):
-                raise  StandardError(self.MISMATCH_CLUSTER_SEARCH)
-
-    def _basic_checks(self, universe):
-        self._MDAversion = MDAnalysis.__version__
-        VERS = LooseVersion(self._MDAversion)
-        V015 = LooseVersion('0.15')
-        V016 = LooseVersion('0.16')
-        try:
-            self.all_atoms = universe.select_atoms('all')
-        except BaseException:
-            raise Exception(self.WRONG_UNIVERSE)
-
-        if VERS < V015:
-            raise Exception("Must use MDAnalysis  >= 0.15")
-
-        if VERS >= V016:  # new topology system
-
-            self.topologyattrs = importlib.import_module(
-                'MDAnalysis.core.topologyattrs'
-            )
-
-            self._check_missing_attribute('radii', 'Radii', universe.atoms,
-                                          np.nan, universe)
-            self._check_missing_attribute('tempfactors', 'Tempfactors',
-                                          universe.atoms, 0, universe)
-            self._check_missing_attribute('bfactors', 'Bfactors',
-                                          universe.atoms, 0, universe)
-            self._check_missing_attribute('altLocs', 'AltLocs',
-                                          universe.atoms, ' ', universe)
-            self._check_missing_attribute('icodes', 'ICodes',
-                                          universe.residues, ' ', universe)
-            self._check_missing_attribute('occupancies', 'Occupancies',
-                                          universe.atoms, 1, universe)
 
     def _generate_periodic_border_2d(self, group):
         _box = utilities.get_box(group.universe, self.normal)
@@ -220,7 +394,7 @@ class PYTIM(object):
         """
 
         temp_pos = np.copy(self.universe.atoms.positions)
-        options={'no':False,False:False,'middle':True,True:True}
+        options = {'no': False, False: False, 'middle': True, True: True}
         if options[centered] == False:
             self.universe.atoms.positions = self.original_positions
 
@@ -247,10 +421,10 @@ class PYTIM(object):
             else:
                 bondvalue = False
             self.PDB[filename] = MDAnalysis.Writer(
-                                    filename, multiframe=True,
-                                    n_atoms=self.universe.atoms.n_atoms,
-                                    bonds=bondvalue
-                                 )
+                filename, multiframe=True,
+                n_atoms=self.universe.atoms.n_atoms,
+                bonds=bondvalue
+            )
         self.PDB[filename].write(self.universe.atoms)
         self.universe.atoms.positions = np.copy(temp_pos)
 
@@ -258,135 +432,6 @@ class PYTIM(object):
         """ An alias to :func:`writepdb`
         """
         self.writepdb(filename, centered, multiframe)
-
-    def assign_radii(self, radii_dict):
-        try:
-            _groups = np.copy(self.extra_cluster_groups[:])
-        except BaseException:
-            _groups = []
-        _groups.append(self.itim_group)
-        for _g in _groups:
-            # NOTE: maybe add a switch to use the atom name instead of the type
-            if _g is not None:
-                _types = np.copy(_g.types)
-                if not (np.any(np.equal(_g.radii, None)) or
-                        np.any(np.isnan(_g.radii))):  # all radii already set
-                    break
-                if radii_dict is None:
-                    # some radii are not set and no dict provided
-                    _radii_dict = tables.vdwradii
-                else:  # use the provided dict.
-                    _radii_dict = radii_dict
-
-                _radii = np.zeros(len(_g.types))
-                for _atype in np.unique(_types):
-                    try:
-                        matching_type = get_close_matches(
-                            _atype, _radii_dict.keys(), n=1, cutoff=0.1
-                        )
-                        _radii[_types == _atype] = _radii_dict[matching_type[0]]
-                    except BaseException:
-                        avg = np.average(_radii_dict.values())
-                        _radii[_types == _atype] = avg
-
-                        print("!!                              WARNING")
-                        print("!! No appropriate radius was found for the "
-                              "atomtype " + _atype)
-                        print("!! Using the average radius (" + str(avg) + ") "
-                              "as a fallback option...")
-                        print("!! Pass a dictionary of radii (in Angstrom) "
-                              "with the option radii_dict")
-                        print("!! for example: r={'" + _atype + "':1.2,...} ; "
-                              "inter=pytim.ITIM(u,radii_dict=r)")
-
-                _g.radii = np.copy(_radii[:])
-
-                if np.any(np.equal(_g.radii, None)):
-                    raise ValueError(self.UNDEFINED_RADIUS)
-                del _radii
-                del _types
-
-    def triangulate_layer(self, layer=1):
-        """Triangulate a layer.
-
-        :param int layer:  (default: 1) triangulate this layer (on both sides\
-                           of the interface)
-        :return list triangulations:  a list of two Delaunay triangulations,\
-                           which are also stored in self.surf_triang
-        """
-        if layer > len(self._layers[0]):
-            raise ValueError(self.UNDEFINED_LAYER)
-
-        box = self.universe.dimensions[:3]
-
-        upper = self._layers[0][layer - 1]
-        lower = self._layers[1][layer - 1]
-
-        upperpos = self._generate_periodic_border_2d(upper)
-        lowerpos = self._generate_periodic_border_2d(lower)
-
-        self.surf_triang = [None, None]
-        self.trimmed_surf_triangs = [None, None]
-        self.triangulation_points = [None, None]
-        self.surf_triang[0] = Delaunay(upperpos[:, 0:2])
-        self.surf_triang[1] = Delaunay(lowerpos[:, 0:2])
-        self.triangulation_points[0] = upperpos[:]
-        self.triangulation_points[1] = lowerpos[:]
-        self.trimmed_surf_triangs[0] = utilities.trim_triangulated_surface(
-            self.surf_triang[0], box
-        )
-        self.trimmed_surf_triangs[1] = utilities.trim_triangulated_surface(
-            self.surf_triang[1], box
-        )
-        return self.surf_triang
-
-    def _initialize_distance_interpolator(self, layer):
-        if self._interpolator is None:
-            # we don't know if previous triangulations have been done on the
-            # same layer, so just in case we repeat it here. This can be fixed
-            # in principl with a switch
-            self.triangulate_layer(layer)
-
-            self._interpolator = [None, None]
-            for layer in [0,1]:
-                self._interpolator[layer] = LinearNDInterpolator(
-                    self.surf_triang[layer],
-                    self.triangulation_points[layer][:, 2])
-
-    def interpolate_surface(self, positions, layer):
-
-        upper_set = positions[positions[:, 2] >= 0]
-        lower_set = positions[positions[:, 2] < 0]
-
-        elevation = np.zeros(len(positions))
-        if self.__class__.__name__ == 'ChaconTarazona':
-            upper_interp = self.surf.surface_from_modes(upper_set,self.modes[0])
-            lower_interp = self.surf.surface_from_modes(lower_set,self.modes[1])
-        elif self.__class__.__name__ == 'ITIM':
-            # interpolated values of upper/lower_set on the upper/lower surface
-            self._initialize_distance_interpolator(layer)
-            upper_interp = self._interpolator[0](upper_set[:, 0:2])
-            lower_interp = self._interpolator[1](lower_set[:, 0:2])
-        else:
-            raise StandardError("No interpolation scheme implemented for "+\
-                                self.__class__.__name__)
-        # copy everything back to one array with the correct order
-        elevation[np.where(positions[:, 2] >= 0)] = upper_interp
-        elevation[np.where(positions[:, 2] < 0)]  = lower_interp
-        return elevation
-
-    def _assign_normal(self, normal):
-        if not (self.symmetry == 'planar'):
-            raise ValueError(" wrong symmetry for normal assignement")
-        if self.itim_group is None:
-            raise TypeError(self.UNDEFINED_ITIM_GROUP)
-        if normal == 'guess':
-            self.normal = utilities.guess_normal(self.universe,
-                                                 self.itim_group)
-        else:
-            if not (normal in self.directions_dict):
-                raise ValueError(self.WRONG_DIRECTION)
-            self.normal = self.directions_dict[normal]
 
     def _define_cluster_group(self):
         if(self.cluster_cut is not None):
@@ -405,7 +450,6 @@ class PYTIM(object):
 
         else:
             self.cluster_group = self.itim_group
-
 
     def center(self, group, direction=None, halfbox_shift=True):
         """
@@ -479,7 +523,7 @@ class PYTIM(object):
                                     center_direction=direction,
                                     halfbox_shift=halfbox_shift)
             histo, _ = np.histogram(_pos_group, bins=10, range=_range,
-                                        density=True)
+                                    density=True)
 
         _center = np.average(_pos_group)
         if(halfbox_shift == False):
@@ -499,22 +543,6 @@ class PYTIM(object):
     def _assign_layers(self):
         pass
 
-    @abstractproperty
-    def layers(self):
-        pass
-
-    def _define_groups(self):
-        # we first make sure cluster_cut is either None, or an array
-        if isinstance(self.cluster_cut, (int, float)):
-                self.cluster_cut = np.array([float(self.cluster_cut)])
-        # same with extra_cluster_groups
-        if not isinstance(self.extra_cluster_groups,
-                           (list, tuple, np.ndarray,type(None))):
-            self.extra_cluster_groups = [self.extra_cluster_groups]
-
-        # fallback for itim_group
-        if self.itim_group is None:
-            self.itim_group = self.all_atoms
 
 from pytim.itim import ITIM
 from pytim.gitim import GITIM

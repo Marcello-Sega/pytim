@@ -60,6 +60,8 @@ class WillardChandler(pytim.PYTIM):
 
     """
 
+    _surface = None
+
     @property
     def layers(self):
         """The method does not identify layers."""
@@ -95,31 +97,27 @@ class WillardChandler(pytim.PYTIM):
             ValueError: parameter mesh must be positive
 
         """
-        self._sanity_check_alpha()
-        self._sanity_check_cluster_cut()
 
     def __init__(self, universe, alpha=2.0, mesh=2.0,
                  itim_group=None,
                  radii_dict=None, surface_basename=None,
                  particles_basename=None, density_basename=None):
 
-        self._basic_checks(universe)
-        self.cluster_cut = None
+        sanity = pytim.SanityCheck(self)
+        sanity.assign_universe(universe)
+        sanity.assign_alpha(alpha)
+
         self.mesh = mesh
         self.spacing = None
         self.ngrid = None
-        self.extra_cluster_groups = None
-        self.universe = universe
-        self.alpha = alpha
-        self.itim_group = itim_group
+
         self.density_basename = density_basename
         self.particles_basename = particles_basename
         self.surface_basename = surface_basename
 
-        self.assign_radii(radii_dict)
-        self._sanity_checks()
-
-        self._define_groups()
+        sanity.assign_radii(radii_dict)
+        # TODO implement cluster group
+        sanity.assign_groups(itim_group, None, None)
 
         pytim.PatchTrajectory(universe.trajectory, self)
         self._assign_layers()
@@ -127,9 +125,9 @@ class WillardChandler(pytim.PYTIM):
     def dump_density(self, densmap):
         """save the density on a vtk file named consecutively using the frame
         number."""
-        filename = utilities.vtk_consecutive_filename(self.universe,
+        filename = utilities.vtk.consecutive_filename(self.universe,
                                                       self.density_basename)
-        utilities.write_vtk_scalar_grid(filename, self.ngrid, self.spacing,
+        utilities.vtk.write_scalar_grid(filename, self.ngrid, self.spacing,
                                         densmap)
 
     def dump_points(self, pos):
@@ -140,16 +138,17 @@ class WillardChandler(pytim.PYTIM):
         color = [utilities.colormap[element] for element in types]
         color = (np.array(color) / 256.).tolist()
 
-        filename = utilities.vtk_consecutive_filename(self.universe,
+        filename = utilities.vtk.consecutive_filename(self.universe,
                                                       self.particles_basename)
-        utilities.write_vtk_points(filename, pos, color=color, radius=radii)
+        utilities.vtk.write_points(filename, pos, color=color, radius=radii)
 
-    def dump_triangulation(self, vertices, triangles,normals=None):
+    def dump_triangulation(self, vertices, triangles, normals=None):
         """save a triangulation on a vtk file named consecutively using the
         frame number."""
-        filename = utilities.vtk_consecutive_filename(self.universe,
+        filename = utilities.vtk.consecutive_filename(self.universe,
                                                       self.surface_basename)
-        utilities.write_vtk_triangulation(filename, vertices, triangles,normals)
+        utilities.vtk.write_triangulation(
+            filename, vertices, triangles, normals)
 
     def _assign_layers(self):
         """There are no layers in the Willard-Chandler method.
@@ -166,9 +165,9 @@ class WillardChandler(pytim.PYTIM):
         box = self.universe.dimensions[:3]
         delta = 2. * self.alpha + 1e-6
         utilities.generate_periodic_border_3d(pos, box, delta)
-        ngrid,spacing = utilities.compute_compatible_mesh_params(
-                                self.mesh,box
-                          )
+        ngrid, spacing = utilities.compute_compatible_mesh_params(
+            self.mesh, box
+        )
         self.spacing = spacing
         self.ngrid = ngrid
         grid = utilities.generate_grid_in_box(box, ngrid)
