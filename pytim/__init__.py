@@ -169,9 +169,9 @@ class SanityCheck(object):
             self._check_missing_attribute('radii', 'Radii', universe.atoms,
                                           np.nan, universe)
             self._check_missing_attribute('tempfactors', 'Tempfactors',
-                                          universe.atoms, 0, universe)
+                                          universe.atoms, 0.0, universe)
             self._check_missing_attribute('bfactors', 'Bfactors',
-                                          universe.atoms, 0, universe)
+                                          universe.atoms, 0.0, universe)
             self._check_missing_attribute('altLocs', 'AltLocs',
                                           universe.atoms, ' ', universe)
             self._check_missing_attribute('icodes', 'ICodes',
@@ -329,10 +329,15 @@ class PYTIM(object):
         return self.__class__.__name__
 
     def label_layer(self, group, value):
-        if LooseVersion(self._MDAversion) <= LooseVersion('0.15'):
-            group.bfactors = value
+        if self.molecular == True:
+            _group = group.residues.atoms
         else:
-            group.tempfactors = value
+            _group = group
+
+        if LooseVersion(self._MDAversion) <= LooseVersion('0.15'):
+            _group.bfactors = value
+        else:
+            _group.tempfactors = value
 
     def _generate_periodic_border_2d(self, group):
         _box = utilities.get_box(group.universe, self.normal)

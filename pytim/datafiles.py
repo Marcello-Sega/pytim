@@ -54,6 +54,7 @@ __all__ = [
     "WATER_PDB",             # PDB single frame, water/vapour interface, same as WATER_GRO
     "WATER_XYZ",             # XYZ single frame, water/vapour interface, same as WATER_GRO
     "WATERSMALL_GRO",        # GROMACS single frame, water/vapour interface
+    "HOT_WATER_GRO",         # GROMACS single frame, water/vapour interface,550 K
     # XYZ, single frame, methanol/vapour interface with molecules in the
     # vapour phase
     "METHANOL_GRO",
@@ -159,6 +160,9 @@ pytim_data.add('MICELLE_PDB',  'config', 'GRO', 'DPC micelle')
 WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
 pytim_data.add('WATERSMALL_GRO',  'config', 'GRO',
                'small SPC water/vapour interface')
+
+HOT_WATER_GRO = resource_filename('pytim', 'data/hot_water.gro')
+pytim_data.add('HOT_WATER_GRO',  'config', 'GRO', 'SPC water/vapour interface, 550K')
 
 METHANOL_GRO = resource_filename('pytim', 'data/methanol.gro')
 pytim_data.add('METHANOL_GRO',  'conf', 'GRO', 'methanol/vapour interface')
