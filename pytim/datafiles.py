@@ -20,11 +20,13 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 
     >>> for config in sorted(pytim_data.config):
     ...     print("{:20s} {:s}".format(config,pytim_data.description[config]))
+    HOT_WATER_GRO        SPC water/vapour interface, 550K
     MICELLE_PDB          DPC micelle
     WATERSMALL_GRO       small SPC water/vapour interface
     WATER_GRO            SPC water/vapour interface
     WATER_PDB            SPC water/vapour interface
     WATER_XYZ            SPC water/vapour interface
+
 
 
 
