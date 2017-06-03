@@ -67,11 +67,6 @@ class Testsuite1():
     >>> print(avg[0:3])
     [ 0.01  0.02  0.03]
 
-    >>> # SURFACE NORMAL TESTS
-    >>> u=mda.Universe(WATER_GRO)
-    >>> g=u.select_atoms('name OW')
-    >>> inter = pyti.ITIM()
-
     """
 
     pass
