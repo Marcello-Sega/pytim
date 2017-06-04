@@ -220,9 +220,9 @@ class ChaconTarazona(pytim.PYTIM):
         utilities.centerbox(self.universe, center_direction=self.normal)
 
         # first we label all atoms in itim_group to be in the gas phase
-        self.label_layer(self.itim_group.atoms, 0.5)
+        self.label_group(self.itim_group.atoms, 0.5)
         # then all atoms in the largest group are labelled as liquid-like
-        self.label_layer(self.cluster_group.atoms, 0)
+        self.label_group(self.cluster_group.atoms, 0)
 
         self.old_box = box
         pos = self.cluster_group.positions
@@ -231,6 +231,6 @@ class ChaconTarazona(pytim.PYTIM):
             self._layers[side][0] = self._assign_one_side(side)
         for side in [0, 1]:
             for _nlayer, _layer in enumerate(self._layers[side]):
-                self.label_layer(_layer, _nlayer + 1)
+                self.label_group(_layer, _nlayer + 1)
 
 #

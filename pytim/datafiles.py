@@ -20,9 +20,10 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 
     >>> for config in sorted(pytim_data.config):
     ...     print("{:20s} {:s}".format(config,pytim_data.description[config]))
-    HOT_WATER_GRO        SPC water/vapour interface, 550K
     MICELLE_PDB          DPC micelle
     WATERSMALL_GRO       small SPC water/vapour interface
+    WATER_520K_GRO       SPC/E water/vapour interface, 520K
+    WATER_550K_GRO       SPC/E water/vapour interface, 550K
     WATER_GRO            SPC water/vapour interface
     WATER_PDB            SPC water/vapour interface
     WATER_XYZ            SPC water/vapour interface
@@ -55,8 +56,9 @@ __all__ = [
     "WATER_GRO",             # GROMACS single frame, water/vapour interface
     "WATER_PDB",             # PDB single frame, water/vapour interface, same as WATER_GRO
     "WATER_XYZ",             # XYZ single frame, water/vapour interface, same as WATER_GRO
-    "WATERSMALL_GRO",        # GROMACS single frame, water/vapour interface
-    "HOT_WATER_GRO",         # GROMACS single frame, water/vapour interface,550 K
+    "WATERSMALL_GRO",        # GROMACS single frame, SPC water/vapour interface
+    "WATER_520K_GRO",        # GROMACS single frame, SPC/E water/vapour interface,520 K
+    "WATER_550K_GRO",        # GROMACS single frame, SPC/E water/vapour interface,550 K
     # XYZ, single frame, methanol/vapour interface with molecules in the
     # vapour phase
     "METHANOL_GRO",
@@ -163,8 +165,11 @@ WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
 pytim_data.add('WATERSMALL_GRO',  'config', 'GRO',
                'small SPC water/vapour interface')
 
-HOT_WATER_GRO = resource_filename('pytim', 'data/hot_water.gro')
-pytim_data.add('HOT_WATER_GRO',  'config', 'GRO', 'SPC water/vapour interface, 550K')
+WATER_520K_GRO = resource_filename('pytim', 'data/water_520K.gro')
+pytim_data.add('WATER_520K_GRO',  'config', 'GRO', 'SPC/E water/vapour interface, 520K')
+
+WATER_550K_GRO = resource_filename('pytim', 'data/water_550K.gro')
+pytim_data.add('WATER_550K_GRO',  'config', 'GRO', 'SPC/E water/vapour interface, 550K')
 
 METHANOL_GRO = resource_filename('pytim', 'data/methanol.gro')
 pytim_data.add('METHANOL_GRO',  'conf', 'GRO', 'methanol/vapour interface')
