@@ -242,9 +242,9 @@ class GITIM(pytim.PYTIM):
             self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
 
         # first we label all atoms in itim_group to be in the gas phase
-        self.itim_group.atoms.bfactors = 0.5
+        self.label_group(self.itim_group.atoms, 0.5)
         # then all atoms in the larges group are labelled as liquid-like
-        self.cluster_group.atoms.bfactors = 0
+        self.label_group(self.cluster_group.atoms, 0.0)
 
         size = len(self.cluster_group.positions)
         self._seen = np.zeros(size, dtype=np.int8)
@@ -258,7 +258,7 @@ class GITIM(pytim.PYTIM):
             self._layers[0] = self.cluster_group[alpha_ids]
 
         for layer in self._layers:
-            layer.bfactors = 1
+            self.label_group(layer, 1.0)
 
         # reset the interpolator
         self._interpolator = None

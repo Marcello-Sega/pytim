@@ -328,16 +328,16 @@ class PYTIM(object):
     def method(self):
         return self.__class__.__name__
 
-    def label_layer(self, group, value):
+    def label_group(self, group, value):
         if self.molecular == True:
             _group = group.residues.atoms
         else:
             _group = group
 
         if LooseVersion(self._MDAversion) <= LooseVersion('0.15'):
-            _group.bfactors = value
+            _group.bfactors = float(value)
         else:
-            _group.tempfactors = value
+            _group.tempfactors = float(value)
 
     def _generate_periodic_border_2d(self, group):
         _box = utilities.get_box(group.universe, self.normal)
