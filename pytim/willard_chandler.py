@@ -28,7 +28,7 @@ class WillardChandler(pytim.PYTIM):
                               an UNSTRUCTURED_GRID on\
                               vtk files named <surface_basename>.<n>.vtk,\
                               where <n> is the frame number.
-    :param str particle_basename: if not None, save the particles (along\
+    :param str particles_basename: if not None, save the particles (along\
                               with radii and color scheme for the atom\
                               types using POLYDATA on vtk files.\
                               Uses the same file name convetion as\
@@ -113,6 +113,7 @@ class WillardChandler(pytim.PYTIM):
 
         self.density_basename = density_basename
         self.particles_basename = particles_basename
+        self.group_basename = particles_basename+'_group'
         self.surface_basename = surface_basename
 
         sanity.assign_radii(radii_dict)
@@ -130,17 +131,18 @@ class WillardChandler(pytim.PYTIM):
         utilities.vtk.write_scalar_grid(filename, self.ngrid, self.spacing,
                                         densmap)
 
-    def dump_points(self, pos):
+    def dump_group(self, group,groupfilename):
         """save the particles n a vtk file named consecutively using the frame
         number."""
-        radii = self.itim_group.radii
-        types = self.itim_group.types
+        radii = group.radii
+        types = group.types
         color = [utilities.colormap[element] for element in types]
         color = (np.array(color) / 256.).tolist()
 
         filename = utilities.vtk.consecutive_filename(self.universe,
-                                                      self.particles_basename)
-        utilities.vtk.write_points(filename, pos, color=color, radius=radii)
+                                                      groupfilename)
+        utilities.vtk.write_points(filename, group.positions, color=color,
+                                   radius=radii)
 
     def dump_triangulation(self, vertices, triangles, normals=None):
         """save a triangulation on a vtk file named consecutively using the
@@ -164,22 +166,22 @@ class WillardChandler(pytim.PYTIM):
         pos = self.itim_group.positions
         box = self.universe.dimensions[:3]
         delta = 2. * self.alpha + 1e-6
-        utilities.generate_periodic_border_3d(pos, box, delta)
+        #extrapoints, _ = utilities.generate_periodic_border_3d(pos, box, delta)
         ngrid, spacing = utilities.compute_compatible_mesh_params(
             self.mesh, box
         )
         self.spacing = spacing
         self.ngrid = ngrid
         grid = utilities.generate_grid_in_box(box, ngrid)
-        kernel, _ = utilities.density_map(pos, grid, self.alpha)
-        field = kernel(grid)
+        kernel, _ = utilities.density_map(pos , grid, self.alpha,box)
+
+        field = kernel.evaluate_pbc(grid)
 
         # Thomas Lewiner, Helio Lopes, Antonio Wilson Vieira and Geovan
         # Tavares. Efficient implementation of Marching Cubes’ cases with
         # topological guarantees. Journal of Graphics Tools 8(2) pp. 1-15
         # (december 2003). DOI: 10.1080/10867651.2003.10487582
-        volume = field.reshape(tuple(ngrid))
-
+        volume = field.reshape(tuple(ngrid[::-1]))
         verts, faces, normals, values = measure.marching_cubes(
             volume, None,
             spacing=tuple(spacing)
@@ -188,13 +190,17 @@ class WillardChandler(pytim.PYTIM):
         # at the vertices, and not normals of the faces
         self.triangulated_surface = [verts, faces, normals]
         self.surface_area = measure.mesh_surface_area(verts, faces)
-        verts += spacing / 2.
+        verts += spacing[::-1]/2.
 
         if self.density_basename is not None:
             self.dump_density(field)
         if self.particles_basename is not None:
-            self.dump_points(pos)
+            self.dump_group(self.universe.atoms,self.particles_basename+'all')
+            self.dump_group(self.itim_group,self.particles_basename+'itim')
+
         if self.surface_basename is not None:
-            self.dump_triangulation(verts, faces, normals)
+            # not quite sure where the order (xyz) got reverted,
+            # most likely in utilities.generate_grid_in_box() called above
+            self.dump_triangulation(verts[::,::-1], faces, normals)
 
 #
