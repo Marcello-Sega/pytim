@@ -311,22 +311,9 @@ class vtk:
 class gaussian_kde_pbc(gaussian_kde):
 
     def evaluate_pbc(self, points):
-            """Evaluate the estimated pdf on a set of points.
-            Parameters
-            ----------
-            points : (# of dimensions, # of points)-array
-                Alternatively, a (# of dimensions,) vector can be passed in and
-                treated as a single point.
-            Returns
-            -------
-            values : (# of points,)-array
-                The values at each point.
-            Raises
-            ------
-            ValueError : if the dimensionality of the input points is different
-    than
-                         the dimensionality of the KDE.
+            """ PBC-enabled version of scipy.stats.gaussian_kde.evaluate()
             """
+
             points = np.atleast_2d(points)
             box = self.box
             d, m = points.shape
