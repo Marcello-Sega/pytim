@@ -113,7 +113,8 @@ class WillardChandler(pytim.PYTIM):
 
         self.density_basename = density_basename
         self.particles_basename = particles_basename
-        self.group_basename = particles_basename+'_group'
+        if particles_basename is not None:
+            self.group_basename = particles_basename+'_group'
         self.surface_basename = surface_basename
 
         sanity.assign_radii(radii_dict)
