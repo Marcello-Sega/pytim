@@ -191,22 +191,13 @@ def generate_grid_in_box(box, npoints):
     x_ = np.linspace(0., box[0], npoints[0])
     y_ = np.linspace(0., box[1], npoints[1])
     z_ = np.linspace(0., box[2], npoints[2])
-    x, y, z = np.meshgrid(x_, y_, z_, indexing='ij')
+    z, y, x = np.meshgrid(z_, y_, x_, indexing='ij')
     grid = np.append(x.reshape(-1, 1), y.reshape(-1, 1), axis=1)
     grid = np.append(grid, z.reshape(-1, 1), axis=1)
     return grid.T
 
 
 class vtk:
-
-    @staticmethod
-    def write_density(interface, densmap):
-        """save the density on a vtk file named consecutively using the frame
-        number."""
-        filename = utilities.vtk.consecutive_filename(self.universe,
-                                                      self.density_basename)
-        utilities.vtk.write_scalar_grid(filename, self.ngrid, self.spacing,
-                                        densmap)
 
     def dump_points(self, pos):
         """save the particles n a vtk file named consecutively using the frame
@@ -219,14 +210,6 @@ class vtk:
         filename = utilities.vtk.consecutive_filename(self.universe,
                                                       self.particles_basename)
         utilities.vtk.write_points(filename, pos, color=color, radius=radii)
-
-    def dump_triangulation(self, vertices, triangles, normals=None):
-        """save a triangulation on a vtk file named consecutively using the
-        frame number."""
-        filename = utilities.vtk.consecutive_filename(self.universe,
-                                                      self.surface_basename)
-        utilities.vtk.write_triangulation(
-            filename, vertices, triangles, normals)
 
     @staticmethod
     def _format_vector(vector, format_str="{:f}"):
@@ -252,7 +235,7 @@ class vtk:
         f.write(vtk._format_vector(grid_size, format_str="{:d}") + "\n")
         f.write("SPACING " + vtk._format_vector(spacing) + "\n")
         f.write("\n")
-        f.write("ORIGIN 0.000000 0.000000 0.000000\n")
+        f.write("ORIGIN " + vtk._format_vector(spacing/2.)+"\n")
         f.write("POINT_DATA " + str(len(scalars)) + "\n")
         f.write("SCALARS kernel floats 1\nLOOKUP_TABLE default\n")
         for val in scalars:
@@ -271,7 +254,7 @@ class vtk:
         f.write("# vtk DataFile Version 2.0\ntriangles\nASCII\nDATASET POLYDATA\n")
         f.write("POINTS " + str(len(pos)) + " floats\n")
         for p in pos:
-            f.write(str(p[2]) + " " + str(p[1]) + " " + str(p[0]) + "\n")
+            f.write(str(p[0]) + " " + str(p[1]) + " " + str(p[2]) + "\n")
         f.write("\nVERTICES " + str(len(pos)) + " " + str(len(pos) * 2) + "\n")
         for i in range(npos):
             f.write("1 " + str(i) + "\n")
@@ -301,7 +284,7 @@ class vtk:
         f.write("DATASET UNSTRUCTURED_GRID\n")
         f.write("POINTS " + str(len(vertices)) + " float\n")
         for point in vertices:
-            f.write(vtk._format_vector(point[::-1]) + "\n")
+            f.write(vtk._format_vector(point) + "\n")
 
         f.write("\nCELLS " + str(len(triangles)) +
                 " " + str(4 * len(triangles)) + "\n")
@@ -325,10 +308,71 @@ class vtk:
 
 #
 
+class gaussian_kde_pbc(gaussian_kde):
 
-def density_map(pos, grid, sigma):
+    def evaluate_pbc(self, points):
+            """Evaluate the estimated pdf on a set of points.
+            Parameters
+            ----------
+            points : (# of dimensions, # of points)-array
+                Alternatively, a (# of dimensions,) vector can be passed in and
+                treated as a single point.
+            Returns
+            -------
+            values : (# of points,)-array
+                The values at each point.
+            Raises
+            ------
+            ValueError : if the dimensionality of the input points is different
+    than
+                         the dimensionality of the KDE.
+            """
+            points = np.atleast_2d(points)
+            box = self.box
+            d, m = points.shape
+            if d != self.d:
+                if d == 1 and m == self.d:
+                    # points was passed in as a row vector
+                    points = np.reshape(points, (self.d, 1))
+                    m = 1
+                else:
+                    msg = "points have dimension %s, dataset has dimension %s" %(d,self.d)
+                    raise ValueError(msg)
+
+            result = np.zeros((m,), dtype=float)
+
+            if m >= self.n:
+                # there are more points than data, so loop over data
+                for i in range(self.n):
+                    diff = self.dataset[:, i, np.newaxis] - points
+                    diff = diff.T
+                    diff -= (diff>box/2.) * box
+                    diff += (diff<-box/2.) * box
+                    diff = diff.T
+                    tdiff = np.dot(self.inv_cov, diff)
+                    energy = np.sum(diff*tdiff,axis=0) / 2.0
+                    result = result + np.exp(-energy)
+            else:
+                # loop over points
+                for i in range(m):
+                    diff = self.dataset - points[:, i, np.newaxis]
+                    diff = diff.T
+                    diff -= (diff>box/2.) * box
+                    diff += (diff<-box/2.) * box
+                    diff = diff.T
+                    tdiff = np.dot(self.inv_cov, diff)
+                    energy = np.sum(diff * tdiff, axis=0) / 2.0
+                    result[i] = np.sum(np.exp(-energy), axis=0)
+
+            result = result / self._norm_factor
+
+            return result
+
+
+def density_map(pos, grid, sigma, box):
     values = np.vstack([pos[:, 0], pos[:, 1], pos[:, 2]])
-    kernel = gaussian_kde(values, bw_method=sigma / values.std(ddof=1))
+    kernel = gaussian_kde_pbc(values, bw_method=sigma / values.std(ddof=1))
+    kernel.box = box
     return kernel, values.std(ddof=1)
 
 
