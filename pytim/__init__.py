@@ -441,7 +441,7 @@ class PYTIM(object):
     def _define_cluster_group(self):
         if(self.cluster_cut is not None):
             # groups have been checked already in _sanity_checks()
-            labels, counts, _ = utilities.do_cluster_analysis_DBSCAN(
+            labels, counts, neighbors = utilities.do_cluster_analysis_DBSCAN(
                 self.itim_group, self.cluster_cut[0],
                 self.universe.dimensions[:6],
                 self.cluster_threshold_density, self.molecular)
@@ -452,7 +452,7 @@ class PYTIM(object):
             ids_max = np.where(labels == label_max)[0]
             # atoms belonging to the largest cluster
             self.cluster_group = self.itim_group[ids_max]
-
+            self.n_neighbors = neighbors
         else:
             self.cluster_group = self.itim_group
 
