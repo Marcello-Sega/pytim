@@ -223,11 +223,14 @@ class SanityCheck(object):
     def assign_groups(self, itim_group, cluster_cut, extra_cluster_groups):
         elements = 0
         extraelements = -1
+
         self.interface.itim_group = itim_group
         self.interface.cluster_cut = cluster_cut
         self.interface.extra_cluster_groups = extra_cluster_groups
 
         self._define_groups()
+        if(len(self.interface.itim_group) == 0 ) :
+            raise StandardError(self.interface.UNDEFINED_ITIM_GROUP)
         interface = self.interface
 
         if(interface.cluster_cut is not None):
@@ -272,7 +275,7 @@ class PYTIM(object):
     CLUSTER_FAILURE = "Cluster algorithm failed: too small cluster cutoff provided?"
     UNDEFINED_LAYER = "No layer defined: forgot to call _assign_layers() or not enough layers requested"
     WRONG_UNIVERSE = "Wrong Universe passed to ITIM class"
-    UNDEFINED_ITIM_GROUP = "No itim_group defined"
+    UNDEFINED_ITIM_GROUP = "No itim_group defined, or empty"
     WRONG_DIRECTION = "Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
     CENTERING_FAILURE = "Cannot center the group in the box. Wrong direction supplied?"
 
