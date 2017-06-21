@@ -8,7 +8,7 @@
 
 import numpy as np
 from skimage import measure
-from pytim import utilities
+from pytim import utilities,vtk,cube
 import pytim
 
 
@@ -24,22 +24,24 @@ class WillardChandler(pytim.PYTIM):
                               elements in the itim_group. If None is\
                               supplied, the default one (from MDAnalysis)\
                               will be used.
-    :param str surface_basename: if not None, save the triangulation on
-                              an UNSTRUCTURED_GRID on\
-                              vtk files named <surface_basename>.<n>.vtk,\
+    :param str basename:      if not None, prepend it to the output files
+                              with volumetric, surface or particle data\
+                              as  <basename>_<type>.<n>.extension,\
                               where <n> is the frame number.
-    :param str particles_basename: if not None, save the particles (along\
-                              with radii and color scheme for the atom\
-                              types using POLYDATA on vtk files.\
-                              Uses the same file name convetion as\
-                              surface_basename.
-    :param str density_basename: if not None, save the full density\
-                              (along with radii and color scheme for the\
-                              atom types) using STRUCTURED_POINTS on vtk\
-                              files. Uses the same file name convetion as\
-                              surface_basename.
+    :param str output_format: 'vtk', 'cube', or None
+    :param bool output_part:  if True and output_format is 'vtk', save the \
+                              particles (along with radii and color scheme \
+                              for the atom\ types using POLYDATA.\
+                              Disregarded otherwise.
+    :param bool output_dens:  if True and output_format is 'vtk' save the
+                              volumetric density data using STRUCTURED_POINTS\
+                              Disregarded otherwise.
+    :param bool output_surf:  if True and output_format is 'vtk' save the
+                              surface triangulation data using UNSTRUCTURED_GRID\
+                              Disregarded otherwise.
 
     Example:
+
     >>> import MDAnalysis as mda
     >>> import pytim
     >>> from pytim.datafiles import *
@@ -50,11 +52,12 @@ class WillardChandler(pytim.PYTIM):
     >>> radii = pytim_data.vdwradii(G43A1_TOP)
     >>>
     >>> interface = pytim.WillardChandler(u, itim_group=g, alpha=3.0,\
-    ...                                   density_basename="dens",\
-    ...                                   particles_basename="atoms",\
-    ...                                   surface_basename="surf")
+                                          output_format='vtk',\
+                                          output_dens=True,\
+                                          output_part=True,\
+                                          output_surf=True)
     >>> R, _, _, _ = pytim.utilities.fit_sphere(\
-    ...                interface.triangulated_surface[0])
+                       interface.triangulated_surface[0])
     >>> print "Radius={:.3f}".format(R)
     Radius=19.325
 
@@ -67,10 +70,6 @@ class WillardChandler(pytim.PYTIM):
         """The method does not identify layers."""
         self.layers = None
         return None
-
-    def writepdb(self, filename='layers.pdb', centered='no', multiframe=True):
-        """The method does not identify layers."""
-        pass
 
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
@@ -99,9 +98,9 @@ class WillardChandler(pytim.PYTIM):
         """
 
     def __init__(self, universe, alpha=2.0, mesh=2.0,
-                 itim_group=None,
-                 radii_dict=None, surface_basename=None,
-                 particles_basename=None, density_basename=None):
+                 itim_group=None, radii_dict=None, output_format=None,
+                 output_surf=True, output_part=True, output_dens=True,
+                 basename=None):
 
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
@@ -110,12 +109,14 @@ class WillardChandler(pytim.PYTIM):
         self.mesh = mesh
         self.spacing = None
         self.ngrid = None
-
-        self.density_basename = density_basename
-        self.particles_basename = particles_basename
-        if particles_basename is not None:
-            self.group_basename = particles_basename+'_group'
-        self.surface_basename = surface_basename
+        self.output_format = output_format
+        self.output={'dens':output_dens,'surf':output_surf,'part':output_part}
+        if basename is None:
+            self.basename=''
+        self.density_basename = self.basename+'dens'
+        self.particles_basename = self.basename+'part'
+        self.surface_basename = self.basename+'surf'
+        self.PDB = {}
 
         sanity.assign_radii(radii_dict)
         # TODO implement cluster group
@@ -127,9 +128,9 @@ class WillardChandler(pytim.PYTIM):
     def dump_density(self, densmap):
         """save the density on a vtk file named consecutively using the frame
         number."""
-        filename = utilities.vtk.consecutive_filename(self.universe,
+        filename = vtk.consecutive_filename(self.universe,
                                                       self.density_basename)
-        utilities.vtk.write_scalar_grid(filename, self.ngrid, self.spacing,
+        vtk.write_scalar_grid(filename, self.ngrid, self.spacing,
                                         densmap)
 
     def dump_group(self, group,groupfilename):
@@ -140,17 +141,17 @@ class WillardChandler(pytim.PYTIM):
         color = [utilities.colormap[element] for element in types]
         color = (np.array(color) / 256.).tolist()
 
-        filename = utilities.vtk.consecutive_filename(self.universe,
+        filename = vtk.consecutive_filename(self.universe,
                                                       groupfilename)
-        utilities.vtk.write_points(filename, group.positions, color=color,
+        vtk.write_atomgroup(filename, group, color=color,
                                    radius=radii)
 
     def dump_triangulation(self, vertices, triangles, normals=None):
         """save a triangulation on a vtk file named consecutively using the
         frame number."""
-        filename = utilities.vtk.consecutive_filename(self.universe,
+        filename = vtk.consecutive_filename(self.universe,
                                                       self.surface_basename)
-        utilities.vtk.write_triangulation(
+        vtk.write_triangulation(
             filename, vertices, triangles, normals)
 
     def _assign_layers(self):
@@ -193,15 +194,23 @@ class WillardChandler(pytim.PYTIM):
         self.surface_area = measure.mesh_surface_area(verts, faces)
         verts += spacing[::-1]/2.
 
-        if self.density_basename is not None:
-            self.dump_density(field)
-        if self.particles_basename is not None:
-            self.dump_group(self.universe.atoms,self.particles_basename+'all')
-            self.dump_group(self.itim_group,self.particles_basename+'itim')
-
-        if self.surface_basename is not None:
-            # not quite sure where the order (xyz) got reverted,
-            # most likely in utilities.generate_grid_in_box() called above
-            self.dump_triangulation(verts[::,::-1], faces, normals)
+        if self.output_format == 'vtk':
+            if self.output['dens']:
+                self.dump_density(field)
+            if self.output['part']:
+                # this can be extended to different groups if needed
+                self.dump_group(self.universe.atoms,self.particles_basename)
+            if self.output['surf']:
+                # not quite sure where the order (xyz) got reverted,
+                # most likely in utilities.generate_grid_in_box() called above
+                self.dump_triangulation(verts[::,::-1], faces, normals)
+        if self.output_format == 'cube':
+                filename = cube.consecutive_filename(self.universe,
+                                                     self.basename+'data')
+                # field is stored in z,y,x, we need to flip it
+                _field = field.reshape((ngrid[2],ngrid[1]*ngrid[0])).T.flatten()
+                # TODO handle optional atomic_numbers
+                cube.write_file(filename, self.universe.atoms, self.ngrid,
+                                spacing,_field, atomic_numbers=None)
 
 #

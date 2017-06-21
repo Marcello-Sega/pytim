@@ -3,11 +3,10 @@
 from timeit import default_timer as timer
 import numpy as np
 import itertools
-from dbscan import dbscan_inner
+from pytim_dbscan import dbscan_inner
 from scipy.spatial import cKDTree
 from scipy.stats import gaussian_kde
 from scipy.cluster import vq
-
 
 def lap(show=False):
     if not hasattr(lap, "tic"):
@@ -196,117 +195,10 @@ def generate_grid_in_box(box, npoints):
     grid = np.append(grid, z.reshape(-1, 1), axis=1)
     return grid.T
 
-
-class vtk:
-
-    def dump_points(self, pos):
-        """save the particles n a vtk file named consecutively using the frame
-        number."""
-        radii = self.itim_group.radii
-        types = self.itim_group.types
-        color = [utilities.colormap[element] for element in types]
-        color = (np.array(color) / 256.).tolist()
-
-        filename = utilities.vtk.consecutive_filename(self.universe,
-                                                      self.particles_basename)
-        utilities.vtk.write_points(filename, pos, color=color, radius=radii)
-
-    @staticmethod
-    def _format_vector(vector, format_str="{:f}"):
-        formatted = ''
-        for element in vector:
-            formatted += format_str.format(element) + ' '
-        return formatted
-
-    @staticmethod
-    def write_scalar_grid(filename, grid_size, spacing, scalars):
-        """write in a vtk file a scalar field on a rectangular grid
-
-           :param string filename: the filename
-           :param array grid_size: number of points in the grid along each\
-                                   direction
-           :param array spacing: a (3,) array with the point spacing along the 3\
-                                 directions
-           :param array scalars: a (grid_size,) array with the scalar field values
-        """
-        f = open(filename, "w")
-        f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
-        f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
-        f.write(vtk._format_vector(grid_size, format_str="{:d}") + "\n")
-        f.write("SPACING " + vtk._format_vector(spacing) + "\n")
-        f.write("\n")
-        f.write("ORIGIN " + vtk._format_vector(spacing/2.)+"\n")
-        f.write("POINT_DATA " + str(len(scalars)) + "\n")
-        f.write("SCALARS kernel floats 1\nLOOKUP_TABLE default\n")
-        for val in scalars:
-            f.write(str(val) + "\n")
-        f.close()
-
-    @staticmethod
-    def write_points(filename, pos, color=None, radius=None):
-        """ write in a vtk file the positions of particles
-
-            :param string filename: the filename
-            :param array pos: the positions to be written to the vtk file
-        """
-        npos = len(pos)
-        f = open(filename, "w")
-        f.write("# vtk DataFile Version 2.0\ntriangles\nASCII\nDATASET POLYDATA\n")
-        f.write("POINTS " + str(len(pos)) + " floats\n")
-        for p in pos:
-            f.write(str(p[0]) + " " + str(p[1]) + " " + str(p[2]) + "\n")
-        f.write("\nVERTICES " + str(len(pos)) + " " + str(len(pos) * 2) + "\n")
-        for i in range(npos):
-            f.write("1 " + str(i) + "\n")
-        if radius is not None:
-            f.write("\nPOINT_DATA " + str(len(pos)) +
-                    "\nSCALARS radius float 1\n")
-            f.write("LOOKUP_TABLE default\n")
-            for rad in radius:
-                f.write(str(rad) + "\n")
-        if color is not None:
-            f.write("COLOR_SCALARS color 3\n")
-            for c in color:
-                f.write(vtk._format_vector(c, format_str="{:1.2f}") + "\n")
-        f.close()
-
-    @staticmethod
-    def write_triangulation(filename, vertices, triangles, normals=None):
-        """ write in a vtk file a triangulation
-
-            :param string filename: the filename
-            :param array vertices: (N,3) array of floats for N vertices
-            :param array triangles: (M,3) array of indices to the vertices
-            :param array triangles: (M,3) array of normal vectors
-        """
-        f = open(filename, "w")
-        f.write("# vtk DataFile Version 2.0\nkernel\nASCII\n")
-        f.write("DATASET UNSTRUCTURED_GRID\n")
-        f.write("POINTS " + str(len(vertices)) + " float\n")
-        for point in vertices:
-            f.write(vtk._format_vector(point) + "\n")
-
-        f.write("\nCELLS " + str(len(triangles)) +
-                " " + str(4 * len(triangles)) + "\n")
-        for index in triangles:
-            f.write("3 " + vtk._format_vector(index, format_str="{:d}") + "\n")
-
-        f.write("\nCELL_TYPES " + str(len(triangles)) + "\n")
-        f.write("5\n" * len(triangles))
-
-        if normals is not None:
-            f.write("\nPOINT_DATA " + str(len(vertices)) + "\n")
-            f.write("NORMALS normals float\n")
-            for n in normals:
-                f.write(vtk._format_vector(n, format_str="{:f}") + "\n")
-
-    @staticmethod
-    def consecutive_filename(universe, basename):
-        frame = universe.trajectory.frame
-        filename = basename + '.' + str(frame) + '.vtk'
-        return filename
-
-#
+def consecutive_filename(universe, basename,extension):
+  frame = universe.trajectory.frame
+  filename = basename + '.' + str(frame) + '.'+extension
+  return filename
 
 class gaussian_kde_pbc(gaussian_kde):
 
@@ -586,5 +478,117 @@ colormap = {
     'Bh': [224, 0, 56],
     'Hs': [230, 0, 46],
     'Mt': [235, 0, 38]
+}
+
+atomic_number_map = {
+    'H':  1,
+    'He': 2,
+    'Li': 3,
+    'Be': 4,
+    'B':  5,
+    'C':  6,
+    'N':  7,
+    'O':  8,
+    'F':  9,
+    'Ne': 10,
+    'Na': 11,
+    'Mg': 12,
+    'Al': 13,
+    'Si': 14,
+    'P':  15,
+    'S':  16,
+    'Cl': 17,
+    'Ar': 18,
+    'K':  19,
+    'Ca': 20,
+    'Sc': 21,
+    'Ti': 22,
+    'V':  23,
+    'Cr': 34,
+    'Mn': 25,
+    'Fe': 26,
+    'Co': 27,
+    'Ni': 28,
+    'Cu': 29,
+    'Zn': 30,
+    'Ga': 31,
+    'Ge': 32,
+    'As': 33,
+    'Se': 34,
+    'Br': 35,
+    'Kr': 36,
+    'Rb': 37,
+    'Sr': 38,
+    'Y':  39,
+    'Zr': 40,
+    'Nb': 41,
+    'Mo': 42,
+    'Tc': 43,
+    'Ru': 44,
+    'Rh': 45,
+    'Pd': 46,
+    'Ag': 47,
+    'Cd': 48,
+    'In': 49,
+    'Sn': 50,
+    'Sb': 51,
+    'Te': 52,
+    'I':  53,
+    'Xe': 54,
+    'Cs': 55,
+    'Ba': 56,
+    'La': 57,
+    'Ce': 58,
+    'Pr': 59,
+    'Nd': 60,
+    'Pm': 61,
+    'Sm': 62,
+    'Eu': 63,
+    'Gd': 64,
+    'Tb': 65,
+    'Dy': 66,
+    'Ho': 67,
+    'Er': 68,
+    'Tm': 69,
+    'Yb': 70,
+    'Lu': 71,
+    'Hf': 72,
+    'Ta': 73,
+    'W':  74,
+    'Re': 75,
+    'Os': 76,
+    'Ir': 77,
+    'Pt': 78,
+    'Au': 79,
+    'Hg': 80,
+    'Tl': 81,
+    'Pb': 82,
+    'Bi': 83,
+    'Po': 84,
+    'At': 85,
+    'Rn': 86,
+    'Fr': 87,
+    'Ra': 88,
+    'Ac': 89,
+    'Th': 90,
+    'Pa': 91,
+    'U':  92,
+    'Np': 93,
+    'Pu': 94,
+    'Am': 95,
+    'Cm': 96,
+    'Bk': 97,
+    'Cf': 98,
+    'Es': 99,
+    'Fm': 100,
+    'Md': 101,
+    'No': 102,
+    'Lr': 103,
+    'Rf': 104,
+    'Db': 105,
+    'Sg': 106,
+    'Bh': 107,
+    'Hs': 108,
+    'Mt': 109
 }
 #

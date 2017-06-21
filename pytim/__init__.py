@@ -166,6 +166,7 @@ class SanityCheck(object):
             self.topologyattrs = importlib.import_module(
                 'MDAnalysis.core.topologyattrs'
             )
+            guessers = MDAnalysis.topology.guessers
             self._check_missing_attribute('radii', 'Radii', universe.atoms,
                                           np.nan, universe)
             self._check_missing_attribute('tempfactors', 'Tempfactors',
@@ -177,6 +178,8 @@ class SanityCheck(object):
             self._check_missing_attribute('icodes', 'ICodes',
                                           universe.residues, ' ', universe)
             self._check_missing_attribute('occupancies', 'Occupancies',
+                                          universe.atoms, 1, universe)
+            self._check_missing_attribute('elements', 'Elements',
                                           universe.atoms, 1, universe)
 
     def _check_missing_attribute(self, name, classname, group, value, universe):
@@ -199,6 +202,10 @@ class SanityCheck(object):
             missing_class = getattr(self.topologyattrs, classname)
             values = np.array([value] * len(group))
             universe.add_TopologyAttr(missing_class(values))
+            if name == 'elements':
+                types = MDAnalysis.topology.guessers.guess_types(group.names)
+                # is there an inconsistency in the way 'element' is defined different modules in MDA?
+                group.elements = np.array([utilities.atomic_number_map.get(t,0) for t in types] )
 
     def assign_universe(self, universe):
         try:

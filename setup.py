@@ -17,7 +17,7 @@ from   Cython.Distutils import build_ext
 import numpy
 
 
-dbscan = Extension("dbscan", ["pytim/_dbscan_inner.pyx"], language="c++",
+pytim_dbscan = Extension("pytim_dbscan", ["pytim/_dbscan_inner.pyx"], language="c++",
     include_dirs = [numpy.get_include()])
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -32,7 +32,7 @@ if sys.platform == 'darwin' and os.path.exists('/usr/bin/xcodebuild'):
 
 setup(
     name='pytim',
-    ext_modules=[dbscan],
+    ext_modules=[pytim_dbscan],
     cmdclass = {'build_ext': build_ext},
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
