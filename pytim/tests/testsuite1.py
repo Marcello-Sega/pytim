@@ -67,6 +67,22 @@ class Testsuite1():
     >>> print(avg[0:3])
     [ 0.01  0.02  0.03]
 
+
+    >>> # PDB FILE FORMAT
+    >>> import MDAnalysis as mda
+    >>> import pytim
+    >>> from pytim.datafiles import *
+    >>> u         = mda.Universe(WATER_GRO)
+    >>> oxygens   = u.select_atoms("name OW")
+    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=True)
+    >>> interface.writepdb('test.pdb',centered=False)
+    >>> PDB =open('test.pdb','r').readlines()
+    >>> line = filter(lambda l: 'ATOM     19 ' in l, PDB)[0]
+    >>> beta = line[62:66] # PDB file format is fixed
+    >>> print beta
+    4.00
+
+
     """
 
     pass

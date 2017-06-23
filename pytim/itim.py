@@ -83,10 +83,12 @@ class ITIM(pytim.PYTIM):
         >>> u         = mda.Universe(WATER_GRO)
         >>> oxygens   = u.select_atoms("name OW")
         >>>
-        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=False)
+        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=True)
         >>>
         >>> print repr(interface.layers[0,0])  # first layer, upper
-        <AtomGroup with 406 atoms>
+        <AtomGroup with 780 atoms>
+
+        >>> interface.writepdb('test.pdb',centered=False)
 
     """
     @property
@@ -96,21 +98,23 @@ class ITIM(pytim.PYTIM):
         The object can be sliced as usual with numpy arrays, so, for example:
 
         >>> interface.layers[0,:]  # upper side (0), all layers
-        array([<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
-               <AtomGroup with 414 atoms>, <AtomGroup with 378 atoms>],\
+        array([<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
+               <AtomGroup with 693 atoms>, <AtomGroup with 660 atoms>],\
  dtype=object)
 
         >>> interface.layers[1,0]  # lower side (1), first layer (0)
-        <AtomGroup with 406 atoms>
+        <AtomGroup with 777 atoms>
+
 
         >>> interface.layers[:,0:3] # 1st - 3rd layer (0:3), on both sides
-        array([[<AtomGroup with 406 atoms>, <AtomGroup with 411 atoms>,
-                <AtomGroup with 414 atoms>],
-               [<AtomGroup with 406 atoms>, <AtomGroup with 418 atoms>,
-                <AtomGroup with 399 atoms>]], dtype=object)
+        array([[<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
+                <AtomGroup with 693 atoms>],
+               [<AtomGroup with 777 atoms>, <AtomGroup with 687 atoms>,
+                <AtomGroup with 663 atoms>]], dtype=object)
+
 
         >>> interface.layers[1,0:4:2] # side 1, layers 1-4 & stride 2 (0:4:2)
-        array([<AtomGroup with 406 atoms>, <AtomGroup with 399 atoms>],\
+        array([<AtomGroup with 777 atoms>, <AtomGroup with 663 atoms>],\
  dtype=object)
 
         """
