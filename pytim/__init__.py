@@ -344,7 +344,7 @@ class PYTIM(object):
         else:
             _group = group
 
-        if LooseVersion(self._MDAversion) <= LooseVersion('0.15'):
+        if LooseVersion(self._MDAversion) < LooseVersion('0.16'):
             _group.bfactors = float(value)
         else:
             _group.tempfactors = float(value)
@@ -431,7 +431,7 @@ class PYTIM(object):
                 )
             )
         except BaseException:
-            if LooseVersion(self._MDAversion) > LooseVersion('0.15'):
+            if LooseVersion(self._MDAversion) >= LooseVersion('0.16'):
                 bondvalue = None
             else:
                 bondvalue = False
