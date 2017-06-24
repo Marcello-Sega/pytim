@@ -89,6 +89,17 @@ class ITIM(pytim.PYTIM):
         <AtomGroup with 780 atoms>
 
         >>> interface.writepdb('test.pdb',centered=False)
+        >>> b = interface[0]
+        >>> print b.atoms
+        <AtomGroup with 2823 atoms>
+
+        >>> b = interface[1,0]
+        >>> print b.atoms
+        <AtomGroup with 777 atoms>
+
+        >>> b = interface[1,0:4:2]
+        >>> print b.atoms
+        <AtomGroup with 1440 atoms>
 
     """
     @property
@@ -118,6 +129,7 @@ class ITIM(pytim.PYTIM):
  dtype=object)
 
         """
+
         return self._layers
 
     def __init__(self, universe, mesh=0.4, alpha=2.0, normal='guess',
@@ -154,6 +166,31 @@ class ITIM(pytim.PYTIM):
         pytim.PatchTrajectory(universe.trajectory, self)
 
         self._assign_layers()
+
+
+    def __getitem__(self, key):
+        """ implementation of slicing to create an object of MDAnalaysis Atomgroup
+            of the sliced layers. This method "merges" the determined layers in a
+            single, easily writable object as opposed to the layer[] slicing
+        """
+        if isinstance(key,tuple):
+            if len(key) > 2:
+                print "Invalid slicing operation: only need 2 indices"
+                #TODO: implement more sophisticated error handling
+                exit(1)
+        # create an empty universe
+        r = self.universe.select_atoms("resname -*-")
+
+        #TODO: check the original implementation of handling of slice()
+
+        for l in self._layers[key]:
+            if isinstance(l,np.ndarray):
+                for i in l:
+                    r = r + i
+            else:
+                r = r + l
+        return r
+
 
     def _assign_mesh(self):
         """determine a mesh size for the testlines that is compatible with the
