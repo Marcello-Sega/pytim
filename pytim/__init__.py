@@ -13,6 +13,7 @@ import importlib
 import __builtin__
 
 
+
 def PatchTrajectory(trajectory, interface):
     """ Patch the MDAnalysis trajectory class
 
@@ -387,21 +388,33 @@ class PYTIM(object):
              low_x_upp_y,
              upp_x_low_y))
 
-    class LayerAtomGroup(MDAnalysis.core.groups.AtomGroup):
-        def __init__(self,interface,*args):
-            MDAnalysis.core.groups.AtomGroup.__init__(self,*args)
-            self.interface = interface
-            self._in_layers=self.LayerAtomGroupSelector(self.interface._layers)
+    def LayerAtomGroupFactory(self,indices,universe):
+        if LooseVersion(MDAnalysis.__version__) >= \
+                        LooseVersion('0.16'):  # new topology system
+            AtomGroup = MDAnalysis.core.groups.AtomGroup
+        else:
+            AtomGroup = MDAnalysis.core.AtomGroup.AtomGroup
 
-        @property
-        def in_layers(self):
-            return self._in_layers
+        class LayerAtomGroup(AtomGroup):
+            def __init__(self,interface,*args):
+                AtomGroup.__init__(self,*args)
+                self.interface = interface
+                self._in_layers=self.LayerAtomGroupSelector(self.interface._layers)
 
-        class LayerAtomGroupSelector(object):
-            def __init__(self,layers):
-                self._layers=layers
-            def __getitem__(self,key):
-                return self._layers[key].sum()
+            @property
+            def in_layers(self):
+                return self._in_layers
+
+            class LayerAtomGroupSelector(object):
+                def __init__(self,layers):
+                    self._layers=layers
+                def __getitem__(self,key):
+                    return self._layers[key].sum()
+        if LooseVersion(MDAnalysis.__version__) >= \
+                        LooseVersion('0.16'):  # new topology system
+            return LayerAtomGroup(self,indices, universe)
+        else:
+            return LayerAtomGroup(self,universe.atoms[indices])
 
     @property
     def atoms(self):
@@ -429,7 +442,7 @@ class PYTIM(object):
             >>> interface.writepdb('layers.pdb',centered='no')
 
         """
-        if isinstance(group,MDAnalysis.core.groups.AtomGroup):
+        if isinstance(group,self.universe.atoms.__class__):
             self.group=group
         else:
             self.group=self.universe.atoms
