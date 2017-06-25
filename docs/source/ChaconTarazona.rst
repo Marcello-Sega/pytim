@@ -5,6 +5,7 @@ ChaconTarazona
    :members:
    :inherited-members:
    :member-order: bysource
+   :exclude-members: LayerAtomGroup
 
 * :ref:`genindex`
 * :ref:`modindex`
