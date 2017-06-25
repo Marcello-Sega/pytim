@@ -124,6 +124,7 @@ class WillardChandler(pytim.PYTIM):
 
         pytim.PatchTrajectory(universe.trajectory, self)
         self._assign_layers()
+        self._atoms = self._layers[:] # this is an empty AtomGroup
 
     def dump_density(self, densmap):
         """save the density on a vtk file named consecutively using the frame
@@ -161,6 +162,9 @@ class WillardChandler(pytim.PYTIM):
         triangulated isosurface, the density and the particles.
 
         """
+        # we assign an empty group for consistency
+        self._layers = self.universe.atoms[:0] 
+
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()

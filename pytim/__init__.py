@@ -387,12 +387,34 @@ class PYTIM(object):
              low_x_upp_y,
              upp_x_low_y))
 
-    def writepdb(self, filename='layers.pdb', centered='no', multiframe=True):
+    class LayerAtomGroup(MDAnalysis.core.groups.AtomGroup):
+        def __init__(self,interface,*args):
+            MDAnalysis.core.groups.AtomGroup.__init__(self,*args)
+            self.interface = interface
+            self._in_layers=self.LayerAtomGroupSelector(self.interface._layers)
+
+        @property
+        def in_layers(self):
+            return self._in_layers
+
+        class LayerAtomGroupSelector(object):
+            def __init__(self,layers):
+                self._layers=layers
+            def __getitem__(self,key):
+                return self._layers[key].sum()
+
+    @property
+    def atoms(self):
+        return self._atoms;
+
+
+    def writepdb(self, filename='layers.pdb', centered='no', group='all', multiframe=True ):
         """ Write the frame to a pdb file, marking the atoms belonging
             to the layers with different beta factor.
 
             :param filename:   string  -- the output file name
             :param centered:   string  -- 'origin', 'middle', or 'no'
+            :param group:      AtomGroup -- if 'all' is passed, the universe is used
             :param multiframe: boolean -- append to pdb file if True
 
             Example: save the positions (centering the interface in the cell) without appending
@@ -407,6 +429,10 @@ class PYTIM(object):
             >>> interface.writepdb('layers.pdb',centered='no')
 
         """
+        if isinstance(group,MDAnalysis.core.groups.AtomGroup):
+            self.group=group
+        else:
+            self.group=self.universe.atoms
 
         temp_pos = np.copy(self.universe.atoms.positions)
         options = {'no': False, False: False, 'middle': True, True: True}
@@ -437,10 +463,10 @@ class PYTIM(object):
                 bondvalue = False
             self.PDB[filename] = MDAnalysis.Writer(
                 filename, multiframe=True,
-                n_atoms=self.universe.atoms.n_atoms,
+                n_atoms=self.group.atoms.n_atoms,
                 bonds=bondvalue
             )
-        self.PDB[filename].write(self.universe.atoms)
+        self.PDB[filename].write(self.group.atoms)
         self.universe.atoms.positions = np.copy(temp_pos)
 
     def savepdb(self, filename='layers.pdb', centered='no', multiframe=True):

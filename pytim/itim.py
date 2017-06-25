@@ -84,24 +84,48 @@ class ITIM(pytim.PYTIM):
         >>> oxygens   = u.select_atoms("name OW")
         >>>
         >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=True)
-        >>>
-        >>> print repr(interface.layers[0,0])  # first layer, upper
+
+        >>> # atoms in the layers can be accesses either through
+        >>> # the layers array:
+        >>> print interface.layers
+        [[<AtomGroup with 780 atoms> <AtomGroup with 690 atoms>
+          <AtomGroup with 693 atoms> <AtomGroup with 660 atoms>]
+         [<AtomGroup with 777 atoms> <AtomGroup with 687 atoms>
+          <AtomGroup with 663 atoms> <AtomGroup with 654 atoms>]]
+
+        >>> interface.layers[0,0] # upper side, first layer
         <AtomGroup with 780 atoms>
 
-        >>> interface.writepdb('test.pdb',centered=False)
-        >>> b = interface[0]
-        >>> print b.atoms
-        <AtomGroup with 2823 atoms>
+        >>> interface.layers[1,2] # lower side, third layer
+        <AtomGroup with 663 atoms>
 
-        >>> b = interface[1,0]
-        >>> print b.atoms
-        <AtomGroup with 777 atoms>
+        >>> # or as a whole AtomGroup. This can include all atoms in all layers:
+        >>> interface.atoms
+        <AtomGroup with 5604 atoms>
 
-        >>> b = interface[1,0:4:2]
-        >>> print b.atoms
+        >>> # or a selection of them, using slicing:
+        >>> interface.atoms.in_layers[1,0:4:2]
         <AtomGroup with 1440 atoms>
 
+        >>> interface.atoms.in_layers[0]
+        <AtomGroup with 2823 atoms>
+
+        >>> # the whole system can be quickly saved to a pdb file
+        >>> # including the layer information, written in the beta field
+        >>> # using:
+        >>> interface.writepdb('system.pdb',centered=True)
+        >>> interface.writepdb('first-layers.pdb',centered=True,group=interface.atoms.in_layers[:,0])
+        >>> interface.writepdb('upper-side.pdb',centered=True,group=interface.atoms.in_layers[0:])
+
+        >>> # of course, the native interface of MDAnalysis can be used to write pdb files
+        >>> # but the centering options are not available. Writing to other formats that
+        >>> # do not support the beta factor will loose the information on the layers.
+        >>> interface.atoms.write('only_layers.pdb')
+        >>> interface.atoms.in_layers[0:].write('only_uppeer_side.pdb')
+        >>> interface.atoms.in_layers[:,1].write('only_second_layers.pdb')
+
     """
+
     @property
     def layers(self):
         """Access the layers as numpy arrays of AtomGroups.
@@ -166,31 +190,7 @@ class ITIM(pytim.PYTIM):
         pytim.PatchTrajectory(universe.trajectory, self)
 
         self._assign_layers()
-
-
-    def __getitem__(self, key):
-        """ implementation of slicing to create an object of MDAnalaysis Atomgroup
-            of the sliced layers. This method "merges" the determined layers in a
-            single, easily writable object as opposed to the layer[] slicing
-        """
-        if isinstance(key,tuple):
-            if len(key) > 2:
-                print "Invalid slicing operation: only need 2 indices"
-                #TODO: implement more sophisticated error handling
-                exit(1)
-        # create an empty universe
-        r = self.universe.select_atoms("resname -*-")
-
-        #TODO: check the original implementation of handling of slice()
-
-        for l in self._layers[key]:
-            if isinstance(l,np.ndarray):
-                for i in l:
-                    r = r + i
-            else:
-                r = r + l
-        return r
-
+        self._atoms = self.LayerAtomGroup(self,self._layers[:].sum().indices, self.universe)
 
     def _assign_mesh(self):
         """determine a mesh size for the testlines that is compatible with the
