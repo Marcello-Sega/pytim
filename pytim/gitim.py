@@ -91,7 +91,7 @@ class GITIM(pytim.PYTIM):
 
         pytim.PatchTrajectory(universe.trajectory, self)
         self._assign_layers()
-        self._atoms = self.LayerAtomGroup(self,self._layers[:].sum().indices, self.universe)
+        self._atoms = self.LayerAtomGroupFactory(self._layers[:].sum().indices, self.universe)
 
     def _assign_symmetry(self, symmetry):
         if self.itim_group is None:
