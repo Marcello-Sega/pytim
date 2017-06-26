@@ -100,7 +100,7 @@ class WillardChandler(pytim.PYTIM):
     def __init__(self, universe, alpha=2.0, mesh=2.0,
                  itim_group=None, radii_dict=None, output_format=None,
                  output_surf=True, output_part=True, output_dens=True,
-                 basename=None):
+                 basename=None,**kargs):
 
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
@@ -163,7 +163,7 @@ class WillardChandler(pytim.PYTIM):
 
         """
         # we assign an empty group for consistency
-        self._layers = self.universe.atoms[:0] 
+        self._layers = self.universe.atoms[:0]
 
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])

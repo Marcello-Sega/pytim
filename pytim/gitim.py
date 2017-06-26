@@ -62,7 +62,8 @@ class GITIM(pytim.PYTIM):
             molecular=True,
             extra_cluster_groups=None,
             info=False,
-            multiproc=True):
+            multiproc=True,
+            **kargs):
 
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
