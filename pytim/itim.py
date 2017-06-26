@@ -160,7 +160,7 @@ class ITIM(pytim.PYTIM):
                  itim_group=None, radii_dict=None, max_layers=1,
                  cluster_cut=None, cluster_threshold_density=None,
                  molecular=True, extra_cluster_groups=None, info=False,
-                 multiproc=True):
+                 multiproc=True, **kargs):
 
         self.symmetry = 'planar'
 

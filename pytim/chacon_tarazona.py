@@ -82,7 +82,7 @@ class ChaconTarazona(pytim.PYTIM):
 
     def __init__(self, universe, alpha=2.0, tau=1.5, itim_group=None,
                  radii_dict=None, max_layers=1, normal='guess', molecular=True,
-                 info=True, mesh=None
+                 info=True, mesh=None, **kargs
                  ):
 
         self.symmetry = 'planar'
@@ -122,7 +122,7 @@ class ChaconTarazona(pytim.PYTIM):
         self._atoms = self.LayerAtomGroupFactory(self._layers[:].sum().indices, self.universe)
 
     def _points_next_to_surface(self, surf, modes, pivot):
-        """ searches for points within a distance self.tau from the 
+        """ searches for points within a distance self.tau from the
             interface.
         """
         z_max = np.max(self.cluster_group[pivot].positions[::, 2])
