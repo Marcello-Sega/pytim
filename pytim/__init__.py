@@ -464,7 +464,7 @@ class PYTIM(object):
         if options[centered] == False:
             self.universe.atoms.positions = self.original_positions
 
-        if options[centered] == True:
+        if options[centered] == True and self.normal is not None:
             # NOTE: this assumes that all method relying on 'planar'
             # symmetry must center the interface along the normal
             box = self.universe.dimensions[self.normal]
