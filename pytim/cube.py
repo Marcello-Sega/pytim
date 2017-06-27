@@ -27,7 +27,7 @@ def _write_atomgroup(f, group, atomic_numbers):
         try:
             atomic_numbers = [el for el in group.elements ]
         except:
-            atomic_numbers  = [self.atomic_number_map.get(t,0) for t in types]
+            atomic_numbers  = [utilities.atomic_number_map.get(t,0) for t in types]
 
     for i, p in enumerate(group.positions):
         f.write(_format_atom(p/Bohr,atomic_numbers[i]))
