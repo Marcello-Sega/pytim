@@ -82,10 +82,10 @@ class ChaconTarazona(pytim.PYTIM):
 
     def __init__(self, universe, alpha=2.0, tau=1.5, itim_group=None,
                  radii_dict=None, max_layers=1, normal='guess', molecular=True,
-                 info=True, mesh=None, **kargs
-                 ):
+                 info=True, mesh=None, center=False,**kargs):
 
         self.symmetry = 'planar'
+        self.do_center = center
 
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
@@ -201,25 +201,20 @@ class ChaconTarazona(pytim.PYTIM):
         """
 
         # TODO parallelize
+
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 
         box = self.universe.dimensions[:3]
 
-        # TODO this repeats the same calculation in ITIM
-        # this can be used later to shift back to the original shift
-        self.original_positions = np.copy(self.universe.atoms.positions[:])
-
-        self.universe.atoms.pack_into_box()
         # groups have been checked already in _sanity_checks()
 
         self._define_cluster_group()
 
-        utilities.centerbox(self.universe, center_direction=self.normal)
-        self.center(self.cluster_group, self.normal)
-        utilities.centerbox(self.universe, center_direction=self.normal)
-
+        self.centered_positions = None
+        # we always (internally) center in Chacon-Tarazona
+        self.center()
         # first we label all atoms in itim_group to be in the gas phase
         self.label_group(self.itim_group.atoms, 0.5)
         # then all atoms in the largest group are labelled as liquid-like
@@ -234,4 +229,7 @@ class ChaconTarazona(pytim.PYTIM):
             for _nlayer, _layer in enumerate(self._layers[side]):
                 self.label_group(_layer, _nlayer + 1)
 
+        if self.do_center == False:
+            self.centered_positions = np.copy(self.universe.atoms.positions[:])
+            self.universe.atoms.positions = self.original_positions
 #

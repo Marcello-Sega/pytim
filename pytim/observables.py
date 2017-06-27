@@ -368,7 +368,8 @@ class RDF2D(RDF):
 
 class LayerTriangulation(Observable):
     """Computes the triangulation of the surface and some associated
-       quantities.
+       quantities. Notice that this forces the interface to be centered
+       in the box.
 
        :param Universe universe: the MDAnalysis universe
        :param ITIM    interface: compute the triangulation with respect to it
@@ -389,7 +390,7 @@ class LayerTriangulation(Observable):
                            interface,return_triangulation=False)
        >>> stats     = surface.compute()
        >>> print ("Surface= {:04.1f} A^2".format(stats[0]))
-       Surface= 7317.1 A^2
+       Surface= 7314.4 A^2
 
     """
 
@@ -409,6 +410,11 @@ class LayerTriangulation(Observable):
     def compute(self, inp=None):
         stats = []
         layer_stats = [None, None]
+
+        if self.interface.do_center == False:
+            oldpos = np.copy(self.interface.universe.atoms.positions)
+            self.interface.center()
+
         surface = self.interface._surfaces[0]
         surface.triangulation()
 
@@ -421,6 +427,10 @@ class LayerTriangulation(Observable):
             # automatically
             stats.append(layer_stats[0][0] + layer_stats[1][0])
             # add here new stats other than total area
+
+        if self.interface.do_center == False:
+            self.interface.universe.positions = np.copy(oldpos)
+
         if self.return_triangulation is False:
             return stats
         else:
