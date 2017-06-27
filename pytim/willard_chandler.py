@@ -59,7 +59,7 @@ class WillardChandler(pytim.PYTIM):
     >>> R, _, _, _ = pytim.utilities.fit_sphere(\
                        interface.triangulated_surface[0])
     >>> print "Radius={:.3f}".format(R)
-    Radius=19.325
+    Radius=19.376
 
     """
 
@@ -97,10 +97,12 @@ class WillardChandler(pytim.PYTIM):
 
         """
 
-    def __init__(self, universe, alpha=2.0, mesh=2.0,
-                 itim_group=None, radii_dict=None, output_format=None,
-                 output_surf=True, output_part=True, output_dens=True,
-                 basename=None,**kargs):
+    def __init__(self, universe, alpha=2.0, mesh=2.0, symmetry='spherical',
+                 itim_group=None, radii_dict=None,
+                 cluster_cut=None, cluster_threshold_density=None,
+                 extra_cluster_groups=None,
+                 output_format=None, output_surf=True, output_part=True,
+                 output_dens=True, basename=None,**kargs):
 
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
@@ -119,8 +121,13 @@ class WillardChandler(pytim.PYTIM):
         self.PDB = {}
 
         sanity.assign_radii(radii_dict)
-        # TODO implement cluster group
-        sanity.assign_groups(itim_group, None, None)
+
+        sanity.assign_groups(itim_group, cluster_cut, extra_cluster_groups)
+
+        self._assign_symmetry(symmetry)
+
+        if(self.symmetry == 'planar'):
+            sanity.assign_normal(normal)
 
         pytim.PatchTrajectory(universe.trajectory, self)
         self._assign_layers()
@@ -169,7 +176,19 @@ class WillardChandler(pytim.PYTIM):
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 
-        pos = self.itim_group.positions
+        self._define_cluster_group()
+
+        if self.symmetry == 'planar':
+            utilities.centerbox(self.universe, center_direction=self.normal)
+            self.center(self.cluster_group, self.normal)
+            utilities.centerbox(self.universe, center_direction=self.normal)
+        if self.symmetry == 'spherical':
+            self.center(self.cluster_group, 'x', halfbox_shift=False)
+            self.center(self.cluster_group, 'y', halfbox_shift=False)
+            self.center(self.cluster_group, 'z', halfbox_shift=False)
+            self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+
+        pos = self.cluster_group.positions
         box = self.universe.dimensions[:3]
         delta = 2. * self.alpha + 1e-6
         #extrapoints, _ = utilities.generate_periodic_border_3d(pos, box, delta)
