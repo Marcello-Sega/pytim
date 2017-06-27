@@ -68,6 +68,7 @@ class SanityCheck(object):
         if self.VERS < self.V015:
             raise Exception("Must use MDAnalysis  >= 0.15")
 
+
     def assign_radii(self, radii_dict):
         try:
             _groups = np.copy(self.interface.extra_cluster_groups[:])
@@ -349,6 +350,17 @@ class PYTIM(object):
             _group.bfactors = float(value)
         else:
             _group.tempfactors = float(value)
+
+    def _assign_symmetry(self, symmetry):
+        if self.itim_group is None:
+            raise TypeError(self.UNDEFINED_ITIM_GROUP)
+        if symmetry == 'guess':
+            raise ValueError("symmetry 'guess' To be implemented")
+        else:
+            if not (symmetry in self.symmetry_dict):
+                raise ValueError(self.WRONG_DIRECTION)
+            self.symmetry = symmetry
+
 
     def _generate_periodic_border_2d(self, group):
         _box = utilities.get_box(group.universe, self.normal)
