@@ -461,17 +461,17 @@ class PYTIM(object):
 
         temp_pos = np.copy(self.universe.atoms.positions)
         options = {'no': False, False: False, 'middle': True, True: True}
-        if options[centered] == False:
-            self.universe.atoms.positions = self.original_positions
 
-        if options[centered] == True and self.normal is not None:
-            # NOTE: this assumes that all method relying on 'planar'
-            # symmetry must center the interface along the normal
-            box = self.universe.dimensions[self.normal]
-            translation = [0, 0, 0]
-            translation[self.normal] = box / 2.
-            self.universe.atoms.positions += np.array(translation)
-            self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+        if options[centered] != self.do_center:
+            #i.e. we don't have already what we want ...
+            if self.do_center == False: # we need to center
+                self.center(planar_to_origin=True)
+            else : # we need to put back the original positions
+                try:
+                    # original_positions are (must) always be defined
+                    self.universe.atoms.positions = self.original_positions
+                except:
+                    raise NameError
         try:
             # it exists already, let's add information about the box, as
             # MDAnalysis forgets to do so for successive frames. A bugfix
@@ -517,7 +517,7 @@ class PYTIM(object):
         else:
             self.cluster_group = self.itim_group
 
-    def center(self, group, direction=None, halfbox_shift=True):
+    def _center(self, group, direction=None, halfbox_shift=True):
         """
         Centers the liquid slab in the simulation box.
 
@@ -604,6 +604,26 @@ class PYTIM(object):
             _z += total_shift - _center + box_half
         # finally, we copy everything back
         group.universe.atoms.positions = np.column_stack((_x, _y, _z))
+
+    def center(self,planar_to_origin=False):
+        if self.symmetry == 'planar':
+            utilities.centerbox(self.universe, center_direction=self.normal)
+            self._center(self.cluster_group, self.normal)
+            utilities.centerbox(self.universe, center_direction=self.normal)
+            if planar_to_origin == False:
+                box = self.universe.dimensions[self.normal]
+                translation = [0, 0, 0]
+                translation[self.normal] = box / 2.
+                self.universe.atoms.positions += np.array(translation)
+                self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+            self.centered_positions = np.copy(self.universe.atoms.positions[:])
+
+        if self.symmetry == 'spherical' :
+            self._center(self.cluster_group, 'x', halfbox_shift=False)
+            self._center(self.cluster_group, 'y', halfbox_shift=False)
+            self._center(self.cluster_group, 'z', halfbox_shift=False)
+            self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+            self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
     @abstractmethod
     def _assign_layers(self):

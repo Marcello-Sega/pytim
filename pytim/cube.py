@@ -4,7 +4,6 @@ from pytim import utilities
 import numpy as np
 
 Bohr=.52917721067
-
 def consecutive_filename(universe, basename):
     utilities.consecutive_filename(universe, basename,'cube')
 
@@ -80,13 +79,14 @@ def write_file(filename, group, grid_size, spacing,
         natoms = len(group.atoms)
     else:
         natoms = 0
+
     f.write('CPMD CUBE FILE\n')
     f.write('OUTER LOOP: X, MIDDLE LOOP: Y, INNER LOOP: Z\n')
     f.write('{:5d}{:12.6f}{:12.6f}{:12.6f}\n'.format(natoms,0.,0.,0.))
     # NOTE: only rectangular boxes so far
     f.write('{:5d}{:12.6f}{:12.6f}{:12.6f}\n'.format(grid_size[0],spacing[0],0.,0.))
-    f.write('{:5d}{:12.6f}{:12.6f}{:12.6f}\n'.format(grid_size[1],0.,spacing[0],0.))
-    f.write('{:5d}{:12.6f}{:12.6f}{:12.6f}\n'.format(grid_size[2],0.,0.,spacing[0]))
+    f.write('{:5d}{:12.6f}{:12.6f}{:12.6f}\n'.format(grid_size[1],0.,spacing[1],0.))
+    f.write('{:5d}{:12.6f}{:12.6f}{:12.6f}\n'.format(grid_size[2],0.,0.,spacing[2]))
     if write_atoms:
         _write_atomgroup(f, group, atomic_numbers)
     _write_scalar_grid(f, scalars/maxval)

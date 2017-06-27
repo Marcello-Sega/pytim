@@ -20,6 +20,7 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 
     >>> for config in sorted(pytim_data.config):
     ...     print("{:20s} {:s}".format(config,pytim_data.description[config]))
+    FULLERENE_PDB        fullerene
     MICELLE_PDB          DPC micelle
     WATERSMALL_GRO       small SPC water/vapour interface
     WATER_520K_GRO       SPC/E water/vapour interface, 520K
@@ -59,11 +60,10 @@ __all__ = [
     "WATERSMALL_GRO",        # GROMACS single frame, SPC water/vapour interface
     "WATER_520K_GRO",        # GROMACS single frame, SPC/E water/vapour interface,520 K
     "WATER_550K_GRO",        # GROMACS single frame, SPC/E water/vapour interface,550 K
-    # XYZ, single frame, methanol/vapour interface with molecules in the
-    # vapour phase
-    "METHANOL_GRO",
+    "METHANOL_GRO",          # methanol/vapour interface with molecules in the  vapour phase
     "ILBENZENE_GRO",         # Ionic liquid/benzene, partial miscibility
     "MICELLE_PDB",           # PDB of dodecylphosphocholine micelle in water
+    "FULLERENE_PDB",         # PDB of C60
     "WATER_XTC",             # GROMACS trajectory, 100 frames, water/vapour interface
     "G43A1_TOP",             # GROMOS 43a1 nonbonded parameters, from gromacs distribution
     "pytim_data",            # class to access the data
@@ -160,6 +160,9 @@ pytim_data.add('WATER_XYZ',  'config', 'XYZ', 'SPC water/vapour interface')
 
 MICELLE_PDB = resource_filename('pytim', 'data/micelle.pdb')
 pytim_data.add('MICELLE_PDB',  'config', 'GRO', 'DPC micelle')
+
+FULLERENE_PDB = resource_filename('pytim', 'data/fullerene.pdb')
+pytim_data.add('FULLERENE_PDB',  'config', 'PDB', 'fullerene')
 
 WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
 pytim_data.add('WATERSMALL_GRO',  'config', 'GRO',

@@ -88,16 +88,16 @@ class ITIM(pytim.PYTIM):
         >>> # atoms in the layers can be accesses either through
         >>> # the layers array:
         >>> print interface.layers
-        [[<AtomGroup with 780 atoms> <AtomGroup with 690 atoms>
+        [[<AtomGroup with 777 atoms> <AtomGroup with 693 atoms>
           <AtomGroup with 693 atoms> <AtomGroup with 660 atoms>]
-         [<AtomGroup with 777 atoms> <AtomGroup with 687 atoms>
-          <AtomGroup with 663 atoms> <AtomGroup with 654 atoms>]]
+         [<AtomGroup with 777 atoms> <AtomGroup with 690 atoms>
+          <AtomGroup with 660 atoms> <AtomGroup with 654 atoms>]]
 
         >>> interface.layers[0,0] # upper side, first layer
-        <AtomGroup with 780 atoms>
+        <AtomGroup with 777 atoms>
 
         >>> interface.layers[1,2] # lower side, third layer
-        <AtomGroup with 663 atoms>
+        <AtomGroup with 660 atoms>
 
         >>> # or as a whole AtomGroup. This can include all atoms in all layers:
         >>> interface.atoms
@@ -105,7 +105,7 @@ class ITIM(pytim.PYTIM):
 
         >>> # or a selection of them, using slicing:
         >>> interface.atoms.in_layers[1,0:4:2]
-        <AtomGroup with 1440 atoms>
+        <AtomGroup with 1437 atoms>
 
         >>> interface.atoms.in_layers[0]
         <AtomGroup with 2823 atoms>
@@ -133,7 +133,7 @@ class ITIM(pytim.PYTIM):
         The object can be sliced as usual with numpy arrays, so, for example:
 
         >>> interface.layers[0,:]  # upper side (0), all layers
-        array([<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
+        array([<AtomGroup with 777 atoms>, <AtomGroup with 693 atoms>,
                <AtomGroup with 693 atoms>, <AtomGroup with 660 atoms>],\
  dtype=object)
 
@@ -142,15 +142,16 @@ class ITIM(pytim.PYTIM):
 
 
         >>> interface.layers[:,0:3] # 1st - 3rd layer (0:3), on both sides
-        array([[<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
+        array([[<AtomGroup with 777 atoms>, <AtomGroup with 693 atoms>,
                 <AtomGroup with 693 atoms>],
-               [<AtomGroup with 777 atoms>, <AtomGroup with 687 atoms>,
-                <AtomGroup with 663 atoms>]], dtype=object)
+               [<AtomGroup with 777 atoms>, <AtomGroup with 690 atoms>,
+                <AtomGroup with 660 atoms>]], dtype=object)
 
 
         >>> interface.layers[1,0:4:2] # side 1, layers 1-4 & stride 2 (0:4:2)
-        array([<AtomGroup with 777 atoms>, <AtomGroup with 663 atoms>],\
+        array([<AtomGroup with 777 atoms>, <AtomGroup with 660 atoms>],\
  dtype=object)
+
 
         """
 
@@ -160,9 +161,10 @@ class ITIM(pytim.PYTIM):
                  itim_group=None, radii_dict=None, max_layers=1,
                  cluster_cut=None, cluster_threshold_density=None,
                  molecular=True, extra_cluster_groups=None, info=False,
-                 multiproc=True, **kargs):
+                 multiproc=True, center=False, **kargs):
 
         self.symmetry = 'planar'
+        self.do_center = center
 
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
@@ -338,8 +340,12 @@ class ITIM(pytim.PYTIM):
 
         self._define_cluster_group()
 
+        self.centered_positions = None
+        # we always (internally) center in ITIM
+        self.center()
+
         utilities.centerbox(self.universe, center_direction=self.normal)
-        self.center(self.cluster_group, self.normal)
+        self._center(self.cluster_group, self.normal)
         utilities.centerbox(self.universe, center_direction=self.normal)
 
         # first we label all atoms in itim_group to be in the gas phase
@@ -400,5 +406,9 @@ class ITIM(pytim.PYTIM):
 
         for nlayer, layer in enumerate(self._layers[0]):
             self._surfaces[nlayer] = Surface(self, options={'layer': nlayer})
+
+        if self.do_center == False:
+            self.centered_positions = np.copy(self.universe.atoms.positions[:])
+            self.universe.atoms.positions = self.original_positions
 
 #

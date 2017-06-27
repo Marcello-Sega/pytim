@@ -59,7 +59,7 @@ class WillardChandler(pytim.PYTIM):
     >>> R, _, _, _ = pytim.utilities.fit_sphere(\
                        interface.triangulated_surface[0])
     >>> print "Radius={:.3f}".format(R)
-    Radius=19.376
+    Radius=19.325
 
     """
 
@@ -102,12 +102,15 @@ class WillardChandler(pytim.PYTIM):
                  cluster_cut=None, cluster_threshold_density=None,
                  extra_cluster_groups=None,
                  output_format=None, output_surf=True, output_part=True,
-                 output_dens=True, basename=None,**kargs):
+                 output_dens=True, basename=None, center=False, **kargs):
 
+        self.do_center = center
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
         sanity.assign_alpha(alpha)
 
+        if mesh <= 0:
+            raise ValueError(self.MESH_NEGATIVE)
         self.mesh = mesh
         self.spacing = None
         self.ngrid = None
@@ -180,15 +183,9 @@ class WillardChandler(pytim.PYTIM):
 
         self._define_cluster_group()
 
-        if self.symmetry == 'planar':
-            utilities.centerbox(self.universe, center_direction=self.normal)
-            self.center(self.cluster_group, self.normal)
-            utilities.centerbox(self.universe, center_direction=self.normal)
-        if self.symmetry == 'spherical':
-            self.center(self.cluster_group, 'x', halfbox_shift=False)
-            self.center(self.cluster_group, 'y', halfbox_shift=False)
-            self.center(self.cluster_group, 'z', halfbox_shift=False)
-            self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+        self.centered_positions = None
+        if self.do_center:
+            self.center()
 
         pos = self.cluster_group.positions
         box = self.universe.dimensions[:3]
@@ -199,7 +196,10 @@ class WillardChandler(pytim.PYTIM):
         )
         self.spacing = spacing
         self.ngrid = ngrid
-        grid = utilities.generate_grid_in_box(box, ngrid)
+        if self.output_format == 'vtk':
+            grid = utilities.generate_grid_in_box(box, ngrid,order='zyx')
+        if self.output_format == 'cube':
+            grid = utilities.generate_grid_in_box(box, ngrid,order='xyz')
         kernel, _ = utilities.density_map(pos , grid, self.alpha,box)
 
         field = kernel.evaluate_pbc(grid)
@@ -232,10 +232,8 @@ class WillardChandler(pytim.PYTIM):
         if self.output_format == 'cube':
                 filename = cube.consecutive_filename(self.universe,
                                                      self.basename+'data')
-                # field is stored in z,y,x, we need to flip it
-                _field = field.reshape((ngrid[2],ngrid[1]*ngrid[0])).T.flatten()
                 # TODO handle optional atomic_numbers
                 cube.write_file(filename, self.universe.atoms, self.ngrid,
-                                spacing,_field, atomic_numbers=None)
+                                spacing,field, atomic_numbers=None)
 
 #

@@ -43,7 +43,7 @@ class GITIM(pytim.PYTIM):
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print repr(layer)
-        <AtomGroup with 558 atoms>
+        <AtomGroup with 559 atoms>
 
     """
     _surface = None
@@ -63,8 +63,10 @@ class GITIM(pytim.PYTIM):
             extra_cluster_groups=None,
             info=False,
             multiproc=True,
+            center=False,
             **kargs):
 
+        self.do_center = center
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
         sanity.assign_alpha(alpha)
@@ -170,6 +172,8 @@ class GITIM(pytim.PYTIM):
         delta = 2. * self.alpha + 1e-6
         points = self.cluster_group.positions[:]
         nrealpoints = len(points)
+        np.random.seed(0) # pseudo-random for reproducibility
+        gitter = (np.random.random(3*8).reshape(8,3))*1e-9
         extrapoints, extraids = utilities.generate_periodic_border_3d(
             points, box, delta
         )
@@ -185,9 +189,7 @@ class GITIM(pytim.PYTIM):
                     dtype=np.int8),
                 dtype=np.float)
             tmp *= (box + delta)
-            # tmp += (np.random.random(3)-0.5)*box*1e-8 # the random gitter
-            # (rescaled to be small wrt the box) is added to prevent coplanar
-            # points
+            tmp += gitter[dim] # added to prevent coplanar points
             tmp[tmp < box / 2.] -= delta
             tmp = np.reshape(tmp, (1, 3))
             extrapoints = np.append(extrapoints, tmp, axis=0)
@@ -223,15 +225,9 @@ class GITIM(pytim.PYTIM):
 
         self._define_cluster_group()
 
-        if self.symmetry == 'planar':
-            utilities.centerbox(self.universe, center_direction=self.normal)
-            self.center(self.cluster_group, self.normal)
-            utilities.centerbox(self.universe, center_direction=self.normal)
-        if self.symmetry == 'spherical':
-            self.center(self.cluster_group, 'x', halfbox_shift=False)
-            self.center(self.cluster_group, 'y', halfbox_shift=False)
-            self.center(self.cluster_group, 'z', halfbox_shift=False)
-            self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+        self.centered_positions = None
+        if self.do_center:
+            self.center()
 
         # first we label all atoms in itim_group to be in the gas phase
         self.label_group(self.itim_group.atoms, 0.5)
