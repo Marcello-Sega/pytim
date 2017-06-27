@@ -4,9 +4,12 @@ Testsuite
 *********
 
 
-.. automodule:: pytim.tests.testsuite1
+.. automodule:: pytim.tests.test_basics
     :members:
-
+.. automodule:: pytim.tests.test_observables
+    :members:
+.. automodule:: pytim.tests.test_rotation
+    :members:
 
 * :ref:`genindex`
 * :ref:`modindex`
