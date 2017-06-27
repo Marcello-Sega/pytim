@@ -172,6 +172,8 @@ class WillardChandler(pytim.PYTIM):
         # we assign an empty group for consistency
         self._layers = self.universe.atoms[:0]
 
+        self.normal = None
+
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
