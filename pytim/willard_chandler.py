@@ -97,15 +97,20 @@ class WillardChandler(pytim.PYTIM):
 
         """
 
-    def __init__(self, universe, alpha=2.0, mesh=2.0,
-                 itim_group=None, radii_dict=None, output_format=None,
-                 output_surf=True, output_part=True, output_dens=True,
-                 basename=None):
+    def __init__(self, universe, alpha=2.0, mesh=2.0, symmetry='spherical',
+                 itim_group=None, radii_dict=None,
+                 cluster_cut=None, cluster_threshold_density=None,
+                 extra_cluster_groups=None,
+                 output_format=None, output_surf=True, output_part=True,
+                 output_dens=True, basename=None, center=False, **kargs):
 
+        self.do_center = center
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
         sanity.assign_alpha(alpha)
 
+        if mesh <= 0:
+            raise ValueError(self.MESH_NEGATIVE)
         self.mesh = mesh
         self.spacing = None
         self.ngrid = None
@@ -119,8 +124,13 @@ class WillardChandler(pytim.PYTIM):
         self.PDB = {}
 
         sanity.assign_radii(radii_dict)
-        # TODO implement cluster group
-        sanity.assign_groups(itim_group, None, None)
+
+        sanity.assign_groups(itim_group, cluster_cut, extra_cluster_groups)
+
+        self._assign_symmetry(symmetry)
+
+        if(self.symmetry == 'planar'):
+            sanity.assign_normal(normal)
 
         pytim.PatchTrajectory(universe.trajectory, self)
         self._assign_layers()
@@ -163,13 +173,21 @@ class WillardChandler(pytim.PYTIM):
 
         """
         # we assign an empty group for consistency
-        self._layers = self.universe.atoms[:0] 
+        self._layers = self.universe.atoms[:0]
+
+        self.normal = None
 
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 
-        pos = self.itim_group.positions
+        self._define_cluster_group()
+
+        self.centered_positions = None
+        if self.do_center:
+            self.center()
+
+        pos = self.cluster_group.positions
         box = self.universe.dimensions[:3]
         delta = 2. * self.alpha + 1e-6
         #extrapoints, _ = utilities.generate_periodic_border_3d(pos, box, delta)
@@ -178,7 +196,10 @@ class WillardChandler(pytim.PYTIM):
         )
         self.spacing = spacing
         self.ngrid = ngrid
-        grid = utilities.generate_grid_in_box(box, ngrid)
+        if self.output_format == 'vtk':
+            grid = utilities.generate_grid_in_box(box, ngrid,order='zyx')
+        if self.output_format == 'cube':
+            grid = utilities.generate_grid_in_box(box, ngrid,order='xyz')
         kernel, _ = utilities.density_map(pos , grid, self.alpha,box)
 
         field = kernel.evaluate_pbc(grid)
@@ -211,10 +232,8 @@ class WillardChandler(pytim.PYTIM):
         if self.output_format == 'cube':
                 filename = cube.consecutive_filename(self.universe,
                                                      self.basename+'data')
-                # field is stored in z,y,x, we need to flip it
-                _field = field.reshape((ngrid[2],ngrid[1]*ngrid[0])).T.flatten()
                 # TODO handle optional atomic_numbers
                 cube.write_file(filename, self.universe.atoms, self.ngrid,
-                                spacing,_field, atomic_numbers=None)
+                                spacing,field, atomic_numbers=None)
 
 #

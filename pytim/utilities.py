@@ -178,7 +178,7 @@ def triangulated_surface_stats(tri2d, points3d):
     return [area]
 
 
-def generate_grid_in_box(box, npoints):
+def generate_grid_in_box(box, npoints, order='zxy'):
     """generate an homogenous grid of npoints^3 points that spans the
        complete box.
 
@@ -190,7 +190,11 @@ def generate_grid_in_box(box, npoints):
     x_ = np.linspace(0., box[0], npoints[0])
     y_ = np.linspace(0., box[1], npoints[1])
     z_ = np.linspace(0., box[2], npoints[2])
-    z, y, x = np.meshgrid(z_, y_, x_, indexing='ij')
+    if order == 'zyx':
+        z, y, x = np.meshgrid(z_, y_, x_, indexing='ij')
+    else:
+        x, y, z = np.meshgrid(x_, y_, z_, indexing='ij')
+
     grid = np.append(x.reshape(-1, 1), y.reshape(-1, 1), axis=1)
     grid = np.append(grid, z.reshape(-1, 1), axis=1)
     return grid.T

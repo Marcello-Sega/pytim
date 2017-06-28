@@ -1,10 +1,10 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-""" Module: testsuite1
-    ==================
+""" Module: test_basics
+    ===================
 """
 
-class Testsuite1():
+class TestBasics():
 
     """
     This is a collection of basic tests to check
@@ -21,11 +21,11 @@ class Testsuite1():
     >>> oxygens   = u.select_atoms("name OW")
     >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4)
     >>> print len(interface.layers[0,0])
-    780
+    777
     >>> del interface
     >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4, multiproc=False)
     >>> print len(interface.layers[0,0])
-    780
+    777
     >>> del interface
 
     >>> # TEST:2 basic functionality
@@ -47,26 +47,6 @@ class Testsuite1():
     Traceback (most recent call last):
         ...
     ValueError: parameter alpha must be smaller than the smaller box side
-
-
-    >>> # OBSERVABLES TEST: 1
-    >>> u = mda.Universe(_TEST_ORIENTATION_GRO)
-    >>> o = observables.MolecularOrientation(u)
-    >>> print(o.compute(u.atoms).flatten())
-    [ 1.          0.          0.          0.          1.          0.          0.
-     -0.70710677 -0.70710677]
-
-    >>> # OBSERVABLES TEST: 2
-    >>> u=mda.Universe(_TEST_PROFILE_GRO)
-    >>> o=observables.Number()
-    >>> p=observables.Profile(u.atoms,direction='x',observable=o)
-    >>> p.sample()
-    >>> low,up,avg =  p.get_values(binwidth=1.0)
-    >>> print(low[0:3])
-    [ 0.  1.  2.]
-    >>> print(avg[0:3])
-    [ 0.01  0.02  0.03]
-
 
     >>> # PDB FILE FORMAT
     >>> import MDAnalysis as mda
