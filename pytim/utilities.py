@@ -193,7 +193,7 @@ def generate_grid_in_box(box, npoints, order='zxy'):
     if order == 'zyx':
         z, y, x = np.meshgrid(z_, y_, x_, indexing='ij')
     else:
-        x, y, z = np.meshgrid(x_, y_, z_, indexing='ij')
+        x, y, z = np.meshgrid(z_, y_, x_, indexing='ij')
 
     grid = np.append(x.reshape(-1, 1), y.reshape(-1, 1), axis=1)
     grid = np.append(grid, z.reshape(-1, 1), axis=1)
@@ -253,7 +253,7 @@ class gaussian_kde_pbc(gaussian_kde):
 
 
 def density_map(pos, grid, sigma, box):
-    values = np.vstack([pos[:, 0], pos[:, 1], pos[:, 2]])
+    values = np.vstack([pos[::, 0], pos[::, 1], pos[::, 2]])
     kernel = gaussian_kde_pbc(values, bw_method=sigma / values.std(ddof=1))
     kernel.box = box
     return kernel, values.std(ddof=1)

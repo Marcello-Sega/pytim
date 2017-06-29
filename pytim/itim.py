@@ -161,10 +161,10 @@ class ITIM(pytim.PYTIM):
                  itim_group=None, radii_dict=None, max_layers=1,
                  cluster_cut=None, cluster_threshold_density=None,
                  molecular=True, extra_cluster_groups=None, info=False,
-                 multiproc=True, center=False, **kargs):
+                 multiproc=True, centered=False, **kargs):
 
         self.symmetry = 'planar'
-        self.do_center = center
+        self.do_center = centered
 
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)

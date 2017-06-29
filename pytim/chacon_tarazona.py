@@ -82,10 +82,10 @@ class ChaconTarazona(pytim.PYTIM):
 
     def __init__(self, universe, alpha=2.0, tau=1.5, itim_group=None,
                  radii_dict=None, max_layers=1, normal='guess', molecular=True,
-                 info=True, mesh=None, center=False,**kargs):
+                 info=True, mesh=None, centered=False,**kargs):
 
         self.symmetry = 'planar'
-        self.do_center = center
+        self.do_center = centered
 
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)

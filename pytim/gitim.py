@@ -63,10 +63,10 @@ class GITIM(pytim.PYTIM):
             extra_cluster_groups=None,
             info=False,
             multiproc=True,
-            center=False,
+            centered=False,
             **kargs):
 
-        self.do_center = center
+        self.do_center = centered
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
         sanity.assign_alpha(alpha)

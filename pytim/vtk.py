@@ -27,6 +27,7 @@ def write_scalar_grid(filename, grid_size, spacing, scalars):
     f.write("ORIGIN " + _format_vector(spacing/2.)+"\n")
     f.write("POINT_DATA " + str(len(scalars)) + "\n")
     f.write("SCALARS kernel floats 1\nLOOKUP_TABLE default\n")
+
     for val in scalars:
         f.write(str(val) + "\n")
     f.close()
@@ -94,6 +95,8 @@ def write_triangulation(filename, vertices, triangles, normals=None):
             f.write(_format_vector(n, format_str="{:f}") + "\n")
 
 def consecutive_filename(universe, basename):
+    if basename.endswith('.vtk'):
+        basename = basename[:-4]
     return utilities.consecutive_filename(universe, basename,'vtk')
 
 
