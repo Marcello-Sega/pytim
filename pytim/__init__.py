@@ -22,6 +22,7 @@ def PatchTrajectory(trajectory, interface):
     """
     trajectory.interface = interface
     trajectory.original_read_next_timestep = trajectory._read_next_timestep
+    trajectory.original_read_frame_with_aux= trajectory._read_frame_with_aux
 
     class PatchedTrajectory(trajectory.__class__):
 
@@ -29,6 +30,13 @@ def PatchTrajectory(trajectory, interface):
             tmp = self.original_read_next_timestep(ts=ts)
             self.interface._assign_layers()
             return tmp
+
+        def _read_frame_with_aux(self, frame):
+            if frame != self.frame:
+                tmp = self.original_read_frame_with_aux(frame)
+                self.interface._assign_layers()
+                return tmp
+            return self.ts
 
     oldname = trajectory.__class__.__name__
     oldmodule = trajectory.__class__.__module__
