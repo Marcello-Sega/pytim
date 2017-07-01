@@ -22,7 +22,11 @@ def PatchTrajectory(trajectory, interface):
     """
     trajectory.interface = interface
     trajectory.original_read_next_timestep = trajectory._read_next_timestep
-    trajectory.original_read_frame_with_aux= trajectory._read_frame_with_aux
+
+    if LooseVersion(interface._MDAversion) >= LooseVersion('0.16'):
+        trajectory.original_read_frame_with_aux= trajectory._read_frame_with_aux
+    else:
+        trajectory.original_read_frame_with_aux = None
 
     class PatchedTrajectory(trajectory.__class__):
 
