@@ -53,10 +53,10 @@ class ITIM(pytim.PYTIM):
         :param float alpha:       the probe sphere radius
         :param str normal:        the macroscopic interface normal direction\
                                   'x','y' or 'z' (by default is 'guess')
-        :param AtomGroup itim_group: identify the interfacial molecules from\
+        :param AtomGroup group:   identify the interfacial molecules from\
                                      this group
         :param dict radii_dict:   dictionary with the atomic radii of the\
-                                  elements in the itim_group. If None is\
+                                  elements in the group. If None is\
                                   supplied, the default one (from MDAnalysis)\
                                   will be used.
         :param int max_layers:    the number of layers to be identified
@@ -158,7 +158,7 @@ class ITIM(pytim.PYTIM):
         return self._layers
 
     def __init__(self, universe, mesh=0.4, alpha=2.0, normal='guess',
-                 itim_group=None, radii_dict=None, max_layers=1,
+                 group=None, radii_dict=None, max_layers=1,
                  cluster_cut=None, cluster_threshold_density=None,
                  molecular=True, extra_cluster_groups=None, info=False,
                  multiproc=True, centered=False, **kargs):
@@ -180,7 +180,7 @@ class ITIM(pytim.PYTIM):
         self.PDB = {}
         self.molecular = molecular
 
-        sanity.assign_groups(itim_group, cluster_cut, extra_cluster_groups)
+        sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
         sanity.assign_normal(normal)
         sanity.assign_radii(radii_dict)
 
@@ -348,7 +348,7 @@ class ITIM(pytim.PYTIM):
         self._center(self.cluster_group, self.normal)
         utilities.centerbox(self.universe, center_direction=self.normal)
 
-        # first we label all atoms in itim_group to be in the gas phase
+        # first we label all atoms in group to be in the gas phase
         self.label_group(self.itim_group.atoms, 0.5)
         # then all atoms in the largest group are labelled as liquid-like
         self.label_group(self.cluster_group.atoms, 0.0)

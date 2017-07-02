@@ -17,10 +17,10 @@ class GITIM(pytim.PYTIM):
 
         :param Universe universe:      the MDAnalysis universe
         :param float alpha:            the probe sphere radius
-        :param AtomGroup itim_group:   identify the interfacial molecules\
+        :param AtomGroup group:        identify the interfacial molecules\
                                        from this group
         :param dict radii_dict:        dictionary with the atomic radii of\
-                                       the elements in the itim_group.
+                                       the elements in the group.
                                        If None is supplied, the default one\
                                        (from GROMOS 43a1) will be used.
         :param int max_layers:         the number of layers to be identified
@@ -38,7 +38,7 @@ class GITIM(pytim.PYTIM):
         >>> g       = u.select_atoms('resname DPC')
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
         >>>
-        >>> interface =pytim.GITIM(u,itim_group=g,molecular=False,\
+        >>> interface =pytim.GITIM(u,group=g,molecular=False,\
                 symmetry='spherical',alpha=2.5)
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
@@ -54,7 +54,7 @@ class GITIM(pytim.PYTIM):
             alpha=2.0,
             symmetry='spherical',
             normal='guess',
-            itim_group=None,
+            group=None,
             radii_dict=None,
             max_layers=1,
             cluster_cut=None,
@@ -79,7 +79,7 @@ class GITIM(pytim.PYTIM):
         self.PDB = {}
         self.molecular = molecular
 
-        sanity.assign_groups(itim_group, cluster_cut, extra_cluster_groups)
+        sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
         sanity.assign_radii(radii_dict)
 
         self._assign_symmetry(symmetry)
@@ -229,7 +229,7 @@ class GITIM(pytim.PYTIM):
         if self.do_center:
             self.center()
 
-        # first we label all atoms in itim_group to be in the gas phase
+        # first we label all atoms in group to be in the gas phase
         self.label_group(self.itim_group.atoms, 0.5)
         # then all atoms in the larges group are labelled as liquid-like
         self.label_group(self.cluster_group.atoms, 0.0)

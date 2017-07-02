@@ -19,11 +19,12 @@ class WillardChandler(pytim.PYTIM):
     :param Universe universe: the MDAnalysis universe
     :param float mesh:        the grid spacing for the density calculation
     :param float alpha:       the width of the Gaussian kernel
-    :param AtomGroup itim_group: compute the density using this group
+    :param AtomGroup group:   compute the density using this group
     :param dict radii_dict:   dictionary with the atomic radii of the\
-                              elements in the itim_group. If None is\
+                              elements in the group. If None is\
                               supplied, the default one (from MDAnalysis)\
                               will be used.
+
     Example:
 
     >>> import MDAnalysis as mda
@@ -35,7 +36,7 @@ class WillardChandler(pytim.PYTIM):
     >>>
     >>> radii = pytim_data.vdwradii(G43A1_TOP)
     >>>
-    >>> interface = pytim.WillardChandler(u, itim_group=g, alpha=3.0)
+    >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0)
     >>> R, _, _, _ = pytim.utilities.fit_sphere(\
                        interface.triangulated_surface[0])
     >>> print "Radius={:.3f}".format(R)
@@ -78,7 +79,7 @@ class WillardChandler(pytim.PYTIM):
         """
 
     def __init__(self, universe, alpha=2.0, mesh=2.0, symmetry='spherical',
-                 itim_group=None, radii_dict=None,
+                 group=None, radii_dict=None,
                  cluster_cut=None, cluster_threshold_density=None,
                  extra_cluster_groups=None, centered=False,**kargs):
 
@@ -96,7 +97,7 @@ class WillardChandler(pytim.PYTIM):
 
         sanity.assign_radii(radii_dict)
 
-        sanity.assign_groups(itim_group, cluster_cut, extra_cluster_groups)
+        sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
 
         self._assign_symmetry(symmetry)
 

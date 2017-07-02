@@ -53,9 +53,9 @@ class ChaconTarazona(pytim.PYTIM):
                               self-consistent procedure.
     :param bool molecular:    Switches between search of interfacial\
                               molecules / atoms (default: True)
-    :param AtomGroup itim_group: compute the density using this group
+    :param AtomGroup group:   compute the density using this group
     :param dict radii_dict:   dictionary with the atomic radii of the\
-                              elements in the itim_group. If None is\
+                              elements in the group. If None is\
                               supplied, the default one (from MDAnalysis)\
                               will be used.
 
@@ -67,7 +67,7 @@ class ChaconTarazona(pytim.PYTIM):
     >>> from pytim.datafiles import WATER_GRO
     >>> u = mda.Universe(WATER_GRO)
     >>> g = u.select_atoms('name OW')
-    >>> interface = pytim.ChaconTarazona(u,alpha=2.,tau=1.5,itim_group=g,info=False,molecular=False)
+    >>> interface = pytim.ChaconTarazona(u,alpha=2.,tau=1.5,group=g,info=False,molecular=False)
     >>> interface.writepdb('CT.pdb',centered=True)
     >>> print repr(interface.layers)
     array([[<AtomGroup with 175 atoms>],
@@ -80,7 +80,7 @@ class ChaconTarazona(pytim.PYTIM):
     def layers(self):
         return self._layers
 
-    def __init__(self, universe, alpha=2.0, tau=1.5, itim_group=None,
+    def __init__(self, universe, alpha=2.0, tau=1.5, group=None,
                  radii_dict=None, max_layers=1, normal='guess', molecular=True,
                  info=True, mesh=None, centered=False,**kargs):
 
@@ -108,7 +108,7 @@ class ChaconTarazona(pytim.PYTIM):
         self.molecular = molecular
 
         # TODO implement cluster group
-        sanity.assign_groups(itim_group, None, None)
+        sanity.assign_groups(group, None, None)
         sanity.assign_normal(normal)
         sanity.assign_radii(radii_dict)
 

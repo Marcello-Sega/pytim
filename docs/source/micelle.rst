@@ -41,12 +41,12 @@ all DPC molecules
 
 
 In order to calculate the surface atoms, we invoke :class:`~pytim.gitim.GITIM`, passing
-the group `g` as the `itim_group` option, and set `molecular=False` in order to mark
+the group `g` as the `group` option, and set `molecular=False` in order to mark
 only the atoms at the surface, and not the whole residues to which these atoms belong.
 
 
     >>> # calculate the atoms at the interface ...
-    >>> inter = pytim.GITIM(u,itim_group=g,molecular=False,alpha=2.5)
+    >>> inter = pytim.GITIM(u,group=g,molecular=False,alpha=2.5)
     >>> #
     >>> # ... and write a pdb file (default:'layers.pdb') with layer information in the beta field
     >>> inter.writepdb()
