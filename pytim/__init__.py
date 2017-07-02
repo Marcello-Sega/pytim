@@ -433,7 +433,12 @@ class PYTIM(object):
                 def __init__(self,layers):
                     self._layers=layers
                 def __getitem__(self,key):
-                    return self._layers[key].sum()
+                    obj = self._layers[key]
+                    if isinstance(obj,AtomGroup):
+                        return obj
+                    if isinstance(obj,np.ndarray):
+                        return obj.sum()
+                    return None
         if LooseVersion(MDAnalysis.__version__) >= \
                         LooseVersion('0.16'):  # new topology system
             return LayerAtomGroup(self,indices, universe)

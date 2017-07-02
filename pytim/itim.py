@@ -107,8 +107,10 @@ class ITIM(pytim.PYTIM):
         >>> interface.atoms.in_layers[1,0:4:2]
         <AtomGroup with 1437 atoms>
 
-        >>> interface.atoms.in_layers[0]
+        >>> interface.atoms.in_layers[0] # all layers in the upper side
         <AtomGroup with 2823 atoms>
+        >>> interface.atoms.in_layers[0,1] # upper side, second layer
+        <AtomGroup with 693 atoms>
 
         >>> # the whole system can be quickly saved to a pdb file
         >>> # including the layer information, written in the beta field
@@ -121,7 +123,7 @@ class ITIM(pytim.PYTIM):
         >>> # but the centering options are not available. Writing to other formats that
         >>> # do not support the beta factor will loose the information on the layers.
         >>> interface.atoms.write('only_layers.pdb')
-        >>> interface.atoms.in_layers[0:].write('only_uppeer_side.pdb')
+        >>> interface.atoms.in_layers[0].write('only_uppeer_side.pdb')
         >>> interface.atoms.in_layers[:,1].write('only_second_layers.pdb')
 
     """
