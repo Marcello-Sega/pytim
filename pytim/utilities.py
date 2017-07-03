@@ -8,6 +8,13 @@ from scipy.spatial import cKDTree
 from scipy.stats import gaussian_kde
 from scipy.cluster import vq
 
+try:  # MDA >=0.16
+    from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
+except BaseException:
+    from MDAnalysis.core.AtomGroup import Atom, AtomGroup, Residue,\
+        ResidueGroup
+
+
 def lap(show=False):
     if not hasattr(lap, "tic"):
         lap.tic = timer()

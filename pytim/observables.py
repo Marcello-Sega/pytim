@@ -6,11 +6,6 @@
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy import stats
-try:  # MDA >=0.16
-    from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
-except BaseException:
-    from MDAnalysis.core.AtomGroup import Atom, AtomGroup, Residue,\
-        ResidueGroup
 
 from MDAnalysis.lib import distances
 from itertools import chain
@@ -22,6 +17,11 @@ from pytim import utilities
 # should be done by the user beforehand,
 # or implemented in specific classes.
 
+try:  # MDA >=0.16
+    from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
+except BaseException:
+    from MDAnalysis.core.AtomGroup import Atom, AtomGroup, Residue,\
+        ResidueGroup
 
 class Observable(object):
     """ Instantiate an observable.
@@ -665,7 +665,8 @@ class Profile(object):
         self.center_group = center_group
         if observable is None:
             self.observable = Number()
-        self.observable = observable
+        else:
+            self.observable = observable
         self._dir = _dir[direction]
         self.binsize = 0.1  # this is used for internal calculations, the
         # output binsize can be specified in
