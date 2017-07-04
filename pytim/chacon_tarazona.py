@@ -214,8 +214,8 @@ class ChaconTarazona(pytim.PYTIM):
 
         self.centered_positions = None
         # we always (internally) center in Chacon-Tarazona
-        self.center()
-        # first we label all atoms in itim_group to be in the gas phase
+        self.center(planar_to_origin=True)
+        # first we label all atoms in group to be in the gas phase
         self.label_group(self.itim_group.atoms, 0.5)
         # then all atoms in the largest group are labelled as liquid-like
         self.label_group(self.cluster_group.atoms, 0)
@@ -230,6 +230,8 @@ class ChaconTarazona(pytim.PYTIM):
                 self.label_group(_layer, _nlayer + 1)
 
         if self.do_center == False:
-            self.centered_positions = np.copy(self.universe.atoms.positions[:])
             self.universe.atoms.positions = self.original_positions
+        else:
+            self._shift_positions_to_middle() 
+
 #

@@ -4,6 +4,7 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 import numpy as np
 from scipy.spatial import Delaunay
+from scipy.interpolate import LinearNDInterpolator
 from pytim import utilities
 
 
@@ -154,7 +155,8 @@ class Surface(object):
         distance = (positions[:, 2] - elevation) * np.sign(positions[:, 2])
         return distance
 
-    def _initialize_distance_interpolator_flat(self):
+    def _initialize_distance_interpolator_flat(self,layer):
+        self._layer = layer
         self.triangulate_layer_flat(layer=self._layer)
 
         self._interpolator = [None, None]
@@ -163,4 +165,3 @@ class Surface(object):
                 self.surf_triang[layer],
                 self.triangulation_points[layer][:, 2])
 
-        self.interface._pytim_flags[flag] = False

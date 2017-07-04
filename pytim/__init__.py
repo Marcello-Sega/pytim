@@ -622,17 +622,20 @@ class PYTIM(object):
         # finally, we copy everything back
         group.universe.atoms.positions = np.column_stack((_x, _y, _z))
 
+    def _shift_positions_to_middle(self):
+        box = self.universe.dimensions[self.normal]
+        translation = [0, 0, 0]
+        translation[self.normal] = box / 2.
+        self.universe.atoms.positions += np.array(translation)
+        self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+        
     def center(self,planar_to_origin=False):
         if self.symmetry == 'planar':
             utilities.centerbox(self.universe, center_direction=self.normal)
             self._center(self.cluster_group, self.normal)
             utilities.centerbox(self.universe, center_direction=self.normal)
             if planar_to_origin == False:
-                box = self.universe.dimensions[self.normal]
-                translation = [0, 0, 0]
-                translation[self.normal] = box / 2.
-                self.universe.atoms.positions += np.array(translation)
-                self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+               self._shift_positions_to_middle() 
             self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
         if self.symmetry == 'spherical' :

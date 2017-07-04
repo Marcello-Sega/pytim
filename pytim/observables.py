@@ -117,20 +117,19 @@ class RDF(object):
     >>>
     >>> u = mda.Universe(WATER_GRO,WATER_XTC)
     >>> oxygens = u.select_atoms("name OW")
-    >>> radii = pytim_data.vdwradii(G43A1_TOP)
     >>>
     >>> nres = observables.NumberOfResidues()
     >>>
     >>> rdf = observables.RDF(u,nbins=120,\
         observable=nres,observable2=nres)
     >>>
-    >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,\
-        max_layers=4,radii_dict=radii,cluster_cut=3.5)
+    >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,\
+        cluster_cut=3.5,molecular=False)
     >>>
     >>> for ts in u.trajectory[::50] :
-    ...     layer=interface.layers[0,1]
+    ...     layer=interface.layers[0,0]
     ...     rdf.sample(layer,layer)
-    >>> rdf.rdf[0]=0.0
+    >>> rdf.count[0]=0
     >>> np.savetxt('RDF3D.dat', np.column_stack((rdf.bins,rdf.rdf)))
 
 
@@ -170,13 +169,14 @@ class RDF(object):
 
         self.n_frames = 0
         self.volume = 0.0
+        self.n_squared = 0
         count, edges = np.histogram([-1, -1], **self.rdf_settings)
         self.count = count * 0.0
         self.edges = edges
         self.bins = 0.5 * (edges[:-1] + edges[1:])
         self.g1 = self.universe.atoms
         self.g2 = None
-        self._rdf = None
+        self._rdf =  self.count
 
     def sample(self, g1=None, g2=None):
         self.n_frames += 1
@@ -231,24 +231,21 @@ class RDF(object):
             self.volume += self.universe.dimensions[0] * \
                 self.universe.dimensions[1] * self.universe.dimensions[2]
         self.nsamples += 1
+        self.n_squared += len(self.g1) * len(self.g2)
 
     @property
     def rdf(self):
-        na = len(self.g1)
-        nb = len(self.g2)
-        n = na * nb
         # Volume in each radial shell
-        vol = 4. / 3. * np.pi * \
-            np.power(self.edges[1:], 3) - np.power(self.edges[:-1], 3)
+        dr = (self.edges[1:] - self.edges[:-1])
+        avr = (self.edges[1:] + self.edges[:-1])/2.
+        vol = 4. * np.pi * avr **2 * dr
 
-        # Average number density
-        box_vol = self.volume / self.n_frames
-        density = n / box_vol
+        # normalization
+        density = self.n_squared / self.volume
 
         self._rdf = self.count / (density * vol * self.n_frames)
 
         return self._rdf
-
 
 class RDF2D(RDF):
     """Calculates a radial distribution function of some observable from two
@@ -274,19 +271,18 @@ class RDF2D(RDF):
     >>>
     >>> u = mda.Universe(WATER_GRO,WATER_XTC)
     >>> oxygens = u.select_atoms("name OW")
-    >>> radii=pytim_data.vdwradii(G43A1_TOP)
-    >>> rdf = observables.RDF2D(u,nbins=120)
-    >>> interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,\
-        max_layers=4,radii_dict=radii,cluster_cut=3.5)
+    >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,\
+        cluster_cut=3.5,molecular=False)
+    >>> rdf = observables.RDF2D(u,nbins=250)
     >>>
     >>> for ts in u.trajectory[::50] :
-    ...     layer=interface.layers[0,1]
+    ...     layer=interface.layers[0,0]
     ...     rdf.sample(layer,layer)
-    >>> rdf.rdf[0]=0.0
+    >>> rdf.count[0]=0
     >>> np.savetxt('RDF.dat', np.column_stack((rdf.bins,rdf.rdf)))
 
 
-    This results in the following RDF:
+    This results in the following RDF (sampling more frequently):
 
     .. plot::
 
@@ -296,39 +292,42 @@ class RDF2D(RDF):
         import matplotlib.pyplot as plt
         from   pytim.datafiles import *
         u = mda.Universe(WATER_GRO,WATER_XTC)
-        L = np.min(u.dimensions[:3])
         oxygens = u.select_atoms("name OW")
-        radii=pytim_data.vdwradii(G43A1_TOP)
-        interface = pytim.ITIM(u,alpha=2.,itim_group=oxygens,\
-                               max_layers=4,radii_dict=radii,\
-                               cluster_cut=3.5)
-        rdf=pytim.observables.RDF2D(u,nbins=120)
-        for ts in u.trajectory[::50] :
-            layer=interface.layers[0,1]
+        interface = pytim.ITIM(u,alpha=2.,group=oxygens,\
+                               cluster_cut=3.5, molecular=False)
+        rdf=pytim.observables.RDF2D(u,nbins=250)
+        for ts in u.trajectory[::] :
+            layer=interface.layers[0,0]
             rdf.sample(layer,layer)
-        rdf.rdf[0]=0.0
+        rdf.count[0]=0
+
         plt.plot(rdf.bins, rdf.rdf)
+
+        plt.gca().set_xlim([0,7])
+
         plt.show()
 
     """
 
     def __init__(self, universe,
                  nbins=75, max_radius='full',
-                 start=None, stop=None, step=None, excluded_dir='z',
+                 start=None, stop=None, step=None, excluded_dir='auto',
                  true2D=False, observable=None):
         RDF.__init__(self, universe, nbins=nbins, max_radius=max_radius,
                      start=start, stop=stop, step=step,
                      observable=observable)
+        _dir = {'x': 0, 'y': 1, 'z': 2}
         self.true2D = true2D
-        if excluded_dir is 'z':
-            self.excluded_dir = 2
-        if excluded_dir is 'y':
-            self.excluded_dir = 1
-        if excluded_dir is 'x':
-            self.excluded_dir = 0
+        if excluded_dir == 'auto':
+            try:
+                self.excluded_dir = self.universe.interface.normal
+            except:
+                self.excluded_dir = 2
+        else:
+            self.excluded_dir = _dir[excluded_dir]
 
     def sample(self, g1=None, g2=None):
-        self.n_frames += 1
+        # this uses RDF.sample(), only changes in normalization/distance calculation are handled here
         _ts = self.universe.trajectory.ts
         excl = self.excluded_dir
         if g2 is None:
@@ -350,16 +349,13 @@ class RDF2D(RDF):
 
     @property
     def rdf(self):
-        na = len(self.g1)
-        nb = len(self.g2)
-        n = na * nb
         # Volume in each radial shell
-        vol = 4.0 * np.pi * \
-            np.power(self.edges[1:], 2) - np.power(self.edges[:-1], 2)
+        dr = (self.edges[1:] - self.edges[:-1])
+        avr = (self.edges[1:] + self.edges[:-1])/2.
+        vol = 2.*np.pi * avr * dr
 
-        # Average number density
-        box_vol = self.volume / self.n_frames
-        density = n / box_vol
+        # normalization 
+        density = self.n_squared / self.volume
 
         self._rdf = self.count / (density * vol * self.n_frames)
 
@@ -385,12 +381,12 @@ class LayerTriangulation(Observable):
 
        Example:
 
-       >>> interface = pytim.ITIM(mda.Universe(WATER_GRO))
+       >>> interface = pytim.ITIM(mda.Universe(WATER_GRO),molecular=False)
        >>> surface   = observables.LayerTriangulation(\
                            interface,return_triangulation=False)
        >>> stats     = surface.compute()
        >>> print ("Surface= {:04.1f} A^2".format(stats[0]))
-       Surface= 7314.4 A^2
+       Surface= 6750.7 A^2
 
     """
 
@@ -600,16 +596,15 @@ class Profile(object):
                                     optional group can be supplied to\
                                     center the system
 
-    Example:
+    Example (non-intrinsic):
 
     >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
     >>> oxygens = u.select_atoms("name OW")
-    >>> radii=pytim_data.vdwradii(G43A1_TOP)
     >>>
     >>> obs     = observables.Number()
     >>> profile = observables.Profile(group=oxygens,observable=obs)
     >>>
-    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5)
+    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5,centered=True,molecular=False)
     >>>
     >>> for ts in u.trajectory[::50]:
     ...     profile.sample()
@@ -627,22 +622,73 @@ class Profile(object):
         import pytim
         import matplotlib.pyplot as plt
         from   pytim.datafiles   import *
+        from pytim.observables import Profile,Number
 
         u       = mda.Universe(WATER_GRO,WATER_XTC)
         oxygens = u.select_atoms("name OW")
-        radii=pytim_data.vdwradii(G43A1_TOP)
 
-        obs     = pytim.observables.Number()
-        profile = pytim.observables.Profile(group=oxygens,observable=obs)
+        obs     = Number()
 
-        interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5)
+        interface = pytim.ITIM(u, alpha=2.0, max_layers=4,cluster_cut=3.5,centered=True,molecular=False)
 
-        for ts in u.trajectory[::50]:
+        profile = Profile(group=oxygens,observable=obs)
+
+        for ts in u.trajectory[::]:
             profile.sample()
 
         low, up, avg = profile.get_values(binwidth=1.0)
         plt.plot((low+up)/2., avg)
         plt.show()
+
+
+    Example (intrinsic):
+
+    >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
+    >>> oxygens = u.select_atoms("name OW")
+    >>>
+    >>> obs     = observables.Number()
+    >>>
+    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5,centered=True,molecular=False)
+    >>> profile = observables.Profile(group=oxygens,observable=obs,interface=interface)
+    >>>
+    >>> for ts in u.trajectory[::50]:
+    ...     profile.sample()
+    >>>
+    >>> low, up, avg = profile.get_values(binwidth=0.1)
+    >>> np.savetxt('profile.dat',list(zip(low,up,avg)))
+
+
+    This results in the following profile:
+
+    .. plot::
+
+        import MDAnalysis as mda
+        import numpy as np
+        import pytim
+        import matplotlib.pyplot as plt
+        from   pytim.datafiles   import *
+
+        u       = mda.Universe(WATER_GRO,WATER_XTC)
+        oxygens = u.select_atoms("name OW")
+
+        obs     = pytim.observables.Number()
+
+        interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5,centered=True,molecular=False)
+        profile = pytim.observables.Profile(group=oxygens,observable=obs,interface=interface)
+
+        for ts in u.trajectory[::]:
+            profile.sample()
+
+        low, up, avg = profile.get_values(binwidth=0.2)
+        z = (low+up)/2.
+        plt.plot(z, avg)
+        axes = plt.gca()
+        axes.set_xlim([-20,20])
+        axes.set_ylim([0,0.1])
+        plt.show()
+
+
+
 
     """
 
@@ -655,84 +701,58 @@ class Profile(object):
             center_group=None):
         # TODO: the directions are handled differently, fix it in the code
         _dir = {'x': 0, 'y': 1, 'z': 2}
-        self.halfbox_shift = False
+        self._dir = _dir[direction]
+        self.universe = group.universe
         self.group = group
+        self.interface = interface
+        self.center_group = center_group
+        self.box = self.universe.dimensions[:3]
+
+        self._range = [0., self.box[self._dir]]
+
+        if self.interface is not None:
+            self._range -= self.box[self._dir] / 2.
 
         if not isinstance(group, AtomGroup):
             raise TypeError("The first argument passed to "
                             "Profile() must be an AtomGroup.")
-        self.universe = group.universe
-        self.center_group = center_group
         if observable is None:
             self.observable = Number()
         else:
             self.observable = observable
-        self._dir = _dir[direction]
         self.binsize = 0.1  # this is used for internal calculations, the
         # output binsize can be specified in
         # self.get_values()
 
-        self.interface = interface
-        if self.interface is not None:
-            self.halfbox_shift = True
         self.sampled_values = []
         self.sampled_bins = []
         self.pos = [utilities.get_x, utilities.get_y, utilities.get_z]
 
-    def _set_range(self, shift=False):
-        _range = [0., self._box[self._dir]]
-        if shift:
-            _range -= self._box[self._dir] / 2.
-        return _range
 
     def sample(self):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
-        self._box = self.universe.dimensions[:3]
-        self.do_rebox = False
-
-        # We need to decide if we have to rebox particles or not.
-        # If the trajectory is patched, it means that the coordinates have
-        # been centered using the default scheme of each method, and we can
-        # handle this. Otherwise, we rebox.
-
-        try:
-            if id(self.universe.trajectory.interface):
-                _range = self._set_range(shift=True)
-                self.do_rebox = False
-        except Exception:
-            _range = self._set_range(shift=False)
-            self.do_rebox = True
+        self.box = self.universe.dimensions[:3]
 
         if self.interface is None:
-            # non-intrinsic quantities are sampled
-            # TODO: check if this was returning already a new object
-            _pos = np.copy(self.pos[self._dir](self.group))
-            try:
-                if id(self.universe.trajectory):
-                    self.universe.atoms.positions = np.copy(self.oldpos)
-            except BaseException:
-                pass
-
-            if self.do_rebox:
-                utilities.rebox(_pos, self._box[self._dir], 0)
+            pos = self.group.positions[::,self._dir]
         else:
-            _pos = IntrinsicDistance(self.interface).compute(self.group)
+            pos = IntrinsicDistance(self.interface).compute(self.group)
 
-        _values = self.observable.compute(self.group)
-        _nbins = int(
+        values = self.observable.compute(self.group)
+        nbins = int(
             self.universe.trajectory.ts.dimensions[self._dir] / self.binsize)
         # we need to make sure that the number of bins is odd, so that the
         # central one encompasses zero (to make the delta-function
         # contribution appear always in this bin)
-        if(_nbins % 2 > 0):
-            _nbins -= 1
-        _avg, _bins, _binnumber = stats.binned_statistic(
-            _pos, _values, range=_range, statistic='sum', bins=_nbins)
-        _avg[np.isnan(_avg)] = 0.0
-        self.sampled_values.append(_avg)
+        if(nbins % 2 > 0):
+            nbins += 1
+        avg, bins, binnumber = stats.binned_statistic(
+            pos, values, range=self._range, statistic='sum', bins=nbins)
+        avg[np.isnan(avg)] = 0.0
+        self.sampled_values.append(avg)
         # these are the bins midpoints
-        self.sampled_bins.append(_bins[1:] - self.binsize / 2.)
+        self.sampled_bins.append(bins[1:] - self.binsize / 2.)
 
     def get_values(self, binwidth=None, nbins=None):
         if not self.sampled_values:
@@ -751,17 +771,15 @@ class Profile(object):
         if(nbins % 2 > 0):
             nbins += 1
 
-        _range = self._set_range(shift=self.halfbox_shift)
-
         avg, bins, _ = stats.binned_statistic(
             list(
                 chain.from_iterable(
                     self.sampled_bins)), list(
                 chain.from_iterable(
-                    self.sampled_values)), range=_range, statistic='sum',
+                    self.sampled_values)), range=self._range, statistic='sum',
             bins=nbins)
         avg[np.isnan(avg)] = 0.0
-        vol = np.prod(self._box) / nbins
+        vol = np.prod(self.box) / nbins
         return [bins[0:-1], bins[1:], avg / len(self.sampled_values) / vol]
 
 #

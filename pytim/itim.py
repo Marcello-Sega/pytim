@@ -27,7 +27,7 @@ class Surface(surface.Surface):
 
         elevation = np.zeros(len(positions))
 
-        self._initialize_distance_interpolator_flat(self._layer)
+        self._initialize_distance_interpolator_flat(layer = self._layer)
         upper_interp = self._interpolator[0](upper_set[:, 0:2])
         lower_interp = self._interpolator[1](lower_set[:, 0:2])
 
@@ -88,16 +88,17 @@ class ITIM(pytim.PYTIM):
         >>> # atoms in the layers can be accesses either through
         >>> # the layers array:
         >>> print interface.layers
-        [[<AtomGroup with 777 atoms> <AtomGroup with 693 atoms>
+        [[<AtomGroup with 780 atoms> <AtomGroup with 690 atoms>
           <AtomGroup with 693 atoms> <AtomGroup with 660 atoms>]
-         [<AtomGroup with 777 atoms> <AtomGroup with 690 atoms>
-          <AtomGroup with 660 atoms> <AtomGroup with 654 atoms>]]
+         [<AtomGroup with 777 atoms> <AtomGroup with 687 atoms>
+          <AtomGroup with 663 atoms> <AtomGroup with 654 atoms>]]
+
 
         >>> interface.layers[0,0] # upper side, first layer
-        <AtomGroup with 777 atoms>
+        <AtomGroup with 780 atoms>
 
         >>> interface.layers[1,2] # lower side, third layer
-        <AtomGroup with 660 atoms>
+        <AtomGroup with 663 atoms>
 
         >>> # or as a whole AtomGroup. This can include all atoms in all layers:
         >>> interface.atoms
@@ -105,12 +106,12 @@ class ITIM(pytim.PYTIM):
 
         >>> # or a selection of them, using slicing:
         >>> interface.atoms.in_layers[1,0:4:2]
-        <AtomGroup with 1437 atoms>
+        <AtomGroup with 1440 atoms>
 
         >>> interface.atoms.in_layers[0] # all layers in the upper side
         <AtomGroup with 2823 atoms>
         >>> interface.atoms.in_layers[0,1] # upper side, second layer
-        <AtomGroup with 693 atoms>
+        <AtomGroup with 690 atoms>
 
         >>> # the whole system can be quickly saved to a pdb file
         >>> # including the layer information, written in the beta field
@@ -135,7 +136,7 @@ class ITIM(pytim.PYTIM):
         The object can be sliced as usual with numpy arrays, so, for example:
 
         >>> interface.layers[0,:]  # upper side (0), all layers
-        array([<AtomGroup with 777 atoms>, <AtomGroup with 693 atoms>,
+        array([<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
                <AtomGroup with 693 atoms>, <AtomGroup with 660 atoms>],\
  dtype=object)
 
@@ -144,14 +145,15 @@ class ITIM(pytim.PYTIM):
 
 
         >>> interface.layers[:,0:3] # 1st - 3rd layer (0:3), on both sides
-        array([[<AtomGroup with 777 atoms>, <AtomGroup with 693 atoms>,
+        array([[<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
                 <AtomGroup with 693 atoms>],
-               [<AtomGroup with 777 atoms>, <AtomGroup with 690 atoms>,
-                <AtomGroup with 660 atoms>]], dtype=object)
+               [<AtomGroup with 777 atoms>, <AtomGroup with 687 atoms>,
+                <AtomGroup with 663 atoms>]], dtype=object)
+
 
 
         >>> interface.layers[1,0:4:2] # side 1, layers 1-4 & stride 2 (0:4:2)
-        array([<AtomGroup with 777 atoms>, <AtomGroup with 660 atoms>],\
+        array([<AtomGroup with 777 atoms>, <AtomGroup with 663 atoms>],\
  dtype=object)
 
 
@@ -342,13 +344,8 @@ class ITIM(pytim.PYTIM):
 
         self._define_cluster_group()
 
-        self.centered_positions = None
         # we always (internally) center in ITIM
-        self.center()
-
-        utilities.centerbox(self.universe, center_direction=self.normal)
-        self._center(self.cluster_group, self.normal)
-        utilities.centerbox(self.universe, center_direction=self.normal)
+        self.center(planar_to_origin=True)
 
         # first we label all atoms in group to be in the gas phase
         self.label_group(self.itim_group.atoms, 0.5)
@@ -409,8 +406,10 @@ class ITIM(pytim.PYTIM):
         for nlayer, layer in enumerate(self._layers[0]):
             self._surfaces[nlayer] = Surface(self, options={'layer': nlayer})
 
-        if self.do_center == False:
-            self.centered_positions = np.copy(self.universe.atoms.positions[:])
+        if self.do_center == False: #NOTE: do_center requires centering in the middle of the box
+                                    #      ITIM always centers internally in the origin along the normal
             self.universe.atoms.positions = self.original_positions
+        else:
+            self._shift_positions_to_middle() 
 
 #
