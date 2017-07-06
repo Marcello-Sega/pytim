@@ -8,15 +8,20 @@
 
 # Disclaimer
 
-Pytim is in **alpha-stage** right now and not all modules have undergone systematic testing, use at your own risk :) In this period, commits with major fixes or introduction of major features will follow relatively frequently, so keep an eye on it if you are interested in using the code.
+Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage.
+The interface has almost converged to its final form, but changes could still be introduced. In the next period we will roll out more examples and, still, some new features. 
 
 If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on github and/or make a pull request.
 
-In addition, while at this stage, please note that the interface might change noticeably between commits.
-
 # What is Pytim?
 
-[Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of the ITIM and GITIM algorithm for the analysis of fluid interfaces.
+[Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. So far the following methods have been implemented:
+
+* ITIM
+* GITIM 
+* Willard Chandler
+* Chacon Tarazona
+* DBSCAN filtering
 
 Pytim relies on the [MDAnalysis](http://www.mdanalysis.org/)
 package for reading/writing trajectories, and work therefore seamlessly for a number of popular trajectory formats, including:  
@@ -83,8 +88,14 @@ shapes.
 
 # References
 
-We plan to submit soon a manuscript to report on the features/improvements of pytim with respect to the previous available code. In the meanwhile, if you use pytim, please please read and cite both of the two following papers:
+We plan to submit soon a manuscript to report on the features/improvements of pytim with respect to the previous available code. In the meanwhile, if you use pytim, please please read and cite the
+
 
 [M. Sega, S. S. Kantorovich P. Jedlovszky and M. Jorge, _J. Chem. Phys._ **138**, 044110 (2013)](http://dx.doi.org/10.1063/1.4776196) The generalized identification of truly interfacial molecules (ITIM) algorithm for nonplanar interfaces.
 
 [L. B. Pártay, G. Hantal, P. Jedlovszky, Á. Vincze and G. Horvai, _J. Comp. Chem._ **29**, 945 (2008)](http://dx.doi.org/10.1002/jcc.20852) A new method for determining the interfacial molecules and characterizing the surface roughness in computer simulations. Application to the liquid–vapor interface of water
+
+[E. Chacón, P. Tarazona, Phys. Rev. Lett. **91**, 166103 (2003)](http://dx.doi.org/10.1103/PhysRevLett.91.166103) Intrinsic profiles beyond the capillary wave theory: A Monte Carlo study.
+
+[A. P. Willard, D. Chandler, J. Phys. Chem. B **114**,1954 (2010)](http://dx.doi.org/10.1021/jp909219k) Instantaneous Liquid Interfaces
+
