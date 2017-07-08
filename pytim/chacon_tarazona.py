@@ -82,7 +82,7 @@ class ChaconTarazona(pytim.PYTIM):
 
     def __init__(self, universe, alpha=2.0, tau=1.5, group=None,
                  radii_dict=None, max_layers=1, normal='guess', molecular=True,
-                 info=True, mesh=None, centered=False,**kargs):
+                 info=True, mesh=None, centered=False, **kargs):
 
         self.symmetry = 'planar'
         self.do_center = centered
@@ -119,7 +119,8 @@ class ChaconTarazona(pytim.PYTIM):
 
         pytim.PatchTrajectory(universe.trajectory, self)
         self._assign_layers()
-        self._atoms = self.LayerAtomGroupFactory(self._layers[:].sum().indices, self.universe)
+        self._atoms = self.LayerAtomGroupFactory(
+            self._layers[:].sum().indices, self.universe)
 
     def _points_next_to_surface(self, surf, modes, pivot):
         """ searches for points within a distance self.tau from the
@@ -232,6 +233,6 @@ class ChaconTarazona(pytim.PYTIM):
         if self.do_center == False:
             self.universe.atoms.positions = self.original_positions
         else:
-            self._shift_positions_to_middle() 
+            self._shift_positions_to_middle()
 
 #

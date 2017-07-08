@@ -13,7 +13,6 @@ import importlib
 import __builtin__
 
 
-
 def PatchTrajectory(trajectory, interface):
     """ Patch the MDAnalysis trajectory class
 
@@ -24,7 +23,7 @@ def PatchTrajectory(trajectory, interface):
     trajectory.original_read_next_timestep = trajectory._read_next_timestep
 
     if LooseVersion(interface._MDAversion) >= LooseVersion('0.16'):
-        trajectory.original_read_frame_with_aux= trajectory._read_frame_with_aux
+        trajectory.original_read_frame_with_aux = trajectory._read_frame_with_aux
     else:
         trajectory.original_read_frame_with_aux = None
 
@@ -79,7 +78,6 @@ class SanityCheck(object):
         self.V016 = LooseVersion('0.16')
         if self.VERS < self.V015:
             raise Exception("Must use MDAnalysis  >= 0.15")
-
 
     def assign_radii(self, radii_dict):
         try:
@@ -218,8 +216,10 @@ class SanityCheck(object):
             universe.add_TopologyAttr(missing_class(values))
             if name == 'elements':
                 types = MDAnalysis.topology.guessers.guess_types(group.names)
-                # is there an inconsistency in the way 'element' is defined different modules in MDA?
-                group.elements = np.array([utilities.atomic_number_map.get(t,0) for t in types] )
+                # is there an inconsistency in the way 'element' is defined
+                # different modules in MDA?
+                group.elements = np.array(
+                    [utilities.atomic_number_map.get(t, 0) for t in types])
 
     def assign_universe(self, universe):
         try:
@@ -250,7 +250,7 @@ class SanityCheck(object):
         self.interface.extra_cluster_groups = extra_cluster_groups
 
         self._define_groups()
-        if(len(self.interface.itim_group) == 0 ) :
+        if(len(self.interface.itim_group) == 0):
             raise StandardError(self.interface.UNDEFINED_ITIM_GROUP)
         interface = self.interface
 
@@ -373,7 +373,6 @@ class PYTIM(object):
                 raise ValueError(self.WRONG_DIRECTION)
             self.symmetry = symmetry
 
-
     def _generate_periodic_border_2d(self, group):
         _box = utilities.get_box(group.universe, self.normal)
 
@@ -412,45 +411,46 @@ class PYTIM(object):
              low_x_upp_y,
              upp_x_low_y))
 
-    def LayerAtomGroupFactory(self,indices,universe):
+    def LayerAtomGroupFactory(self, indices, universe):
         if LooseVersion(MDAnalysis.__version__) >= \
-                        LooseVersion('0.16'):  # new topology system
+                LooseVersion('0.16'):  # new topology system
             AtomGroup = MDAnalysis.core.groups.AtomGroup
         else:
             AtomGroup = MDAnalysis.core.AtomGroup.AtomGroup
 
         class LayerAtomGroup(AtomGroup):
-            def __init__(self,interface,*args):
-                AtomGroup.__init__(self,*args)
+            def __init__(self, interface, *args):
+                AtomGroup.__init__(self, *args)
                 self.interface = interface
-                self._in_layers=self.LayerAtomGroupSelector(self.interface._layers)
+                self._in_layers = self.LayerAtomGroupSelector(
+                    self.interface._layers)
 
             @property
             def in_layers(self):
                 return self._in_layers
 
             class LayerAtomGroupSelector(object):
-                def __init__(self,layers):
-                    self._layers=layers
-                def __getitem__(self,key):
+                def __init__(self, layers):
+                    self._layers = layers
+
+                def __getitem__(self, key):
                     obj = self._layers[key]
-                    if isinstance(obj,AtomGroup):
+                    if isinstance(obj, AtomGroup):
                         return obj
-                    if isinstance(obj,np.ndarray):
+                    if isinstance(obj, np.ndarray):
                         return obj.sum()
                     return None
         if LooseVersion(MDAnalysis.__version__) >= \
-                        LooseVersion('0.16'):  # new topology system
-            return LayerAtomGroup(self,indices, universe)
+                LooseVersion('0.16'):  # new topology system
+            return LayerAtomGroup(self, indices, universe)
         else:
-            return LayerAtomGroup(self,universe.atoms[indices])
+            return LayerAtomGroup(self, universe.atoms[indices])
 
     @property
     def atoms(self):
-        return self._atoms;
+        return self._atoms
 
-
-    def writepdb(self, filename='layers.pdb', centered='no', group='all', multiframe=True ):
+    def writepdb(self, filename='layers.pdb', centered='no', group='all', multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
             to the layers with different beta factor.
 
@@ -471,19 +471,19 @@ class PYTIM(object):
             >>> interface.writepdb('layers.pdb',centered='no')
 
         """
-        if isinstance(group,self.universe.atoms.__class__):
-            self.group=group
+        if isinstance(group, self.universe.atoms.__class__):
+            self.group = group
         else:
-            self.group=self.universe.atoms
+            self.group = self.universe.atoms
 
         temp_pos = np.copy(self.universe.atoms.positions)
         options = {'no': False, False: False, 'middle': True, True: True}
 
         if options[centered] != self.do_center:
-            #i.e. we don't have already what we want ...
-            if self.do_center == False: # we need to center
+            # i.e. we don't have already what we want ...
+            if self.do_center == False:  # we need to center
                 self.center(planar_to_origin=True)
-            else : # we need to put back the original positions
+            else:  # we need to put back the original positions
                 try:
                     # original_positions are (must) always be defined
                     self.universe.atoms.positions = self.original_positions
@@ -628,17 +628,17 @@ class PYTIM(object):
         translation[self.normal] = box / 2.
         self.universe.atoms.positions += np.array(translation)
         self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
-        
-    def center(self,planar_to_origin=False):
+
+    def center(self, planar_to_origin=False):
         if self.symmetry == 'planar':
             utilities.centerbox(self.universe, center_direction=self.normal)
             self._center(self.cluster_group, self.normal)
             utilities.centerbox(self.universe, center_direction=self.normal)
             if planar_to_origin == False:
-               self._shift_positions_to_middle() 
+                self._shift_positions_to_middle()
             self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
-        if self.symmetry == 'spherical' :
+        if self.symmetry == 'spherical':
             self._center(self.cluster_group, 'x', halfbox_shift=False)
             self._center(self.cluster_group, 'y', halfbox_shift=False)
             self._center(self.cluster_group, 'z', halfbox_shift=False)

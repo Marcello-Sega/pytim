@@ -2,11 +2,13 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from pytim import utilities
 
+
 def _format_vector(vector, format_str="{:f}"):
     formatted = ''
     for element in vector:
         formatted += format_str.format(element) + ' '
     return formatted
+
 
 def write_scalar_grid(filename, grid_size, spacing, scalars):
     """write in a vtk file a scalar field on a rectangular grid
@@ -24,7 +26,7 @@ def write_scalar_grid(filename, grid_size, spacing, scalars):
     f.write(_format_vector(grid_size, format_str="{:d}") + "\n")
     f.write("SPACING " + _format_vector(spacing) + "\n")
     f.write("\n")
-    f.write("ORIGIN " + _format_vector(spacing/2.)+"\n")
+    f.write("ORIGIN " + _format_vector(spacing / 2.) + "\n")
     f.write("POINT_DATA " + str(len(scalars)) + "\n")
     f.write("SCALARS kernel floats 1\nLOOKUP_TABLE default\n")
 
@@ -33,6 +35,7 @@ def write_scalar_grid(filename, grid_size, spacing, scalars):
     f.close()
 
 # TODO: should move  all AtomGroup references to a higher level
+
 
 def write_atomgroup(filename, group, color=None, radius=None):
     """ write in a vtk file the positions of particles
@@ -94,9 +97,8 @@ def write_triangulation(filename, vertices, triangles, normals=None):
         for n in normals:
             f.write(_format_vector(n, format_str="{:f}") + "\n")
 
+
 def consecutive_filename(universe, basename):
     if basename.endswith('.vtk'):
         basename = basename[:-4]
-    return utilities.consecutive_filename(universe, basename,'vtk')
-
-
+    return utilities.consecutive_filename(universe, basename, 'vtk')

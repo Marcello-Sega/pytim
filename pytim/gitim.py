@@ -94,7 +94,8 @@ class GITIM(pytim.PYTIM):
 
         pytim.PatchTrajectory(universe.trajectory, self)
         self._assign_layers()
-        self._atoms = self.LayerAtomGroupFactory(self._layers[:].sum().indices, self.universe)
+        self._atoms = self.LayerAtomGroupFactory(
+            self._layers[:].sum().indices, self.universe)
 
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
@@ -172,8 +173,8 @@ class GITIM(pytim.PYTIM):
         delta = 2. * self.alpha + 1e-6
         points = self.cluster_group.positions[:]
         nrealpoints = len(points)
-        np.random.seed(0) # pseudo-random for reproducibility
-        gitter = (np.random.random(3*8).reshape(8,3))*1e-9
+        np.random.seed(0)  # pseudo-random for reproducibility
+        gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
         extrapoints, extraids = utilities.generate_periodic_border_3d(
             points, box, delta
         )
@@ -189,7 +190,7 @@ class GITIM(pytim.PYTIM):
                     dtype=np.int8),
                 dtype=np.float)
             tmp *= (box + delta)
-            tmp += gitter[dim] # added to prevent coplanar points
+            tmp += gitter[dim]  # added to prevent coplanar points
             tmp[tmp < box / 2.] -= delta
             tmp = np.reshape(tmp, (1, 3))
             extrapoints = np.append(extrapoints, tmp, axis=0)

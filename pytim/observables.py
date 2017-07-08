@@ -10,6 +10,7 @@ from scipy import stats
 from MDAnalysis.lib import distances
 from itertools import chain
 from pytim import utilities
+from pytim.correlator import correlate
 # we try here to have no options passed
 # to the observables, so that classes are
 # not becoming behemoths that do everything.
@@ -22,6 +23,7 @@ try:  # MDA >=0.16
 except BaseException:
     from MDAnalysis.core.AtomGroup import Atom, AtomGroup, Residue,\
         ResidueGroup
+
 
 class Observable(object):
     """ Instantiate an observable.
@@ -126,7 +128,7 @@ class RDF(object):
     >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,\
         cluster_cut=3.5,molecular=False)
     >>>
-    >>> for ts in u.trajectory[::50] :
+    >>> for ts in u.trajectory[::50]:
     ...     layer=interface.layers[0,0]
     ...     rdf.sample(layer,layer)
     >>> rdf.count[0]=0
@@ -176,7 +178,7 @@ class RDF(object):
         self.bins = 0.5 * (edges[:-1] + edges[1:])
         self.g1 = self.universe.atoms
         self.g2 = None
-        self._rdf =  self.count
+        self._rdf = self.count
 
     def sample(self, g1=None, g2=None):
         self.n_frames += 1
@@ -237,8 +239,8 @@ class RDF(object):
     def rdf(self):
         # Volume in each radial shell
         dr = (self.edges[1:] - self.edges[:-1])
-        avr = (self.edges[1:] + self.edges[:-1])/2.
-        vol = 4. * np.pi * avr **2 * dr
+        avr = (self.edges[1:] + self.edges[:-1]) / 2.
+        vol = 4. * np.pi * avr ** 2 * dr
 
         # normalization
         density = self.n_squared / self.volume
@@ -246,6 +248,7 @@ class RDF(object):
         self._rdf = self.count / (density * vol * self.n_frames)
 
         return self._rdf
+
 
 class RDF2D(RDF):
     """Calculates a radial distribution function of some observable from two
@@ -327,7 +330,8 @@ class RDF2D(RDF):
             self.excluded_dir = _dir[excluded_dir]
 
     def sample(self, g1=None, g2=None):
-        # this uses RDF.sample(), only changes in normalization/distance calculation are handled here
+        # this uses RDF.sample(), only changes in normalization/distance
+        # calculation are handled here
         _ts = self.universe.trajectory.ts
         excl = self.excluded_dir
         if g2 is None:
@@ -351,10 +355,10 @@ class RDF2D(RDF):
     def rdf(self):
         # Volume in each radial shell
         dr = (self.edges[1:] - self.edges[:-1])
-        avr = (self.edges[1:] + self.edges[:-1])/2.
-        vol = 2.*np.pi * avr * dr
+        avr = (self.edges[1:] + self.edges[:-1]) / 2.
+        vol = 2. * np.pi * avr * dr
 
-        # normalization 
+        # normalization
         density = self.n_squared / self.volume
 
         self._rdf = self.count / (density * vol * self.n_frames)
@@ -596,48 +600,73 @@ class Profile(object):
                                     optional group can be supplied to\
                                     center the system
 
-    Example (non-intrinsic):
+    Example (non-intrinsic, total profile + first 4 layers ):
 
-    >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
-    >>> oxygens = u.select_atoms("name OW")
+    >>> import numpy as np
+    >>> import MDAnalysis as mda
+    >>> import pytim
+    >>> from   pytim.datafiles import *
+    >>> from   pytim.observables import Profile
+    >>> from matplotlib import pyplot as plt
+    >>> 
+    >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+    >>> g=u.select_atoms('name OW')
+    >>> inter = pytim.ITIM(u,group=g,max_layers=4,centered=True)
     >>>
-    >>> obs     = observables.Number()
-    >>> profile = observables.Profile(group=oxygens,observable=obs)
-    >>>
-    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5,centered=True,molecular=False)
-    >>>
+    >>> Layers=[]
+    >>> AIL = inter.atoms.in_layers
+    >>> 
+    >>> Layers.append(Profile(u.atoms))
+    >>> for n in np.arange(4):
+    ...     Layers.append(Profile(AIL[::,n]))
+    >>> 
     >>> for ts in u.trajectory[::50]:
-    ...     profile.sample()
-    >>>
-    >>> low, up, avg = profile.get_values(binwidth=1.0)
-    >>> np.savetxt('profile.dat',list(zip(low,up,avg)))
+    ...     for L in Layers:
+    ...         L.sample()
+    >>>   
+    >>> density=[]
+    >>> for L in Layers:
+    ...     low,up,avg = L.get_values(binwidth=0.5)
+    ...     density.append(avg)
+    >>> 
+    >>> np.savetxt('profile.dat',list(zip(low,up,density[0],density[1],density[2],density[3],density[4])))
 
-
-    This results in the following profile:
+    This results in the following profile (zooming close to the interface border) 
 
     .. plot::
 
-        import MDAnalysis as mda
         import numpy as np
+        import MDAnalysis as mda
         import pytim
-        import matplotlib.pyplot as plt
-        from   pytim.datafiles   import *
-        from pytim.observables import Profile,Number
+        from   pytim.datafiles import *
+        from   pytim.observables import Profile
+        from matplotlib import pyplot as plt
 
-        u       = mda.Universe(WATER_GRO,WATER_XTC)
-        oxygens = u.select_atoms("name OW")
+        u = mda.Universe(WATER_GRO,WATER_XTC)
+        g=u.select_atoms('name OW')
+        inter = pytim.ITIM(u,group=g,max_layers=4,centered=True)
 
-        obs     = Number()
+        Layers=[]
+        AIL = inter.atoms.in_layers
 
-        interface = pytim.ITIM(u, alpha=2.0, max_layers=4,cluster_cut=3.5,centered=True,molecular=False)
-
-        profile = Profile(group=oxygens,observable=obs)
+        Layers.append(Profile(u.atoms))
+        for n in np.arange(4):
+            Layers.append(Profile(AIL[::,n]))
 
         for ts in u.trajectory[::]:
-            profile.sample()
+            for L in Layers:
+                L.sample()
 
-        low, up, avg = profile.get_values(binwidth=1.0)
-        plt.plot((low+up)/2., avg)
+        density=[]
+        for L in Layers:
+            low,up,avg = L.get_values(binwidth=0.5)
+            density.append(avg)
+
+
+        for dens in density:
+            plt.plot(low,dens)
+
+        plt.gca().set_xlim([80,120])
         plt.show()
 
 
@@ -728,14 +757,13 @@ class Profile(object):
         self.sampled_bins = []
         self.pos = [utilities.get_x, utilities.get_y, utilities.get_z]
 
-
     def sample(self):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
         self.box = self.universe.dimensions[:3]
 
         if self.interface is None:
-            pos = self.group.positions[::,self._dir]
+            pos = self.group.positions[::, self._dir]
         else:
             pos = IntrinsicDistance(self.interface).compute(self.group)
 

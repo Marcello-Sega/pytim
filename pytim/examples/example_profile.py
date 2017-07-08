@@ -17,5 +17,5 @@ for ts in u.trajectory[:]:
     profile.sample()
 
 lower, upper,  avg = profile.get_values(binwidth=1.0)
-bins=(lower+upper)/2.
+bins = (lower + upper) / 2.
 np.savetxt('profile.dat', list(zip(bins, avg)))

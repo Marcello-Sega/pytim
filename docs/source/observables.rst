@@ -15,6 +15,11 @@ Profiles
 .. autoclass:: pytim.observables.Profile
     :members:
 
+Correlation functions
+#####################
+.. automodule:: pytim.correlator
+    :members:
+
 Misc
 ####
 .. autoclass:: pytim.observables.LayerTriangulation

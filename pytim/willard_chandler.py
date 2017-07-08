@@ -8,7 +8,7 @@
 
 import numpy as np
 from skimage import measure
-from pytim import utilities,vtk,cube,wavefront_obj
+from pytim import utilities, vtk, cube, wavefront_obj
 import pytim
 
 
@@ -81,7 +81,7 @@ class WillardChandler(pytim.PYTIM):
     def __init__(self, universe, alpha=2.0, mesh=2.0, symmetry='spherical',
                  group=None, radii_dict=None,
                  cluster_cut=None, cluster_threshold_density=None,
-                 extra_cluster_groups=None, centered=False,**kargs):
+                 extra_cluster_groups=None, centered=False, **kargs):
 
         self.do_center = centered
         sanity = pytim.SanityCheck(self)
@@ -106,13 +106,14 @@ class WillardChandler(pytim.PYTIM):
 
         pytim.PatchTrajectory(universe.trajectory, self)
         self._assign_layers()
-        self._atoms = self._layers[:] # this is an empty AtomGroup
+        self._atoms = self._layers[:]  # this is an empty AtomGroup
         self.writevtk = WillardChandler.Writevtk(self)
 
     class Writevtk(object):
-        def __init__(self,interface):
+        def __init__(self, interface):
             self.interface = interface
-        def density(self,filename='pytim_dens.vtk',sequence=False):
+
+        def density(self, filename='pytim_dens.vtk', sequence=False):
             """ Write to vtk files the volumetric density:
                 :param str filename: the file name
                 :param bool sequence: if true writes a sequence of files adding the frame to the filename
@@ -122,9 +123,10 @@ class WillardChandler(pytim.PYTIM):
             inter = self.interface
             if sequence == True:
                 filename = vtk.consecutive_filename(inter.universe, filename)
-            vtk.write_scalar_grid(filename, inter.ngrid, inter.spacing, inter.density_field)
+            vtk.write_scalar_grid(filename, inter.ngrid,
+                                  inter.spacing, inter.density_field)
 
-        def particles(self,filename='pytim_part.vtk',group=None,sequence=False):
+        def particles(self, filename='pytim_part.vtk', group=None, sequence=False):
             """ Write to vtk files the particles in a group:
                 :param str filename: the file name
                 :param bool sequence: if true writes a sequence of files adding the frame to the filename
@@ -135,26 +137,27 @@ class WillardChandler(pytim.PYTIM):
             inter = self.interface
             if sequence == True:
                 filename = vtk.consecutive_filename(inter.universe, filename)
-            if group==None:
+            if group == None:
                 group = inter.universe.atoms
-            self._dump_group(group,filename)
+            self._dump_group(group, filename)
 
-        def surface(self,filename='pytim_surf.vtk',sequence=False):
+        def surface(self, filename='pytim_surf.vtk', sequence=False):
             """ Write to vtk files the triangulated surface:
                 :param str filename: the file name
                 :param bool sequence: if true writes a sequence of files adding the frame to the filename
                 >>> interface.writevtk.surface('surf.vtk') # writes on surf.vtk
                 >>> interface.writevtk.surface('surf.vtk',sequence=True) # writes on surf.<frame>.vtk
-            """ 
+            """
             inter = self.interface
             vertices = inter.triangulated_surface[0]
-            faces    = inter.triangulated_surface[1]
-            normals  = inter.triangulated_surface[2]
+            faces = inter.triangulated_surface[1]
+            normals = inter.triangulated_surface[2]
             if sequence == True:
                 filename = vtk.consecutive_filename(inter.universe, filename)
-            vtk.write_triangulation(filename, vertices[::,::-1], faces , normals)
+            vtk.write_triangulation(
+                filename, vertices[::, ::-1], faces, normals)
 
-    def writecube(self,filename="pytim.cube",group=None,sequence=False):
+    def writecube(self, filename="pytim.cube", group=None, sequence=False):
         """ Write to cube files (sequences) the volumentric density and the atomic positions.
             :param str filename: the file name
             :param bool sequence: if true writes a sequence of files adding the frame to the filename
@@ -167,7 +170,7 @@ class WillardChandler(pytim.PYTIM):
         cube.write_file(filename, group, self.ngrid,
                         self.spacing, self.density_field, atomic_numbers=None)
 
-    def writeobj(self,filename="pytim.obj", sequence=False):
+    def writeobj(self, filename="pytim.obj", sequence=False):
         """ Write to wavefront obj files (sequences) the triangulated surface
             :param str filename: the file name
             :param bool sequence: if true writes a sequence of files adding the frame to the filename
@@ -176,13 +179,14 @@ class WillardChandler(pytim.PYTIM):
         """
 
         if sequence == True:
-            filename = wavefront_obj.consecutive_filename(self.universe, filename)
+            filename = wavefront_obj.consecutive_filename(
+                self.universe, filename)
 
         vert = self.triangulated_surface[0]
         surf = self.triangulated_surface[1]
         wavefront_obj.write_file(filename, vert, surf)
 
-    def _dump_group(self, group,filename):
+    def _dump_group(self, group, filename):
         """save the particles n a vtk file named consecutively using the frame
         number."""
         radii = group.radii
@@ -190,7 +194,6 @@ class WillardChandler(pytim.PYTIM):
         color = [utilities.colormap[element] for element in types]
         color = (np.array(color) / 256.).tolist()
         vtk.write_atomgroup(filename, group, color=color, radius=radii)
-
 
     def _assign_layers(self):
         """There are no layers in the Willard-Chandler method.
@@ -223,8 +226,8 @@ class WillardChandler(pytim.PYTIM):
         )
         self.spacing = spacing
         self.ngrid = ngrid
-        grid = utilities.generate_grid_in_box(box, ngrid,order='zyx')
-        kernel, _ = utilities.density_map(pos , grid, self.alpha,box)
+        grid = utilities.generate_grid_in_box(box, ngrid, order='zyx')
+        kernel, _ = utilities.density_map(pos, grid, self.alpha, box)
 
         self.density_field = kernel.evaluate_pbc(grid)
 
@@ -241,8 +244,7 @@ class WillardChandler(pytim.PYTIM):
         # at the vertices, and not normals of the faces
         self.triangulated_surface = [verts, faces, normals]
         self.surface_area = measure.mesh_surface_area(verts, faces)
-        verts += spacing[::-1]/2.
-
+        verts += spacing[::-1] / 2.
 
 
 #
