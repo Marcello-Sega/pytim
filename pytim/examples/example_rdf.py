@@ -18,8 +18,8 @@ interface = pytim.ITIM(u, alpha=2., itim_group=oxygens,
 
 for ts in u.trajectory[::5]:
     print ("frame " + str(ts.frame) + " / " + str(len(u.trajectory)))
-    layer = interface.layers[0,0]
-    rdf.sample(layer,layer)
+    layer = interface.layers[0, 0]
+    rdf.sample(layer, layer)
 
 rdf.rdf[0] = 0.0
 np.savetxt('RDF.dat', np.column_stack((rdf.bins, rdf.rdf)))

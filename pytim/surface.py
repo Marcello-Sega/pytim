@@ -155,7 +155,7 @@ class Surface(object):
         distance = (positions[:, 2] - elevation) * np.sign(positions[:, 2])
         return distance
 
-    def _initialize_distance_interpolator_flat(self,layer):
+    def _initialize_distance_interpolator_flat(self, layer):
         self._layer = layer
         self.triangulate_layer_flat(layer=self._layer)
 
@@ -164,4 +164,3 @@ class Surface(object):
             self._interpolator[side] = LinearNDInterpolator(
                 self.surf_triang[layer],
                 self.triangulation_points[layer][:, 2])
-

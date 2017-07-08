@@ -206,57 +206,60 @@ def generate_grid_in_box(box, npoints, order='zxy'):
     grid = np.append(grid, z.reshape(-1, 1), axis=1)
     return grid.T
 
-def consecutive_filename(universe, basename,extension):
-  frame = universe.trajectory.frame
-  filename = basename + '.' + str(frame) + '.'+extension
-  return filename
+
+def consecutive_filename(universe, basename, extension):
+    frame = universe.trajectory.frame
+    filename = basename + '.' + str(frame) + '.' + extension
+    return filename
+
 
 class gaussian_kde_pbc(gaussian_kde):
 
     def evaluate_pbc(self, points):
-            """ PBC-enabled version of scipy.stats.gaussian_kde.evaluate()
-            """
+        """ PBC-enabled version of scipy.stats.gaussian_kde.evaluate()
+        """
 
-            points = np.atleast_2d(points)
-            box = self.box
-            d, m = points.shape
-            if d != self.d:
-                if d == 1 and m == self.d:
-                    # points was passed in as a row vector
-                    points = np.reshape(points, (self.d, 1))
-                    m = 1
-                else:
-                    msg = "points have dimension %s, dataset has dimension %s" %(d,self.d)
-                    raise ValueError(msg)
-
-            result = np.zeros((m,), dtype=float)
-
-            if m >= self.n:
-                # there are more points than data, so loop over data
-                for i in range(self.n):
-                    diff = self.dataset[:, i, np.newaxis] - points
-                    diff = diff.T
-                    diff -= (diff>box/2.) * box
-                    diff += (diff<-box/2.) * box
-                    diff = diff.T
-                    tdiff = np.dot(self.inv_cov, diff)
-                    energy = np.sum(diff*tdiff,axis=0) / 2.0
-                    result = result + np.exp(-energy)
+        points = np.atleast_2d(points)
+        box = self.box
+        d, m = points.shape
+        if d != self.d:
+            if d == 1 and m == self.d:
+                # points was passed in as a row vector
+                points = np.reshape(points, (self.d, 1))
+                m = 1
             else:
-                # loop over points
-                for i in range(m):
-                    diff = self.dataset - points[:, i, np.newaxis]
-                    diff = diff.T
-                    diff -= (diff>box/2.) * box
-                    diff += (diff<-box/2.) * box
-                    diff = diff.T
-                    tdiff = np.dot(self.inv_cov, diff)
-                    energy = np.sum(diff * tdiff, axis=0) / 2.0
-                    result[i] = np.sum(np.exp(-energy), axis=0)
+                msg = "points have dimension %s, dataset has dimension %s" % (
+                    d, self.d)
+                raise ValueError(msg)
 
-            result = result / self._norm_factor
+        result = np.zeros((m,), dtype=float)
 
-            return result
+        if m >= self.n:
+            # there are more points than data, so loop over data
+            for i in range(self.n):
+                diff = self.dataset[:, i, np.newaxis] - points
+                diff = diff.T
+                diff -= (diff > box / 2.) * box
+                diff += (diff < -box / 2.) * box
+                diff = diff.T
+                tdiff = np.dot(self.inv_cov, diff)
+                energy = np.sum(diff * tdiff, axis=0) / 2.0
+                result = result + np.exp(-energy)
+        else:
+            # loop over points
+            for i in range(m):
+                diff = self.dataset - points[:, i, np.newaxis]
+                diff = diff.T
+                diff -= (diff > box / 2.) * box
+                diff += (diff < -box / 2.) * box
+                diff = diff.T
+                tdiff = np.dot(self.inv_cov, diff)
+                energy = np.sum(diff * tdiff, axis=0) / 2.0
+                result[i] = np.sum(np.exp(-energy), axis=0)
+
+        result = result / self._norm_factor
+
+        return result
 
 
 def density_map(pos, grid, sigma, box):

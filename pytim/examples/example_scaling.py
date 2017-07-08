@@ -13,6 +13,7 @@ if LooseVersion(mda.__version__) > LooseVersion('0.15'):
 else:
     exit()
 
+
 def plot():
     data = np.loadtxt('timings.dat')
     size = np.array(data[:, 0])

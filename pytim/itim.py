@@ -27,7 +27,7 @@ class Surface(surface.Surface):
 
         elevation = np.zeros(len(positions))
 
-        self._initialize_distance_interpolator_flat(layer = self._layer)
+        self._initialize_distance_interpolator_flat(layer=self._layer)
         upper_interp = self._interpolator[0](upper_set[:, 0:2])
         lower_interp = self._interpolator[1](lower_set[:, 0:2])
 
@@ -196,7 +196,8 @@ class ITIM(pytim.PYTIM):
         pytim.PatchTrajectory(universe.trajectory, self)
 
         self._assign_layers()
-        self._atoms = self.LayerAtomGroupFactory(self._layers[:].sum().indices, self.universe)
+        self._atoms = self.LayerAtomGroupFactory(
+            self._layers[:].sum().indices, self.universe)
 
     def _assign_mesh(self):
         """determine a mesh size for the testlines that is compatible with the
@@ -406,10 +407,11 @@ class ITIM(pytim.PYTIM):
         for nlayer, layer in enumerate(self._layers[0]):
             self._surfaces[nlayer] = Surface(self, options={'layer': nlayer})
 
-        if self.do_center == False: #NOTE: do_center requires centering in the middle of the box
-                                    #      ITIM always centers internally in the origin along the normal
+        if self.do_center == False:  # NOTE: do_center requires centering in the middle of the box
+                                    # ITIM always centers internally in the
+                                    # origin along the normal
             self.universe.atoms.positions = self.original_positions
         else:
-            self._shift_positions_to_middle() 
+            self._shift_positions_to_middle()
 
 #

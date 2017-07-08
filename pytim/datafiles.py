@@ -169,10 +169,12 @@ pytim_data.add('WATERSMALL_GRO',  'config', 'GRO',
                'small SPC water/vapour interface')
 
 WATER_520K_GRO = resource_filename('pytim', 'data/water_520K.gro')
-pytim_data.add('WATER_520K_GRO',  'config', 'GRO', 'SPC/E water/vapour interface, 520K')
+pytim_data.add('WATER_520K_GRO',  'config', 'GRO',
+               'SPC/E water/vapour interface, 520K')
 
 WATER_550K_GRO = resource_filename('pytim', 'data/water_550K.gro')
-pytim_data.add('WATER_550K_GRO',  'config', 'GRO', 'SPC/E water/vapour interface, 550K')
+pytim_data.add('WATER_550K_GRO',  'config', 'GRO',
+               'SPC/E water/vapour interface, 550K')
 
 METHANOL_GRO = resource_filename('pytim', 'data/methanol.gro')
 pytim_data.add('METHANOL_GRO',  'conf', 'GRO', 'methanol/vapour interface')
