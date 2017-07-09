@@ -43,7 +43,7 @@ setup(
     long_description=long_description,
 
     # The project's main homepage.
-    url='http://marcello-sega.github.io/gitim/',
+    url='https://github.com/Marcello-Sega/pytim',
 
     # Author details
     author='Marcello Sega, Balazs Fabian, Gyorgy Hantal, Pal Jedlovszky',
