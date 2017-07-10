@@ -175,8 +175,8 @@ class GITIM(pytim.PYTIM):
         nrealpoints = len(points)
         np.random.seed(0)  # pseudo-random for reproducibility
         gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
-        extrapoints, extraids = utilities.generate_periodic_border_3d(
-            points, box, delta
+        extrapoints, extraids = utilities.generate_periodic_border(
+            points, box, delta,method='3d'
         )
         # add points at the vertices of the expanded (by 2 alpha) box
         for dim in range(8):

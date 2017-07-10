@@ -389,8 +389,8 @@ class LayerTriangulation(Observable):
        >>> surface   = observables.LayerTriangulation(\
                            interface,return_triangulation=False)
        >>> stats     = surface.compute()
-       >>> print ("Surface= {:04.1f} A^2".format(stats[0]))
-       Surface= 6750.7 A^2
+       >>> print ("Surface= {:04.0f} A^2".format(stats[0]))
+       Surface= 6751 A^2
 
     """
 
@@ -608,30 +608,30 @@ class Profile(object):
     >>> from   pytim.datafiles import *
     >>> from   pytim.observables import Profile
     >>> from matplotlib import pyplot as plt
-    >>> 
+    >>>
     >>> u = mda.Universe(WATER_GRO,WATER_XTC)
     >>> g=u.select_atoms('name OW')
     >>> inter = pytim.ITIM(u,group=g,max_layers=4,centered=True)
     >>>
     >>> Layers=[]
     >>> AIL = inter.atoms.in_layers
-    >>> 
+    >>>
     >>> Layers.append(Profile(u.atoms))
     >>> for n in np.arange(4):
     ...     Layers.append(Profile(AIL[::,n]))
-    >>> 
+    >>>
     >>> for ts in u.trajectory[::50]:
     ...     for L in Layers:
     ...         L.sample()
-    >>>   
+    >>>
     >>> density=[]
     >>> for L in Layers:
     ...     low,up,avg = L.get_values(binwidth=0.5)
     ...     density.append(avg)
-    >>> 
+    >>>
     >>> np.savetxt('profile.dat',list(zip(low,up,density[0],density[1],density[2],density[3],density[4])))
 
-    This results in the following profile (zooming close to the interface border) 
+    This results in the following profile (zooming close to the interface border)
 
     .. plot::
 

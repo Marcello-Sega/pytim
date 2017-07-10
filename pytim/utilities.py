@@ -273,15 +273,22 @@ def _NN_query(kdtree, position, qrange):
     return kdtree.query_ball_point(position, qrange, n_jobs=-1)
 
 
-def generate_periodic_border_3d(points, box, delta):
+def generate_periodic_border(points, box, delta,method='3d'):
     """ Selects the pparticles within a skin depth delta from the
         simulation box, and replicates them to mimic periodic
         boundary conditions. Returns all points (original +
         periodic copies) and the indices of the original particles
     """
     extrapoints = np.copy(points)
+
+    if method is '2d':
+        shifts = np.array([el+(0,) for el in list(itertools.product([1, -1, 0],
+                                                  repeat=2))])
+    else:
+        shifts = np.array(list(itertools.product([1, -1, 0], repeat=3)))
+
     extraids = np.arange(len(points), dtype=np.int)
-    for shift in np.array(list(itertools.product([1, -1, 0], repeat=3))):
+    for shift in shifts:
         if(np.sum(shift * shift)):  # avoid [0,0,0]
             # this needs some explanation:
             # if shift ==0  -> the condition is always true
