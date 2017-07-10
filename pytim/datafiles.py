@@ -20,6 +20,7 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 
     >>> for config in sorted(pytim_data.config):
     ...     print("{:20s} {:s}".format(config,pytim_data.description[config]))
+    CCL4_WATER_GRO       carbon tetrachloride / water mixture
     FULLERENE_PDB        fullerene
     MICELLE_PDB          DPC micelle
     WATERSMALL_GRO       small SPC water/vapour interface
@@ -54,6 +55,7 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 """
 
 __all__ = [
+    "CCL4_WATER_GRO",        # GROMACS single frame, carbon tetrachloride / water interface
     "WATER_GRO",             # GROMACS single frame, water/vapour interface
     "WATER_PDB",             # PDB single frame, water/vapour interface, same as WATER_GRO
     "WATER_XYZ",             # XYZ single frame, water/vapour interface, same as WATER_GRO
@@ -149,6 +151,9 @@ pytim_data = Data()
 
 # NOTE: to add a new datafile, make sure it is listed in setup.py (in the root directory)
 # in the package_data option (a glob like 'data/*' is usually enough)
+CCL4_WATER_GRO = resource_filename('pytim', 'data/ccl4-h2o.gro')
+pytim_data.add('CCL4_WATER_GRO',  'config', 'GRO', 'Carbon tetrachloride/TIP4p water interface')
+
 WATER_GRO = resource_filename('pytim', 'data/water.gro')
 pytim_data.add('WATER_GRO',  'config', 'GRO', 'SPC water/vapour interface')
 
