@@ -56,6 +56,15 @@ You could use GITIM, or the Willard-Chandler method, look here:
 
 # How to install the package and the documentation? 
 
+## From the PyPI
+
+this will install the latest release present on the Python Package Index:
+
+```
+pip install --user --upgrade pytim
+```
+
+## From Github
 1. Make sure you have an up-to-date version of cython, numpy, scipy and MDAnalysis:
 
 ``` 
