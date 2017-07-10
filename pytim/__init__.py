@@ -19,34 +19,37 @@ def PatchTrajectory(trajectory, interface):
         this patch makes makes the layer assignement being automatically
         called whenever a new frame is loaded.
     """
-    trajectory.interface = interface
-    trajectory.original_read_next_timestep = trajectory._read_next_timestep
+    try:
+        trajectory.interface
+    except:
+        trajectory.interface = interface
+        trajectory.original_read_next_timestep = trajectory._read_next_timestep
 
-    if LooseVersion(interface._MDAversion) >= LooseVersion('0.16'):
-        trajectory.original_read_frame_with_aux = trajectory._read_frame_with_aux
-    else:
-        trajectory.original_read_frame_with_aux = None
+        if LooseVersion(interface._MDAversion) >= LooseVersion('0.16'):
+            trajectory.original_read_frame_with_aux = trajectory._read_frame_with_aux
+        else:
+            trajectory.original_read_frame_with_aux = None
 
-    class PatchedTrajectory(trajectory.__class__):
+        class PatchedTrajectory(trajectory.__class__):
 
-        def _read_next_timestep(self, ts=None):
-            tmp = self.original_read_next_timestep(ts=ts)
-            self.interface._assign_layers()
-            return tmp
-
-        def _read_frame_with_aux(self, frame):
-            if frame != self.frame:
-                tmp = self.original_read_frame_with_aux(frame)
+            def _read_next_timestep(self, ts=None):
+                tmp = self.original_read_next_timestep(ts=ts)
                 self.interface._assign_layers()
                 return tmp
-            return self.ts
 
-    oldname = trajectory.__class__.__name__
-    oldmodule = trajectory.__class__.__module__
+            def _read_frame_with_aux(self, frame):
+                if frame != self.frame:
+                    tmp = self.original_read_frame_with_aux(frame)
+                    self.interface._assign_layers()
+                    return tmp
+                return self.ts
 
-    PatchedTrajectory.__name__ = oldname
-    PatchedTrajectory.__module__ = oldmodule
-    trajectory.__class__ = PatchedTrajectory
+        oldname = trajectory.__class__.__name__
+        oldmodule = trajectory.__class__.__module__
+
+        PatchedTrajectory.__name__ = oldname
+        PatchedTrajectory.__module__ = oldmodule
+        trajectory.__class__ = PatchedTrajectory
 
 
 def _create_property(property_name, docstring=None,

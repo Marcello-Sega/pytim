@@ -20,7 +20,7 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 
     >>> for config in sorted(pytim_data.config):
     ...     print("{:20s} {:s}".format(config,pytim_data.description[config]))
-    CCL4_WATER_GRO       carbon tetrachloride / water mixture
+    CCL4_WATER_GRO       Carbon tetrachloride/TIP4p water interface
     FULLERENE_PDB        fullerene
     MICELLE_PDB          DPC micelle
     WATERSMALL_GRO       small SPC water/vapour interface
@@ -75,12 +75,37 @@ __all__ = [
 
 
 from pkg_resources import resource_filename
+import tempfile
+import os.path
 import re as re
-
+import urllib
+import hashlib
+import tempfile
 
 class Data(object):
     """" a class for storing/accessing configurations, trajectories, topologies
     """
+
+    def fetch(self,name):
+        filename =  name.replace("_", ".")
+        dirname = tempfile.gettempdir()
+        urlbase_md5 = 'https://raw.githubusercontent.com/Marcello-Sega/pytim/extended_datafiles/files/'
+        urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'
+        try:
+            md5 = urllib.urlopen(urlbase_md5+filename+'.MD5').readline()
+            print "checking presence of a cached copy...",
+            md5_local =hashlib.md5(open(dirname+filename, 'rb').read()).hexdigest()
+            if md5_local in md5:
+                print "found"
+                return dirname+filename
+        except:
+            pass
+        print "not found. Fetching remote file...",
+        newfile = urllib.urlopen(urlbase+filename+'?raw=true')
+        with open(dirname+filename,'wb') as output:
+            output.write(newfile.read())
+        print "done."
+        return dirname+filename
 
     def _generate_data_property(self, name):
         labels = [label for label, val in self.type.iteritems() if val == name]
@@ -151,7 +176,7 @@ pytim_data = Data()
 
 # NOTE: to add a new datafile, make sure it is listed in setup.py (in the root directory)
 # in the package_data option (a glob like 'data/*' is usually enough)
-CCL4_WATER_GRO = resource_filename('pytim', 'data/ccl4-h2o.gro')
+CCL4_WATER_GRO = resource_filename('pytim', 'data/CCL4.H2O.GRO')
 pytim_data.add('CCL4_WATER_GRO',  'config', 'GRO', 'Carbon tetrachloride/TIP4p water interface')
 
 WATER_GRO = resource_filename('pytim', 'data/water.gro')

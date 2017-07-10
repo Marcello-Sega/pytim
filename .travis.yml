@@ -3,6 +3,7 @@ language: python
 branches:
   except:
   - dev
+  - extended_datafiles
 
 
 matrix:

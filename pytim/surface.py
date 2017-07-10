@@ -9,7 +9,7 @@ from pytim import utilities
 
 
 class Surface(object):
-    """ Everything about the continuum description of surfaces. 
+    """ Everything about the continuum description of surfaces.
 
         Any implementation must provide the following methods:
 
@@ -46,16 +46,16 @@ class Surface(object):
 
     @abstractproperty
     def triangulation(self):
-        """ return a scipy.spatial.qhull.Delaunay triangulation 
+        """ return a scipy.spatial.qhull.Delaunay triangulation
             of the surface
         """
         return triangulation
 
     @abstractproperty
     def regular_grid(self):
-        """ returns the points defining the regular grid in 2 dimensions, and 
-            the elevation values evaluated at the grid points 
-            (like the input of scipy.interpolate.RegularGridInterpolator ) 
+        """ returns the points defining the regular grid in 2 dimensions, and
+            the elevation values evaluated at the grid points
+            (like the input of scipy.interpolate.RegularGridInterpolator )
         """
         return (x, y), elevations
 
@@ -127,9 +127,11 @@ class Surface(object):
 
         upper = self.interface._layers[0][layer]
         lower = self.interface._layers[1][layer]
-
-        upperpos = self.interface._generate_periodic_border_2d(upper)
-        lowerpos = self.interface._generate_periodic_border_2d(lower)
+        delta = self.interface.alpha * 4.0 + 1e-6
+        upperpos = utilities.generate_periodic_border(upper.positions, box,
+                                                      delta, method='2d')[0]
+        lowerpos = utilities.generate_periodic_border(lower.positions, box,
+                                                      delta, method='2d')[0]
 
         self.surf_triang = [None, None]
         self.trimmed_surf_triangs = [None, None]
@@ -147,12 +149,21 @@ class Surface(object):
         return self.surf_triang
 
     def _distance_flat(self, positions):
-        elevation = self.interpolation(positions)
+        box = self.interface.universe.dimensions[:3]
+
+        pos = np.copy(positions)
+
+        cond=np.where(pos[:,0:2]>box[0:2])
+        pos[cond]-=box[cond[1]]
+        cond=np.where(pos[:,0:2]<0*box[0:2])
+        pos[cond]+=box[cond[1]]
+
+        elevation = self.interpolation(pos)
         if not (np.sum(np.isnan(elevation)) == 0):
             raise Warning("Internal error: a point has fallen outside"
                           "the convex hull")
         # positive values are outside the surface, negative inside
-        distance = (positions[:, 2] - elevation) * np.sign(positions[:, 2])
+        distance = (pos[:, 2] - elevation) * np.sign(pos[:, 2])
         return distance
 
     def _initialize_distance_interpolator_flat(self, layer):
