@@ -6,10 +6,10 @@
 """
 
 import numpy as np
-from scipy.spatial import Delaunay
 from scipy.spatial import distance
 from pytim import utilities
 import pytim
+from pytetgen import Delaunay 
 
 
 class GITIM(pytim.PYTIM):
@@ -25,8 +25,6 @@ class GITIM(pytim.PYTIM):
                                        (from GROMOS 43a1) will be used.
         :param int max_layers:         the number of layers to be identified
         :param bool info:              print additional info
-        :param bool multiproc:         parallel version (default: True. \
-                                       Switch off for debugging)
 
         Example:
 
@@ -43,7 +41,7 @@ class GITIM(pytim.PYTIM):
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print repr(layer)
-        <AtomGroup with 559 atoms>
+        <AtomGroup with 565 atoms>
 
     """
     _surface = None
@@ -62,7 +60,6 @@ class GITIM(pytim.PYTIM):
             molecular=True,
             extra_cluster_groups=None,
             info=False,
-            multiproc=True,
             centered=False,
             **kargs):
 
@@ -87,13 +84,10 @@ class GITIM(pytim.PYTIM):
         if(self.symmetry == 'planar'):
             sanity.assign_normal(normal)
 
-        self.grid = None
-        self.use_threads = False
-        self.use_kdtree = True
-        self.use_multiproc = multiproc
-
         pytim.PatchTrajectory(universe.trajectory, self)
+
         self._assign_layers()
+
         self._atoms = self.LayerAtomGroupFactory(
             self._layers[:].sum().indices, self.universe)
 
@@ -152,7 +146,8 @@ class GITIM(pytim.PYTIM):
                 # out of points alinged in the plane
                 return 0
             else:
-                raise
+                raise RuntimeError(err.message)
+
         v = r_i[1] - r_i[0]
 
         A = - (rad_i[0] - np.dot(u, v))
@@ -179,21 +174,14 @@ class GITIM(pytim.PYTIM):
             points, box, delta,method='3d'
         )
         # add points at the vertices of the expanded (by 2 alpha) box
-        for dim in range(8):
-                # [0,0,0],[0,0,1],[0,1,0],...,[1,1,1]
-            tmp = np.array(
-                np.array(
-                    list(
-                        np.binary_repr(
-                            dim,
-                            width=3)),
-                    dtype=np.int8),
-                dtype=np.float)
-            tmp *= (box + delta)
-            tmp += gitter[dim]  # added to prevent coplanar points
-            tmp[tmp < box / 2.] -= delta
-            tmp = np.reshape(tmp, (1, 3))
-            extrapoints = np.append(extrapoints, tmp, axis=0)
+        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0], 
+                                  [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], 
+                                  [1.0, 1.0, 0.0], [1.0, 1.0, 1.0]])
+        for dim,vertex in enumerate(cube_vertices):
+            vertex = vertex * box + delta + gitter[dim] # added to prevent coplanar points
+            vertex [vertex < box / 2.] -= 2*delta
+            vertex = np.reshape(vertex, (1, 3))
+            extrapoints = np.append(extrapoints, vertex, axis=0)
             extraids = np.append(extraids, -1)
 
         # print utilities.lap()
@@ -236,7 +224,6 @@ class GITIM(pytim.PYTIM):
         self.label_group(self.cluster_group.atoms, 0.0)
 
         size = len(self.cluster_group.positions)
-        self._seen = np.zeros(size, dtype=np.int8)
 
         alpha_ids = self.alpha_shape(self.alpha)
 
