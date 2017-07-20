@@ -92,7 +92,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=['MDAnalysis>=0.15','PyWavelets>=0.5.2','numpy>=1.12.0',
                       'scipy>=0.18','scikit-image>=0.13.0','cython>=0.24.1',
-                      'sphinx>=1.4.3','matplotlib','pytetgen>=0.1.1'],
+                      'sphinx>=1.4.3','matplotlib','pytetgen>=0.1.2'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
