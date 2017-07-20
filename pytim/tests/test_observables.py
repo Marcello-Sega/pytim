@@ -13,6 +13,11 @@ class TestObservables():
     result.
 
     >>> # OBSERVABLES TEST: 1
+    >>> import MDAnalysis as mda
+    >>> import pytim
+    >>> from pytim import observables
+    >>> from pytim.datafiles import * 
+    >>> import numpy as np
     >>> u = mda.Universe(_TEST_ORIENTATION_GRO)
     >>> o = observables.MolecularOrientation(u)
     >>> print(o.compute(u.atoms).flatten())
