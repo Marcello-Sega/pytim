@@ -68,7 +68,7 @@ Some statistics
 It's easy to calculate some simple statistical properties. For example, the percentage of atoms of DPC at the surface is
 
     >>> print "percentage of atoms at the surface: {:.1f}".format(len(inter.layers[0])*100./len(g))
-    percentage of atoms at the surface: 37.4
+    percentage of atoms at the surface: 37.8
 
 This is a rather high percentage, but is due to the small size of the micelle (large surface/volume ratio)
 
@@ -80,26 +80,26 @@ We can also easily find out which atom is more likely to be found at the surface
     ...     surface = np.sum(inter.layers[0].names == name )
     ...     print('{:>4s} ---> {:>2.0f}%'.format(name, surface*100./total))
       C1 ---> 86%
-      C2 ---> 57%
-      C3 ---> 75%
+      C2 ---> 60%
+      C3 ---> 78%
       N4 --->  0%
-      C5 ---> 69%
+      C5 ---> 71%
       C6 ---> 88%
-      O7 ---> 60%
-      P8 --->  0%
-      O9 ---> 72%
+      O7 ---> 57%
+      P8 --->  2%
+      O9 ---> 71%
      O10 ---> 82%
      O11 ---> 49%
-     C12 ---> 34%
-     C13 ---> 38%
-     C14 ---> 12%
+     C12 ---> 32%
+     C13 ---> 40%
+     C14 ---> 15%
      C15 ---> 23%
-     C16 --->  9%
-     C17 ---> 17%
+     C16 ---> 11%
+     C17 ---> 18%
      C18 ---> 11%
      C19 ---> 18%
      C20 ---> 11%
-     C21 ---> 14%
+     C21 ---> 12%
      C22 ---> 17%
      C23 ---> 17%
 
