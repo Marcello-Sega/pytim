@@ -10,6 +10,7 @@ from scipy.spatial import distance
 from pytim import utilities
 import pytim
 from pytetgen import Delaunay 
+#from scipy.spatial import Delaunay
 
 
 class GITIM(pytim.PYTIM):
@@ -41,7 +42,7 @@ class GITIM(pytim.PYTIM):
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print repr(layer)
-        <AtomGroup with 565 atoms>
+        <AtomGroup with 547 atoms>
 
     """
     _surface = None
@@ -61,8 +62,11 @@ class GITIM(pytim.PYTIM):
             extra_cluster_groups=None,
             info=False,
             centered=False,
+            _noextrapoints = False,
             **kargs):
 
+        # this is just for debugging/testing
+        self._noextrapoints = _noextrapoints
         self.do_center = centered
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(universe)
@@ -75,7 +79,6 @@ class GITIM(pytim.PYTIM):
         self.normal = None
         self.PDB = {}
         self.molecular = molecular
-
         sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
         sanity.assign_radii(radii_dict)
 
@@ -126,19 +129,21 @@ class GITIM(pytim.PYTIM):
 
         points = self.triangulation.points
         radii = self.triangulation.radii
-
+    
         R = []
         r_i = points[simplex]
         rad_i = radii[simplex]
-        d = (rad_i[0] - rad_i)[1:]
-        M = (r_i[0] - r_i)[1:]
 
-        # r_i2 = np.sum(r_i**2, axis=1)
-        # d_2 = d**2
-        # s = ((r_i2[0] - r_i2[1:] - d_2[0] + d_2)) / 2.
-
+        d = (rad_i[0] - rad_i[1:])
+        M = (r_i[0] - r_i[1:])
+    
+        r_i2 = np.sum(r_i**2, axis=1)
+        rad_i2 = rad_i**2
+        s = (r_i2[0] - r_i2[1:] - rad_i2[0] + rad_i2[1:]) / 2.
         try:
-            u = np.dot(np.linalg.inv(M), d)
+            invM = np.linalg.inv(M)
+            u = np.dot(invM, d)
+            v = r_i[0] - np.dot(invM,s)
         except np.linalg.linalg.LinAlgError as err:
             if 'Singular matrix' in err.message:
                 print "Warning, singular matrix for ", r_i
@@ -148,19 +153,26 @@ class GITIM(pytim.PYTIM):
             else:
                 raise RuntimeError(err.message)
 
-        v = r_i[1] - r_i[0]
-
-        A = - (rad_i[0] - np.dot(u, v))
-        B = np.linalg.norm(rad_i[0] * u + v)
-        C = 1 - np.sum(u**2)
+        u2 = np.sum(u**2)
+        v2 = np.sum(v**2)
+        uv = np.sum(u*v)
+        A =  (rad_i[0] - uv )
+        arg =  (rad_i[0] - uv)**2 -  (u2-1)*(v2-rad_i2[0])
+        if arg < 0:
+            return 0.0
+        B = np.sqrt(arg)
+        C = u2 -1
         R.append((A + B) / C)
         R.append((A - B) / C)
+        r_i = np.roll(r_i,1)
+        rad_i = np.roll(rad_i,1)
+    
         R = np.array(R)
-        positive_rad = R[R >= 0]
-        if positive_rad.size == 1:
-            return np.min(positive_rad)
-        else:
+        if R[0]<0 and R[1] < 0 :
             return 0.0
+        return np.min(R[R>=0])
+
+
 
     def alpha_shape(self, alpha):
         # print  utilities.lap()
@@ -170,20 +182,24 @@ class GITIM(pytim.PYTIM):
         nrealpoints = len(points)
         np.random.seed(0)  # pseudo-random for reproducibility
         gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
-        extrapoints, extraids = utilities.generate_periodic_border(
-            points, box, delta,method='3d'
-        )
+        if self._noextrapoints == False:
+            extrapoints, extraids = utilities.generate_periodic_border(
+                points, box, delta,method='3d'
+            )
+        else:
+            extrapoints = np.copy(points)
+            extraids = np.arange(len(points), dtype=np.int)
         # add points at the vertices of the expanded (by 2 alpha) box
         cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0], 
                                   [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], 
                                   [1.0, 1.0, 0.0], [1.0, 1.0, 1.0]])
-        for dim,vertex in enumerate(cube_vertices):
-            vertex = vertex * box + delta + gitter[dim] # added to prevent coplanar points
-            vertex [vertex < box / 2.] -= 2*delta
-            vertex = np.reshape(vertex, (1, 3))
-            extrapoints = np.append(extrapoints, vertex, axis=0)
-            extraids = np.append(extraids, -1)
-
+        if self._noextrapoints == False:
+            for dim,vertex in enumerate(cube_vertices):
+                vertex = vertex * box + delta + gitter[dim] # added to prevent coplanar points
+                vertex [vertex < box / 2.] -= 2*delta
+                vertex = np.reshape(vertex, (1, 3))
+                extrapoints = np.append(extrapoints, vertex, axis=0)
+                extraids = np.append(extraids, -1)
         # print utilities.lap()
         self.triangulation = Delaunay(extrapoints)
         self.triangulation.radii = np.append(
@@ -191,19 +207,16 @@ class GITIM(pytim.PYTIM):
         # print utilities.lap()
 
         prefiltered = self.alpha_prefilter(self.triangulation, alpha)
-
         # print utilities.lap()
+
         a_shape = prefiltered[np.array([self.circumradius(
             simplex) >= self.alpha for simplex in prefiltered])]
-
         # print utilities.lap()
         _ids = np.unique(a_shape.flatten())
-
         # remove the indices corresponding to the 8 additional points, which
         # have extraid==-1
         ids = _ids[np.logical_and(_ids >= 0, _ids < nrealpoints)]
 
-        # print utilities.lap()
         return ids
 
     def _assign_layers(self):
