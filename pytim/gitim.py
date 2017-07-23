@@ -116,11 +116,11 @@ class GITIM(pytim.PYTIM):
     def alpha_prefilter(triangulation, alpha):
         t = triangulation
         threshold = 2. * alpha
-        return t.simplices[[np.max(distance.cdist(t.points[simplex],
+        return t.simplices[ np.array([np.max(distance.cdist(t.points[simplex],
                                                   t.points[simplex],
                                                   'euclidean')) >=
                             threshold + 2. * np.min(t.radii[simplex])
-                            for simplex in t.simplices]]
+                            for simplex in t.simplices])]
 
     def circumradius(self, simplex):
 
@@ -193,8 +193,8 @@ class GITIM(pytim.PYTIM):
         prefiltered = self.alpha_prefilter(self.triangulation, alpha)
 
         # print utilities.lap()
-        a_shape = prefiltered[[self.circumradius(
-            simplex) >= self.alpha for simplex in prefiltered]]
+        a_shape = prefiltered[np.array([self.circumradius(
+            simplex) >= self.alpha for simplex in prefiltered])]
 
         # print utilities.lap()
         _ids = np.unique(a_shape.flatten())
