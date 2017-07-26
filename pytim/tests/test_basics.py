@@ -48,7 +48,12 @@ class TestBasics():
     Traceback (most recent call last):
         ...
     ValueError: parameter alpha must be smaller than the smaller box side
-
+    
+    >>> # TESTS multiproc=False 
+    >>> interface = pytim.ITIM(u,alpha=2.0,multiproc=False)
+    >>> print len(interface.layers[0,0])
+    780
+    
     >>> # PDB FILE FORMAT
     >>> import MDAnalysis as mda
     >>> import pytim
