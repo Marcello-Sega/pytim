@@ -131,7 +131,9 @@ Some of the most common issues are the following:
 
 **Solution**: use `export ARCHFLAGS='-arch x86_64'` before installing
 
+**Problem**: I'm getting an annoying message like "UserWarning: Module pytim_dbscan was already imported from [...]"
 
+**Solution**: You've installed pytim, and are launching python within the pytim package directory. Move away from there :)
 
 # OK, but what is ITIM / GITIM more in detail?  
 <img src="https://raw.githubusercontent.com/Marcello-Sega/gitim/ITIM/media/soot1small.png" width="180" align="right" style="z-index:999;">
