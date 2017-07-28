@@ -62,6 +62,7 @@ class GITIM(pytim.PYTIM):
             extra_cluster_groups=None,
             info=False,
             centered=False,
+            warnings = False,
             _noextrapoints = False,
             **kargs):
 
@@ -69,7 +70,7 @@ class GITIM(pytim.PYTIM):
         self._noextrapoints = _noextrapoints
         self.do_center = centered
         sanity = pytim.SanityCheck(self)
-        sanity.assign_universe(universe)
+        sanity.assign_universe(universe,radii_dict=radii_dict,warnings=warnings)
         sanity.assign_alpha(alpha)
 
         self.cluster_threshold_density = cluster_threshold_density
@@ -80,7 +81,7 @@ class GITIM(pytim.PYTIM):
         self.PDB = {}
         self.molecular = molecular
         sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
-        sanity.assign_radii(radii_dict)
+        sanity.assign_radii()
 
         self._assign_symmetry(symmetry)
 
