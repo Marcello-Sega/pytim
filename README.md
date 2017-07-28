@@ -21,6 +21,10 @@ Browse the examples in the online manual:
 
 3. [Pytim Online Manual](https://marcello-sega.github.io/pytim/quick.html)
 
+Check out the Pytim Poster from the 10th Liquid Matter Conference 
+
+4. [Available on ResearchGate](http://dx.doi.org/10.13140/RG.2.2.18613.17126)  DOI:10.13140/RG.2.2.18613.17126
+
 # What is Pytim?
 
 [Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. So far the following methods have been implemented:
@@ -78,6 +82,33 @@ git clone https://github.com/Marcello-Sega/pytim.git
 cd pytim
 python setup.py install --user
 ```
+
+## Setting the `PYTHONPATH` variable
+
+If you instll with the option `--user` (which you have to do if you don't have adminstrator rights) you shouldn't forget to tell python where to look for the module by setting the `PYTHONPATH` environment variable. 
+
+Under Linux, you could do, for example:
+```
+export PYTHONPATH=$HOME/.local/lib/python2.7/site-packages
+```
+
+Under OS-X, instead, use something like:
+```
+export PYTHONPATH=$HOME/Library/Python/2.7/lib/python/site-packages
+```
+
+You can search for the exact path by issuing the following command:
+
+```
+python -c "import site; print(site.USER_SITE)"
+```
+
+If this for some reason doesn't work, get some hint using:
+
+```
+find $HOME -name site-packages
+```
+
 
 # Trouble installing ? 
 
