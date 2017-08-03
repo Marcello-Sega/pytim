@@ -84,7 +84,7 @@ class SanityCheck(object):
 
     def assign_radii(self):
         try:
-            groups = np.copy(self.interface.extra_cluster_groups[:])
+            groups = [ g for g in self.interface.extra_cluster_groups[:] ] 
         except BaseException:
             groups = []
         groups.append(self.interface.itim_group)
@@ -545,7 +545,7 @@ class PYTIM(object):
             >>> import pytim
             >>> import MDAnalysis as mda
             >>> from pytim.datafiles import WATER_GRO
-            >>> u = mda.Universe(WATER_GRO) 
+            >>> u = mda.Universe(WATER_GRO)
             >>> interface = pytim.ITIM(u)
             >>> interface.writepdb('layers.pdb',multiframe=False)
 
@@ -615,8 +615,21 @@ class PYTIM(object):
             # the indices (within the group) of the
             ids_max = np.where(labels == label_max)[0]
             # atoms belonging to the largest cluster
-            self.cluster_group = self.itim_group[ids_max]
-            self.n_neighbors = neighbors
+            if (self.extra_cluster_groups is not None) :
+                extra = np.sum(self.extra_cluster_groups[:])
+                self.extra = extra
+                x_labels, x_counts, x_neighbors =\
+                    utilities.do_cluster_analysis_DBSCAN(
+                        extra, self.cluster_cut[0],
+                        self.universe.dimensions[:6],
+                        self.cluster_threshold_density, self.molecular)
+                x_labels = np.array(x_labels)
+                x_label_max = np.argmax(x_counts)
+                x_ids_other = np.where(x_labels != x_label_max)[0]
+                self.cluster_group = np.sum([ self.itim_group[ids_max], extra[x_ids_other]])
+            else :
+                self.cluster_group = self.itim_group[ids_max]
+                self.n_neighbors = neighbors
         else:
             self.cluster_group = self.itim_group
 
