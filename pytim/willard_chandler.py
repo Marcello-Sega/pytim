@@ -85,7 +85,8 @@ class WillardChandler(pytim.PYTIM):
 
         self.do_center = centered
         sanity = pytim.SanityCheck(self)
-        sanity.assign_universe(universe,radii_dict=radii_dict,warnings=warnings)
+        sanity.assign_universe(
+            universe, radii_dict=radii_dict, warnings=warnings)
         sanity.assign_alpha(alpha)
 
         if mesh <= 0:

@@ -88,7 +88,7 @@ class SanityCheck(object):
         except BaseException:
             groups = []
         groups.append(self.interface.itim_group)
-        total = self.interface.universe.atoms[0:0] # empty group
+        total = self.interface.universe.atoms[0:0]  # empty group
         for g in groups:
             # NOTE: maybe add a switch to use the atom name instead of the type
             if g is not None:
@@ -101,16 +101,15 @@ class SanityCheck(object):
         radii = np.copy(total.radii)
         radii[np.isnan(radii)] = avg
         for nantype in nantypes:
-            self.guessed_radii.update({nantype:avg})
-        total.radii = radii 
+            self.guessed_radii.update({nantype: avg})
+        total.radii = radii
         try:
-            if self.guessed_radii != {} and self.interface.warnings==True :
+            if self.guessed_radii != {} and self.interface.warnings == True:
                 print "guessed radii: ", self.guessed_radii,
-                print "You can override this by using, e.g.: pytim."+self.interface.__class__.__name__ ,
-                print "(u,radii_dic={ '"+self.guessed_radii.keys()[0]+"':1.2 , ... } )"
+                print "You can override this by using, e.g.: pytim." + self.interface.__class__.__name__,
+                print "(u,radii_dic={ '" + self.guessed_radii.keys()[0] + "':1.2 , ... } )"
         except:
             pass
-
 
     def assign_mesh(self, mesh):
         self.interface.target_mesh = mesh
@@ -201,7 +200,7 @@ class SanityCheck(object):
         """
         if name not in dir(universe.atoms):
             missing_class = getattr(self.topologyattrs, classname)
-            if isinstance(value,np.ndarray) or isinstance(value,list):
+            if isinstance(value, np.ndarray) or isinstance(value, list):
                 if len(value) == len(group):
                     values = np.array(value)
                 else:
@@ -218,7 +217,7 @@ class SanityCheck(object):
             if name == 'radii':
                 self.guess_radii()
 
-    def guess_radii(self,group=None):
+    def guess_radii(self, group=None):
         # NOTE: this code depends on the assumption that not-set radii,
         # have the value np.nan (see _missing_attributes() ), so don't change it
         # let's test first which information is available
@@ -231,20 +230,20 @@ class SanityCheck(object):
         universe = self.interface.universe
         if group is None:
             group = self.interface.universe.atoms
-        
+
         nans = np.isnan(group.radii)
         # if no radius is nan, no need to guess anything
-        if not ( np.any(np.equal(group.radii, None)) or np.any(nans)):
-            return 
-        nones = np.equal(group.radii, None)  
-        group.radii[nones] = np.array([np.nan]* len(group.radii[nones]))
+        if not (np.any(np.equal(group.radii, None)) or np.any(nans)):
+            return
+        nones = np.equal(group.radii, None)
+        group.radii[nones] = np.array([np.nan] * len(group.radii[nones]))
         #group.radii = group.radii.astype(np.float32)
 
         group = group[np.isnan(group.radii)]
 
-        have_masses = ( 'masses' in dir(group))
+        have_masses = ('masses' in dir(group))
 
-        have_types = False 
+        have_types = False
         if 'types' in dir(group):
             have_types = True
             try:
@@ -254,7 +253,7 @@ class SanityCheck(object):
                 have_types = False
             except:
                 pass
-                                                                                        
+
         # We give precedence to types
         if have_types:
             radii = np.copy(group.radii)
@@ -263,8 +262,10 @@ class SanityCheck(object):
                     matching_type = get_close_matches(
                         atype, self.interface.radii_dict.keys(), n=1, cutoff=0.1
                     )
-                    radii[group.types == atype] = self.interface.radii_dict[matching_type[0]]
-                    guessed.update({atype:self.interface.radii_dict[matching_type[0]]})
+                    radii[group.types ==
+                          atype] = self.interface.radii_dict[matching_type[0]]
+                    guessed.update(
+                        {atype: self.interface.radii_dict[matching_type[0]]})
                 except:
                     pass
             group.radii = np.copy(radii)
@@ -272,34 +273,36 @@ class SanityCheck(object):
 
         group = group[np.isnan(group.radii)]
 
-        if have_masses: 
+        if have_masses:
             radii = np.copy(group.radii)
             masses = group.masses
             types = group.types
             unique_masses = np.unique(masses)
-            #Let's not consider atoms with zero mass.
-            unique_masses = unique_masses[unique_masses>0]
+            # Let's not consider atoms with zero mass.
+            unique_masses = unique_masses[unique_masses > 0]
             d = utilities.atomic_mass_map
             for target_mass in unique_masses:
-                atype , mass = min(d.items(), key=lambda (_, v): abs(v - target_mass))
+                atype, mass = min(d.items(), key=lambda (
+                    _, v): abs(v - target_mass))
                 try:
                     matching_type = get_close_matches(
                         atype, self.interface.radii_dict.keys(), n=1, cutoff=0.1
                     )
-                    
-                    radii[masses == target_mass ] = self.interface.radii_dict[matching_type[0]]
 
-                    [guessed.update({t:self.interface.radii_dict[matching_type[0]]}) for t in types[masses == target_mass]]
+                    radii[masses == target_mass] = self.interface.radii_dict[matching_type[0]]
+
+                    [guessed.update({t: self.interface.radii_dict[matching_type[0]]})
+                     for t in types[masses == target_mass]]
                 except:
                     pass
             group.radii = radii
         self.guessed_radii.update(guessed)
 
-    def assign_universe(self, universe,radii_dict=None,warnings=False):
+    def assign_universe(self, universe, radii_dict=None, warnings=False):
         try:
             self.interface.all_atoms = universe.select_atoms('all')
             self.interface.radii_dict = tables.vdwradii.copy()
-            self.interface.warnings = warnings 
+            self.interface.warnings = warnings
             if radii_dict is not None:
                 self.interface.radii_dict.update(radii_dict)
         except BaseException:

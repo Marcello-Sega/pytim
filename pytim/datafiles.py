@@ -73,7 +73,7 @@ __all__ = [
     "WATER_XTC",             # GROMACS trajectory, 100 frames, water/vapour interface
     "G43A1_TOP",             # GROMOS 43a1 nonbonded parameters, from gromacs distribution
     "pytim_data",            # class to access the data
-    "_TEST_ORIENTATION_GRO", # test file
+    "_TEST_ORIENTATION_GRO",  # test file
     "_TEST_PROFILE_GRO",  # test file
 ]
 
@@ -86,30 +86,32 @@ import urllib
 import hashlib
 import tempfile
 
+
 class Data(object):
     """" a class for storing/accessing configurations, trajectories, topologies
     """
 
-    def fetch(self,name):
-        filename =  name.replace("_", ".")
+    def fetch(self, name):
+        filename = name.replace("_", ".")
         dirname = tempfile.gettempdir()
         urlbase_md5 = 'https://raw.githubusercontent.com/Marcello-Sega/pytim/extended_datafiles/files/'
         urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'
         try:
-            md5 = urllib.urlopen(urlbase_md5+filename+'.MD5').readline()
+            md5 = urllib.urlopen(urlbase_md5 + filename + '.MD5').readline()
             print "checking presence of a cached copy...",
-            md5_local =hashlib.md5(open(dirname+filename, 'rb').read()).hexdigest()
+            md5_local = hashlib.md5(
+                open(dirname + filename, 'rb').read()).hexdigest()
             if md5_local in md5:
                 print "found"
-                return dirname+filename
+                return dirname + filename
         except:
             pass
         print "not found. Fetching remote file...",
-        newfile = urllib.urlopen(urlbase+filename+'?raw=true')
-        with open(dirname+filename,'wb') as output:
+        newfile = urllib.urlopen(urlbase + filename + '?raw=true')
+        with open(dirname + filename, 'wb') as output:
             output.write(newfile.read())
         print "done."
-        return dirname+filename
+        return dirname + filename
 
     def _generate_data_property(self, name):
         labels = [label for label, val in self.type.iteritems() if val == name]
@@ -181,13 +183,15 @@ pytim_data = Data()
 # NOTE: to add a new datafile, make sure it is listed in setup.py (in the root directory)
 # in the package_data option (a glob like 'data/*' is usually enough)
 CCL4_WATER_GRO = resource_filename('pytim', 'data/CCL4.H2O.GRO')
-pytim_data.add('CCL4_WATER_GRO',  'config', 'GRO', 'Carbon tetrachloride/TIP4p water interface')
+pytim_data.add('CCL4_WATER_GRO',  'config', 'GRO',
+               'Carbon tetrachloride/TIP4p water interface')
 
 WATER_GRO = resource_filename('pytim', 'data/water.gro')
 pytim_data.add('WATER_GRO',  'config', 'GRO', 'SPC water/vapour interface')
 
 WATER_LMP_XTC = resource_filename('pytim', 'data/water_lmp.xtc')
-pytim_data.add('WATER_LMP_XTC',  'traj', 'LAMMPS', 'SPC water/vapour interface')
+pytim_data.add('WATER_LMP_XTC',  'traj', 'LAMMPS',
+               'SPC water/vapour interface')
 
 WATER_PDB = resource_filename('pytim', 'data/water.pdb')
 pytim_data.add('WATER_PDB',  'config', 'PDB', 'SPC water/vapour interface')
@@ -231,7 +235,8 @@ _TEST_PROFILE_GRO = resource_filename('pytim', 'data/_test_profile.gro')
 pytim_data.add('_TEST_PROFILE_GRO',  'config', 'GRO', 'test file')
 
 WATER_LMP_DATA = resource_filename('pytim', 'data/water_lmp.data')
-pytim_data.add('WATER_LMP_DATA', 'topol', 'DATA', 'LAMMPS topology for WATER_LAMMPS')
+pytim_data.add('WATER_LMP_DATA', 'topol', 'DATA',
+               'LAMMPS topology for WATER_LAMMPS')
 
 # This should be the last line: clean up namespace
 G43A1_TOP = resource_filename('pytim', 'data/ffg43a1.nonbonded.itp')

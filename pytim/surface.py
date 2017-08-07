@@ -153,10 +153,10 @@ class Surface(object):
 
         pos = np.copy(positions)
 
-        cond=np.where(pos[:,0:2]>box[0:2])
-        pos[cond]-=box[cond[1]]
-        cond=np.where(pos[:,0:2]<0*box[0:2])
-        pos[cond]+=box[cond[1]]
+        cond = np.where(pos[:, 0:2] > box[0:2])
+        pos[cond] -= box[cond[1]]
+        cond = np.where(pos[:, 0:2] < 0 * box[0:2])
+        pos[cond] += box[cond[1]]
 
         elevation = self.interpolation(pos)
         if not (np.sum(np.isnan(elevation)) == 0):
