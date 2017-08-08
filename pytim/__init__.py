@@ -84,50 +84,29 @@ class SanityCheck(object):
 
     def assign_radii(self, radii_dict):
         try:
-            _groups = np.copy(self.interface.extra_cluster_groups[:])
+            groups = np.copy(self.interface.extra_cluster_groups[:])
         except BaseException:
-            _groups = []
-        _groups.append(self.interface.itim_group)
-        for _g in _groups:
+            groups = []
+        groups.append(self.interface.itim_group)
+        if radii_dict is None:
+            radii_dict = tables.vdwradii
+        avg = np.average(radii_dict.values())
+        for g in groups:
             # NOTE: maybe add a switch to use the atom name instead of the type
-            if _g is not None:
-                _types = np.copy(_g.types)
-                if not (np.any(np.equal(_g.radii, None)) or
-                        np.any(np.isnan(_g.radii))):  # all radii already set
-                    break
-                if radii_dict is None:
-                    # some radii are not set and no dict provided
-                    _radii_dict = tables.vdwradii
-                else:  # use the provided dict.
-                    _radii_dict = radii_dict
-
-                _radii = np.zeros(len(_g.types))
-                for _atype in np.unique(_types):
-                    try:
-                        matching_type = get_close_matches(
-                            _atype, _radii_dict.keys(), n=1, cutoff=0.1
-                        )
-                        _radii[_types == _atype] = _radii_dict[matching_type[0]]
-                    except BaseException:
-                        avg = np.average(_radii_dict.values())
-                        _radii[_types == _atype] = avg
-
-                        print("!!                              WARNING")
-                        print("!! No appropriate radius was found for the "
-                              "atomtype " + _atype)
-                        print("!! Using the average radius (" + str(avg) + ") "
-                              "as a fallback option...")
-                        print("!! Pass a dictionary of radii (in Angstrom) "
-                              "with the option radii_dict")
-                        print("!! for example: r={'" + _atype + "':1.2,...} ; "
-                              "inter=pytim.ITIM(u,radii_dict=r)")
-
-                _g.radii = np.copy(_radii[:])
-
-                if np.any(np.equal(_g.radii, None)):
-                    raise ValueError(self.interface.UNDEFINED_RADIUS)
-                del _radii
-                del _types
+            if g is not None:
+                self.guess_radii(group=g, radii_dict = radii_dict)
+                radii = np.copy(g.radii)
+        total = np.sum(groups)
+        nantypes = total.types[np.isnan(total.radii)]
+        radii = np.copy(total.radii)
+        radii[np.isnan(radii)] = avg
+        total.radii = radii 
+        for t in np.unique(nantypes):
+            print( " No radius found for atomtype " + t + 
+                  ". Using the average radius (" + str(avg) + 
+                  "). To change this, pass radii (in Angstrom)"+ 
+                  "with the option radii_dict e.g.: r={'" +  
+                  t + "':1.2,...} ; inter=pytim.ITIM(u,radii_dict=r)")
 
     def assign_mesh(self, mesh):
         self.interface.target_mesh = mesh
@@ -182,6 +161,10 @@ class SanityCheck(object):
                 'MDAnalysis.core.topologyattrs'
             )
             guessers = MDAnalysis.topology.guessers
+            self._check_missing_attribute('names', 'Atomnames', universe.atoms,
+                                          universe.atoms.ids.astype(str), universe)
+            # NOTE _check_missing_attribute() relies on radii being set to np.nan
+            # if the attribute radii is not present
             self._check_missing_attribute('radii', 'Radii', universe.atoms,
                                           np.nan, universe)
             self._check_missing_attribute('tempfactors', 'Tempfactors',
@@ -212,10 +195,15 @@ class SanityCheck(object):
              * Radii -> missing_class
              * radii -> values
         """
-
         if name not in dir(universe.atoms):
             missing_class = getattr(self.topologyattrs, classname)
-            values = np.array([value] * len(group))
+            if isinstance(value,np.ndarray) or isinstance(value,list):
+                if len(value) == len(group):
+                    values = np.array(value)
+                else:
+                    raise RuntimeError("improper array/list length")
+            else:
+                values = np.array([value] * len(group))
             universe.add_TopologyAttr(missing_class(values))
             if name == 'elements':
                 types = MDAnalysis.topology.guessers.guess_types(group.names)
@@ -223,6 +211,74 @@ class SanityCheck(object):
                 # different modules in MDA?
                 group.elements = np.array(
                     [utilities.atomic_number_map.get(t, 0) for t in types])
+            if name == 'radii':
+                self.guess_radii()
+
+    def guess_radii(self,group=None,radii_dict=None):
+        # NOTE: this code depends on the assumption that unset radii,
+        # have the value np.nan (see _missing_attributes() ), so don't change it
+        # let's test first which information is available
+        universe = self.interface.universe
+        if group is None:
+            group = self.interface.universe.atoms
+        
+        nans = np.isnan(group.radii)
+        # if no radius is nan, no need to guess anything
+        if not ( np.any(np.equal(group.radii, None)) or np.any(nans)):
+            return
+        nones = np.equal(group.radii, None)  
+        group.radii[nones] = np.array([np.nan]* len(group.radii[nones]))
+        group.radii = group.radii.astype(np.float32)
+
+        group = group[np.isnan(group.radii)]
+
+        if radii_dict is not None:
+            # extend our dictionary of radii
+            tables.vdwradii.update(radii_dict)
+                                               
+        _radii_dict = tables.vdwradii
+                                                                                        
+        have_masses = ( 'masses' in dir(group))
+
+        have_types = False 
+        if 'types' in dir(group):
+            have_types = True
+            try:
+                # When atom types are str(ints), e.g. lammps ,
+                # we cannot use them to guess radii
+                group.types.astype(int)
+                have_types = False
+            except:
+                pass
+                                                                                        
+        # We give precedence to types
+        if have_types:
+            _radii = np.copy(group.radii)
+            for _atype in np.unique(group.types):
+                try:
+                    matching_type = get_close_matches(
+                        _atype, tables.vdwradii.keys(), n=1, cutoff=0.1
+                    )
+                    _radii[group.types == _atype] = tables.vdwradii[matching_type[0]]
+                except:
+                    pass
+            group.radii = _radii
+        # We fill in the remaining ones using masses information
+        if have_masses: 
+            _radii = np.copy(universe.atoms.radii)
+            _masses = group.masses[np.isnan(_radii)]
+            d = utilities.atomic_mass_map
+            for target_mass in np.unique(_masses):
+                _atype , mass = min(d.items(), key=lambda (_, v): abs(v - target_mass))
+                try:
+                    matching_type = get_close_matches(
+                        _atype, tables.vdwradii.keys(), n=1, cutoff=0.1
+                    )
+                    condition = np.logical_and(np.isnan(_radii) , _masses == target_mass)
+                    _radii[condition] = tables.vdwradii[matching_type[0]]
+                except:
+                    pass
+            group.radii = _radii
 
     def assign_universe(self, universe):
         try:
