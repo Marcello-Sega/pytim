@@ -28,7 +28,7 @@ def PatchTrajectory(trajectory, interface):
         if LooseVersion(interface._MDAversion) >= LooseVersion('0.16'):
             trajectory.original_read_frame_with_aux = trajectory._read_frame_with_aux
         else:
-            trajectory.original_read_frame_with_aux = None
+            raise RuntimeError("MDAnalysis versions < 0.16 are not supported")
 
         class PatchedTrajectory(trajectory.__class__):
 
@@ -79,8 +79,8 @@ class SanityCheck(object):
         self.VERS = LooseVersion(self.interface._MDAversion)
         self.V015 = LooseVersion('0.15')
         self.V016 = LooseVersion('0.16')
-        if self.VERS < self.V015:
-            raise Exception("Must use MDAnalysis  >= 0.15")
+        if self.VERS < self.V016:
+            raise Exception("Must use MDAnalysis  >= 0.16")
 
     def assign_radii(self):
         try:
