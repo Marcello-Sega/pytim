@@ -48,7 +48,7 @@ class Observable(object):
 
     __metaclass__ = ABCMeta
 
-    def __init__(self, universe, options='',):
+    def __init__(self, universe, options=''):
         self.u = universe
         self.options = options
 
@@ -84,7 +84,7 @@ class Observable(object):
         return np.array(pos)
 
     @abstractmethod
-    def compute(self, inp):
+    def compute(self, inp, kargs={}):
         pass
 
 
@@ -154,7 +154,7 @@ class RDF(object):
     def __init__(self, universe,
                  nbins=75, max_radius='full',
                  start=None, stop=None, step=None,
-                 observable=None, observable2=None):
+                 observable=None, observable2=None,kargs1={},kargs2={}):
         if max_radius is 'full':
             self.max_radius = np.min(universe.dimensions[:3])
         else:
@@ -164,6 +164,8 @@ class RDF(object):
         self.universe = universe
         self.nsamples = 0
         self.observable = observable
+        self.kargs1=kargs1
+        self.kargs2=kargs2
         if observable2 is None:
             self.observable2 = observable
         else:
@@ -180,27 +182,43 @@ class RDF(object):
         self.g2 = None
         self._rdf = self.count
 
-    def sample(self, g1=None, g2=None):
+    def sample(self, g1=None, g2=None, kargs1={},kargs2={}):
         self.n_frames += 1
         self.g2 = g2
         if g1 is not None:
             self.g1 = g1
         if g2 is None:
             self.g2 = self.g1  # all atoms by default (see __init__)
-
+        ka1 = self.kargs1.copy()
+        ka1.update(kargs1)
+        ka2 = self.kargs2.copy()
+        ka2.update(kargs2)
         if self.observable is not None:
             # determine weights, otherwise assumes number of atoms (default)
-            fg1 = self.observable.compute(self.g1)
+            try:
+                fg1 = self.observable.compute(self.g1,ka1)
+            except:
+                fg1 = self.observable.compute(self.g1)
+
             if (self.g1 == self.g2 and self.observable == self.observable2):
                 fg2 = fg1
             else:
-                fg2 = self.observable2.compute(self.g2)
+                try:
+                    fg2 = self.observable2.compute(self.g2,ka2)
+                except:
+                    fg2 = self.observable2.compute(self.g2)
 
-            if len(fg1) != len(self.g1) or len(fg2) != len(self.g2):
+            try:
+                error = ( fg1.shape[0] != self.g1.n_atoms or fg2.shape[0] != self.g2.n_atoms)
+            except:
+                error = True
+
+            if error == True:
                 raise Exception(
-                    "Error, the observable passed to RDF should output"
-                    "an array (of scalar or vectors) the same size of"
+                    "Error, the observable passed to RDF should output "
+                    "an array (of scalar or vectors) the same size of "
                     "the group")
+
             # both are (arrays of) scalars
             if len(fg1.shape) == 1 and len(fg2.shape) == 1:
                 _weights = np.outer(fg1, fg2)
@@ -315,10 +333,10 @@ class RDF2D(RDF):
     def __init__(self, universe,
                  nbins=75, max_radius='full',
                  start=None, stop=None, step=None, excluded_dir='auto',
-                 true2D=False, observable=None):
+                 true2D=False, observable=None,kargs1={},kargs2={}):
         RDF.__init__(self, universe, nbins=nbins, max_radius=max_radius,
                      start=start, stop=stop, step=step,
-                     observable=observable)
+                     observable=observable,kargs1=kargs1,kargs2=kargs2)
         _dir = {'x': 0, 'y': 1, 'z': 2}
         self.true2D = true2D
         if excluded_dir == 'auto':
