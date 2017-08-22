@@ -366,6 +366,30 @@ def do_cluster_analysis_DBSCAN(
     return labels, counts, n_neighbors
 
 
+def polygonalArea(points):
+    """ Calculate the area of a polygon from ordered points in 3D space.
+    """
+
+    try:
+        v1 = points[1]-points[0]
+        v2 = points[2]-points[0]
+        n = np.cross(v1,v2)
+    except:
+        raise RuntimeError("Not enough or collinear points in polygonalArea()")
+    n2  = np.sum(n**2)
+    count = 0
+    while n[2]**2/n2<1e-3 and count<3:
+        points =np.roll(points,1,axis=1)
+        n=np.roll(n,1)
+        count += 1
+    if count >=3:
+        Warning("Degenerate surface element encountered")
+        return 0.0
+    points2d = points[:,:2]
+    nz2 = n[2]**2
+    ratio = np.sqrt(n2/nz2)
+    return np.abs(ratio  * np.sum( [0.5, -0.5] * points2d * np.roll( np.roll(points2d, 1, axis=0), 1, axis=1) ) )
+
 def fit_sphere(points):
     """ least square fit of a sphere through a set of points.
 
