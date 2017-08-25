@@ -82,13 +82,14 @@ class ChaconTarazona(pytim.PYTIM):
 
     def __init__(self, universe, alpha=2.0, tau=1.5, group=None,
                  radii_dict=None, max_layers=1, normal='guess', molecular=True,
-                 info=True, mesh=None, centered=False, **kargs):
+                 info=True, mesh=None, centered=False, warnings=False, **kargs):
 
         self.symmetry = 'planar'
         self.do_center = centered
 
         sanity = pytim.SanityCheck(self)
-        sanity.assign_universe(universe)
+        sanity.assign_universe(
+            universe, radii_dict=radii_dict, warnings=warnings)
 
         self.target_mesh = mesh
         if mesh is not None:
@@ -110,7 +111,7 @@ class ChaconTarazona(pytim.PYTIM):
         # TODO implement cluster group
         sanity.assign_groups(group, None, None)
         sanity.assign_normal(normal)
-        sanity.assign_radii(radii_dict)
+        sanity.assign_radii()
 
         self.old_box = np.array([-1, -1, -1])
         self.sorted_indices = None

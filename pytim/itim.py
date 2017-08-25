@@ -165,13 +165,14 @@ class ITIM(pytim.PYTIM):
                  group=None, radii_dict=None, max_layers=1,
                  cluster_cut=None, cluster_threshold_density=None,
                  molecular=True, extra_cluster_groups=None, info=False,
-                 multiproc=True, centered=False, **kargs):
+                 multiproc=True, centered=False, warnings=False, **kargs):
 
         self.symmetry = 'planar'
         self.do_center = centered
 
         sanity = pytim.SanityCheck(self)
-        sanity.assign_universe(universe)
+        sanity.assign_universe(
+            universe, radii_dict=radii_dict, warnings=warnings)
         sanity.assign_alpha(alpha)
         sanity.assign_mesh(mesh)
 
@@ -186,7 +187,7 @@ class ITIM(pytim.PYTIM):
 
         sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
         sanity.assign_normal(normal)
-        sanity.assign_radii(radii_dict)
+        sanity.assign_radii()
 
         self.grid = None
         self.use_threads = False

@@ -81,11 +81,12 @@ class WillardChandler(pytim.PYTIM):
     def __init__(self, universe, alpha=2.0, mesh=2.0, symmetry='spherical',
                  group=None, radii_dict=None,
                  cluster_cut=None, cluster_threshold_density=None,
-                 extra_cluster_groups=None, centered=False, **kargs):
+                 extra_cluster_groups=None, centered=False, warnings=False, **kargs):
 
         self.do_center = centered
         sanity = pytim.SanityCheck(self)
-        sanity.assign_universe(universe)
+        sanity.assign_universe(
+            universe, radii_dict=radii_dict, warnings=warnings)
         sanity.assign_alpha(alpha)
 
         if mesh <= 0:
@@ -95,7 +96,7 @@ class WillardChandler(pytim.PYTIM):
         self.ngrid = None
         self.PDB = {}
 
-        sanity.assign_radii(radii_dict)
+        sanity.assign_radii()
 
         sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
 
