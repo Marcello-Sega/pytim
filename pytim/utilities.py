@@ -283,7 +283,7 @@ def generate_periodic_border(points, box, delta, method='3d'):
 
     if method is '2d':
         shifts = np.array([el + (0,) for el in list(itertools.product([1, -1, 0],
-                                                                      repeat=2))])
+                                                    repeat=2))])
     else:
         shifts = np.array(list(itertools.product([1, -1, 0], repeat=3)))
 

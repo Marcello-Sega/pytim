@@ -86,13 +86,12 @@ import urllib
 import hashlib
 import tempfile
 
-
 class Data(object):
     """" a class for storing/accessing configurations, trajectories, topologies
     """
 
-    def fetch(self, name):
-        filename = name.replace("_", ".")
+    def fetch(self,name):
+        filename =  name.replace("_", ".")
         dirname = tempfile.gettempdir()
         urlbase_md5 = 'https://raw.githubusercontent.com/Marcello-Sega/pytim/extended_datafiles/files/'
         urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'

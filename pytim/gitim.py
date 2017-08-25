@@ -10,8 +10,6 @@ from scipy.spatial import distance
 from pytim import utilities
 import pytim
 from pytetgen import Delaunay
-#from scipy.spatial import Delaunay
-
 
 class GITIM(pytim.PYTIM):
     """Identifies interfacial molecules at macroscopically flat interfaces.
@@ -121,17 +119,17 @@ class GITIM(pytim.PYTIM):
     def alpha_prefilter(triangulation, alpha):
         t = triangulation
         threshold = 2. * alpha
-        return t.simplices[np.array([np.max(distance.cdist(t.points[simplex],
-                                                           t.points[simplex],
-                                                           'euclidean')) >=
-                                     threshold + 2. * np.min(t.radii[simplex])
-                                     for simplex in t.simplices])]
+        return t.simplices[ np.array([np.max(distance.cdist(t.points[simplex],
+                                                  t.points[simplex],
+                                                  'euclidean')) >=
+                            threshold + 2. * np.min(t.radii[simplex])
+                            for simplex in t.simplices])]
 
     def circumradius(self, simplex):
 
         points = self.triangulation.points
         radii = self.triangulation.radii
-
+    
         R = []
         r_i = points[simplex]
         rad_i = radii[simplex]
@@ -190,15 +188,13 @@ class GITIM(pytim.PYTIM):
             extrapoints = np.copy(points)
             extraids = np.arange(len(points), dtype=np.int)
         # add points at the vertices of the expanded (by 2 alpha) box
-        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0],
-                                  [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [
-                                      1.0, 0.0, 1.0],
+        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0], 
+                                  [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], 
                                   [1.0, 1.0, 0.0], [1.0, 1.0, 1.0]])
         if self._noextrapoints == False:
-            for dim, vertex in enumerate(cube_vertices):
-                # added to prevent coplanar points
-                vertex = vertex * box + delta + gitter[dim]
-                vertex[vertex < box / 2.] -= 2 * delta
+            for dim,vertex in enumerate(cube_vertices):
+                vertex = vertex * box + delta + gitter[dim] # added to prevent coplanar points
+                vertex [vertex < box / 2.] -= 2*delta
                 vertex = np.reshape(vertex, (1, 3))
                 extrapoints = np.append(extrapoints, vertex, axis=0)
                 extraids = np.append(extraids, -1)
