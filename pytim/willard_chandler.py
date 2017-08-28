@@ -36,11 +36,18 @@ class WillardChandler(pytim.PYTIM):
     >>>
     >>> radii = pytim_data.vdwradii(G43A1_TOP)
     >>>
-    >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0)
+    >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0, fast=False)
     >>> R, _, _, _ = pytim.utilities.fit_sphere(\
                        interface.triangulated_surface[0])
     >>> print "Radius={:.3f}".format(R)
     Radius=19.325
+
+    >>> # the fast kernel gives a slightly (<0.1 Angstrom) different result
+    >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0, fast=True)
+    >>> R, _, _, _ = pytim.utilities.fit_sphere(\
+                       interface.triangulated_surface[0])
+    >>> print "Radius={:.3f}".format(R)
+    Radius=19.383
 
     """
 
@@ -81,7 +88,7 @@ class WillardChandler(pytim.PYTIM):
     def __init__(self, universe, alpha=2.0, mesh=2.0, symmetry='spherical',
                  group=None, radii_dict=None,
                  cluster_cut=None, cluster_threshold_density=None,
-                 extra_cluster_groups=None, centered=False, warnings=False, **kargs):
+                 extra_cluster_groups=None, centered=False, warnings=False, fast=True, **kargs):
 
         self.do_center = centered
         sanity = pytim.SanityCheck(self)
@@ -104,6 +111,8 @@ class WillardChandler(pytim.PYTIM):
 
         if(self.symmetry == 'planar'):
             sanity.assign_normal(normal)
+
+        self.fast = fast
 
         pytim.PatchTrajectory(universe.trajectory, self)
         self._assign_layers()
@@ -230,7 +239,11 @@ class WillardChandler(pytim.PYTIM):
         grid = utilities.generate_grid_in_box(box, ngrid, order='zyx')
         kernel, _ = utilities.density_map(pos, grid, self.alpha, box)
 
-        self.density_field = kernel.evaluate_pbc(grid)
+        if self.fast == True:
+            kernel.pos = pos.copy()
+            self.density_field = kernel.evaluate_pbc_fast(grid)
+        else:
+            self.density_field = kernel.evaluate_pbc(grid)
 
         # Thomas Lewiner, Helio Lopes, Antonio Wilson Vieira and Geovan
         # Tavares. Efficient implementation of Marching Cubes’ cases with

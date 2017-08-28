@@ -214,6 +214,55 @@ def consecutive_filename(universe, basename, extension):
 
 
 class gaussian_kde_pbc(gaussian_kde):
+    # note that here "points" are those on the grid
+
+    def search(self, p, grid, d):
+        condition_x = np.logical_and(
+            grid[0] > p[0] - d,
+            grid[0] < p[0] + d
+        )
+
+        condition_y = np.logical_and(
+            grid[1] > p[1] - d,
+            grid[1] < p[1] + d
+        )
+        condition_z = np.logical_and(
+            grid[2] > p[2] - d,
+            grid[2] < p[2] + d
+        )
+        condition = np.logical_and(
+            condition_z, np.logical_and(condition_x, condition_y))
+        return np.where(condition)
+
+    def evaluate_pbc_fast(self, points):
+        grid = points
+        pos = self.pos
+        box = self.box
+        d = self.sigma * 2.5
+        results = np.zeros(grid.shape[1], dtype=float)
+        periodic = np.copy(pos)
+
+        for side, condition in enumerate([pos > box - d, pos < d]):
+            pos_ = pos.copy()
+            where = np.where(condition)
+            if side == 0:
+                pos_[where] -= box[where[1]]
+                periodic = np.copy(pos_[np.any(condition, axis=1)])
+            else:
+                pos_[where] += box[where[1]]
+                periodic = np.append(
+                    periodic, pos_[np.any(condition, axis=1)], axis=0)
+            periodic = np.append(pos, periodic, axis=0)
+
+        for p in periodic:
+            ind = self.search(p, grid, d)[0]
+
+            x = grid[0][ind] - p[0]
+            y = grid[1][ind] - p[1]
+            z = grid[2][ind] - p[2]
+            results[ind] += np.exp(-(x**2 + y**2 + z**2) / self.sigma**2 / 2.)
+
+        return results
 
     def evaluate_pbc(self, points):
         """ PBC-enabled version of scipy.stats.gaussian_kde.evaluate()
@@ -266,6 +315,7 @@ def density_map(pos, grid, sigma, box):
     values = np.vstack([pos[::, 0], pos[::, 1], pos[::, 2]])
     kernel = gaussian_kde_pbc(values, bw_method=sigma / values.std(ddof=1))
     kernel.box = box
+    kernel.sigma = sigma
     return kernel, values.std(ddof=1)
 
 
@@ -283,7 +333,7 @@ def generate_periodic_border(points, box, delta, method='3d'):
 
     if method is '2d':
         shifts = np.array([el + (0,) for el in list(itertools.product([1, -1, 0],
-                                                    repeat=2))])
+                                                                      repeat=2))])
     else:
         shifts = np.array(list(itertools.product([1, -1, 0], repeat=3)))
 
@@ -371,24 +421,25 @@ def polygonalArea(points):
     """
 
     try:
-        v1 = points[1]-points[0]
-        v2 = points[2]-points[0]
-        n = np.cross(v1,v2)
+        v1 = points[1] - points[0]
+        v2 = points[2] - points[0]
+        n = np.cross(v1, v2)
     except:
         raise RuntimeError("Not enough or collinear points in polygonalArea()")
-    n2  = np.sum(n**2)
+    n2 = np.sum(n**2)
     count = 0
-    while n[2]**2/n2<1e-3 and count<3:
-        points =np.roll(points,1,axis=1)
-        n=np.roll(n,1)
+    while n[2]**2 / n2 < 1e-3 and count < 3:
+        points = np.roll(points, 1, axis=1)
+        n = np.roll(n, 1)
         count += 1
-    if count >=3:
+    if count >= 3:
         Warning("Degenerate surface element encountered")
         return 0.0
-    points2d = points[:,:2]
+    points2d = points[:, :2]
     nz2 = n[2]**2
-    ratio = np.sqrt(n2/nz2)
-    return np.abs(ratio  * np.sum( [0.5, -0.5] * points2d * np.roll( np.roll(points2d, 1, axis=0), 1, axis=1) ) )
+    ratio = np.sqrt(n2 / nz2)
+    return np.abs(ratio * np.sum([0.5, -0.5] * points2d * np.roll(np.roll(points2d, 1, axis=0), 1, axis=1)))
+
 
 def fit_sphere(points):
     """ least square fit of a sphere through a set of points.
