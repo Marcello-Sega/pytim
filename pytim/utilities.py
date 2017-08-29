@@ -415,10 +415,64 @@ def do_cluster_analysis_DBSCAN(
     dbscan_inner(core_samples, neighborhoods, labels, counts)
     return labels, counts, n_neighbors
 
+def EulerRotation(phi,theta,psi):
+    """ The Euler (3,1,3) rotation matrix
+    
+        :param phi: rotation around the z axis
+        :param theta: rotation around the new x axis
+        :param psi: rotation around the new z axis
+        :returns double: area
+        
+        Example:
+
+        >>> import numpy as np
+        >>> import pytim
+        >>> from pytim.utilities import *
+        >>> np.set_printoptions(suppress=True)
+        >>> print EulerRotation(np.pi/2.,0,0)
+        [[ 0.  1.  0.]
+         [-1.  0.  0.]
+         [ 0. -0.  1.]]
+        >>> np.set_printoptions(suppress=False)
+         
+    """
+    
+    cph = np.cos(phi)
+    cps = np.cos(psi)
+    cth = np.cos(theta)
+    sph = np.sin(phi)
+    sps = np.sin(psi)
+    sth = np.sin(theta)
+    R1=[cph*cps-cth*sph*sps,cps*sph+cth*cph*sps,sth*sps]
+    R2=[-cth*cps*sph-cph*sps,cth*cps*cph-sph*sps,cps*sth]
+    R3=[sth*sph,-cph*sth,cth]
+    return np.array([R1,R2,R3])
 
 def polygonalArea(points):
     """ Calculate the area of a polygon from ordered points in 3D space.
-    """
+    
+        :param ndarray points: a (N,3) array
+        :returns double: area
+        
+        Example:
+
+        >>> import numpy as np
+        >>> import pytim
+        >>> from pytim.utilities import *
+        >>> # Vertices of a pentagon and its area
+        >>> c1 = np.cos(2*np.pi/5.) ; c2 = np.cos(np.pi/5.)
+        >>> s1 = np.sin(2*np.pi/5.) ; s2 = np.sin(4*np.pi/5.)
+        >>> pentagon = np.array([[1,0,0],[c1,s1,0],[-c2,s2,0],[-c2,-s2,0],[c1,-s1,0]])
+        >>> A = 0.25 * np.sqrt(25+10*np.sqrt(5)) * 100./ (50+10*np.sqrt(5))
+        >>> np.isclose(pytim.utilities.polygonalArea(pentagon),A)
+        True
+        
+        >>> # now let's rotate it:
+        >>> rotated = np.dot(EulerRotation(0,np.pi/2.,0),pentagon.T).T
+        >>> np.isclose(pytim.utilities.polygonalArea(rotated),A)
+        True
+        
+     """
 
     try:
         v1 = points[1] - points[0]
