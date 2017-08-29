@@ -6,6 +6,8 @@ import pytim
 from pytim import observables
 from pytim.datafiles import *
 
+use_matplotlib  = False
+
 interface = pytim.ITIM(mda.Universe(WATER_GRO))
 box = interface.universe.dimensions[:3]
 
@@ -17,10 +19,14 @@ surface = observables.LayerTriangulation(interface)
 #          the triangles points clipped to the simulation box
 stats, tri, points, trim = surface.compute()
 
-print("The total triangulated surface has an area of {:04.1f} Angstrom^2".format(
-    stats[0]))
 
-try:
+msg = 'The total triangulated surface has an area of {:04.1f} Angstrom^2'
+print(msg.format( stats[0]))
+
+if use_matplotlib == False:
+    print "set use_matplotlib = True to display the triangulated surface"
+
+if use_matplotlib:
     # plot the triangulation using matplotlib
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
@@ -59,5 +65,3 @@ try:
     plt.savefig("surfaces.pdf")
     print("surface triangulation saved in surfaces.pdf")
     plt.show()
-except Exception:
-    print "exception for code coverage"

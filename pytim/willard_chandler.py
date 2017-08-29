@@ -62,26 +62,9 @@ class WillardChandler(pytim.PYTIM):
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
 
-            We test them also here in the docstring:
-
-            >>> import pytim
-            >>> import MDAnalysis as mda
-            >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
-            >>>
-            >>> pytim.WillardChandler(u,alpha=-1.0)
-            Traceback (most recent call last):
-            ...
-            ValueError: parameter alpha must be positive
-
-            >>> pytim.WillardChandler(u,alpha=-1000000)
-            Traceback (most recent call last):
-            ...
-            ValueError: parameter alpha must be smaller than the smaller box side
-
-            >>> pytim.WillardChandler(u,mesh=-1)
-            Traceback (most recent call last):
-            ...
-            ValueError: parameter mesh must be positive
+            >>> import pytest
+            >>> with pytest.raises(Exception):
+            ...     pytim.WillardChandler(u,mesh=-1)
 
         """
 
@@ -123,12 +106,31 @@ class WillardChandler(pytim.PYTIM):
         def __init__(self, interface):
             self.interface = interface
 
+        def _dump_group(self, group, filename):
+            """save the particles n a vtk file named consecutively using the frame
+            number."""
+            radii = group.radii
+            types = group.types
+            color = [utilities.colormap[element] for element in types]
+            color = (np.array(color) / 256.).tolist()
+            vtk.write_atomgroup(filename, group, color=color, radius=radii)
+
+
         def density(self, filename='pytim_dens.vtk', sequence=False):
             """ Write to vtk files the volumetric density:
                 :param str filename: the file name
                 :param bool sequence: if true writes a sequence of files adding the frame to the filename
+
+                >>> import MDAnalysis as mda
+                >>> import pytim
+                >>> from pytim.datafiles import MICELLE_PDB
+                >>> u = mda.Universe(MICELLE_PDB)
+                >>> g = u.select_atoms('resname DPC')
+                >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
+
                 >>> interface.writevtk.density('dens.vtk') # writes on dens.vtk
                 >>> interface.writevtk.density('dens.vtk',sequence=True) # writes on dens.<frame>.vtk
+
             """
             inter = self.interface
             if sequence == True:
@@ -141,6 +143,14 @@ class WillardChandler(pytim.PYTIM):
                 :param str filename: the file name
                 :param bool sequence: if true writes a sequence of files adding the frame to the filename
                 :param AtomGroup group: if None, writes the whole universe
+
+                >>> import MDAnalysis as mda
+                >>> import pytim
+                >>> from pytim.datafiles import MICELLE_PDB
+                >>> u = mda.Universe(MICELLE_PDB)
+                >>> g = u.select_atoms('resname DPC')
+                >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
+
                 >>> interface.writevtk.particles('part.vtk') # writes on part.vtk
                 >>> interface.writevtk.particles('part.vtk',sequence=True) # writes on part.<frame>.vtk
             """
@@ -155,6 +165,13 @@ class WillardChandler(pytim.PYTIM):
             """ Write to vtk files the triangulated surface:
                 :param str filename: the file name
                 :param bool sequence: if true writes a sequence of files adding the frame to the filename
+
+                >>> import MDAnalysis as mda
+                >>> import pytim
+                >>> from pytim.datafiles import MICELLE_PDB
+                >>> u = mda.Universe(MICELLE_PDB)
+                >>> g = u.select_atoms('resname DPC')
+                >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
                 >>> interface.writevtk.surface('surf.vtk') # writes on surf.vtk
                 >>> interface.writevtk.surface('surf.vtk',sequence=True) # writes on surf.<frame>.vtk
             """
@@ -171,7 +188,15 @@ class WillardChandler(pytim.PYTIM):
         """ Write to cube files (sequences) the volumentric density and the atomic positions.
             :param str filename: the file name
             :param bool sequence: if true writes a sequence of files adding the frame to the filename
+
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> from pytim.datafiles import MICELLE_PDB
+            >>> u = mda.Universe(MICELLE_PDB)
+            >>> g = u.select_atoms('resname DPC')
+            >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
             >>> interface.writecube('dens.cube') # writes on dens.cube
+            >>> interface.writecube('dens.cube',group=g) # writes on dens.cube, including particles
             >>> interface.writecube('dens.cube',sequence=True) # writes on dens.<frame>.cube
         """
         if sequence == True:
@@ -184,6 +209,13 @@ class WillardChandler(pytim.PYTIM):
         """ Write to wavefront obj files (sequences) the triangulated surface
             :param str filename: the file name
             :param bool sequence: if true writes a sequence of files adding the frame to the filename
+
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> from pytim.datafiles import MICELLE_PDB
+            >>> u = mda.Universe(MICELLE_PDB)
+            >>> g = u.select_atoms('resname DPC')
+            >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
             >>> interface.writeobj('surf.obj') # writes on surf.obj
             >>> interface.writeobj('surf.obj',sequence=True) # writes on surf.<frame>.obj
         """
@@ -196,14 +228,6 @@ class WillardChandler(pytim.PYTIM):
         surf = self.triangulated_surface[1]
         wavefront_obj.write_file(filename, vert, surf)
 
-    def _dump_group(self, group, filename):
-        """save the particles n a vtk file named consecutively using the frame
-        number."""
-        radii = group.radii
-        types = group.types
-        color = [utilities.colormap[element] for element in types]
-        color = (np.array(color) / 256.).tolist()
-        vtk.write_atomgroup(filename, group, color=color, radius=radii)
 
     def _assign_layers(self):
         """There are no layers in the Willard-Chandler method.

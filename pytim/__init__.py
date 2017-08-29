@@ -542,6 +542,11 @@ class PYTIM(object):
 
             Example: save the positions (centering the interface in the cell) without appending
 
+            >>> import pytim
+            >>> import MDAnalysis as mda
+            >>> from pytim.datafiles import WATER_GRO
+            >>> u = mda.Universe(WATER_GRO) 
+            >>> interface = pytim.ITIM(u)
             >>> interface.writepdb('layers.pdb',multiframe=False)
 
             Example: save the positions without centering the interface. This will

@@ -6,9 +6,9 @@ from pytim.datafiles import *
 
 u = mda.Universe(WATER_GRO)
 
-radii = pytim_data.vdwradii(G43A1_TOP)
+g = u.select_atoms('name OW')
 
-interface = pytim.GITIM(u, molecular=True, symmetry='planar',
+interface = pytim.GITIM(u, group=g, molecular=True, symmetry='planar',
                         alpha=2.5, cluster_cut=3.5, cluster_threshold_density='auto')
 
 layers = interface.layers[:]
