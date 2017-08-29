@@ -7,11 +7,18 @@ from pytim.datafiles import *
 u = mda.Universe(MICELLE_PDB)
 g = u.select_atoms('resname DPC')
 
-radii = pytim_data.vdwradii(G43A1_TOP)
+interface = pytim.WillardChandler(u, group=g, alpha=3.0)
 
-interface = pytim.WillardChandler(u, itim_group=g, alpha=3.0,
-                                  density_basename="dens",
-                                  particles_basename="atoms",
-                                  surface_basename="surf")
+interface.writecube('density.cube') # volumetric density in cube format
+interface.writevtk.density('dens.vtk') # volumetric density in vtk format  
+
+interface.writecube('density_and_particles.cube',group=g) # cube format including volumetric density and particles
+interface.writevtk.particles('particles.vtk') # particles in vtk format  
+
+interface.writeobj('surface.obj') # isodensity surface in wavefront obj format
+interface.writevtk.surface('surface.vtk') # isodensity surface in vtk format
+
 R, _, _, _ = pytim.utilities.fit_sphere(interface.triangulated_surface[0])
 print "Radius={:.3f}".format(R)
+
+

@@ -94,6 +94,7 @@ class ITIM(pytim.PYTIM):
           <AtomGroup with 663 atoms> <AtomGroup with 654 atoms>]]
 
 
+
         >>> interface.layers[0,0] # upper side, first layer
         <AtomGroup with 780 atoms>
 
@@ -135,6 +136,14 @@ class ITIM(pytim.PYTIM):
 
         The object can be sliced as usual with numpy arrays, so, for example:
 
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import *
+        >>>
+        >>> u         = mda.Universe(WATER_GRO)
+        >>> oxygens   = u.select_atoms("name OW")
+        >>>
+        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=True)
         >>> interface.layers[0,:]  # upper side (0), all layers
         array([<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
                <AtomGroup with 693 atoms>, <AtomGroup with 660 atoms>],\
@@ -295,18 +304,15 @@ class ITIM(pytim.PYTIM):
             We test them also here in the docstring:
 
             >>> import pytim
+            >>> import pytest
             >>> import MDAnalysis as mda
             >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
             >>>
-            >>> pytim.ITIM(u,alpha=-1.0)
-            Traceback (most recent call last):
-            ...
-            ValueError: parameter alpha must be positive
+            >>> with pytest.raises(Exception):
+            ...     pytim.ITIM(u,alpha=-1.0)
 
-            >>> pytim.ITIM(u,alpha=-1000000)
-            Traceback (most recent call last):
-            ...
-            ValueError: parameter alpha must be smaller than the smaller box side
+            >>> with pytest.raises(Exception):
+            ...     pytim.ITIM(u,alpha=1000000)
 
             >>> pytim.ITIM(u,mesh=-1)
             Traceback (most recent call last):
@@ -326,7 +332,7 @@ class ITIM(pytim.PYTIM):
             >>> test1 = len(inter.layers[0,0])
             >>> inter = pytim.ITIM(u,multiproc=False)
             >>> test2 = len(inter.layers[0,0])
-            >>> len(test1)==len(test2)
+            >>> test1==test2
             True
 
         """

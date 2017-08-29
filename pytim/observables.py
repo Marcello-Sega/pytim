@@ -34,10 +34,12 @@ class Observable(object):
 
         >>> import pytim
         >>> import MDAnalysis as mda
+        >>> from pytim import observables
+        >>> from pytim.datafiles import WATER_GRO
         >>>
         >>> class TotalNumberOfParticles(observables.Observable):
-        >>>     def compute(self):
-        >>>         return len(self.u.atoms)
+        ...     def compute(self):
+        ...         return len(self.u.atoms)
         >>>
         >>> u = mda.Universe(WATER_GRO)
         >>> o = TotalNumberOfParticles(u)
@@ -385,30 +387,34 @@ class RDF2D(RDF):
 
 
 class LayerTriangulation(Observable):
-    """Computes the triangulation of the surface and some associated
-       quantities. Notice that this forces the interface to be centered
-       in the box.
+    """ Computes the triangulation of the surface and some associated
+        quantities. Notice that this forces the interface to be centered
+        in the box.
+        
+        :param Universe universe: the MDAnalysis universe
+        :param ITIM    interface: compute the triangulation with respect to it
+        :param int     layer: (default: 1) compute the triangulation with respect\
+                       to this layer of the interface
+        :param bool    return_triangulation: (default: True) return the Delaunay\
+                       triangulation used for the interpolation
+        :param bool    return_statistics: (default: True) return the Delaunay\
+                       triangulation used for the interpolation
+        
+        :returns Observable LayerTriangulation:
 
-       :param Universe universe: the MDAnalysis universe
-       :param ITIM    interface: compute the triangulation with respect to it
-       :param int     layer: (default: 1) compute the triangulation with respect\
-                      to this layer of the interface
-       :param bool    return_triangulation: (default: True) return the Delaunay\
-                      triangulation used for the interpolation
-       :param bool    return_statistics: (default: True) return the Delaunay\
-                      triangulation used for the interpolation
 
-       :returns Observable LayerTriangulation:
+        Example:
+        
+        >>> import pytim
+        >>> import MDAnalysis as mda
+        >>> from pytim.datafiles import WATER_GRO
 
-
-       Example:
-
-       >>> interface = pytim.ITIM(mda.Universe(WATER_GRO),molecular=False)
-       >>> surface   = observables.LayerTriangulation(\
-                           interface,return_triangulation=False)
-       >>> stats     = surface.compute()
-       >>> print ("Surface= {:04.0f} A^2".format(stats[0]))
-       Surface= 6751 A^2
+        >>> interface = pytim.ITIM(mda.Universe(WATER_GRO),molecular=False)
+        >>> surface   = pytim.observables.LayerTriangulation(\
+                            interface,return_triangulation=False)
+        >>> stats     = surface.compute()
+        >>> print ("Surface= {:04.0f} A^2".format(stats[0]))
+        Surface= 6751 A^2
 
     """
 
@@ -689,6 +695,8 @@ class Profile(object):
 
 
     Example (intrinsic):
+
+    >>> from pytim import observables
 
     >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
     >>> oxygens = u.select_atoms("name OW")

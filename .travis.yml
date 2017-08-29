@@ -42,6 +42,6 @@ script: (cd docs ; make doctest )
 
 after_success:
   if ([ "$TRAVIS_OS_NAME" == "linux" ] && [ "$MDAv" == "0.16" ]) ; then
-        pip install codecov; pip install pylama ; pip install pytest-cov ; py.test --cov=./pytim --doctest-modules ;  codecov ;
+        pip install codecov; pip install pytest-cov ; py.test --cov=pytim pytim/*py --doctest-modules ;  codecov ; 
   fi
 
