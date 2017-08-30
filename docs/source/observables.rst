@@ -15,9 +15,9 @@ Profiles
 .. autoclass:: pytim.observables.Profile
     :members:
 
-Correlation functions
-#####################
-.. automodule:: pytim.correlator
+Time Correlation Functions
+##########################
+.. autoclass:: pytim.observables.Correlator
     :members:
 
 Misc
@@ -32,7 +32,13 @@ Basic Observables
 #################
 .. autoclass:: pytim.observables.Number
     :members:
-.. autoclass:: pytim.observables.MolecularOrientation
+.. autoclass:: pytim.observables.NumberOfResidues
+    :members:
+.. autoclass:: pytim.observables.Position
+    :members:
+.. autoclass:: pytim.observables.Velocity
+    :members:
+.. autoclass:: pytim.observables.Force
     :members:
 .. autoclass:: pytim.observables.Orientation
     :members:

@@ -10,7 +10,7 @@ from scipy import stats
 from MDAnalysis.lib import distances
 from itertools import chain
 from pytim import utilities
-from pytim.correlator import correlate
+
 # we try here to have no options passed
 # to the observables, so that classes are
 # not becoming behemoths that do everything.
@@ -156,7 +156,7 @@ class RDF(object):
     def __init__(self, universe,
                  nbins=75, max_radius='full',
                  start=None, stop=None, step=None,
-                 observable=None, observable2=None,kargs1={},kargs2={}):
+                 observable=None, observable2=None, kargs1={}, kargs2={}):
         if max_radius is 'full':
             self.max_radius = np.min(universe.dimensions[:3])
         else:
@@ -166,8 +166,8 @@ class RDF(object):
         self.universe = universe
         self.nsamples = 0
         self.observable = observable
-        self.kargs1=kargs1
-        self.kargs2=kargs2
+        self.kargs1 = kargs1
+        self.kargs2 = kargs2
         if observable2 is None:
             self.observable2 = observable
         else:
@@ -184,7 +184,7 @@ class RDF(object):
         self.g2 = None
         self._rdf = self.count
 
-    def sample(self, g1=None, g2=None, kargs1={},kargs2={}):
+    def sample(self, g1=None, g2=None, kargs1={}, kargs2={}):
         self.n_frames += 1
         self.g2 = g2
         if g1 is not None:
@@ -198,7 +198,7 @@ class RDF(object):
         if self.observable is not None:
             # determine weights, otherwise assumes number of atoms (default)
             try:
-                fg1 = self.observable.compute(self.g1,ka1)
+                fg1 = self.observable.compute(self.g1, ka1)
             except:
                 fg1 = self.observable.compute(self.g1)
 
@@ -206,12 +206,13 @@ class RDF(object):
                 fg2 = fg1
             else:
                 try:
-                    fg2 = self.observable2.compute(self.g2,ka2)
+                    fg2 = self.observable2.compute(self.g2, ka2)
                 except:
                     fg2 = self.observable2.compute(self.g2)
 
             try:
-                error = ( fg1.shape[0] != self.g1.n_atoms or fg2.shape[0] != self.g2.n_atoms)
+                error = (
+                    fg1.shape[0] != self.g1.n_atoms or fg2.shape[0] != self.g2.n_atoms)
             except:
                 error = True
 
@@ -335,10 +336,10 @@ class RDF2D(RDF):
     def __init__(self, universe,
                  nbins=75, max_radius='full',
                  start=None, stop=None, step=None, excluded_dir='auto',
-                 true2D=False, observable=None,kargs1={},kargs2={}):
+                 true2D=False, observable=None, kargs1={}, kargs2={}):
         RDF.__init__(self, universe, nbins=nbins, max_radius=max_radius,
                      start=start, stop=stop, step=step,
-                     observable=observable,kargs1=kargs1,kargs2=kargs2)
+                     observable=observable, kargs1=kargs1, kargs2=kargs2)
         _dir = {'x': 0, 'y': 1, 'z': 2}
         self.true2D = true2D
         if excluded_dir == 'auto':
@@ -390,7 +391,7 @@ class LayerTriangulation(Observable):
     """ Computes the triangulation of the surface and some associated
         quantities. Notice that this forces the interface to be centered
         in the box.
-        
+
         :param Universe universe: the MDAnalysis universe
         :param ITIM    interface: compute the triangulation with respect to it
         :param int     layer: (default: 1) compute the triangulation with respect\
@@ -399,12 +400,12 @@ class LayerTriangulation(Observable):
                        triangulation used for the interpolation
         :param bool    return_statistics: (default: True) return the Delaunay\
                        triangulation used for the interpolation
-        
+
         :returns Observable LayerTriangulation:
 
 
         Example:
-        
+
         >>> import pytim
         >>> import MDAnalysis as mda
         >>> from pytim.datafiles import WATER_GRO
@@ -548,21 +549,79 @@ class NumberOfResidues(Observable):
         return tmp
 
 
+class Position(Observable):
+    """Atomic positions"""
+
+    def __init__(self, *arg, **kwarg):
+        """ No need to pass a universe for this observable. We accept
+            extra arguments not to fail if they are passed anyway by mistake.
+        """
+        Observable.__init__(self, None)
+
+    def compute(self, inp):
+        """Compute the observable.
+
+        :param AtomGroup inp:  the input atom group
+        :returns: atomic positions
+
+        """
+        return inp.positions
+
+
+class Velocity(Observable):
+    """Atomic velocities"""
+
+    def __init__(self, *arg, **kwarg):
+        """ No need to pass a universe for this observable. We accept
+            extra arguments not to fail if they are passed anyway by mistake.
+        """
+        Observable.__init__(self, None)
+
+    def compute(self, inp):
+        """Compute the observable.
+
+        :param AtomGroup inp:  the input atom group
+        :returns: atomic positions
+
+        """
+        return inp.velocities
+
+
+class Force(Observable):
+    """Atomic velocities"""
+
+    def __init__(self, *arg, **kwarg):
+        """ No need to pass a universe for this observable. We accept
+            extra arguments not to fail if they are passed anyway by mistake.
+        """
+        Observable.__init__(self, None)
+
+    def compute(self, inp):
+        """Compute the observable.
+
+        :param AtomGroup inp:  the input atom group
+        :returns: atomic positions
+
+        """
+        return inp.forces
+
+
 class Orientation(Observable):
     """Orientation of a group of points.
 
     :param str options: optional string. If `normal` is passed, the\
                         orientation of the normal vectors is computed
-
-    This observable does not take into account boudary conditions.
-    See :class:`~pytim.observables.MolecularOrientation`
+                        If the option 'molecular' is passed at initialization, \
+                        coordinates of the second and third atoms are \
+                        folded around those of the first.
 
     """
 
-    def __init__(self, options=''):
-        Observable.__init__(self, None, options=options)
+    def __init__(self, universe, options=''):
+        self.u = universe
+        self.options = options
 
-    def compute(self, pos):
+    def compute(self, inp):
         """Compute the observable.
 
         :param ndarray inp:  the input atom group. The length be a multiple\
@@ -572,10 +631,17 @@ class Orientation(Observable):
         For each triplet of positions A1,A2,A3, computes the unit vector
         beteeen A2-A1 and  A3-A1 or, if the option 'normal' is passed at
         initialization, the unit vector normal to the plane spanned by the
-        three vectors
+        three vectors.
+
 
         """
 
+        if isinstance(inp, AtomGroup) and len(inp) != 3 * len(inp.residues):
+            inp = inp.residues
+        if 'molecular' in self.options:
+            pos = self.fold_around_first_atom_in_residue(inp)
+        else:
+            pos = inp.positions
         flat = pos.flatten()
         pos = flat.reshape(len(flat) / 3, 3)
         a = pos[1::3] - pos[0::3]
@@ -587,23 +653,6 @@ class Orientation(Observable):
             v = np.array(a + b)
         v = np.array([el / np.sqrt(np.dot(el, el)) for el in v])
         return v
-
-
-class MolecularOrientation(Observable):
-    """Molecular orientation vector of a set of molecules."""
-
-    def compute(self, inp):
-        """Compute the observable.
-
-        :param variable inp: an AtomGroup or a ResidueGroup
-
-        TODO: document and check if the function needs to be modified
-
-        """
-        if isinstance(inp, AtomGroup) and len(inp) != 3 * len(inp.residues):
-            inp = inp.residues
-        pos = self.fold_around_first_atom_in_residue(inp)
-        return Orientation().compute(pos)
 
 
 class Profile(object):
@@ -836,4 +885,144 @@ class Profile(object):
         vol = np.prod(self.box) / nbins
         return [bins[0:-1], bins[1:], avg / len(self.sampled_values) / vol]
 
-#
+
+class Correlator(object):
+    """ Computes the (self) correlation of an observable (scalar or vector)
+
+    :param Observable observable: compute the autocorrelation of this observable
+    :param bool reduced: when the observable is a vector, average over all spatial direction if reduced==True (default)
+    :param bool normalize: normalize the correlation to 1 at t=0
+    :param AtomGroup reference: if the group passed to the sample() function changes its composition along the trajectory \
+                                (such as a layer group), a reference group that includes all atoms that could appear in the \
+                                variable group must be passed, in order to provide a proper normalization. This follows the \
+                                convention in J. Phys. Chem. B 2017, 121, 5582−5594, (DOI: 10.1021/acs.jpcb.7b02220). See \
+                                the example below.
+    :param double memory_warn: if not None, print a warning once this threshold of memory (in Mb) is passed.
+
+
+    Example:
+
+    >>> import pytim
+    >>> import MDAnalysis as mda
+    >>> import numpy as np
+    >>> from pytim.datafiles import WATERSMALL_GRO
+    >>> from pytim.utilities import lap
+    >>> #  tmpdir here is specified only for travis
+    >>> WATERSMALL_TRR = pytim.datafiles.pytim_data.fetch('WATERSMALL_LONG_TRR',tmpdir='./')
+    checking presence of a cached copy... not found. Fetching remote file... done.
+
+    >>> u = mda.Universe(WATERSMALL_GRO,WATERSMALL_TRR)
+    >>> g = u.select_atoms('name OW')
+
+    >>> velocity = pytim.observables.Velocity()
+    >>> corr = pytim.observables.Correlator(observable=velocity)
+    >>> for t in u.trajectory[1:]:
+    ...     corr.sample(g)
+    >>> vacf = corr.correlation()
+
+    This produces the following (steps of 1 fs):
+
+    .. plot::
+
+        import pytim
+        import MDAnalysis as mda
+        import numpy as np
+        from pytim.datafiles import WATERSMALL_GRO
+        from pytim.utilities import lap
+        WATERSMALL_TRR=pytim.datafiles.pytim_data.fetch('WATERSMALL_LONG_TRR')
+
+        u = mda.Universe(WATERSMALL_GRO,WATERSMALL_TRR)
+        g = u.select_atoms('name OW')
+
+        velocity = pytim.observables.Velocity()
+        corr = pytim.observables.Correlator(observable=velocity)
+        for t in u.trajectory[1:]:
+            corr.sample(g)
+
+        vacf = corr.correlation()
+
+        from matplotlib import pyplot as plt
+        plt.plot(vacf[:1000])
+        plt.plot([0]*1000)
+        plt.show()
+
+
+    In order to compute the correlation for variable groups, one should proceed
+    as follows:
+
+    >>> corr = pytim.observables.Correlator(observable=velocity,reference=g)
+    >>> # notice the molecular=False switch, in order for the
+    >>> # layer group to be made of oxygen atoms only and match
+    >>> # the reference group
+    >>> inter = pytim.ITIM(u,group=g,alpha=2.0,molecular=False)
+    >>> for t in u.trajectory[1:10]: # example only: sample the whole trajectory
+    ...     corr.sample(inter.atoms)
+    >>> layer_vacf = corr.correlation()
+
+
+    """
+
+    def __init__(self, universe=None, observable=None, reduced=True, normalize=True, reference=None, memory_warn=None):
+        name = self.__class__.__name__
+        self.observable = observable
+        self.reference = reference
+        self.timeseries = []
+        self.maskseries = []
+        self.reduced = reduced
+        self.normalize = normalize
+        self.shape = None
+        self.mem_usage = 0.0
+        self.warned = False
+        if memory_warn is None:
+            self.warned = True
+            self.memory_warn = 0.0
+        else:
+            self.memory_warn = memory_warn
+        if reference is not None:
+            if isinstance(reference, Atom):
+                # in case just a single atom has been passed,
+                # and not a group with one atom
+                self.reference = u.atoms[reference.index:reference.index + 1]
+            if not isinstance(reference, AtomGroup):
+                raise RuntimeError(
+                    name + ': reference must be eiter an Atom or an AtomGroup')
+            self.reference_obs = observable.compute(reference) * 0.0
+            if len(self.reference_obs.shape) > 2:
+                raise RuntimeError(
+                    name + ' works only with scalar and vectors')
+
+    def sample(self, group):
+        if self.reference is not None:
+            sampled = self.reference_obs.copy()
+            mask = np.isin(self.reference, group)
+            self.maskseries.append(list(mask))
+            obs = self.observable.compute(group)
+            sampled[mask] = obs
+        else:
+            sampled = self.observable.compute(group)
+
+        self.timeseries.append(list(sampled.flatten()))
+        self.mem_usage += sampled.nbytes / 1024.0 / 1024.0  # in Mb
+        if self.mem_usage > self.memory_warn and self.warned == False:
+            print "Warning: warning threshold of",
+            print self.memory_warn, "Mb exceeded"
+            self.warned = True
+
+        if self.shape == None:
+            self.shape = sampled.shape
+
+    def correlation(self):
+        corr = utilities.correlate(self.timeseries)
+
+        if self.reference is not None:
+            mask = utilities.correlate(self.maskseries)
+            if self.shape[1] > 1:
+                tmp_mask = mask.copy()
+                for i in range(1, self.shape[1]):
+                    mask = np.hstack((mask, tmp_mask))
+            corr[mask > 0] = corr[mask > 0] / mask[mask > 0]
+        if self.reduced == True:
+            corr = np.sum(corr, axis=1)
+        if self.normalize == True:
+            corr = corr / corr[0]
+        return corr
