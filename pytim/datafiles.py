@@ -86,13 +86,38 @@ import urllib
 import hashlib
 import tempfile
 
+
 class Data(object):
     """" a class for storing/accessing configurations, trajectories, topologies
     """
 
-    def fetch(self,name):
-        filename =  name.replace("_", ".")
-        dirname = tempfile.gettempdir()
+    def fetch(self, name, tmpdir=None):
+        """ Fetch a sample trajectory from the github repository.
+
+            Have a look at https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/
+            for the available files
+
+            Example:
+
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> from pytim.datafiles import WATERSMALL_GRO
+
+            >>> # tmpdir here is specified only for travis
+            >>> WATERSMALL_TRR = pytim.datafiles.pytim_data.fetch('WATERSMALL_TRR',tmpdir='./')
+            checking presence of a cached copy... not found. Fetching remote file... done.
+
+            >>> u = mda.Universe(WATERSMALL_GRO,WATERSMALL_TRR)
+            >>> print u
+            <Universe with 648 atoms>
+
+        """
+
+        filename = name.replace("_", ".")
+        if tmpdir is None:
+            dirname = tempfile.gettempdir()
+        else:
+            dirname = tmpdir
         urlbase_md5 = 'https://raw.githubusercontent.com/Marcello-Sega/pytim/extended_datafiles/files/'
         urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'
         try:

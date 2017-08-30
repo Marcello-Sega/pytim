@@ -19,7 +19,7 @@ class TestObservables():
     >>> from pytim.datafiles import * 
     >>> import numpy as np
     >>> u = mda.Universe(_TEST_ORIENTATION_GRO)
-    >>> o = observables.MolecularOrientation(u)
+    >>> o = observables.Orientation(u,options='molecular')
     >>> print(o.compute(u.atoms).flatten())
     [ 1.          0.          0.          0.          1.          0.          0.
      -0.70710677 -0.70710677]
@@ -36,7 +36,7 @@ class TestObservables():
     [ 0.01  0.02  0.03]
 
     >>> # CORRELATOR TEST
-    >>> from pytim.observables import correlate
+    >>> from pytim.utilities import correlate
     >>> a = np.array([1.,0.,1.,0.,1.])
     >>> b = np.array([0.,2.,0.,1.,0.])
     >>> corr = correlate(b,a)

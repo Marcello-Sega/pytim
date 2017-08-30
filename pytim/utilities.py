@@ -27,6 +27,86 @@ def lap(show=False):
         return dt
 
 
+def correlate(a1=np.ndarray(0), a2=None):
+    """ correlate data series using numpy fft. The function calculates correlation
+        or cross-correlation.
+
+        :param ndarray a1:   first data set to correlate
+        :param ndarray a2:   (optional) second data set, to compute cross-correlation
+
+        Example: time autocorrelation of the number of atoms in the outermost layer
+
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> import numpy as np
+        >>> from pytim.datafiles import *
+        >>>
+        >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+        >>> inter = pytim.ITIM(u)
+        >>>
+        >>> size=[]
+        >>> time=[]
+        >>> # sample the size of the first layer on the upper
+        >>> # side
+        >>> for ts in u.trajectory[:50]:
+        ...     time.append(ts.time)
+        ...     size.append(len(inter.layers[0,0]))
+        >>>
+        >>> # we need to subtract the average value
+        >>> corr = pytim.utilities.correlate(size-np.mean(size))
+        >>> corr = corr/corr[0] # normalize to 1
+        >>> print corr
+        [ 1.          0.2854253   0.18059321  0.19296861  0.42821504  0.22823323
+          0.32167236  0.19506167  0.34336377  0.18111761  0.05521241  0.15146141
+          0.3059723   0.03549702 -0.06320951  0.08207338 -0.02442951 -0.01383818
+         -0.04637258  0.0533662  -0.10312512 -0.0085912  -0.37878377 -0.26352859
+         -0.06200694  0.01444449 -0.44058268 -0.36078218 -0.35199886 -0.16273729
+         -0.24969988 -0.55350561 -0.3740507  -0.01228043 -0.67140082 -0.78662433
+         -0.28146374 -0.37563115 -0.68283012 -0.70017332 -0.48424531 -0.56197533
+         -0.65147349 -0.7446905  -0.16783918 -0.43809782 -2.04122294 -1.25494069
+          0.2705082   5.35673624]
+
+
+
+        This will produce (sampling the whole trajectory), the following:
+
+        .. plot::
+
+            import numpy as np
+            import MDAnalysis as mda
+            import pytim
+            from   pytim.datafiles import *
+            from matplotlib import pyplot as plt
+
+            u = mda.Universe(WATER_GRO,WATER_XTC)
+            inter = pytim.ITIM(u)
+
+            size=[]
+            time=[]
+            for ts in u.trajectory[:]:
+                time.append(ts.time)
+                size.append(len(inter.layers[0,0]))
+
+            corr =  pytim.utilities.correlate(size-np.mean(size))
+            plt.plot(time,corr/corr[0])
+            plt.plot(time,[0]*len(time))
+            plt.gca().set_xlabel("time/ps")
+
+            plt.show()
+
+    """
+
+    size = len(a1)
+    norm = np.arange(size)[::-1] + 1
+    fa1 = np.fft.fft(a1, axis=0, n=size * 2)
+
+    if not isinstance(a2, type(None)):  # do cross-corr
+        fa2 = np.fft.fft(a2, axis=0, n=size * 2)
+        return ((np.fft.fft(fa2 * np.conj(fa1) + fa1 * np.conj(fa2), axis=0)[:size]).real.T / norm).T / len(fa1) / 2.
+    else:                               # do auto-corr
+        return ((np.fft.fft(fa1 * np.conj(fa1), axis=0)[:size]).real.T / norm).T / len(fa1)
+
+
 def extract_positions(inp):
     if isinstance(inp, np.ndarray):
         positions = inp
@@ -415,14 +495,15 @@ def do_cluster_analysis_DBSCAN(
     dbscan_inner(core_samples, neighborhoods, labels, counts)
     return labels, counts, n_neighbors
 
-def EulerRotation(phi,theta,psi):
+
+def EulerRotation(phi, theta, psi):
     """ The Euler (3,1,3) rotation matrix
-    
+
         :param phi: rotation around the z axis
         :param theta: rotation around the new x axis
         :param psi: rotation around the new z axis
         :returns double: area
-        
+
         Example:
 
         >>> import numpy as np
@@ -434,26 +515,27 @@ def EulerRotation(phi,theta,psi):
          [-1.  0.  0.]
          [ 0. -0.  1.]]
         >>> np.set_printoptions(suppress=False)
-         
+
     """
-    
+
     cph = np.cos(phi)
     cps = np.cos(psi)
     cth = np.cos(theta)
     sph = np.sin(phi)
     sps = np.sin(psi)
     sth = np.sin(theta)
-    R1=[cph*cps-cth*sph*sps,cps*sph+cth*cph*sps,sth*sps]
-    R2=[-cth*cps*sph-cph*sps,cth*cps*cph-sph*sps,cps*sth]
-    R3=[sth*sph,-cph*sth,cth]
-    return np.array([R1,R2,R3])
+    R1 = [cph * cps - cth * sph * sps, cps * sph + cth * cph * sps, sth * sps]
+    R2 = [-cth * cps * sph - cph * sps, cth * cps * cph - sph * sps, cps * sth]
+    R3 = [sth * sph, -cph * sth, cth]
+    return np.array([R1, R2, R3])
+
 
 def polygonalArea(points):
     """ Calculate the area of a polygon from ordered points in 3D space.
-    
+
         :param ndarray points: a (N,3) array
         :returns double: area
-        
+
         Example:
 
         >>> import numpy as np
@@ -466,12 +548,12 @@ def polygonalArea(points):
         >>> A = 0.25 * np.sqrt(25+10*np.sqrt(5)) * 100./ (50+10*np.sqrt(5))
         >>> np.isclose(pytim.utilities.polygonalArea(pentagon),A)
         True
-        
+
         >>> # now let's rotate it:
         >>> rotated = np.dot(EulerRotation(0,np.pi/2.,0),pentagon.T).T
         >>> np.isclose(pytim.utilities.polygonalArea(rotated),A)
         True
-        
+
      """
 
     try:
