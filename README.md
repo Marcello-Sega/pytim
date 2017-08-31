@@ -1,4 +1,4 @@
-[A Quick Intro](#a-quick-intro) | [Supported Formats](#supported-formats) | [Example](#example) | [How to Install](#installation) | [References](#references)
+<p style="text-align: center;">[A Quick Intro](#a-quick-intro) | [Supported Formats](#supported-formats) | [Example](#example) | [How to Install](#installation) | [References](#references)</p>
 
 
 [![Build Status](https://travis-ci.org/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.org/Marcello-Sega/pytim)
@@ -137,20 +137,12 @@ Some of the most common issues are the following:
 
 **Solution**: You've installed pytim, and are launching python within the pytim package directory. Move away from there :)
 
-# OK, but what is ITIM / GITIM more in detail?  
-<img src="https://raw.githubusercontent.com/Marcello-Sega/gitim/ITIM/media/soot1small.png" width="180" align="right" style="z-index:999;">
-
-**ITIM** and **GITIM** are two algorithms for the identification
-of interfacial molecules or atoms.
-
-ITIM has been designed for planar interfaces while GITIM is free from any geometrical constraints and can
-be used to analyze interfacial properties of surfaces with arbitrary
-shapes.
 
 
 ---------------------------
 
-# References
+# References  <img src="https://raw.githubusercontent.com/Marcello-Sega/gitim/ITIM/media/soot1small.png" width="180" align="right" style="z-index:999;">
+
 
 We plan to submit soon a manuscript to report on the features/improvements of pytim with respect to the previous available code. In the meanwhile, if you use pytim, please cite this web page, and read and cite the papers corresponding to the method you are using:
 
