@@ -1,4 +1,4 @@
-<p style="text-align: center;">[A Quick Intro](#a-quick-intro) | [Supported Formats](#supported-formats) | [Example](#example) | [How to Install](#installation) | [References](#references)</p>
+[A Quick Intro](#a-quick-intro) | [Supported Formats](#supported-formats) | [Example](#example) | [How to Install](#installation) | [References](#references)
 
 
 [![Build Status](https://travis-ci.org/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.org/Marcello-Sega/pytim)
