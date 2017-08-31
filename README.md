@@ -1,3 +1,6 @@
+[A Quick Intro](#a-quick-intro) | [Supported Formats](#supported-formats) | [Example](#example) | [How to Install](#installation) | [References](#references)
+
+
 [![Build Status](https://travis-ci.org/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.org/Marcello-Sega/pytim)
 [![GitHub tags](https://img.shields.io/github/tag/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/)
 [![GitHub issues](https://img.shields.io/github/issues/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/issues)
@@ -24,7 +27,7 @@ Check out the Pytim Poster from the 10th Liquid Matter Conference
 
 4. [Available on ResearchGate](http://dx.doi.org/10.13140/RG.2.2.18613.17126)  DOI:10.13140/RG.2.2.18613.17126
 
-# What is Pytim?
+# Supported Formats
 
 [Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. So far the following methods have been implemented:
 
@@ -44,20 +47,20 @@ package for reading/writing trajectories, and work therefore seamlessly for a nu
 
 as well as common structure file formats such as XYZ or PDB (have a look at the [complete list](https://pythonhosted.org/MDAnalysis/documentation_pages/coordinates/init.html#id1))
 
-# Show me an example usage, now! 
+# <a name="example"></a> Show me an example usage, now!
 
 Ok, ok ... have a look below: the pytim part of the notebook is actually all enclosed in cells [1] and [2]. Cells from [3] to [6] are for visualization. This example is about computing molecular layers of a flat interface:
 
 <img src="https://marcello-sega.github.io/pytim/_images/notebook2.png" width="auto" align="center" style="z-index:999;">
 
-# What if the interface is not flat? 
+## <a name="non-flat-interfaces"></a> What if the interface is not flat? 
 
 You could use GITIM, or the Willard-Chandler method, look here: 
 
 <img src="https://marcello-sega.github.io/pytim/_images/notebook1.png" width="auto" align="center" style="z-index:999;">
 
 
-# How to install the package and the documentation? 
+# <a name="installation"></a> How to install the package and the documentation? 
 
 ## From the PyPI
 
@@ -109,7 +112,7 @@ find $HOME -name site-packages
 ```
 
 
-# Trouble installing ? 
+## Trouble installing ? 
 
 Some of the most common issues are the following:
 
