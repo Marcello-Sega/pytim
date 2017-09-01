@@ -91,7 +91,7 @@ class Data(object):
     """" a class for storing/accessing configurations, trajectories, topologies
     """
 
-    def fetch(self, name, tmpdir=None):
+    def fetch(self, name, tmpdir=None,debug=False):
         """ Fetch a sample trajectory from the github repository.
 
             Have a look at https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/
@@ -122,11 +122,17 @@ class Data(object):
         urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'
         try:
             md5 = urllib.urlopen(urlbase_md5 + filename + '.MD5').readline()
-            print "checking presence of a cached copy...",
             md5_local = hashlib.md5(
                 open(dirname + filename, 'rb').read()).hexdigest()
+            print "checking presence of a cached copy",
+            if debug:
+                print "for", md5 ,' -> url:',urlbase_md5 + filename + '.MD5',
+            print "...",
             if md5_local in md5:
-                print "found"
+                print "found",
+                if debug:
+                    print " at", dirname + filename
+                print ""
                 return dirname + filename
         except:
             pass

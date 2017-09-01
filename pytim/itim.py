@@ -206,8 +206,6 @@ class ITIM(pytim.PYTIM):
         pytim.PatchTrajectory(universe.trajectory, self)
 
         self._assign_layers()
-        self._atoms = self.LayerAtomGroupFactory(
-            self._layers[:].sum().indices, self.universe)
 
     def _assign_mesh(self):
         """determine a mesh size for the testlines that is compatible with the
@@ -420,5 +418,8 @@ class ITIM(pytim.PYTIM):
             self.universe.atoms.positions = self.original_positions
         else:
             self._shift_positions_to_middle()
+
+        self._atoms = self.LayerAtomGroupFactory(
+            self._layers[:].sum().indices, self.universe)
 
 #

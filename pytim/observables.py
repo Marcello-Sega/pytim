@@ -1,4 +1,5 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 """ Module: observables
     ===================
@@ -85,6 +86,28 @@ class Observable(object):
             raise Exception(
                 "input not valid for fold_around_first_atom_in_residue()")
         return np.array(pos)
+
+
+    def select_direction(self,arg):
+
+        def _inarg(string,arg):
+            return np.any([string in e for e in arg])
+
+        directions=np.array([True,True,True])
+        if len(arg) > 0:
+            if not _inarg('x',arg) or  not _inarg('y', arg)  or not _inarg('z',arg) :
+                RuntimeError("Velocity accepts as argument a string like 'xy', 'z', ... to select components")
+            directions=np.array([False,False,False])
+            if _inarg('x',arg):
+                directions[0]=True
+            if _inarg('y',arg):
+                directions[1]=True
+            if _inarg('z',arg):
+                directions[2]=True
+
+        self.dirmask = np.where(directions==True)[0]
+ 
+
 
     @abstractmethod
     def compute(self, inp, kargs={}):
@@ -558,6 +581,7 @@ class Position(Observable):
             extra arguments not to fail if they are passed anyway by mistake.
         """
         Observable.__init__(self, None)
+        self.select_direction(arg)
 
     def compute(self, inp):
         """Compute the observable.
@@ -566,17 +590,20 @@ class Position(Observable):
         :returns: atomic positions
 
         """
-        return inp.positions
+        return inp.positions[:,self.dirmask]
 
 
 class Velocity(Observable):
     """Atomic velocities"""
 
     def __init__(self, *arg, **kwarg):
-        """ No need to pass a universe for this observable. We accept
-            extra arguments not to fail if they are passed anyway by mistake.
+        """ No need to pass a universe for this observable.
+            :parameter *arg str :  'x','y','xy',... to select components
         """
         Observable.__init__(self, None)
+        self.select_direction(arg)
+
+           
 
     def compute(self, inp):
         """Compute the observable.
@@ -585,7 +612,7 @@ class Velocity(Observable):
         :returns: atomic positions
 
         """
-        return inp.velocities
+        return inp.velocities[:,self.dirmask]
 
 
 class Force(Observable):
@@ -596,6 +623,7 @@ class Force(Observable):
             extra arguments not to fail if they are passed anyway by mistake.
         """
         Observable.__init__(self, None)
+        self.select_direction(arg)
 
     def compute(self, inp):
         """Compute the observable.
@@ -604,7 +632,7 @@ class Force(Observable):
         :returns: atomic positions
 
         """
-        return inp.forces
+        return inp.forces[:,self.dirmask]
 
 
 class Orientation(Observable):
@@ -890,7 +918,8 @@ class Profile(object):
 class Correlator(object):
     """ Computes the (self) correlation of an observable (scalar or vector)
 
-    :param Observable observable: compute the autocorrelation of this observable
+    :param Observable observable: compute the autocorrelation of this observable. If observable is None and reference is \
+                                  not, the survival probability in the  
     :param bool reduced: when the observable is a vector, average over all spatial direction if reduced==True (default)
     :param bool normalize: normalize the correlation to 1 at t=0
     :param AtomGroup reference: if the group passed to the sample() function changes its composition along the trajectory \
@@ -956,54 +985,76 @@ class Correlator(object):
     >>> # layer group to be made of oxygen atoms only and match
     >>> # the reference group
     >>> inter = pytim.ITIM(u,group=g,alpha=2.0,molecular=False)
-    >>> for t in u.trajectory[1:10]: # example only: sample the whole trajectory
+    >>> # example only: sample longer for smooth results
+    >>> for t in u.trajectory[1:10]: 
     ...     corr.sample(inter.atoms)
     >>> layer_vacf = corr.correlation()
 
 
+    In order to compute the survival probability of some atoms in a layer, it is possible
+    to pass observable=None together with the reference group:
+
+    >>> corr = pytim.observables.Correlator(observable=None, reference = g)
+    >>> inter = pytim.ITIM(u,group=g,alpha=2.0, molecular=False)
+    >>>  # example only: sample longer for smooth results
+    >>> for t in u.trajectory[1:10]:
+    ...     corr.sample(inter.atoms)
+    >>> survival = corr.correlation()
+
     """
 
-    def __init__(self, universe=None, observable=None, reduced=True, normalize=True, reference=None, memory_warn=None):
-        pass # wrong implementation
-        name = self.__class__.__name__
+    def __init__(self, universe=None, observable=None, reference=None, memory_warn=None):
+        self.name = self.__class__.__name__
         self.observable = observable
         self.reference = reference
         self.timeseries = []
         self.maskseries = []
-        self.reduced = reduced
-        self.normalize = normalize
         self.shape = None
         self.mem_usage = 0.0
         self.warned = False
+        self.nsamples = 0 
+
+        if self.reference is not None and self.observable is not None:
+            self.masked = True
+        else:
+            self.masked = False
+
         if memory_warn is None:
             self.warned = True
             self.memory_warn = 0.0
         else:
             self.memory_warn = memory_warn
         if reference is not None:
-            if isinstance(reference, Atom):
-                # in case just a single atom has been passed,
-                # and not a group with one atom
-                self.reference = u.atoms[reference.index:reference.index + 1]
-            if not isinstance(reference, AtomGroup):
-                raise RuntimeError(
-                    name + ': reference must be eiter an Atom or an AtomGroup')
-            self.reference_obs = observable.compute(reference) * 0.0
+            if observable is not None:
+                self.reference_obs = observable.compute(reference) * 0.0
+            else:
+                self.reference_obs = np.zeros(len(reference),dtype=np.double)
             if len(self.reference_obs.shape) > 2:
                 raise RuntimeError(
-                    name + ' works only with scalar and vectors')
+                    self.name + ' works only with scalar and vectors')
+        else:
+            if observable is None:
+                raise RuntimeError(self.name +': at least the observable or the reference must be specified')
 
     def sample(self, group):
+        self.nsamples += 1 
         if self.reference is not None:
             sampled = self.reference_obs.copy()
             mask = np.isin(self.reference, group)
             self.maskseries.append(list(mask))
-            obs = self.observable.compute(group)
+            if self.observable is None:
+                obs = 1.0
+            else:
+                obs = self.observable.compute(group)
             sampled[mask] = obs
         else:
             sampled = self.observable.compute(group)
 
         self.timeseries.append(list(sampled.flatten()))
+        
+        if self.reference is None and self.nsamples >= 2:
+            if len(self.timeseries[-1]) != len(self.timeseries[-2]):
+                raise RuntimeError (self.name+': You cannot provide a variable group without a reference')
         self.mem_usage += sampled.nbytes / 1024.0 / 1024.0  # in Mb
         if self.mem_usage > self.memory_warn and self.warned == False:
             print "Warning: warning threshold of",
@@ -1013,20 +1064,110 @@ class Correlator(object):
         if self.shape == None:
             self.shape = sampled.shape
 
-    def correlation(self):
-        corr = utilities.correlate(self.timeseries)
+    def _correlation_mask(self,shape):
 
-        if self.reference is not None:
+        corr = utilities.correlate(self.timeseries).reshape(shape)
+        mask = None
+
+        if self.reference is not None and self.observable is not None:
             mask = utilities.correlate(self.maskseries)
             if self.shape[1] > 1:
-                tmp_mask = mask.copy()
-                for i in range(1, self.shape[1]):
-                    mask = np.hstack((mask, tmp_mask))
-            corr[mask > 0] = corr[mask > 0] / mask[mask > 0]
-        if self.reduced == True:
-            corr = np.sum(corr, axis=1)
-        if self.normalize == True:
-            corr = corr / corr[0]
+                corr[mask > 0] = np.divide(corr[mask > 0].T, mask[mask > 0]).T
+
+        if len(self.shape) == 2:
+            shape = (self.nseries,self.shape[0]*self.shape[1])
+        else:
+            shape = (self.nseries, self.shape[0])
+
+        return [corr,mask,shape]
+
+    def correlation(self, reduced = True, normalized = True, reentrant = False):
+
+        self.nseries = len(self.timeseries)
+
+        if len(self.shape) == 1:
+            shape = (self.nseries, self.shape[0], 1)
+            dim = 1
+        elif len(self.shape) == 2:
+            shape = (self.nseries, self.shape[0] , self.shape[1])
+            dim = self.shape[1]
+        else:
+            raise RuntimeError("Correlations of tensorial quantites not allowed in "+self.name)
+
+        _timeseries = np.asarray(self.timeseries).copy()
+
+        if reentrant == False and self.masked == True:
+            # we introduce several maskseries, one for each step 
+            falses = [[not i and i  for i in self.maskseries[0]]]
+            ms=np.asarray(falses+self.maskseries+falses)
+            n_part = len(ms[0])
+            mask = np.zeros((len(self.maskseries),n_part))
+            tmpcorr = np.zeros((len(self.maskseries),n_part,dim))
+            self.ms=ms
+
+            for part in range(n_part):
+                mstmp = ms[::,part]
+                change = np.where(mstmp[:-1] != mstmp[1:])[0]+1
+                unfolded = []
+                corrunfold = []
+                for i in range(0,len(change)-1,2):
+                    tmp = mstmp*False
+                    tmp [change[i]:change[i+1]]=True
+                    unfolded.append(tmp[1:-1])
+                    corrunfold.append(utilities.correlate(tmp[1:-1]))
+                n_segment = len(unfolded)
+                if n_segment == 0 :
+                    continue
+                tmpunfold = unfolded[0].copy()*0.0
+                for segment in range(n_segment):
+                    cond = (~np.isclose(corrunfold[segment],0.))
+                    tmpunfold[cond] += corrunfold[segment][cond]
+                    for xyz in range(dim):
+                        _corr = utilities.correlate(_timeseries[:,dim*part+xyz]* unfolded[segment] )
+                        tmpcorr[:,part,xyz][cond] += _corr[:][cond]
+                mask[:,part] = tmpunfold 
+            corr = tmpcorr.reshape(tmpcorr.shape[0],dim*n_part)
+        if reentrant == True and self.masked == True:
+            for xyz in range(dim):
+                _timeseries[:,xyz::dim] *= self.maskseries
+            corr = utilities.correlate(_timeseries)
+    
+        if self.masked == False:
+            corr = utilities.correlate(self.timeseries)
+
+        if self.masked == True:
+            if reentrant == True:
+                mask = utilities.correlate(self.maskseries)
+            condition = mask>0
+            self.corr= corr
+            self.mask = mask
+
+            for xyz in range(dim):
+                corr[:,xyz::dim][condition]/=mask[condition]
+
+        if reduced == True: 
+            tmp = np.zeros((self.nseries,dim)) 
+            if self.masked == True:
+                for xyz in range(dim):
+                    tmp[:,xyz] = np.average(corr[:,xyz::dim],axis=1,weights = mask )
+                corr = np.average(tmp,axis=1)
+            else:
+                for xyz in range(dim):
+                    tmp[:,xyz] = np.average(corr[:,xyz::dim],axis=1)
+                corr = np.average(tmp,axis=1)
+        
+                     
+            if normalized == True:
+                corr = corr / corr[0] 
+        else: 
+            if normalized == True:
+                cond = (~np.isclose(corr[0],0.))
+                corr[:,cond]/=corr[0][cond]
+
+            if self.masked:
+                for xyz in range(dim):
+                    corr[:,xyz::dim][mask<1e-8] = np.nan
+
         return corr
 
 
@@ -1125,3 +1266,4 @@ class FreeVolume(object):
         _,free, err =  self.compute_profile(inp,nbins=1)
         return free[0],err[0]
 
+#

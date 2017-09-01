@@ -91,8 +91,6 @@ class GITIM(pytim.PYTIM):
 
         self._assign_layers()
 
-        self._atoms = self.LayerAtomGroupFactory(
-            self._layers[:].sum().indices, self.universe)
 
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
@@ -233,6 +231,9 @@ class GITIM(pytim.PYTIM):
 
         # reset the interpolator
         self._interpolator = None
+
+        self._atoms = self.LayerAtomGroupFactory(
+            self._layers[:].sum().indices, self.universe)
 
     @property
     def layers(self):

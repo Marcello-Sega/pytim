@@ -493,11 +493,8 @@ class PYTIM(object):
              upp_x_low_y))
 
     def LayerAtomGroupFactory(self, indices, universe):
-        if LooseVersion(MDAnalysis.__version__) >= \
-                LooseVersion('0.16'):  # new topology system
-            AtomGroup = MDAnalysis.core.groups.AtomGroup
-        else:
-            AtomGroup = MDAnalysis.core.AtomGroup.AtomGroup
+
+        AtomGroup = MDAnalysis.core.groups.AtomGroup
 
         class LayerAtomGroup(AtomGroup):
             def __init__(self, interface, *args):
@@ -521,11 +518,7 @@ class PYTIM(object):
                     if isinstance(obj, np.ndarray):
                         return obj.sum()
                     return None
-        if LooseVersion(MDAnalysis.__version__) >= \
-                LooseVersion('0.16'):  # new topology system
-            return LayerAtomGroup(self, indices, universe)
-        else:
-            return LayerAtomGroup(self, universe.atoms[indices])
+        return LayerAtomGroup(self, indices, universe)
 
     @property
     def atoms(self):
