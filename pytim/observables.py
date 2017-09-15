@@ -8,6 +8,7 @@ import numpy as np
 from scipy import stats
 
 from MDAnalysis.lib import distances
+from scipy.spatial import cKDTree
 from itertools import chain
 from pytim import utilities
 
@@ -895,7 +896,7 @@ class Correlator(object):
     :param AtomGroup reference: if the group passed to the sample() function changes its composition along the trajectory \
                                 (such as a layer group), a reference group that includes all atoms that could appear in the \
                                 variable group must be passed, in order to provide a proper normalization. This follows the \
-                                convention in J. Phys. Chem. B 2017, 121, 5582−5594, (DOI: 10.1021/acs.jpcb.7b02220). See \
+                                convention in J. Phys. Chem. B 2017, 121, 5582-5594, (DOI: 10.1021/acs.jpcb.7b02220). See\
                                 the example below.
     :param double memory_warn: if not None, print a warning once this threshold of memory (in Mb) is passed.
 
@@ -1026,3 +1027,100 @@ class Correlator(object):
         if self.normalize == True:
             corr = corr / corr[0]
         return corr
+
+
+class FreeVolume(object):
+    """ Calculates the fraction of free volume in the system, or its profile.
+
+        Note that this does not fit in the usual observable class as i it can not be 
+        expressed as a property of particles, and needs some kind of gridding to be calculated.
+
+        :param Universe universe:  the universe
+        :param int npoints: number of Monte Carlo sampling points (default: 10x the number of atoms in the universe)
+
+        Example:
+        >>> import MDAnalysis as mda
+        >>> import numpy as np
+        >>> import pytim
+        >>> from pytim.datafiles import CCL4_WATER_GRO
+
+        >>> u = mda.Universe(CCL4_WATER_GRO)
+        >>> inter = pytim.ITIM(u) # just to make sure all radii are set 
+        >>> np.random.seed(0) # ensure reproducibility of test
+        >>> FV = pytim.observables.FreeVolume(u)
+        >>> bins, prof ,err = FV.compute_profile()
+
+        >>> free, err = FV.compute()
+        >>> print '{0:.3f}'.format(free)+' +/- {0:.3f}'.format(err)
+        0.707 +/- 0.001
+
+    """
+
+    def __init__(self, universe, npoints=None):
+        self.u = universe 
+        if npoints is None:
+            npoints =  10* len(universe.atoms)
+        self.npoints = npoints 
+
+    def _compute(self,inp=None):
+        res = np.array(0)
+        box = self.u.dimensions[:3].copy()
+        tree = cKDTree(np.random.random((self.npoints,3)) * box)
+        if inp is None:
+            inp = self.u.atoms
+        if not isinstance(inp,AtomGroup):
+            raise RuntimeError(self.__class__.__name__+'compute needs AtomGroup as an input')
+        # np.unique here avoids counting contributions from overlapping spheres    
+        radii = np.unique(inp.radii)
+   
+        for radius in radii:
+            where = np.where(np.isclose(  inp.radii ,  radius ))
+            lst = [ e for l in tree.query_ball_point(inp.positions[where],radius) for e in l]
+            res = np.append(res, lst)
+        return np.unique(res),tree.data
+    
+    def compute_profile(self,inp=None,nbins=30,direction = 2):
+        """ Compute a profile of the free volume fraction
+
+            :param AtomGroup inp:  compute the volume fraction of this group, None selects the complete universe
+            :param int nbins: number of bins, by default 30
+            :param int direction: direction along wich to compute the the profile, z (2) by default
+
+            :returns bins,fraction,error: the left limit of the bins, the free volume fraction in each bin, the associated std deviation
+        """
+        nbins+=1
+        box = self.u.dimensions[:3].copy()
+ 
+        slabwidth = box[direction] / nbins
+        slabvol = self.u.trajectory.ts.volume / nbins 
+        
+        bins = np.arange(nbins) * slabwidth
+        
+        histo = []
+        error = []
+        res,data = self._compute(inp)
+        for i in range(nbins-1):
+            condition = np.logical_and(data[:,direction]> bins[i],data[:,direction]<bins[i+1])
+            in_slab  = np.where(condition)
+            n_in_slab = np.sum(condition*1.0)
+            if n_in_slab == 0:
+                histo.append(0.0)
+                error.append(0.0)
+            else:
+                ratio = np.sum(np.isin(res, in_slab)*1.0) / n_in_slab
+                histo.append(1.-ratio)
+                error.append(np.sqrt(ratio*(1.-ratio)/n_in_slab))
+        return bins,np.array(histo),np.array(error)    
+
+    def compute(self,inp=None):
+        """ Compute the total free volume fraction in the simulation box
+
+            :param AtomGroup inp:  compute the volume fraction of this group, None selects the complete universe
+            :param int nbins: number of bins, by default 30
+
+            :returns fraction, error: the free volume fraction and associated error
+
+        """
+        _,free, err =  self.compute_profile(inp,nbins=1)
+        return free[0],err[0]
+
