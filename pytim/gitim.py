@@ -60,6 +60,7 @@ class GITIM(pytim.PYTIM):
             extra_cluster_groups=None,
             info=False,
             centered=False,
+            voids_distribution=False,
             warnings=False,
             _noextrapoints=False,
             **kargs):
@@ -67,6 +68,7 @@ class GITIM(pytim.PYTIM):
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
         self.do_center = centered
+        self.voids_distribution = voids_distribution
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(
             universe, radii_dict=radii_dict, warnings=warnings)
@@ -90,7 +92,6 @@ class GITIM(pytim.PYTIM):
         pytim.PatchTrajectory(universe.trajectory, self)
 
         self._assign_layers()
-
 
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
@@ -180,17 +181,37 @@ class GITIM(pytim.PYTIM):
                 vertex = np.reshape(vertex, (1, 3))
                 extrapoints = np.append(extrapoints, vertex, axis=0)
                 extraids = np.append(extraids, -1)
+
+
         # print utilities.lap()
         self.triangulation = Delaunay(extrapoints)
         self.triangulation.radii = np.append(
             self.cluster_group.radii[extraids[extraids >= 0]], np.zeros(8))
         # print utilities.lap()
 
-        prefiltered = self.alpha_prefilter(self.triangulation, alpha)
+        if self.voids_distribution == False:
+            prefiltered = self.alpha_prefilter(self.triangulation, alpha)
+        else:
+            prefiltered = self.triangulation.simplices
+        
+        circumradii = []
+        for simplex in prefiltered:
+            if  np.any(simplex < nrealpoints):
+                circumradii.append(self.circumradius(simplex) )
+            else:
+                circumradii.append(-1.0)
+
+        circumradii = np.array(circumradii)
+
+        if self.voids_distribution == True:
+            self.circumradii = circumradii
+
         # print utilities.lap()
 
         a_shape = prefiltered[np.array([self.circumradius(
             simplex) >= self.alpha for simplex in prefiltered])]
+        a_shape = prefiltered[circumradii >= self.alpha ]
+
         # print utilities.lap()
         _ids = np.unique(a_shape.flatten())
         # remove the indices corresponding to the 8 additional points, which

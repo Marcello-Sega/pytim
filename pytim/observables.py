@@ -1171,6 +1171,70 @@ class Correlator(object):
         return corr
 
 
+class VoronoiTessellation(Observable):
+
+    def __init__(self,universe):
+        self.quantity =  {'density':self.localdensity,'volume':self.localvolume,'surface':self.localsurface,'vertices':self.vertices,'facets':self.facets}
+        self.defaultkargs = {'stored':False,'quantity':'volume'}
+        self.u = universe
+
+    def compute(self,group,kargs={}):
+        r"""
+            Computes the Voronoi tessellation and returns a related observable:
+            
+            :param AtomGroup group: tessellate the atomic positions of this group
+            :param \**kwargs: see below
+            
+            :Keyword Arguments:
+                * str *quantity*: 'density','volume','surface'. By default returns the volume.
+                * bool *stored*: recompute the tessellation if stored==False, otherwise not.
+            
+            Example:
+            
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> from pytim.datafiles import WATER_GRO
+            >>> from pytim.observables import VoronoiTessellation
+            >>> 
+            >>> u = mda.Universe(WATER_GRO)
+            >>> vor = VoronoiTessellation(u)
+            >>> print vor.compute(quantity='volume')
+            >>> print vor.compute(stored=True,quantity='surface')
+            
+        """
+        t = self.u.trajectory.ts
+        box = t.dimensions[:3]
+        ka = self.defaultkargs.copy()
+        ka.update(kargs)
+        if ka['stored']==False:
+            pos , _ = pytim.utilities.generate_periodic_border(group.positions,box,box/2.)
+            vor = Voronoi(pos)
+            self.hulls = []
+            N=len(group.positions)
+            for ireg in vor.point_region[:N]:
+                # Convex hull of one Voronoi cell:
+                ivert = vor.regions[ireg]
+                points = vor.vertices[ivert]
+                hull = ConvexHull(points)
+                self.hulls.append(hull)
+        return self.quantity[ka['quantity']]()
+
+    def vertices(self):
+        return np.array([ 1.*hull.vertices.shape[0] for hull in self.hulls])
+
+    def facets(self):
+        return np.array([ 1.*hull.nsimplex for hull in self.hulls])
+
+    def localsurface(self):
+        return np.array([ hull.area for hull in self.hulls])
+
+    def localvolume(self):
+        return np.array([ hull.volume for hull in self.hulls])
+
+    def localdensity(self):
+        return np.array([ 1./hull.volume for hull in self.hulls])
+
+
 class FreeVolume(object):
     """ Calculates the fraction of free volume in the system, or its profile.
 
@@ -1265,5 +1329,6 @@ class FreeVolume(object):
         """
         _,free, err =  self.compute_profile(inp,nbins=1)
         return free[0],err[0]
+
 
 #
