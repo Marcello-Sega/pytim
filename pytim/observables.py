@@ -964,6 +964,7 @@ class Correlator(object):
     """
 
     def __init__(self, universe=None, observable=None, reduced=True, normalize=True, reference=None, memory_warn=None):
+        pass # wrong implementation
         name = self.__class__.__name__
         self.observable = observable
         self.reference = reference
