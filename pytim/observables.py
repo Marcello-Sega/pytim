@@ -924,9 +924,8 @@ class Correlator(object):
     :param bool normalize: normalize the correlation to 1 at t=0
     :param AtomGroup reference: if the group passed to the sample() function changes its composition along the trajectory \
                                 (such as a layer group), a reference group that includes all atoms that could appear in the \
-                                variable group must be passed, in order to provide a proper normalization. This follows the \
-                                convention in J. Phys. Chem. B 2017, 121, 5582-5594, (DOI: 10.1021/acs.jpcb.7b02220). See\
-                                the example below.
+                                variable group must be passed, in order to provide a proper normalization. See\ the example \
+                                below.
     :param double memory_warn: if not None, print a warning once this threshold of memory (in Mb) is passed.
 
 
@@ -938,8 +937,8 @@ class Correlator(object):
     >>> from pytim.datafiles import WATERSMALL_GRO
     >>> from pytim.utilities import lap
     >>> #  tmpdir here is specified only for travis
-    >>> WATERSMALL_TRR = pytim.datafiles.pytim_data.fetch('WATERSMALL_LONG_TRR',tmpdir='./')
-    checking presence of a cached copy... not found. Fetching remote file... done.
+    >>> WATERSMALL_TRR = pytim.datafiles.pytim_data.fetch('WATERSMALL_LONG_TRR',tmpdir='./') # doctest:+ELLIPSIS
+    checking presence of a cached copy ...
 
     >>> u = mda.Universe(WATERSMALL_GRO,WATERSMALL_TRR)
     >>> g = u.select_atoms('name OW')
@@ -1037,53 +1036,198 @@ class Correlator(object):
                 raise RuntimeError(self.name +': at least the observable or the reference must be specified')
 
     def sample(self, group):
-        self.nsamples += 1 
-        if self.reference is not None:
-            sampled = self.reference_obs.copy()
-            mask = np.isin(self.reference, group)
-            self.maskseries.append(list(mask))
-            if self.observable is None:
-                obs = 1.0
-            else:
-                obs = self.observable.compute(group)
-            sampled[mask] = obs
-        else:
-            sampled = self.observable.compute(group)
+        """ Sample the timeseries for the autocorrelation function
 
-        self.timeseries.append(list(sampled.flatten()))
-        
-        if self.reference is None and self.nsamples >= 2:
-            if len(self.timeseries[-1]) != len(self.timeseries[-2]):
-                raise RuntimeError (self.name+': You cannot provide a variable group without a reference')
+            :parameter AtomGroup group: compute the observable on the atoms of this group
+
+        """
+        self.nsamples += 1 
+        if self.reference is not None:  # could be intermittent or continuous:
+                                        # we need to collect also the residence function 
+            mask = np.isin(self.reference, group) # the residence function (1 if in the reference group, 0 otherwise)
+            self.maskseries.append(list(mask))    # append the residence function to its timeseries
+            if self.observable is not None:
+                sampled = self.reference_obs.copy()   # this copies a vector of zeros with the correct shape
+                obs = self.observable.compute(group)
+                sampled[np.where(mask)] = obs
+                self.timeseries.append(list(sampled.flatten()))
+            else:
+                self.timeseries = self.maskseries
+                if self.shape is None:
+                    self.shape = (1,)
+                sampled = mask
+        else: 
+            if self.observable is None:
+                RuntimeError('Cannot compute the survival probability without a reference group')
+            sampled = self.observable.compute(group)
+            self.timeseries.append(list(sampled.flatten()))
+
         self.mem_usage += sampled.nbytes / 1024.0 / 1024.0  # in Mb
         if self.mem_usage > self.memory_warn and self.warned == False:
             print "Warning: warning threshold of",
             print self.memory_warn, "Mb exceeded"
             self.warned = True
 
-        if self.shape == None:
+        if self.shape is None:
             self.shape = sampled.shape
 
-    def _correlation_mask(self,shape):
+    def correlation(self, reduced = True, normalized = True, continuous = True):
+        """ Calculate the autocorrelation from the sampled data
 
-        corr = utilities.correlate(self.timeseries).reshape(shape)
-        mask = None
+            :parameter bool reduced: if True (default) average over particles and spatial directions.
+                                        if False, no average is performed. If you want to compute the
+                                        correlations only along some spatial direction, specify them in
+                                        the observable, e.g., observable=pytim.observables.Velocity('xy')
+            :parameter bool normalized: normalize the correlation function to: its zero-time value for
+                                        regular correlations; to the average of the characteristic function
+                                        for the survival probability.
+            :parameter bool continuous: applies only when a reference group has been specified: if True 
+                                        (default) the contribution of a particle at time lag $\\tau=t_1-t_0$
+                                        is considered only if the particle did not leave the reference group
+                                        between $t_0$ and $t_1$. If False, the intermittent correlation is
+                                        calculated, and the above restriction is released.
 
-        if self.reference is not None and self.observable is not None:
-            mask = utilities.correlate(self.maskseries)
-            if self.shape[1] > 1:
-                corr[mask > 0] = np.divide(corr[mask > 0].T, mask[mask > 0]).T
+            Example:
 
-        if len(self.shape) == 2:
-            shape = (self.nseries,self.shape[0]*self.shape[1])
+            >>> # We build a fake trajectory to test the various options:
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> import numpy as np
+            >>> from pytim.datafiles import WATER_GRO
+            >>> from pytim.observables import Correlator, Velocity
+            >>> np.set_printoptions(suppress=True,precision=3)
+            >>> 
+            >>> u = mda.Universe(WATER_GRO)
+            >>> g = u.atoms[0:2]
+            >>> g.velocities*=0.0
+            >>> g.velocities+=1.0
+            >>>
+            >>> vv = Correlator(observable=Velocity('x'), reference=g) # velocity autocorrelation along x, variable group
+            >>> nn = Correlator(reference=g) # survival probability in group g
+            >>>
+            >>> for c in [vv,nn]:
+            ...     c.sample(g)     # t=0
+            ...     c.sample(g[:1]) # t=1, exclude the second particle
+            ...     g.velocities /= 2. # from now on v=0.5
+            ...     c.sample(g)     # t=2
+            >>>
+
+            The timeseries sampled can be accessed using:
+
+            >>> print vv.timeseries # rows refer to time, columns to particle 
+            [[1.0, 1.0], [1.0, 0.0], [0.5, 0.5]]
+            >>>
+            >>> print nn.timeseries
+            [[True, True], [True, False], [True, True]]
+            >>>
+
+            Note that the average of  the characteristic function $h(t)$ is done over all
+            trajectories, including those that start with h=0. When normalizing, the correlation
+            $< h(t) h(0) >$ is divided by the average $<h>$ computed over all trajectores that
+            extend up to a time lag $t$. This behavior is different from the calculation of the 
+            autocorrelation function (see below).
+    
+            >>> # reduced, normalized, continuous
+            >>> corr = nn.correlation()
+            >>> print np.allclose(corr, [ 5./5   ,  2./3 ,  1./2 ])
+            True
+            >>> # not reduced, normalized, continuous
+            >>> corr = nn.correlation(reduced=False)
+            >>> print np.allclose(corr, [ [ 1. , 1.],  [ 1. , 0. ] , [ 1. , 0. ] ])
+            True
+            >>> # reduced, normalized, intermittent 
+            >>> corr = nn.correlation(continuous=False)
+            >>> print np.allclose(corr, [ 5./5   ,  2./3 ,  2./2 ])
+            True
+            >>> # not reduced, not normalized, intermittent
+            >>> corr = nn.correlation(reduced=False,normalized=False,continuous=False)
+            >>> print np.allclose(corr, [ [ 3./3 , 2./3],  [ 2./2 , 0. ] , [ 1. , 1. ] ])
+            True
+
+            The autocorrelation functions are calculated by taking into account in the average
+            only those trajectory that start with $h=1$ (i.e., which start within the reference
+            group). The normalization is done by dividing the correlation at time lag $t$ by its 
+            value at time lag 0 computed over all trajectories that extend up to time lag $t$ and 
+            do not start with $h=0$. Note that in this way the `reduce=True` option won't give the same 
+            result as plain averaging the `reduce=False` case.
+
+            >>> # reduced, not normalizd, intermittent
+            >>> corr = vv.correlation(normalized=False,continuous=False)
+            >>> print np.allclose(corr, [ (1+1+0.25+1+0.25)/5   ,  (1+0.5+0.)/3 ,  (0.5+0.5)/2])
+            True
+            >>> # check normalization
+            >>> np.all(vv.correlation(continuous=False) == corr/corr[0])
+            True
+            >>> # not reduced, not normalized, intermittent
+            >>> corr = vv.correlation(reduced=False,normalized=False,continuous=False)
+            >>> print np.allclose(corr, [ [ (1+1+0.25)/3 , (1+0.25)/2.],  [ (1+0.5)/2 , 0. ] , [ 0.5 , 0.5 ] ])
+            True
+            >>> # check normalization
+            >>> print np.all(vv.correlation(reduced=False,continuous=False) == corr/corr[0])
+            True
+            >>> # reduced, not normalizd, continuous
+            >>> corr = vv.correlation(normalized=False,continuous=True)
+            >>> print np.allclose(corr, [ (1+1+0.25+1+0.25)/5   ,  (1+0.5+0.)/3 ,  (0.5+0.)/2])
+            True
+            >>> # check normalization
+            >>> np.all(vv.correlation(continuous=True) == corr/corr[0])
+            True
+            >>> # not reduced, not normalized, continuous
+            >>> corr = vv.correlation(reduced=False,normalized=False,continuous=True)
+            >>> print np.allclose(corr, [ [ (1+1+0.25)/3 , (1+0.25)/2.],  [ (1+0.5)/2 , 0./1. ] , [ 0.5/1 , 0./1 ] ])
+            True
+            >>> # check normalization
+            >>> print np.all(vv.correlation(reduced=False,continuous=True) == corr/corr[0])
+            True
+
+
+        """ 
+        intermittent = not continuous
+        self.dim = self._determine_dimension()
+
+        # the standard correlation 
+        if self.reference is None :
+            ts = np.asarray(self.timeseries)
+            corr = utilities.correlate(ts)
+            norm = corr[:,0]
+            if reduced == True :
+                corr = np.average(corr,axis=1)
+                norm = corr[0]
+            if normalized == True:
+                corr /= norm
+            return corr
+
+        # prepare the mask for the intermittent/continuous cases
+        if intermittent == True:
+            ms = np.asarray(self.maskseries,dtype=np.double)
+        else: # we add Falses at the begining and at the end to ease the splitting in sub-trajectories
+            falses = [[False] * len(self.maskseries[0])]
+            ms = np.asarray(falses+self.maskseries+falses)
+
+        # compute the survival probabily
+        if self.observable is None:  
+            return self._survival_probability(ms,normalized,reduced,intermittent)
+        # compute the autocorrelation function 
         else:
-            shape = (self.nseries, self.shape[0])
+            ts = np.asarray(self.timeseries)
+            return self._autocorrelation(ts, ms, normalized, reduced, intermittent)
 
-        return [corr,mask,shape]
+    def  _autocorrelation(self,ts, ms, normalized, reduced, intermittent):
 
-    def correlation(self, reduced = True, normalized = True, reentrant = False):
+        if intermittent == True:
+            corr, weight = self._autocorrelation_intermittent(ts,ms)
+        else:
+            corr, weight = self._autocorrelation_continuous(ts,ms)
+        if reduced == True:
+            corr = np.average(corr,axis=1,weights=weight)
+        if normalized == True:
+            corr /= corr[0]  
+            
+        return corr
 
-        self.nseries = len(self.timeseries)
+
+    def _determine_dimension(self):
+        self.nseries = max(len(self.timeseries),len(self.maskseries))
 
         if len(self.shape) == 1:
             shape = (self.nseries, self.shape[0], 1)
@@ -1093,83 +1237,96 @@ class Correlator(object):
             dim = self.shape[1]
         else:
             raise RuntimeError("Correlations of tensorial quantites not allowed in "+self.name)
-
-        _timeseries = np.asarray(self.timeseries).copy()
-
-        if reentrant == False and self.masked == True:
-            # we introduce several maskseries, one for each step 
-            falses = [[not i and i  for i in self.maskseries[0]]]
-            ms=np.asarray(falses+self.maskseries+falses)
-            n_part = len(ms[0])
-            mask = np.zeros((len(self.maskseries),n_part))
-            tmpcorr = np.zeros((len(self.maskseries),n_part,dim))
-            self.ms=ms
-
-            for part in range(n_part):
-                mstmp = ms[::,part]
-                change = np.where(mstmp[:-1] != mstmp[1:])[0]+1
-                unfolded = []
-                corrunfold = []
-                for i in range(0,len(change)-1,2):
-                    tmp = mstmp*False
-                    tmp [change[i]:change[i+1]]=True
-                    unfolded.append(tmp[1:-1])
-                    corrunfold.append(utilities.correlate(tmp[1:-1]))
-                n_segment = len(unfolded)
-                if n_segment == 0 :
-                    continue
-                tmpunfold = unfolded[0].copy()*0.0
-                for segment in range(n_segment):
-                    cond = (~np.isclose(corrunfold[segment],0.))
-                    tmpunfold[cond] += corrunfold[segment][cond]
-                    for xyz in range(dim):
-                        _corr = utilities.correlate(_timeseries[:,dim*part+xyz]* unfolded[segment] )
-                        tmpcorr[:,part,xyz][cond] += _corr[:][cond]
-                mask[:,part] = tmpunfold 
-            corr = tmpcorr.reshape(tmpcorr.shape[0],dim*n_part)
-        if reentrant == True and self.masked == True:
-            for xyz in range(dim):
-                _timeseries[:,xyz::dim] *= self.maskseries
-            corr = utilities.correlate(_timeseries)
-    
-        if self.masked == False:
-            corr = utilities.correlate(self.timeseries)
-
-        if self.masked == True:
-            if reentrant == True:
-                mask = utilities.correlate(self.maskseries)
-            condition = mask>0
-            self.corr= corr
-            self.mask = mask
-
-            for xyz in range(dim):
-                corr[:,xyz::dim][condition]/=mask[condition]
-
-        if reduced == True: 
-            tmp = np.zeros((self.nseries,dim)) 
-            if self.masked == True:
-                for xyz in range(dim):
-                    tmp[:,xyz] = np.average(corr[:,xyz::dim],axis=1,weights = mask )
-                corr = np.average(tmp,axis=1)
-            else:
-                for xyz in range(dim):
-                    tmp[:,xyz] = np.average(corr[:,xyz::dim],axis=1)
-                corr = np.average(tmp,axis=1)
-        
-                     
+        return dim
+  
+    def _survival_probability(self,ms,normalized,reduced,intermittent):
+        if intermittent == True:
+            corr, norm = self._survival_intermittent(ms,normalized)
+        else:
+            corr, norm = self._survival_continuous(ms,normalized)
+                
+        if reduced == True:
+            corr = np.average(corr,axis=1)
             if normalized == True:
-                corr = corr / corr[0] 
-        else: 
-            if normalized == True:
-                cond = (~np.isclose(corr[0],0.))
-                corr[:,cond]/=corr[0][cond]
-
-            if self.masked:
-                for xyz in range(dim):
-                    corr[:,xyz::dim][mask<1e-8] = np.nan
-
+                corr /= np.average(norm,axis=1)
+        elif normalized == True:
+            corr /= norm
+            
         return corr
+    
 
+    def _survival_intermittent(self,ms,normalized):
+        norm  = None
+        corr = utilities.correlate(ms)
+        if normalized == True:
+            norm = np.cumsum(ms,axis=0)[::-1]
+            norm /= (1.+np.arange(norm.shape[0])[::-1]).reshape(norm.shape[0],1)
+ 
+        return corr, norm
+
+        
+    def _survival_continuous(self,ms,normalized):
+        norm = None
+        n_part = len(ms[0])
+        corr = np.zeros((self.nseries,n_part))
+        norm = corr.copy()
+        counting = (1.+np.arange(len(self.timeseries)))
+
+        for part in range(n_part):
+            edges = np.where(ms[::,part][:-1] != ms[::,part][1:])[0]
+            deltat = edges[1::2]-edges[0::2]
+            # for each of the disconnected segments:
+            for n,dt in enumerate(deltat): 
+                # no need to compute the correlation, we know what it is
+                corr[0:dt,part] += dt*1./ len(self.timeseries)
+
+            norm = np.cumsum(ms[1:-1],axis=0)[::-1]
+            norm = norm / counting.reshape(counting.shape[0],1)[::-1]
+
+        return corr, norm 
+
+    def _autocorrelation_intermittent(self,ts,ms):
+    
+        dim = self.dim
+
+        maskcorr = utilities.correlate(ms)
+        cond = np.where(maskcorr>1e-9)
+        corr = ts.copy()
+        weight = ts.copy()
+        w= np.cumsum(ms,axis=0)[::-1]
+        for xyz in range(dim):
+            corr[:,xyz::dim] = utilities.correlate(ts[:,xyz::dim]*ms)
+            corr[:,xyz::dim][cond] /=  maskcorr[cond]
+            weight[:,xyz::dim] = w
+
+        return corr, weight
+
+
+    def _autocorrelation_continuous(self, ts, ms):
+
+        dim = self.dim 
+        norm = None
+        n_part = len(ms[0])
+        corr = np.zeros(ts.shape)
+        weight = corr.copy()
+
+        for xyz in range(dim):
+            weight[:,xyz::dim] = np.cumsum(ms[1:-1],axis=0)[::-1]
+
+        for part in range(n_part):
+            edges = np.where(ms[::,part][:-1] != ms[::,part][1:])[0]
+            deltat = edges[1::2]-edges[0::2]
+            for n,dt in enumerate(deltat): # for each of the disconnected segments
+                t1 = edges[2*n]
+                t2 = edges[2*n+1]
+                i1 = dim*part
+                i2 = dim*(part+1)
+                corr[0:dt,i1:i2] += utilities.correlate(ts[t1:t2,i1:i2]) / len(deltat)
+                #print "dt=",dt,"index=",i1,i2,"corr+=", utilities.correlate(ts[t1:t2,i1:i2]),"will be divided by ",len(deltat)
+
+        return corr,weight
+    
+        
 
 class VoronoiTessellation(Observable):
 
