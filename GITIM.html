@@ -1,0 +1,317 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>GITIM &#8212; Pytim 0.5.3 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/pytim.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="WillardChandler" href="WillardChandler.html" />
+    <link rel="prev" title="ITIM" href="ITIM.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="WillardChandler.html" title="WillardChandler"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ITIM.html" title="ITIM"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.5.3 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-pytim.gitim">
+<span id="gitim"></span><h1>GITIM<a class="headerlink" href="#module-pytim.gitim" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-gtim">
+<h2>Module: gtim<a class="headerlink" href="#module-gtim" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pytim.gitim.GITIM">
+<em class="property">class </em><code class="descclassname">pytim.gitim.</code><code class="descname">GITIM</code><span class="sig-paren">(</span><em>universe</em>, <em>alpha=2.0</em>, <em>symmetry='spherical'</em>, <em>normal='guess'</em>, <em>group=None</em>, <em>radii_dict=None</em>, <em>max_layers=1</em>, <em>cluster_cut=None</em>, <em>cluster_threshold_density=None</em>, <em>molecular=True</em>, <em>extra_cluster_groups=None</em>, <em>info=False</em>, <em>centered=False</em>, <em>warnings=False</em>, <em>_noextrapoints=False</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.gitim.GITIM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identifies interfacial molecules at macroscopically flat interfaces.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>universe</strong> (<em>Universe</em>) – the MDAnalysis universe</li>
+<li><strong>alpha</strong> (<em>float</em>) – the probe sphere radius</li>
+<li><strong>group</strong> (<em>AtomGroup</em>) – identify the interfacial molecules                                       from this group</li>
+<li><strong>radii_dict</strong> (<em>dict</em>) – dictionary with the atomic radii of                                       the elements in the group.
+If None is supplied, the default one                                       (from GROMOS 43a1) will be used.</li>
+<li><strong>max_layers</strong> (<em>int</em>) – the number of layers to be identified</li>
+<li><strong>info</strong> (<em>bool</em>) – print additional info</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span>       <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>       <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">radii</span><span class="o">=</span><span class="n">pytim_data</span><span class="o">.</span><span class="n">vdwradii</span><span class="p">(</span><span class="n">G43A1_TOP</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span><span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                <span class="n">symmetry</span><span class="o">=</span><span class="s1">&#39;spherical&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;gitim.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="nb">repr</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+<span class="go">&lt;AtomGroup with 547 atoms&gt;</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.alpha">
+<code class="descname">alpha</code><a class="headerlink" href="#pytim.gitim.GITIM.alpha" title="Permalink to this definition">¶</a></dt>
+<dd><p>(float) real space cutoff</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.cluster_cut">
+<code class="descname">cluster_cut</code><a class="headerlink" href="#pytim.gitim.GITIM.cluster_cut" title="Permalink to this definition">¶</a></dt>
+<dd><p>(real) cutoff for phaseidentification</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.cluster_threshold_density">
+<code class="descname">cluster_threshold_density</code><a class="headerlink" href="#pytim.gitim.GITIM.cluster_threshold_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>(float) threshold for the density-based filtering</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.extra_cluster_groups">
+<code class="descname">extra_cluster_groups</code><a class="headerlink" href="#pytim.gitim.GITIM.extra_cluster_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>(ndarray) additional cluster groups</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.info">
+<code class="descname">info</code><a class="headerlink" href="#pytim.gitim.GITIM.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>(bool) print additional information</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.itim_group">
+<code class="descname">itim_group</code><a class="headerlink" href="#pytim.gitim.GITIM.itim_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>(AtomGroup) the group,the surface of which should be computed</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.layers">
+<code class="descname">layers</code><a class="headerlink" href="#pytim.gitim.GITIM.layers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Access the layers as numpy arrays of AtomGroups.</p>
+<p>The object can be sliced as usual with numpy arrays.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.max_layers">
+<code class="descname">max_layers</code><a class="headerlink" href="#pytim.gitim.GITIM.max_layers" title="Permalink to this definition">¶</a></dt>
+<dd><p>(int) maximum number of layers to be identified</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.molecular">
+<code class="descname">molecular</code><a class="headerlink" href="#pytim.gitim.GITIM.molecular" title="Permalink to this definition">¶</a></dt>
+<dd><p>(bool) wheter to computesurface atoms or surface molecules</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.multiproc">
+<code class="descname">multiproc</code><a class="headerlink" href="#pytim.gitim.GITIM.multiproc" title="Permalink to this definition">¶</a></dt>
+<dd><p>(bool) use parallel implementation</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.radii_dict">
+<code class="descname">radii_dict</code><a class="headerlink" href="#pytim.gitim.GITIM.radii_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>(dict) custom atomic radii</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytim.gitim.GITIM.savepdb">
+<code class="descname">savepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>multiframe=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.gitim.GITIM.savepdb" title="Permalink to this definition">¶</a></dt>
+<dd><p>An alias to <a class="reference internal" href="#pytim.gitim.GITIM.writepdb" title="pytim.gitim.GITIM.writepdb"><code class="xref py py-func docutils literal"><span class="pre">writepdb()</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.surfaces">
+<code class="descname">surfaces</code><a class="headerlink" href="#pytim.gitim.GITIM.surfaces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Surfaces associated to the interface</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytim.gitim.GITIM.writepdb">
+<code class="descname">writepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>group='all'</em>, <em>multiframe=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.gitim.GITIM.writepdb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the frame to a pdb file, marking the atoms belonging
+to the layers with different beta factor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> – string  – the output file name</li>
+<li><strong>centered</strong> – string  – ‘origin’, ‘middle’, or ‘no’</li>
+<li><strong>group</strong> – AtomGroup – if ‘all’ is passed, the universe is used</li>
+<li><strong>multiframe</strong> – boolean – append to pdb file if True</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example: save the positions (centering the interface in the cell) without appending</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">multiframe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Example: save the positions without centering the interface. This will</dt>
+<dd>not shift the atoms from the original position (still, they will
+be put into the basic cell).
+The :multiframe: option set to :False: will overwrite the file.</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-92682414-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+<h3><a href="index.html">Table Of Contents</a></h3>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quick.html">Pytim: Quick Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">How to Install Pytim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
+<li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Topologies without atomi radii</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ITIM.html">ITIM</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">GITIM</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-gtim">Module: gtim</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="WillardChandler.html">WillardChandler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ChaconTarazona.html">ChaconTarazona</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observables.html">Observables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datafiles.html">Datafiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="ITIM.html"
+                        title="previous chapter">ITIM</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="WillardChandler.html"
+                        title="next chapter">WillardChandler</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/GITIM.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="WillardChandler.html" title="WillardChandler"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ITIM.html" title="ITIM"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.5.3 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Marcello Sega.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

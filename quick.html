@@ -1,0 +1,237 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Pytim: Quick Tour &#8212; Pytim 0.5.3 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.5.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/pytim.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="How to Install Pytim" href="install.html" />
+    <link rel="prev" title="Pytim: Quick Tour" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="How to Install Pytim"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Pytim: Quick Tour"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.5.3 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pytim-quick-tour">
+<h1>Pytim: Quick Tour<a class="headerlink" href="#pytim-quick-tour" title="Permalink to this headline">¶</a></h1>
+<p>Pytim is a package based on <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a> for the identification and analysis of surface molecules in configuration files or in trajectories from molecular dynamics simulations.</p>
+<div class="section" id="basic-example">
+<h2>Basic Example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h2>
+<p>This is a basic example that shows how easy is to use the <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a> class
+for planar interfaces:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<span class="kn">import</span> <span class="nn">pytim</span>
+<span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c1"># load an example configuration file</span>
+<span class="n">u</span>         <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
+
+<span class="c1"># initialize the interface</span>
+<span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+
+<span class="c1"># write a pdb with the information on the surface layers</span>
+<span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;middle&#39;</span><span class="p">)</span>
+
+<span class="c1"># access the atoms in the layers as an MDAnalysis&#39; AtomGroups</span>
+<span class="n">upper_layer</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The above lines are doing the following:</p>
+<ol class="arabic simple">
+<li>Import the modules of MDAanalysis, pytim, and some example datafiles,
+then initialize the MDAnalysis universe in the usual way, using
+as an input file one of the structures provided by the package, in
+this case a water/vapor interface in a gromos file format (the
+variable WATER_GRO is made available by the pytim.datafiles module)</li>
+<li>The interfacial analysis is then initialized using the
+<a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a> class, and the molecular layers are
+calculated automatically.</li>
+<li>The whole configuration is saved to a pdb for graphical inspection using
+<a class="reference internal" href="ITIM.html#pytim.itim.ITIM.writepdb" title="pytim.itim.ITIM.writepdb"><code class="xref py py-meth docutils literal"><span class="pre">writepdb()</span></code></a>
+(with surface atoms having a beta factor equal to the numer of the layer
+they belong to).</li>
+<li>The groups of atoms corresponding to different layers can be extracted using
+<a class="reference internal" href="ITIM.html#pytim.itim.ITIM.layers" title="pytim.itim.ITIM.layers"><code class="xref py py-meth docutils literal"><span class="pre">layers()</span></code></a></li>
+</ol>
+<p>The result of the calculation can be seen in the following picture,
+where surface oxygen atoms are highlighted in blue.</p>
+<a class="reference internal image-reference" href="_images/example_water.png"><img alt="_images/example_water.png" class="align-center" src="_images/example_water.png" style="width: 70%;" /></a>
+<p>This is a very basic example, and many more are given in the <a class="reference internal" href="Tutorials.html"><span class="doc">Tutorials</span></a>.</p>
+</div>
+<div class="section" id="pytim-s-main-features">
+<h2>Pytim’s Main Features<a class="headerlink" href="#pytim-s-main-features" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">It’s easy to use! While many optional arguments can be used to trigger special features,
+or to fine-tune the behavior of the algorithm, just invoking the class with the minimal
+set of arguments, as in the example shown here, delivers what you expect.</p>
+</li>
+<li><p class="first">Works for planar (<a class="reference internal" href="ITIM.html#module-pytim.itim" title="pytim.itim"><code class="xref py py-mod docutils literal"><span class="pre">itim</span></code></a>)  and arbitrary (<a class="reference internal" href="GITIM.html#module-pytim.gitim" title="pytim.gitim"><code class="xref py py-mod docutils literal"><span class="pre">gitim</span></code></a>) interfaces</p>
+</li>
+<li><p class="first">Thanks to <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a>, Pytim can work with several common file formats, including:</p>
+<ul class="simple">
+<li>CHARMM &amp; NAMD,</li>
+<li>LAMMPS</li>
+<li>GROMACS</li>
+<li>AMBER</li>
+<li>DL_POLY</li>
+<li>GAMESS</li>
+</ul>
+<p>For the full list see the <a class="reference external" href="https://pythonhosted.org/MDAnalysis/documentation_pages/coordinates/init.html#id1">Supported_Formats</a></p>
+</li>
+<li><p class="first">It’s <em>fast!</em> The planar interface identification, as well as the clustering analysis to filter the vapor or diluted phases both scale in theory, in the average case, like O(N log N). In practice, sublinear scaling is observed for systems up to 10,000 atoms, and ~ O(N^1.3) up to 100,000 atoms, on an 1,7 GHz Intel Core i7. The surface identification for a system of 10,000 atoms, for example, requires only 0.2 s on this hardware.</p>
+</li>
+<li><p class="first">It comes with several analysis tools, specifically written for the properties of the interfacial atoms, such as</p>
+<ul class="simple">
+<li>in-layer radial distribution functions</li>
+<li>intrinsic and non-intrinsic density profiles</li>
+<li>calculation of surface triangulation and associated geometrical parameters</li>
+<li>…</li>
+</ul>
+</li>
+<li><p class="first">It is easy to extend: as it relies on the <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a> interface,
+it is easy to modify the core classes and/or to add new observables</p>
+</li>
+</ul>
+<hr class="docutils" />
+<div class="toctree-wrapper compound">
+</div>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-92682414-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+<h3><a href="index.html">Table Of Contents</a></h3>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pytim: Quick Tour</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#basic-example">Basic Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pytim-s-main-features">Pytim’s Main Features</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">How to Install Pytim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
+<li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Topologies without atomi radii</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ITIM.html">ITIM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GITIM.html">GITIM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WillardChandler.html">WillardChandler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ChaconTarazona.html">ChaconTarazona</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observables.html">Observables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datafiles.html">Datafiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Pytim: Quick Tour</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">How to Install Pytim</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/quick.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="How to Install Pytim"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Pytim: Quick Tour"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.5.3 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Marcello Sega.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>
