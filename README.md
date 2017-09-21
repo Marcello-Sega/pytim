@@ -12,7 +12,7 @@
 
 # A Quick Intro
 
-<img src="https://marcello-sega.github.io/pytim/_images/micelle_cut.png" width="380" align="right" style="z-index:999;">
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle_cut.png" width="380" align="right" style="z-index:999;">
 
 Have a look at some jupyter notebooks:
 
@@ -51,13 +51,13 @@ as well as common structure file formats such as XYZ or PDB (have a look at the 
 
 Ok, ok ... have a look below: the pytim part of the notebook is actually all enclosed in cells [1] and [2]. Cells from [3] to [6] are for visualization. This example is about computing molecular layers of a flat interface:
 
-<img src="https://marcello-sega.github.io/pytim/_images/notebook2.png" width="auto" align="center" style="z-index:999;">
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/notebook2.png" width="auto" align="center" style="z-index:999;">
 
 ## <a name="non-flat-interfaces"></a> What if the interface is not flat? 
 
 You could use GITIM, or the Willard-Chandler method, look here: 
 
-<img src="https://marcello-sega.github.io/pytim/_images/notebook1.png" width="auto" align="center" style="z-index:999;">
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/notebook1.png" width="auto" align="center" style="z-index:999;">
 
 
 # <a name="installation"></a> How to install the package and the documentation? 
