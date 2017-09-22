@@ -602,7 +602,7 @@ class PYTIM(object):
         """
         self.writepdb(filename, centered, multiframe)
 
-    def _define_cluster_group(self):
+    def _define_cluster_group(self, extra_cluster_groups=None):
         if(self.cluster_cut is not None):
             # groups have been checked already in _sanity_checks()
             labels, counts, neighbors = utilities.do_cluster_analysis_DBSCAN(
@@ -615,8 +615,12 @@ class PYTIM(object):
             # the indices (within the group) of the
             ids_max = np.where(labels == label_max)[0]
             # atoms belonging to the largest cluster
-            self.cluster_group = self.itim_group[ids_max]
-            self.n_neighbors = neighbors
+            if (extra_cluster_groups is not None) :
+                self.cluster_group = self.itim_group[ids_max] + extra_cluster_groups
+                self.n_neighbors = neighbors # I don't fully see yet but I guess this is not so simple. one has take into account some of the neighbors of extra_cluster_groups... ?
+            else :
+                self.cluster_group = self.itim_group[ids_max]
+                self.n_neighbors = neighbors
         else:
             self.cluster_group = self.itim_group
 
