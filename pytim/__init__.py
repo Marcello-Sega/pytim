@@ -618,8 +618,7 @@ class PYTIM(object):
             if (self.extra_cluster_groups is not None) :
                 extra = np.sum(self.extra_cluster_groups[:])
                 self.extra = extra
-                x_labels, x_counts, x_neighbors =\
-                    utilities.do_cluster_analysis_DBSCAN(
+                x_labels, x_counts, x_neighbors = utilities.do_cluster_analysis_DBSCAN(
                         extra, self.cluster_cut[0],
                         self.universe.dimensions[:6],
                         self.cluster_threshold_density, self.molecular)
