@@ -87,27 +87,25 @@ class Observable(object):
                 "input not valid for fold_around_first_atom_in_residue()")
         return np.array(pos)
 
+    def select_direction(self, arg):
 
-    def select_direction(self,arg):
-
-        def _inarg(string,arg):
+        def _inarg(string, arg):
             return np.any([string in e for e in arg])
 
-        directions=np.array([True,True,True])
+        directions = np.array([True, True, True])
         if len(arg) > 0:
-            if not _inarg('x',arg) or  not _inarg('y', arg)  or not _inarg('z',arg) :
-                RuntimeError("Velocity accepts as argument a string like 'xy', 'z', ... to select components")
-            directions=np.array([False,False,False])
-            if _inarg('x',arg):
-                directions[0]=True
-            if _inarg('y',arg):
-                directions[1]=True
-            if _inarg('z',arg):
-                directions[2]=True
+            if not _inarg('x', arg) or not _inarg('y', arg) or not _inarg('z', arg):
+                RuntimeError(
+                    "Velocity accepts as argument a string like 'xy', 'z', ... to select components")
+            directions = np.array([False, False, False])
+            if _inarg('x', arg):
+                directions[0] = True
+            if _inarg('y', arg):
+                directions[1] = True
+            if _inarg('z', arg):
+                directions[2] = True
 
-        self.dirmask = np.where(directions==True)[0]
- 
-
+        self.dirmask = np.where(directions == True)[0]
 
     @abstractmethod
     def compute(self, inp, kargs={}):
@@ -590,7 +588,7 @@ class Position(Observable):
         :returns: atomic positions
 
         """
-        return inp.positions[:,self.dirmask]
+        return inp.positions[:, self.dirmask]
 
 
 class Velocity(Observable):
@@ -603,8 +601,6 @@ class Velocity(Observable):
         Observable.__init__(self, None)
         self.select_direction(arg)
 
-           
-
     def compute(self, inp):
         """Compute the observable.
 
@@ -612,7 +608,7 @@ class Velocity(Observable):
         :returns: atomic positions
 
         """
-        return inp.velocities[:,self.dirmask]
+        return inp.velocities[:, self.dirmask]
 
 
 class Force(Observable):
@@ -632,7 +628,7 @@ class Force(Observable):
         :returns: atomic positions
 
         """
-        return inp.forces[:,self.dirmask]
+        return inp.forces[:, self.dirmask]
 
 
 class Orientation(Observable):
@@ -1011,7 +1007,7 @@ class Correlator(object):
         self.shape = None
         self.mem_usage = 0.0
         self.warned = False
-        self.nsamples = 0 
+        self.nsamples = 0
 
         if self.reference is not None and self.observable is not None:
             self.masked = True
@@ -1027,13 +1023,14 @@ class Correlator(object):
             if observable is not None:
                 self.reference_obs = observable.compute(reference) * 0.0
             else:
-                self.reference_obs = np.zeros(len(reference),dtype=np.double)
+                self.reference_obs = np.zeros(len(reference), dtype=np.double)
             if len(self.reference_obs.shape) > 2:
                 raise RuntimeError(
                     self.name + ' works only with scalar and vectors')
         else:
             if observable is None:
-                raise RuntimeError(self.name +': at least the observable or the reference must be specified')
+                raise RuntimeError(
+                    self.name + ': at least the observable or the reference must be specified')
 
     def sample(self, group):
         """ Sample the timeseries for the autocorrelation function
@@ -1041,13 +1038,17 @@ class Correlator(object):
             :parameter AtomGroup group: compute the observable on the atoms of this group
 
         """
-        self.nsamples += 1 
+        self.nsamples += 1
         if self.reference is not None:  # could be intermittent or continuous:
-                                        # we need to collect also the residence function 
-            mask = np.isin(self.reference, group) # the residence function (1 if in the reference group, 0 otherwise)
-            self.maskseries.append(list(mask))    # append the residence function to its timeseries
+                                        # we need to collect also the residence
+                                        # function
+            # the residence function (1 if in the reference group, 0 otherwise)
+            mask = np.isin(self.reference, group)
+            # append the residence function to its timeseries
+            self.maskseries.append(list(mask))
             if self.observable is not None:
-                sampled = self.reference_obs.copy()   # this copies a vector of zeros with the correct shape
+                # this copies a vector of zeros with the correct shape
+                sampled = self.reference_obs.copy()
                 obs = self.observable.compute(group)
                 sampled[np.where(mask)] = obs
                 self.timeseries.append(list(sampled.flatten()))
@@ -1056,9 +1057,10 @@ class Correlator(object):
                 if self.shape is None:
                     self.shape = (1,)
                 sampled = mask
-        else: 
+        else:
             if self.observable is None:
-                RuntimeError('Cannot compute the survival probability without a reference group')
+                RuntimeError(
+                    'Cannot compute the survival probability without a reference group')
             sampled = self.observable.compute(group)
             self.timeseries.append(list(sampled.flatten()))
 
@@ -1071,7 +1073,7 @@ class Correlator(object):
         if self.shape is None:
             self.shape = sampled.shape
 
-    def correlation(self, reduced = True, normalized = True, continuous = True):
+    def correlation(self, reduced=True, normalized=True, continuous=True):
         """ Calculate the autocorrelation from the sampled data
 
             :parameter bool reduced: if True (default) average over particles and spatial directions.
@@ -1126,7 +1128,7 @@ class Correlator(object):
             $< h(t) h(0) >$ is divided by the average $<h>$ computed over all trajectores that
             extend up to a time lag $t$. This behavior is different from the calculation of the 
             autocorrelation function (see below).
-    
+
             >>> # reduced, normalized, continuous
             >>> corr = nn.correlation()
             >>> print np.allclose(corr, [ 5./5   ,  2./3 ,  1./2 ])
@@ -1181,17 +1183,17 @@ class Correlator(object):
             True
 
 
-        """ 
+        """
         intermittent = not continuous
         self.dim = self._determine_dimension()
 
-        # the standard correlation 
-        if self.reference is None :
+        # the standard correlation
+        if self.reference is None:
             ts = np.asarray(self.timeseries)
             corr = utilities.correlate(ts)
-            norm = corr[:,0]
-            if reduced == True :
-                corr = np.average(corr,axis=1)
+            norm = corr[:, 0]
+            if reduced == True:
+                corr = np.average(corr, axis=1)
                 norm = corr[0]
             if normalized == True:
                 corr /= norm
@@ -1199,155 +1201,156 @@ class Correlator(object):
 
         # prepare the mask for the intermittent/continuous cases
         if intermittent == True:
-            ms = np.asarray(self.maskseries,dtype=np.double)
-        else: # we add Falses at the begining and at the end to ease the splitting in sub-trajectories
+            ms = np.asarray(self.maskseries, dtype=np.double)
+        else:  # we add Falses at the begining and at the end to ease the splitting in sub-trajectories
             falses = [[False] * len(self.maskseries[0])]
-            ms = np.asarray(falses+self.maskseries+falses)
+            ms = np.asarray(falses + self.maskseries + falses)
 
         # compute the survival probabily
-        if self.observable is None:  
-            return self._survival_probability(ms,normalized,reduced,intermittent)
-        # compute the autocorrelation function 
+        if self.observable is None:
+            return self._survival_probability(ms, normalized, reduced, intermittent)
+        # compute the autocorrelation function
         else:
             ts = np.asarray(self.timeseries)
             return self._autocorrelation(ts, ms, normalized, reduced, intermittent)
 
-    def  _autocorrelation(self,ts, ms, normalized, reduced, intermittent):
+    def _autocorrelation(self, ts, ms, normalized, reduced, intermittent):
 
         if intermittent == True:
-            corr, weight = self._autocorrelation_intermittent(ts,ms)
+            corr, weight = self._autocorrelation_intermittent(ts, ms)
         else:
-            corr, weight = self._autocorrelation_continuous(ts,ms)
+            corr, weight = self._autocorrelation_continuous(ts, ms)
         if reduced == True:
-            corr = np.average(corr,axis=1,weights=weight)
+            corr = np.average(corr, axis=1, weights=weight)
         if normalized == True:
-            corr /= corr[0]  
-            
+            corr /= corr[0]
+
         return corr
 
-
     def _determine_dimension(self):
-        self.nseries = max(len(self.timeseries),len(self.maskseries))
+        self.nseries = max(len(self.timeseries), len(self.maskseries))
 
         if len(self.shape) == 1:
             shape = (self.nseries, self.shape[0], 1)
             dim = 1
         elif len(self.shape) == 2:
-            shape = (self.nseries, self.shape[0] , self.shape[1])
+            shape = (self.nseries, self.shape[0], self.shape[1])
             dim = self.shape[1]
         else:
-            raise RuntimeError("Correlations of tensorial quantites not allowed in "+self.name)
+            raise RuntimeError(
+                "Correlations of tensorial quantites not allowed in " + self.name)
         return dim
-  
-    def _survival_probability(self,ms,normalized,reduced,intermittent):
+
+    def _survival_probability(self, ms, normalized, reduced, intermittent):
         if intermittent == True:
-            corr, norm = self._survival_intermittent(ms,normalized)
+            corr, norm = self._survival_intermittent(ms, normalized)
         else:
-            corr, norm = self._survival_continuous(ms,normalized)
-                
+            corr, norm = self._survival_continuous(ms, normalized)
+
         if reduced == True:
-            corr = np.average(corr,axis=1)
+            corr = np.average(corr, axis=1)
             if normalized == True:
-                corr /= np.average(norm,axis=1)
+                corr /= np.average(norm, axis=1)
         elif normalized == True:
             corr /= norm
-            
-        return corr
-    
 
-    def _survival_intermittent(self,ms,normalized):
-        norm  = None
+        return corr
+
+    def _survival_intermittent(self, ms, normalized):
+        norm = None
         corr = utilities.correlate(ms)
         if normalized == True:
-            norm = np.cumsum(ms,axis=0)[::-1]
-            norm /= (1.+np.arange(norm.shape[0])[::-1]).reshape(norm.shape[0],1)
- 
+            norm = np.cumsum(ms, axis=0)[::-1]
+            norm /= (1. + np.arange(norm.shape[0])
+                     [::-1]).reshape(norm.shape[0], 1)
+
         return corr, norm
 
-        
-    def _survival_continuous(self,ms,normalized):
+    def _survival_continuous(self, ms, normalized):
         norm = None
         n_part = len(ms[0])
-        corr = np.zeros((self.nseries,n_part))
+        corr = np.zeros((self.nseries, n_part))
         norm = corr.copy()
-        counting = (1.+np.arange(len(self.timeseries)))
+        counting = (1. + np.arange(len(self.timeseries)))
 
         for part in range(n_part):
-            edges = np.where(ms[::,part][:-1] != ms[::,part][1:])[0]
-            deltat = edges[1::2]-edges[0::2]
+            edges = np.where(ms[::, part][:-1] != ms[::, part][1:])[0]
+            deltat = edges[1::2] - edges[0::2]
             # for each of the disconnected segments:
-            for n,dt in enumerate(deltat): 
+            for n, dt in enumerate(deltat):
                 # no need to compute the correlation, we know what it is
-                corr[0:dt,part] += dt*1./ len(self.timeseries)
+                corr[0:dt, part] += dt * 1. / len(self.timeseries)
 
-            norm = np.cumsum(ms[1:-1],axis=0)[::-1]
-            norm = norm / counting.reshape(counting.shape[0],1)[::-1]
+            norm = np.cumsum(ms[1:-1], axis=0)[::-1]
+            norm = norm / counting.reshape(counting.shape[0], 1)[::-1]
 
-        return corr, norm 
+        return corr, norm
 
-    def _autocorrelation_intermittent(self,ts,ms):
-    
+    def _autocorrelation_intermittent(self, ts, ms):
+
         dim = self.dim
 
         maskcorr = utilities.correlate(ms)
-        cond = np.where(maskcorr>1e-9)
+        cond = np.where(maskcorr > 1e-9)
         corr = ts.copy()
         weight = ts.copy()
-        w= np.cumsum(ms,axis=0)[::-1]
+        w = np.cumsum(ms, axis=0)[::-1]
         for xyz in range(dim):
-            corr[:,xyz::dim] = utilities.correlate(ts[:,xyz::dim]*ms)
-            corr[:,xyz::dim][cond] /=  maskcorr[cond]
-            weight[:,xyz::dim] = w
+            corr[:, xyz::dim] = utilities.correlate(ts[:, xyz::dim] * ms)
+            corr[:, xyz::dim][cond] /= maskcorr[cond]
+            weight[:, xyz::dim] = w
 
         return corr, weight
 
-
     def _autocorrelation_continuous(self, ts, ms):
 
-        dim = self.dim 
+        dim = self.dim
         norm = None
         n_part = len(ms[0])
         corr = np.zeros(ts.shape)
         weight = corr.copy()
 
         for xyz in range(dim):
-            weight[:,xyz::dim] = np.cumsum(ms[1:-1],axis=0)[::-1]
+            weight[:, xyz::dim] = np.cumsum(ms[1:-1], axis=0)[::-1]
 
         for part in range(n_part):
-            edges = np.where(ms[::,part][:-1] != ms[::,part][1:])[0]
-            deltat = edges[1::2]-edges[0::2]
-            for n,dt in enumerate(deltat): # for each of the disconnected segments
-                t1 = edges[2*n]
-                t2 = edges[2*n+1]
-                i1 = dim*part
-                i2 = dim*(part+1)
-                corr[0:dt,i1:i2] += utilities.correlate(ts[t1:t2,i1:i2]) / len(deltat)
-                #print "dt=",dt,"index=",i1,i2,"corr+=", utilities.correlate(ts[t1:t2,i1:i2]),"will be divided by ",len(deltat)
+            edges = np.where(ms[::, part][:-1] != ms[::, part][1:])[0]
+            deltat = edges[1::2] - edges[0::2]
+            for n, dt in enumerate(deltat):  # for each of the disconnected segments
+                t1 = edges[2 * n]
+                t2 = edges[2 * n + 1]
+                i1 = dim * part
+                i2 = dim * (part + 1)
+                corr[0:dt,
+                     i1:i2] += utilities.correlate(ts[t1:t2, i1:i2]) / len(deltat)
+                # print "dt=",dt,"index=",i1,i2,"corr+=",
+                # utilities.correlate(ts[t1:t2,i1:i2]),"will be divided by
+                # ",len(deltat)
 
-        return corr,weight
-    
-        
+        return corr, weight
+
 
 class VoronoiTessellation(Observable):
 
-    def __init__(self,universe):
-        self.quantity =  {'density':self.localdensity,'volume':self.localvolume,'surface':self.localsurface,'vertices':self.vertices,'facets':self.facets}
-        self.defaultkargs = {'stored':False,'quantity':'volume'}
+    def __init__(self, universe):
+        self.quantity = {'density': self.localdensity, 'volume': self.localvolume,
+                         'surface': self.localsurface, 'vertices': self.vertices, 'facets': self.facets}
+        self.defaultkargs = {'stored': False, 'quantity': 'volume'}
         self.u = universe
 
-    def compute(self,group,kargs={}):
+    def compute(self, group, kargs={}):
         r"""
             Computes the Voronoi tessellation and returns a related observable:
-            
+
             :param AtomGroup group: tessellate the atomic positions of this group
             :param \**kwargs: see below
-            
+
             :Keyword Arguments:
                 * str *quantity*: 'density','volume','surface'. By default returns the volume.
                 * bool *stored*: recompute the tessellation if stored==False, otherwise not.
-            
+
             Example:
-            
+
             >>> import MDAnalysis as mda
             >>> import pytim
             >>> from pytim.datafiles import WATER_GRO
@@ -1357,17 +1360,18 @@ class VoronoiTessellation(Observable):
             >>> vor = VoronoiTessellation(u)
             >>> print vor.compute(quantity='volume')
             >>> print vor.compute(stored=True,quantity='surface')
-            
+
         """
         t = self.u.trajectory.ts
         box = t.dimensions[:3]
         ka = self.defaultkargs.copy()
         ka.update(kargs)
-        if ka['stored']==False:
-            pos , _ = pytim.utilities.generate_periodic_border(group.positions,box,box/2.)
+        if ka['stored'] == False:
+            pos, _ = pytim.utilities.generate_periodic_border(
+                group.positions, box, box / 2.)
             vor = Voronoi(pos)
             self.hulls = []
-            N=len(group.positions)
+            N = len(group.positions)
             for ireg in vor.point_region[:N]:
                 # Convex hull of one Voronoi cell:
                 ivert = vor.regions[ireg]
@@ -1377,19 +1381,19 @@ class VoronoiTessellation(Observable):
         return self.quantity[ka['quantity']]()
 
     def vertices(self):
-        return np.array([ 1.*hull.vertices.shape[0] for hull in self.hulls])
+        return np.array([1. * hull.vertices.shape[0] for hull in self.hulls])
 
     def facets(self):
-        return np.array([ 1.*hull.nsimplex for hull in self.hulls])
+        return np.array([1. * hull.nsimplex for hull in self.hulls])
 
     def localsurface(self):
-        return np.array([ hull.area for hull in self.hulls])
+        return np.array([hull.area for hull in self.hulls])
 
     def localvolume(self):
-        return np.array([ hull.volume for hull in self.hulls])
+        return np.array([hull.volume for hull in self.hulls])
 
     def localdensity(self):
-        return np.array([ 1./hull.volume for hull in self.hulls])
+        return np.array([1. / hull.volume for hull in self.hulls])
 
 
 class FreeVolume(object):
@@ -1420,29 +1424,31 @@ class FreeVolume(object):
     """
 
     def __init__(self, universe, npoints=None):
-        self.u = universe 
+        self.u = universe
         if npoints is None:
-            npoints =  10* len(universe.atoms)
-        self.npoints = npoints 
+            npoints = 10 * len(universe.atoms)
+        self.npoints = npoints
 
-    def _compute(self,inp=None):
+    def _compute(self, inp=None):
         res = np.array(0)
         box = self.u.dimensions[:3].copy()
-        tree = cKDTree(np.random.random((self.npoints,3)) * box)
+        tree = cKDTree(np.random.random((self.npoints, 3)) * box)
         if inp is None:
             inp = self.u.atoms
-        if not isinstance(inp,AtomGroup):
-            raise RuntimeError(self.__class__.__name__+'compute needs AtomGroup as an input')
-        # np.unique here avoids counting contributions from overlapping spheres    
+        if not isinstance(inp, AtomGroup):
+            raise RuntimeError(self.__class__.__name__ +
+                               'compute needs AtomGroup as an input')
+        # np.unique here avoids counting contributions from overlapping spheres
         radii = np.unique(inp.radii)
-   
+
         for radius in radii:
-            where = np.where(np.isclose(  inp.radii ,  radius ))
-            lst = [ e for l in tree.query_ball_point(inp.positions[where],radius) for e in l]
+            where = np.where(np.isclose(inp.radii,  radius))
+            lst = [e for l in tree.query_ball_point(
+                inp.positions[where], radius) for e in l]
             res = np.append(res, lst)
-        return np.unique(res),tree.data
-    
-    def compute_profile(self,inp=None,nbins=30,direction = 2):
+        return np.unique(res), tree.data
+
+    def compute_profile(self, inp=None, nbins=30, direction=2):
         """ Compute a profile of the free volume fraction
 
             :param AtomGroup inp:  compute the volume fraction of this group, None selects the complete universe
@@ -1451,31 +1457,32 @@ class FreeVolume(object):
 
             :returns bins,fraction,error: the left limit of the bins, the free volume fraction in each bin, the associated std deviation
         """
-        nbins+=1
+        nbins += 1
         box = self.u.dimensions[:3].copy()
- 
+
         slabwidth = box[direction] / nbins
-        slabvol = self.u.trajectory.ts.volume / nbins 
-        
+        slabvol = self.u.trajectory.ts.volume / nbins
+
         bins = np.arange(nbins) * slabwidth
-        
+
         histo = []
         error = []
-        res,data = self._compute(inp)
-        for i in range(nbins-1):
-            condition = np.logical_and(data[:,direction]> bins[i],data[:,direction]<bins[i+1])
-            in_slab  = np.where(condition)
-            n_in_slab = np.sum(condition*1.0)
+        res, data = self._compute(inp)
+        for i in range(nbins - 1):
+            condition = np.logical_and(
+                data[:, direction] > bins[i], data[:, direction] < bins[i + 1])
+            in_slab = np.where(condition)
+            n_in_slab = np.sum(condition * 1.0)
             if n_in_slab == 0:
                 histo.append(0.0)
                 error.append(0.0)
             else:
-                ratio = np.sum(np.isin(res, in_slab)*1.0) / n_in_slab
-                histo.append(1.-ratio)
-                error.append(np.sqrt(ratio*(1.-ratio)/n_in_slab))
-        return bins,np.array(histo),np.array(error)    
+                ratio = np.sum(np.isin(res, in_slab) * 1.0) / n_in_slab
+                histo.append(1. - ratio)
+                error.append(np.sqrt(ratio * (1. - ratio) / n_in_slab))
+        return bins, np.array(histo), np.array(error)
 
-    def compute(self,inp=None):
+    def compute(self, inp=None):
         """ Compute the total free volume fraction in the simulation box
 
             :param AtomGroup inp:  compute the volume fraction of this group, None selects the complete universe
@@ -1484,8 +1491,8 @@ class FreeVolume(object):
             :returns fraction, error: the free volume fraction and associated error
 
         """
-        _,free, err =  self.compute_profile(inp,nbins=1)
-        return free[0],err[0]
+        _, free, err = self.compute_profile(inp, nbins=1)
+        return free[0], err[0]
 
 
 #
