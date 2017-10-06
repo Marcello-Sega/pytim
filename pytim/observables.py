@@ -1252,7 +1252,8 @@ class Correlator(object):
             if normalized == True:
                 corr /= np.average(norm, axis=1)
         elif normalized == True:
-            corr /= norm
+            where = np.where(corr>0)
+            corr[where] /= norm[where]
 
         return corr
 
@@ -1279,7 +1280,7 @@ class Correlator(object):
             # for each of the disconnected segments:
             for n, dt in enumerate(deltat):
                 # no need to compute the correlation, we know what it is
-                corr[0:dt, part] += dt * 1. / len(self.timeseries)
+                corr[0:dt, part] +=  counting[:dt][::-1] / counting[::-1][:dt]
 
             norm = np.cumsum(ms[1:-1], axis=0)[::-1]
             norm = norm / counting.reshape(counting.shape[0], 1)[::-1]
