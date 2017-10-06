@@ -1219,11 +1219,14 @@ class Correlator(object):
         if intermittent == True:
             corr, weight = self._autocorrelation_intermittent(ts, ms)
         else:
-            corr, weight = self._autocorrelation_continuous(ts, ms)
+            corr, weight  = self._autocorrelation_continuous(ts, ms)
         if reduced == True:
             corr = np.average(corr, axis=1, weights=weight)
-        if normalized == True:
-            corr /= corr[0]
+            if normalized:
+                corr/=corr[0]
+        elif normalized == True:
+            cond = np.where(corr[0]>0)[0]
+            corr[:,cond]/=corr[:,cond][0]
 
         return corr
 
@@ -1260,7 +1263,8 @@ class Correlator(object):
     def _survival_intermittent(self, ms, normalized):
         norm = None
         corr = utilities.correlate(ms)
-        if normalized == True:
+        if normalized == True: # TODO check continuous version + correct normalization for autocorr. 
+                               # Can this be factorized out ?  
             norm = np.cumsum(ms, axis=0)[::-1]
             norm /= (1. + np.arange(norm.shape[0])
                      [::-1]).reshape(norm.shape[0], 1)
@@ -1282,6 +1286,7 @@ class Correlator(object):
                 # no need to compute the correlation, we know what it is
                 corr[0:dt, part] +=  counting[:dt][::-1] / counting[::-1][:dt]
 
+            # TODO in or out the part loop ? 
             norm = np.cumsum(ms[1:-1], axis=0)[::-1]
             norm = norm / counting.reshape(counting.shape[0], 1)[::-1]
 
@@ -1298,7 +1303,6 @@ class Correlator(object):
         w = np.cumsum(ms, axis=0)[::-1]
         for xyz in range(dim):
             corr[:, xyz::dim] = utilities.correlate(ts[:, xyz::dim] * ms)
-            corr[:, xyz::dim][cond] /= maskcorr[cond]
             weight[:, xyz::dim] = w
 
         return corr, weight
