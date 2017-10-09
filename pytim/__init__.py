@@ -139,9 +139,10 @@ class SanityCheck(object):
             self.interface.normal = utilities.guess_normal(self.interface.universe,
                                                            self.interface.itim_group)
         else:
+            dirdict = {'x': 0, 'y': 1, 'z': 2}
             if not (normal in self.interface.directions_dict):
                 raise ValueError(self.interface.WRONG_DIRECTION)
-            self.interface.normal = self.interface.directions_dict[normal]
+            self.interface.normal = dirdict[self.interface.directions_dict[normal]]
 
     def _define_groups(self):
         # we first make sure cluster_cut is either None, or an array
@@ -434,6 +435,8 @@ class PYTIM(object):
         return self.__class__.__name__
 
     def label_group(self, group, value):
+        if group is None:
+            raise RuntimeError('one of the groups, possibly a layer one, is None. Something is wrong...')
         if self.molecular == True:
             _group = group.residues.atoms
         else:
