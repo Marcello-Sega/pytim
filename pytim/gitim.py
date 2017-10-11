@@ -11,6 +11,7 @@ from pytim import utilities
 import pytim
 from pytetgen import Delaunay
 
+
 class GITIM(pytim.PYTIM):
     """Identifies interfacial molecules at macroscopically flat interfaces.
 
@@ -60,6 +61,7 @@ class GITIM(pytim.PYTIM):
             extra_cluster_groups=None,
             info=False,
             centered=False,
+            voids_distribution=False,
             warnings=False,
             _noextrapoints=False,
             **kargs):
@@ -67,6 +69,7 @@ class GITIM(pytim.PYTIM):
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
         self.do_center = centered
+        self.voids_distribution = voids_distribution
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(
             universe, radii_dict=radii_dict, warnings=warnings)
@@ -91,9 +94,6 @@ class GITIM(pytim.PYTIM):
 
         self._assign_layers()
 
-        self._atoms = self.LayerAtomGroupFactory(
-            self._layers[:].sum().indices, self.universe)
-
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
 
@@ -103,17 +103,17 @@ class GITIM(pytim.PYTIM):
     def alpha_prefilter(triangulation, alpha):
         t = triangulation
         threshold = 2. * alpha
-        return t.simplices[ np.array([np.max(distance.cdist(t.points[simplex],
-                                                  t.points[simplex],
-                                                  'euclidean')) >=
-                            threshold + 2. * np.min(t.radii[simplex])
-                            for simplex in t.simplices])]
+        return t.simplices[np.array([np.max(distance.cdist(t.points[simplex],
+                                                           t.points[simplex],
+                                                           'euclidean')) >=
+                                     threshold + 2. * np.min(t.radii[simplex])
+                                     for simplex in t.simplices])]
 
     def circumradius(self, simplex):
 
         points = self.triangulation.points
         radii = self.triangulation.radii
-    
+
         R = []
         r_i = points[simplex]
         rad_i = radii[simplex]
@@ -172,27 +172,48 @@ class GITIM(pytim.PYTIM):
             extrapoints = np.copy(points)
             extraids = np.arange(len(points), dtype=np.int)
         # add points at the vertices of the expanded (by 2 alpha) box
-        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0], 
-                                  [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], 
+        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0],
+                                  [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [
+                                      1.0, 0.0, 1.0],
                                   [1.0, 1.0, 0.0], [1.0, 1.0, 1.0]])
         if self._noextrapoints == False:
-            for dim,vertex in enumerate(cube_vertices):
-                vertex = vertex * box + delta + gitter[dim] # added to prevent coplanar points
-                vertex [vertex < box / 2.] -= 2*delta
+            for dim, vertex in enumerate(cube_vertices):
+                # added to prevent coplanar points
+                vertex = vertex * box + delta + gitter[dim]
+                vertex[vertex < box / 2.] -= 2 * delta
                 vertex = np.reshape(vertex, (1, 3))
                 extrapoints = np.append(extrapoints, vertex, axis=0)
                 extraids = np.append(extraids, -1)
+
         # print utilities.lap()
         self.triangulation = Delaunay(extrapoints)
         self.triangulation.radii = np.append(
             self.cluster_group.radii[extraids[extraids >= 0]], np.zeros(8))
         # print utilities.lap()
 
-        prefiltered = self.alpha_prefilter(self.triangulation, alpha)
+        if self.voids_distribution == False:
+            prefiltered = self.alpha_prefilter(self.triangulation, alpha)
+        else:
+            prefiltered = self.triangulation.simplices
+
+        circumradii = []
+        for simplex in prefiltered:
+            if np.any(simplex < nrealpoints):
+                circumradii.append(self.circumradius(simplex))
+            else:
+                circumradii.append(-1.0)
+
+        circumradii = np.array(circumradii)
+
+        if self.voids_distribution == True:
+            self.circumradii = circumradii
+
         # print utilities.lap()
 
         a_shape = prefiltered[np.array([self.circumradius(
             simplex) >= self.alpha for simplex in prefiltered])]
+        a_shape = prefiltered[circumradii >= self.alpha]
+
         # print utilities.lap()
         _ids = np.unique(a_shape.flatten())
         # remove the indices corresponding to the 8 additional points, which
@@ -233,6 +254,9 @@ class GITIM(pytim.PYTIM):
 
         # reset the interpolator
         self._interpolator = None
+
+        self._atoms = self.LayerAtomGroupFactory(
+            self._layers[:].sum().indices, self.universe)
 
     @property
     def layers(self):

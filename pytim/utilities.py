@@ -97,14 +97,20 @@ def correlate(a1=np.ndarray(0), a2=None):
     """
 
     size = len(a1)
-    norm = np.arange(size)[::-1] + 1
+    norm = (np.arange(size)[::-1] + 1.) * size * 2.
     fa1 = np.fft.fft(a1, axis=0, n=size * 2)
 
     if not isinstance(a2, type(None)):  # do cross-corr
         fa2 = np.fft.fft(a2, axis=0, n=size * 2)
-        return ((np.fft.fft(fa2 * np.conj(fa1) + fa1 * np.conj(fa2), axis=0)[:size]).real.T / norm).T / len(fa1) / 2.
+        corr = np.fft.fft(fa2 * np.conj(fa1) + fa1 *
+                          np.conj(fa2), axis=0).real[:size] / 2.0
     else:                               # do auto-corr
-        return ((np.fft.fft(fa1 * np.conj(fa1), axis=0)[:size]).real.T / norm).T / len(fa1)
+        corr = np.fft.fft(fa1 * np.conj(fa1), axis=0).real[:size]
+
+    dim = list(a1.shape)
+    for i in range(1, len(dim)):
+        dim[i] = 1
+    return corr / norm.reshape(dim)
 
 
 def extract_positions(inp):
