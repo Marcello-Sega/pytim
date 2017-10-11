@@ -220,7 +220,12 @@ class ITIM(pytim.PYTIM):
         self.mesh_dy = d[1]
         self.delta = np.minimum(self.mesh_dx, self.mesh_dy) / 10.
         if(self.use_kdtree == True):
-            _x, _y = np.mgrid[0:box[0]:self.mesh_dx, 0:box[1]:self.mesh_dy]
+            # fixing a bug in mgrid(): e.g. np.mgrid[0:46.7227401733:0.399339659][-1] is larger than the limit
+            # tested on numpy 1.13.3
+            delta=np.array([0.,0.])
+            maxd = [ np.max(np.mgrid[0:box[0]:self.mesh_dx]), np.max(np.mgrid[0:box[1]:self.mesh_dy]) ]
+            delta[maxd>=box[:2]]=1e-6
+            _x, _y = np.mgrid[0:box[0]-delta[0]:self.mesh_dx, 0:box[1]-delta[1]:self.mesh_dy]
             self.meshpoints = builtin_zip(_x.ravel(), _y.ravel())
             # cKDTree requires a box vetor with length double the dimension,
             #  see other note in this module
