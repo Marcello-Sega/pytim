@@ -223,7 +223,6 @@ def guess_normal(universe, group):
         delta.append(np.sqrt((max_val - min_val)**2))
 
     if np.max(delta)/np.min(delta) < 5.0 :
-        print np.max(delta)/np.min(delta)
         print "Warning: the result of the automatic normal detection (",np.argmax(delta),") is not reliable"
     return np.argmax(delta)
 
