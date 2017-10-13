@@ -9,7 +9,10 @@ import numpy as np
 from scipy.spatial import distance
 from pytim import utilities
 import pytim
-from pytetgen import Delaunay
+try:
+    from pytetgen import Delaunay
+except:
+    from scipy.spatial import Delaunay
 
 class GITIM(pytim.PYTIM):
     """Identifies interfacial molecules at macroscopically flat interfaces.
