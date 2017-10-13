@@ -10,11 +10,23 @@ import codecs
 import os
 import sys
 
-from   distutils.core import setup
+from   setuptools import setup
+from   setuptools.command.test import test as TestCommand
 from   distutils.extension import Extension
 from   Cython.Distutils import build_ext
 
 import numpy
+
+class NoseTestCommand(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        # Run nose ensuring that argv simulates running nosetests directly
+        import nose
+        nose.run_exit(argv=['nosetests'])
 
 
 pytim_dbscan = Extension("pytim_dbscan", ["pytim/_dbscan_inner.pyx"], language="c++",
@@ -33,7 +45,7 @@ if sys.platform == 'darwin' and os.path.exists('/usr/bin/xcodebuild'):
 setup(
     name='pytim',
     ext_modules=[pytim_dbscan],
-    cmdclass = {'build_ext': build_ext},
+    cmdclass = {'build_ext': build_ext, 'test': NoseTestCommand},
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
@@ -98,11 +110,11 @@ setup(
     # dependencies). You can install these using the following syntax,
     # for example:
     # $ pip install -e .[dev,test]
-  ##  extras_require={
-  ##      'dev': ['check-manifest'],
-  ##      'test': ['coverage'],
-  ##  },
-
+    tests_require=[
+        'nose',
+        'coverage',
+        'mock'
+    ],
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.

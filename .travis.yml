@@ -36,9 +36,10 @@ install:
 - pip install matplotlib
 - pip install cython
 - pip install MDAnalysis==$MDAv
+- pip install nose
 - pip install .
 # command to run tests
-script: (cd docs ; make doctest )
+script: python setup.py test
 
 after_success:
   if ([ "$TRAVIS_OS_NAME" == "linux" ] && [ "$MDAv" == "0.16" ]) ; then
