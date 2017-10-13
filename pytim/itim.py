@@ -228,10 +228,12 @@ class ITIM(pytim.PYTIM):
             _x, _y = np.mgrid[0:box[0]-delta[0]:self.mesh_dx, 0:box[1]-delta[1]:self.mesh_dy]
             self.meshpoints = builtin_zip(_x.ravel(), _y.ravel())
             # cKDTree requires a box vetor with length double the dimension,
-            #  see other note in this module
             _box = np.zeros(4)
             _box[:2] = box[:2]
-            self.meshtree = cKDTree(self.meshpoints, boxsize=_box)
+            try: # older scipy versions
+                self.meshtree = cKDTree(self.meshpoints, boxsize=_box)
+            except: 
+                self.meshtree = cKDTree(self.meshpoints, boxsize=_box[:2])
 
     def _touched_lines(self, atom, _x, _y, _z, _radius):
         return self.meshtree.query_ball_point(

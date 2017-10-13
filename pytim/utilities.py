@@ -466,7 +466,11 @@ def do_cluster_analysis_DBSCAN(
     # NOTE: extra_cluster_groups are not yet implemented
     points = group.atoms.positions[:]
 
-    tree = cKDTree(points, boxsize=box[:6])
+    try: # older scipy versions
+        tree = cKDTree(points, boxsize=box[:6])
+    except:
+        tree = cKDTree(points, boxsize=box[:3])
+
     neighborhoods = np.array([np.array(neighbors)
                               for neighbors in tree.query_ball_point(
         points, cluster_cut, n_jobs=-1)]
