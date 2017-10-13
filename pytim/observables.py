@@ -681,7 +681,6 @@ class Profile(object):
     >>> import pytim
     >>> from   pytim.datafiles import *
     >>> from   pytim.observables import Profile
-    >>> from matplotlib import pyplot as plt
     >>>
     >>> u = mda.Universe(WATER_GRO,WATER_XTC)
     >>> g=u.select_atoms('name OW')
@@ -909,6 +908,7 @@ class Correlator(object):
     >>> from pytim.datafiles import WATERSMALL_GRO
     >>> from pytim.utilities import lap
     >>> #  tmpdir here is specified only for travis
+    >>> import  os
     >>> WATERSMALL_TRR = pytim.datafiles.pytim_data.fetch('WATERSMALL_LONG_TRR',tmpdir='./')
     checking presence of a cached copy... not found. Fetching remote file... done.
 
@@ -958,6 +958,7 @@ class Correlator(object):
     >>> inter = pytim.ITIM(u,group=g,alpha=2.0,molecular=False)
     >>> for t in u.trajectory[1:10]: # example only: sample the whole trajectory
     ...     corr.sample(inter.atoms)
+    >>> os.unlink('./'+WATERSMALL_TRR) # cleanup
     >>> layer_vacf = corr.correlation()
 
 

@@ -104,10 +104,12 @@ class Data(object):
             >>> from pytim.datafiles import WATERSMALL_GRO
 
             >>> # tmpdir here is specified only for travis
+            >>> import os
             >>> WATERSMALL_TRR = pytim.datafiles.pytim_data.fetch('WATERSMALL_TRR',tmpdir='./')
             checking presence of a cached copy... not found. Fetching remote file... done.
 
             >>> u = mda.Universe(WATERSMALL_GRO,WATERSMALL_TRR)
+            >>> os.unlink('./'+WATERSMALL_TRR)
             >>> print u
             <Universe with 648 atoms>
 
