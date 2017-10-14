@@ -7,8 +7,17 @@
 [![codecov](https://codecov.io/gh/Marcello-Sega/pytim/branch/master/graph/badge.svg)](https://codecov.io/gh/Marcello-Sega/pytim)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5f3f2e7be75b46c1a6e4a3d44e3bb900)](https://www.codacy.com/app/Marcello-Sega/pytim?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Marcello-Sega/pytim&amp;utm_campaign=Badge_Grade)
 [![Code Climate](https://codeclimate.com/github/Marcello-Sega/pytim/badges/gpa.svg)](https://codeclimate.com/github/Marcello-Sega/pytim)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 <sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. The interface has almost converged to its final form, but changes could still be introduced. In the next period we will roll out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on github and/or make a pull request. </sub>
+
+# Install from PyPi or Anaconda - [![PyPI version](https://badge.fury.io/py/pytim.svg)](https://badge.fury.io/py/pytim) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pytim/badges/version.svg)](https://anaconda.org/conda-forge/pytim)
+
+PyPi:     ``` pip install --user --upgrade pytim ```
+
+Anaconda: ``` conda install -c conda-forge pytim ```
+
+
 
 # A Quick Intro
 
