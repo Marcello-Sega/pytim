@@ -15,7 +15,7 @@
 
 PyPi:     ``` pip install --user --upgrade pytim ```
 
-Anaconda: ``` conda config --add channels conda-forge  && conda install pytim ```
+Anaconda: ``` conda install -c conda-forge pytim ```
 
 
 
