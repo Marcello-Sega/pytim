@@ -88,7 +88,7 @@ class WillardChandler(pytim.PYTIM):
 
         sanity.assign_radii()
 
-        sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
+        sanity.assign_groups(universe, group, cluster_cut, extra_cluster_groups)
 
         self._assign_symmetry(symmetry)
 
@@ -97,7 +97,7 @@ class WillardChandler(pytim.PYTIM):
 
         self.fast = fast
 
-        pytim.PatchTrajectory(universe.trajectory, self)
+        pytim.PatchTrajectory(self.universe.trajectory, self)
         self._assign_layers()
         self._atoms = self._layers[:]  # this is an empty AtomGroup
         self.writevtk = WillardChandler.Writevtk(self)
