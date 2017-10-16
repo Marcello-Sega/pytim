@@ -109,7 +109,7 @@ class ChaconTarazona(pytim.PYTIM):
         self.molecular = molecular
 
         # TODO implement cluster group
-        sanity.assign_groups(group, None, None)
+        sanity.assign_groups(universe, group, None, None)
         sanity.assign_normal(normal)
         sanity.assign_radii()
 
@@ -118,7 +118,7 @@ class ChaconTarazona(pytim.PYTIM):
         self.surf = None
         self.modes = [None, None]
 
-        pytim.PatchTrajectory(universe.trajectory, self)
+        pytim.PatchTrajectory(self.universe.trajectory, self)
         self._assign_layers()
         self._atoms = self.LayerAtomGroupFactory(
             self._layers[:].sum().indices, self.universe)

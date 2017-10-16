@@ -194,7 +194,7 @@ class ITIM(pytim.PYTIM):
         self.PDB = {}
         self.molecular = molecular
 
-        sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
+        sanity.assign_groups(universe, group, cluster_cut, extra_cluster_groups)
         sanity.assign_normal(normal)
         sanity.assign_radii()
 
@@ -203,7 +203,7 @@ class ITIM(pytim.PYTIM):
         self.use_kdtree = True
         self.use_multiproc = multiproc
 
-        pytim.PatchTrajectory(universe.trajectory, self)
+        pytim.PatchTrajectory(self.universe.trajectory, self)
 
         self._assign_layers()
         self._atoms = self.LayerAtomGroupFactory(
@@ -232,7 +232,7 @@ class ITIM(pytim.PYTIM):
             _box[:2] = box[:2]
             try: # older scipy versions
                 self.meshtree = cKDTree(self.meshpoints, boxsize=_box)
-            except: 
+            except:
                 self.meshtree = cKDTree(self.meshpoints, boxsize=_box[:2])
 
     def _touched_lines(self, atom, _x, _y, _z, _radius):

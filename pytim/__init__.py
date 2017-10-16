@@ -84,7 +84,7 @@ class SanityCheck(object):
 
     def assign_radii(self):
         try:
-            groups = [ g for g in self.interface.extra_cluster_groups[:] ] 
+            groups = [ g for g in self.interface.extra_cluster_groups[:] ]
         except BaseException:
             groups = []
         groups.append(self.interface.itim_group)
@@ -306,9 +306,14 @@ class SanityCheck(object):
             self.interface.warnings = warnings
             if radii_dict is not None:
                 self.interface.radii_dict.update(radii_dict)
+            if isinstance(universe, MDAnalysis.core.universe.Universe):
+                self.interface.universe = universe
+            elif isinstance(universe, MDAnalysis.core.groups.AtomGroup):
+                self.interface.universe = universe.universe
+            else:
+                raise BaseException
         except BaseException:
             raise Exception(self.interface.WRONG_UNIVERSE)
-        self.interface.universe = universe
         self._missing_attributes(self.interface.universe)
 
     def assign_alpha(self, alpha):
@@ -323,11 +328,16 @@ class SanityCheck(object):
         self.interface.alpha = alpha
         return True
 
-    def assign_groups(self, itim_group, cluster_cut, extra_cluster_groups):
+    def assign_groups(self,universe, itim_group, cluster_cut, extra_cluster_groups):
         elements = 0
         extraelements = -1
 
-        self.interface.itim_group = itim_group
+        if isinstance(universe, MDAnalysis.core.groups.AtomGroup):
+            self.interface.itim_group = universe
+            print "OVERRIDING ORIGINAL GROUP WITH THE GROUP SUPPLIED AS UNIVERSE: next time, use the complete universe as universe"
+        else:
+            self.interface.itim_group = itim_group
+
         self.interface.cluster_cut = cluster_cut
         self.interface.extra_cluster_groups = extra_cluster_groups
 
