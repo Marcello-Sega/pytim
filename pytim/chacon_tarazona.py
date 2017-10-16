@@ -72,6 +72,10 @@ class ChaconTarazona(pytim.PYTIM):
     >>> print repr(interface.layers)
     array([[<AtomGroup with 175 atoms>],
            [<AtomGroup with 159 atoms>]], dtype=object)
+    >>> interface = pytim.ChaconTarazona(g,alpha=2.,tau=1.5,info=False,molecular=False)
+    >>> print repr(interface.layers)
+    array([[<AtomGroup with 175 atoms>],
+           [<AtomGroup with 159 atoms>]], dtype=object)
 
     """
     _surface = None
@@ -118,7 +122,7 @@ class ChaconTarazona(pytim.PYTIM):
         self.surf = None
         self.modes = [None, None]
 
-        pytim.PatchTrajectory(universe.trajectory, self)
+        pytim.PatchTrajectory(self.universe.trajectory, self)
         self._assign_layers()
         self._atoms = self.LayerAtomGroupFactory(
             self._layers[:].sum().indices, self.universe)

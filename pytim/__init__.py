@@ -84,7 +84,7 @@ class SanityCheck(object):
 
     def assign_radii(self):
         try:
-            groups = [ g for g in self.interface.extra_cluster_groups[:] ] 
+            groups = [ g for g in self.interface.extra_cluster_groups[:] ]
         except BaseException:
             groups = []
         groups.append(self.interface.itim_group)
@@ -299,16 +299,25 @@ class SanityCheck(object):
             group.radii = radii
         self.guessed_radii.update(guessed)
 
-    def assign_universe(self, universe, radii_dict=None, warnings=False):
+    def assign_universe(self, input_obj, radii_dict=None, warnings=False):
         try:
-            self.interface.all_atoms = universe.select_atoms('all')
+            if isinstance(input_obj, MDAnalysis.core.universe.Universe):
+                self.interface.universe = input_obj
+                self.interface.itim_group = None
+            elif isinstance(input_obj, MDAnalysis.core.groups.AtomGroup):
+                self.interface.universe = input_obj.universe
+                self.interface.itim_group = input_obj
+            #NOTE: handle wrong arguments here, or let _missing_attributes do it?
+            else:
+                raise BaseException
+            self.interface.all_atoms = self.interface.universe.select_atoms('all')
             self.interface.radii_dict = tables.vdwradii.copy()
             self.interface.warnings = warnings
             if radii_dict is not None:
                 self.interface.radii_dict.update(radii_dict)
         except BaseException:
             raise Exception(self.interface.WRONG_UNIVERSE)
-        self.interface.universe = universe
+
         self._missing_attributes(self.interface.universe)
 
     def assign_alpha(self, alpha):
@@ -327,7 +336,8 @@ class SanityCheck(object):
         elements = 0
         extraelements = -1
 
-        self.interface.itim_group = itim_group
+        if self.interface.itim_group is None:
+            self.interface.itim_group = itim_group
         self.interface.cluster_cut = cluster_cut
         self.interface.extra_cluster_groups = extra_cluster_groups
 
