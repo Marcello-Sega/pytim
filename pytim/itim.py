@@ -203,7 +203,7 @@ class ITIM(pytim.PYTIM):
         self.use_kdtree = True
         self.use_multiproc = multiproc
 
-        pytim.PatchTrajectory(universe.trajectory, self)
+        pytim.PatchTrajectory(self.universe.trajectory, self)
 
         self._assign_layers()
         self._atoms = self.LayerAtomGroupFactory(
@@ -232,7 +232,7 @@ class ITIM(pytim.PYTIM):
             _box[:2] = box[:2]
             try: # older scipy versions
                 self.meshtree = cKDTree(self.meshpoints, boxsize=_box)
-            except: 
+            except:
                 self.meshtree = cKDTree(self.meshpoints, boxsize=_box[:2])
 
     def _touched_lines(self, atom, _x, _y, _z, _radius):

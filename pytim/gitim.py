@@ -90,7 +90,7 @@ class GITIM(pytim.PYTIM):
         if(self.symmetry == 'planar'):
             sanity.assign_normal(normal)
 
-        pytim.PatchTrajectory(universe.trajectory, self)
+        pytim.PatchTrajectory(self.universe.trajectory, self)
 
         self._assign_layers()
 
@@ -116,7 +116,7 @@ class GITIM(pytim.PYTIM):
 
         points = self.triangulation.points
         radii = self.triangulation.radii
-    
+
         R = []
         r_i = points[simplex]
         rad_i = radii[simplex]
@@ -175,8 +175,8 @@ class GITIM(pytim.PYTIM):
             extrapoints = np.copy(points)
             extraids = np.arange(len(points), dtype=np.int)
         # add points at the vertices of the expanded (by 2 alpha) box
-        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0], 
-                                  [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], 
+        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0],
+                                  [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0],
                                   [1.0, 1.0, 0.0], [1.0, 1.0, 1.0]])
         if self._noextrapoints == False:
             for dim,vertex in enumerate(cube_vertices):
