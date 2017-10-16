@@ -49,13 +49,6 @@ class WillardChandler(pytim.PYTIM):
     >>> print "Radius={:.3f}".format(R)
     Radius=19.383
 
-    >>> # the fast kernel gives a slightly (<0.1 Angstrom) different result
-    >>> interface = pytim.WillardChandler(g, alpha=3.0, fast=True)
-    >>> R, _, _, _ = pytim.utilities.fit_sphere(\
-                       interface.triangulated_surface[0])
-    >>> print "Radius={:.3f}".format(R)
-    Radius=19.383
-
     """
 
     _surface = None

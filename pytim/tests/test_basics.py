@@ -49,6 +49,17 @@ class TestBasics():
         ...
     ValueError: parameter alpha must be smaller than the smaller box side
 
+    >>> # TEST:4 interchangeability of Universe/AtomGroup
+    >>> u         = mda.Universe(WATER_GRO)
+    >>> oxygens   = u.select_atoms("name OW")
+    >>> interface = pytim.ITIM(u, alpha=2.0,group=oxygens, max_layers=1,multiproc=False,molecular=False)
+    >>> print len(interface.layers[0,0])
+    265
+    >>> interface = pytim.ITIM(oxygens, alpha=2.0,max_layers=1,multiproc=False,molecular=False)
+    >>> print len(interface.layers[0,0])
+    265
+
+
     >>> # PDB FILE FORMAT
     >>> import MDAnalysis as mda
     >>> import pytim
