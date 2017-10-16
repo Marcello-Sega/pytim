@@ -181,7 +181,7 @@ class ITIM(pytim.PYTIM):
 
         self.cluster_threshold_density = cluster_threshold_density
         self.max_layers = max_layers
-        self._layers = np.empty([2, max_layers], dtype=type(universe.atoms))
+        self._layers = np.empty([2, max_layers], dtype=self.universe.atoms[0].__class__)
         self._surfaces = np.empty(max_layers, dtype=type(Surface))
         self.info = info
         self.normal = None

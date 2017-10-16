@@ -11,6 +11,39 @@ from MDAnalysis.topology import tables
 from difflib import get_close_matches
 import importlib
 import __builtin__
+from difflib import get_close_matches
+
+
+def PatchMDTRAJ(trajectory,universe):
+    """ Patch the mdtraj Trajectory class
+    
+        automates the data exchange between MDAnalysis and mdtraj classes
+    """
+    try:
+        trajectory.universe
+    except:
+        trajectory.universe = universe
+
+        class PatchedMdtrajTrajectory(trajectory.__class__):
+
+            def __getitem__(self,key):
+                slice_ = self.slice(key)
+                PatchMDTRAJ(slice_, universe)
+                if isinstance(key,int):
+                    # mdtraj uses nm as distance unit, we need to convert to Angstrom for MDAnalysis
+                    slice_.universe.atoms.positions = slice_.xyz[0] * 10.0
+                    dimensions = slice_.universe.dimensions[:]
+                    dimensions[0:3] = slice_.unitcell_lengths[0:3] * 10.0
+                    slice_.universe.dimensions = dimensions
+                    slice_.universe.trajectory.interface._assign_layers()
+                return slice_
+
+        oldname = trajectory.__class__.__name__
+        oldmodule = trajectory.__class__.__module__
+
+        PatchedMdtrajTrajectory.__name__ = oldname
+        PatchedMdtrajTrajectory.__module__ = oldmodule
+        trajectory.__class__ = PatchedMdtrajTrajectory
 
 
 class Layers(MDAnalysis.core.topologyattrs.AtomAttr):
@@ -37,7 +70,7 @@ class Sides(MDAnalysis.core.topologyattrs.AtomAttr):
 def PatchTrajectory(trajectory, interface):
     """ Patch the MDAnalysis trajectory class
 
-        this patch makes makes the layer assignement being automatically
+        this patch makes the layer assignement being automatically
         called whenever a new frame is loaded.
     """
     try:
@@ -95,6 +128,7 @@ def _create_property(property_name, docstring=None,
 class SanityCheck(object):
 
     def __init__(self, interface):
+         
         self.interface = interface
         self.interface._MDAversion = MDAnalysis.__version__
         self.VERS = LooseVersion(self.interface._MDAversion)
@@ -331,25 +365,55 @@ class SanityCheck(object):
         self.guessed_radii.update(guessed)
 
     def assign_universe(self, input_obj, radii_dict=None, warnings=False):
+        _mode = None
+        if isinstance(input_obj, MDAnalysis.core.universe.Universe):
+            self.interface.universe = input_obj
+            self.interface.itim_group = None
+            _mode = 'MDAnalysis'
+        if isinstance(input_obj, MDAnalysis.core.groups.AtomGroup):
+            self.interface.universe = input_obj.universe
+            self.interface.itim_group = input_obj
+            _mode = 'MDAnalysis'
         try:
-            if isinstance(input_obj, MDAnalysis.core.universe.Universe):
-                self.interface.universe = input_obj
-                self.interface.itim_group = None
-            elif isinstance(input_obj, MDAnalysis.core.groups.AtomGroup):
-                self.interface.universe = input_obj.universe
-                self.interface.itim_group = input_obj
-            # NOTE: handle wrong arguments here, or let _missing_attributes do
-            # it?
-            else:
-                raise BaseException
-            self.interface.all_atoms = self.interface.universe.select_atoms(
-                'all')
-            self.interface.radii_dict = tables.vdwradii.copy()
-            self.interface.warnings = warnings
-            if radii_dict is not None:
-                self.interface.radii_dict.update(radii_dict)
-        except BaseException:
+            import os
+            import tempfile
+            import mdtraj
+            if isinstance(input_obj,mdtraj.core.trajectory.Trajectory):
+                _file = tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False)
+                _file.close()
+                input_obj[0].save_pdb(_file.name)
+                self.interface.universe = MDAnalysis.Universe(_file.name)
+                PatchMDTRAJ(input_obj,self.interface.universe)
+                os.remove(_file.name)
+                _mode = 'mdtraj'
+        except:
+            pass
+        try:
+            import os
+            from simtk.openmm.app.simulation import Simulation
+            from simtk.openmm.app import pdbfile
+            if isinstance(input_obj, Simulation):
+                _file = tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False)
+                top = input_obs.topology
+                pos = input_obj.context.getState(getPositions=True).getPositions(asNumpy=True).value_in_unit(simtk.units.nanometers)
+                pdbfile.PDBFile.writeFile(topology=top, positions=pos,file=file_)
+                _file.close()
+                self.interface.universe = MDAnalysis.Universe(_file.name)
+                # patch openmm step()
+                os.remove(_file.name)
+                _mode = 'openmm'
+        except:
+            pass
+        # add here additional checks
+
+        if _mode is None:
             raise Exception(self.interface.WRONG_UNIVERSE)
+
+        self.interface.all_atoms = self.interface.universe.select_atoms('all')
+        self.interface.radii_dict = tables.vdwradii.copy()
+        self.interface.warnings = warnings
+        if radii_dict is not None:
+            self.interface.radii_dict.update(radii_dict)
 
         self._missing_attributes(self.interface.universe)
 
