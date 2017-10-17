@@ -94,9 +94,6 @@ class GITIM(pytim.PYTIM):
 
         self._assign_layers()
 
-        self._atoms = self.LayerAtomGroupFactory(
-            self._layers[:].sum().indices, self.universe)
-
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
 
@@ -207,6 +204,7 @@ class GITIM(pytim.PYTIM):
     def _assign_layers(self):
         """Determine the GITIM layers."""
         # this can be used later to shift back to the original shift
+        self.label_group(self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 
@@ -217,9 +215,9 @@ class GITIM(pytim.PYTIM):
             self.center()
 
         # first we label all atoms in group to be in the gas phase
-        self.label_group(self.itim_group.atoms, 0.5)
+        self.label_group(self.itim_group.atoms, beta=0.5)
         # then all atoms in the larges group are labelled as liquid-like
-        self.label_group(self.cluster_group.atoms, 0.0)
+        self.label_group(self.cluster_group.atoms, beta=0.0)
 
         size = len(self.cluster_group.positions)
 
@@ -232,7 +230,7 @@ class GITIM(pytim.PYTIM):
             self._layers[0] = self.cluster_group[alpha_ids]
 
         for layer in self._layers:
-            self.label_group(layer, 1.0)
+            self.label_group(layer, beta = 1.0, layer = 1 )
 
         # reset the interpolator
         self._interpolator = None

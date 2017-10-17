@@ -13,6 +13,27 @@ import importlib
 import __builtin__
 
 
+class Layers(MDAnalysis.core.topologyattrs.AtomAttr):
+    """Layers for each atom"""
+    attrname = 'layers'
+    singular = 'layer'
+    per_object = 'atom'
+
+
+class Clusters(MDAnalysis.core.topologyattrs.AtomAttr):
+    """Clusters for each atom"""
+    attrname = 'clusters'
+    singular = 'cluster'
+    per_object = 'atom'
+
+
+class Sides(MDAnalysis.core.topologyattrs.AtomAttr):
+    """Sides for each atom"""
+    attrname = 'sides'
+    singular = 'side'
+    per_object = 'atom'
+
+
 def PatchTrajectory(trajectory, interface):
     """ Patch the MDAnalysis trajectory class
 
@@ -84,7 +105,7 @@ class SanityCheck(object):
 
     def assign_radii(self):
         try:
-            groups = [ g for g in self.interface.extra_cluster_groups[:] ]
+            groups = [g for g in self.interface.extra_cluster_groups[:]]
         except BaseException:
             groups = []
         groups.append(self.interface.itim_group)
@@ -183,6 +204,16 @@ class SanityCheck(object):
                                           universe.atoms, 1, universe)
             self._check_missing_attribute('elements', 'Elements',
                                           universe.atoms, 1, universe)
+            # we add here the new layer, cluster and side information
+
+            layers = np.zeros(len(universe.atoms), dtype=np.int) - 1
+            universe.add_TopologyAttr(Layers(layers))
+
+            clusters = np.zeros(len(universe.atoms), dtype=np.int) - 1
+            universe.add_TopologyAttr(Clusters(clusters))
+
+            sides = np.zeros(len(universe.atoms), dtype=np.int) - 1
+            universe.add_TopologyAttr(Sides(sides))
 
     def _check_missing_attribute(self, name, classname, group, value, universe):
         """ Add an attribute, which is necessary for pytim but
@@ -307,10 +338,12 @@ class SanityCheck(object):
             elif isinstance(input_obj, MDAnalysis.core.groups.AtomGroup):
                 self.interface.universe = input_obj.universe
                 self.interface.itim_group = input_obj
-            #NOTE: handle wrong arguments here, or let _missing_attributes do it?
+            # NOTE: handle wrong arguments here, or let _missing_attributes do
+            # it?
             else:
                 raise BaseException
-            self.interface.all_atoms = self.interface.universe.select_atoms('all')
+            self.interface.all_atoms = self.interface.universe.select_atoms(
+                'all')
             self.interface.radii_dict = tables.vdwradii.copy()
             self.interface.warnings = warnings
             if radii_dict is not None:
@@ -444,18 +477,23 @@ class PYTIM(object):
     def method(self):
         return self.__class__.__name__
 
-    def label_group(self, group, value):
+    def label_group(self, group, beta=None, layer=None, cluster=None, side=None):
         if group is None:
-            raise RuntimeError('one of the groups, possibly a layer one, is None. Something is wrong...')
+            raise RuntimeError(
+                'one of the groups, possibly a layer one, is None. Something is wrong...')
         if self.molecular == True:
             _group = group.residues.atoms
         else:
             _group = group
 
-        if LooseVersion(self._MDAversion) < LooseVersion('0.16'):
-            _group.bfactors = float(value)
-        else:
-            _group.tempfactors = float(value)
+        if beta is not None:
+            _group.tempfactors = float(beta)
+        if layer is not None:
+            _group.layers = layer
+        if side is not None:
+            _group.sides = side
+        if cluster is not None:
+            _group.clusters = cluster
 
     def _assign_symmetry(self, symmetry):
         if self.itim_group is None:
@@ -505,44 +543,9 @@ class PYTIM(object):
              low_x_upp_y,
              upp_x_low_y))
 
-    def LayerAtomGroupFactory(self, indices, universe):
-        if LooseVersion(MDAnalysis.__version__) >= \
-                LooseVersion('0.16'):  # new topology system
-            AtomGroup = MDAnalysis.core.groups.AtomGroup
-        else:
-            AtomGroup = MDAnalysis.core.AtomGroup.AtomGroup
-
-        class LayerAtomGroup(AtomGroup):
-            def __init__(self, interface, *args):
-                AtomGroup.__init__(self, *args)
-                self.interface = interface
-                self._in_layers = self.LayerAtomGroupSelector(
-                    self.interface._layers)
-
-            @property
-            def in_layers(self):
-                return self._in_layers
-
-            class LayerAtomGroupSelector(object):
-                def __init__(self, layers):
-                    self._layers = layers
-
-                def __getitem__(self, key):
-                    obj = self._layers[key]
-                    if isinstance(obj, AtomGroup):
-                        return obj
-                    if isinstance(obj, np.ndarray):
-                        return obj.sum()
-                    return None
-        if LooseVersion(MDAnalysis.__version__) >= \
-                LooseVersion('0.16'):  # new topology system
-            return LayerAtomGroup(self, indices, universe)
-        else:
-            return LayerAtomGroup(self, universe.atoms[indices])
-
     @property
     def atoms(self):
-        return self._atoms
+        return self._layers[:].sum()
 
     def writepdb(self, filename='layers.pdb', centered='no', group='all', multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
@@ -627,23 +630,32 @@ class PYTIM(object):
             label_max = np.argmax(counts)
             # the indices (within the group) of the
             ids_max = np.where(labels == label_max)[0]
+
             # atoms belonging to the largest cluster
-            if (self.extra_cluster_groups is not None) :
+            if (self.extra_cluster_groups is not None):
                 extra = np.sum(self.extra_cluster_groups[:])
                 self.extra = extra
                 x_labels, x_counts, x_neighbors = utilities.do_cluster_analysis_DBSCAN(
-                        extra, self.cluster_cut[0],
-                        self.universe.dimensions[:6],
-                        self.cluster_threshold_density, self.molecular)
+                    extra, self.cluster_cut[0],
+                    self.universe.dimensions[:6],
+                    self.cluster_threshold_density, self.molecular)
                 x_labels = np.array(x_labels)
                 x_label_max = np.argmax(x_counts)
                 x_ids_other = np.where(x_labels != x_label_max)[0]
-                self.cluster_group = np.sum([ self.itim_group[ids_max], extra[x_ids_other]])
-            else :
+
+                # we mark them initially as non-main-cluster, some will be
+                # overwritten
+                self.label_group(extra, cluster=1)
+                self.cluster_group = np.sum(
+                    [self.itim_group[ids_max], extra[x_ids_other]])
+            else:
                 self.cluster_group = self.itim_group[ids_max]
                 self.n_neighbors = neighbors
         else:
             self.cluster_group = self.itim_group
+
+        self.label_group(self.itim_group, cluster=1)
+        self.label_group(self.cluster_group, cluster=0)
 
     def _center(self, group, direction=None, halfbox_shift=True):
         """

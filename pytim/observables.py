@@ -687,11 +687,11 @@ class Profile(object):
     >>> inter = pytim.ITIM(u,group=g,max_layers=4,centered=True)
     >>>
     >>> Layers=[]
-    >>> AIL = inter.atoms.in_layers
     >>>
     >>> Layers.append(Profile(u.atoms))
-    >>> for n in np.arange(4):
-    ...     Layers.append(Profile(AIL[::,n]))
+    >>> for n in np.arange(1,5):
+    ...     condition = inter.atoms.layers == n
+    ...     Layers.append(Profile(inter.atoms[condition]))
     >>>
     >>> for ts in u.trajectory[::50]:
     ...     for L in Layers:
@@ -720,11 +720,11 @@ class Profile(object):
         inter = pytim.ITIM(u,group=g,max_layers=4,centered=True)
 
         Layers=[]
-        AIL = inter.atoms.in_layers
 
         Layers.append(Profile(u.atoms))
-        for n in np.arange(4):
-            Layers.append(Profile(AIL[::,n]))
+        for n in np.arange(1,5):
+            condition = inter.atoms.layers == n
+            Layers.append(Profile(inter.atoms[condition]))
 
         for ts in u.trajectory[::]:
             for L in Layers:
