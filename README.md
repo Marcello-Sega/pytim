@@ -81,13 +81,7 @@ Now interfacial atoms are accessible in different ways, pick the one you like:
 
 
 ```python
-inter.atoms # all atoms in all layers
-```
-
-    <AtomGroup with 5604 atoms>
-
-```python
-inter.atoms.positions # this is a numpy array. You can do what you want with it...
+inter.atoms.positions # this is a numpy array holding the position of atoms in the layers
 ```
 
     array([[ 22.10000038,  16.05999947,  94.19633484],
@@ -96,24 +90,11 @@ inter.atoms.positions # this is a numpy array. You can do what you want with it.
            [ 33.70999908,  49.02999878,  62.52632904],
            [ 34.06999969,  48.18000031,  61.16632843]], dtype=float32)
 
-```python
-L1 = inter.atoms.layers==1 # 1st layer
-inter.atoms[L1]
-```
-
-    <AtomGroup with 1557 atoms>
+Each atom has now a label that specifies in which layer it is found: 
 
 ```python
-inter.layers[:,0] # upper and lower 1st layer
+u.atoms.layers 
 ```
-
-    array([<AtomGroup with 780 atoms>, <AtomGroup with 777 atoms>], dtype=object)
-
-```python
-inter.layers[0:].sum() # all 4 upper layers, in one group
-```
-
-    <AtomGroup with 5604 atoms>
     
 ### Use `nglview` to visualize the system
 
@@ -138,11 +119,8 @@ system.add_spacefill(selection = (u.atoms - inter.atoms).indices, color='gray' )
 v
 ```
 
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="380" align="right" style="z-index:999;">
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="100%" align="right" style="z-index:999;">
 
-```python
-
-```
 
 ## <a name="non-flat-interfaces"></a> What if the interface is not flat? 
 
