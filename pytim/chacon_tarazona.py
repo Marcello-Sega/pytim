@@ -201,6 +201,8 @@ class ChaconTarazona(pytim.PYTIM):
         layers.
 
         """
+        self.label_group(self.universe.atoms, beta=0.0,
+                         layer=-1, cluster=-1, side=-1)
 
         # TODO parallelize
 
@@ -218,9 +220,9 @@ class ChaconTarazona(pytim.PYTIM):
         # we always (internally) center in Chacon-Tarazona
         self.center(planar_to_origin=True)
         # first we label all atoms in group to be in the gas phase
-        self.label_group(self.itim_group.atoms, 0.5)
+        self.label_group(self.itim_group.atoms, beta=0.5)
         # then all atoms in the largest group are labelled as liquid-like
-        self.label_group(self.cluster_group.atoms, 0)
+        self.label_group(self.cluster_group.atoms, bega=0.0)
 
         self.old_box = box
         pos = self.cluster_group.positions
@@ -229,7 +231,8 @@ class ChaconTarazona(pytim.PYTIM):
             self._layers[side][0] = self._assign_one_side(side)
         for side in [0, 1]:
             for _nlayer, _layer in enumerate(self._layers[side]):
-                self.label_group(_layer, _nlayer + 1)
+                self.label_group(_layer, beta=_nlayer + 1.0,
+                                 layer=_nlayer + 1, side=side)
 
         if self.do_center == False:
             self.universe.atoms.positions = self.original_positions

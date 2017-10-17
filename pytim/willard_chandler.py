@@ -122,7 +122,6 @@ class WillardChandler(pytim.PYTIM):
             color = (np.array(color) / 256.).tolist()
             vtk.write_atomgroup(filename, group, color=color, radius=radii)
 
-
         def density(self, filename='pytim_dens.vtk', sequence=False):
             """ Write to vtk files the volumetric density:
                 :param str filename: the file name
@@ -235,7 +234,6 @@ class WillardChandler(pytim.PYTIM):
         surf = self.triangulated_surface[1]
         wavefront_obj.write_file(filename, vert, surf)
 
-
     def _assign_layers(self):
         """There are no layers in the Willard-Chandler method.
 
@@ -243,6 +241,8 @@ class WillardChandler(pytim.PYTIM):
         triangulated isosurface, the density and the particles.
 
         """
+        self.label_group(self.universe.atoms, beta=0.0,
+                         layer=-1, cluster=-1, side=-1)
         # we assign an empty group for consistency
         self._layers = self.universe.atoms[:0]
 
