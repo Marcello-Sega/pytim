@@ -60,7 +60,89 @@ as well as common structure file formats such as XYZ or PDB (have a look at the 
 
 Ok, ok ... have a look below: the pytim part of the notebook is actually all enclosed in cells [1] and [2]. Cells from [3] to [6] are for visualization. This example is about computing molecular layers of a flat interface:
 
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/notebook2.png" width="auto" align="center" style="z-index:999;">
+### Step 1: interface identification
+
+
+```python
+import MDAnalysis as mda
+import pytim
+from pytim.datafiles import WATER_GRO
+
+# load the configuration in MDAnalysis
+u = mda.Universe(WATER_GRO)
+
+# compute the interface using ITIM. Identify 4 layers.
+inter = pytim.ITIM(u,max_layers=4,centered=True)
+```
+
+### That's it. There's no step 2!
+
+Now interfacial atoms are accessible in different ways, pick the one you like:
+
+
+```python
+inter.atoms # all atoms in all layers
+```
+
+    <AtomGroup with 5604 atoms>
+
+```python
+inter.atoms.positions # this is a numpy array. You can do what you want with it...
+```
+
+    array([[ 22.10000038,  16.05999947,  94.19633484],
+           [ 22.43999863,  16.97999954,  93.96632385],
+           ...,
+           [ 33.70999908,  49.02999878,  62.52632904],
+           [ 34.06999969,  48.18000031,  61.16632843]], dtype=float32)
+
+```python
+L1 = inter.atoms.layers==1 # 1st layer
+inter.atoms[L1]
+```
+
+    <AtomGroup with 1557 atoms>
+
+```python
+inter.layers[:,0] # upper and lower 1st layer
+```
+
+    array([<AtomGroup with 780 atoms>, <AtomGroup with 777 atoms>], dtype=object)
+
+```python
+inter.layers[0:].sum() # all 4 upper layers, in one group
+```
+
+    <AtomGroup with 5604 atoms>
+    
+### Use `nglview` to visualize the system
+
+
+```python
+import nglview
+v = nglview.show_mdanalysis(u)
+v.camera='orthographic'
+v.center()
+system = v.component_0
+colors = ['','red','orange','yellow','white']
+```
+
+```python
+for n in [1,2,3,4]:
+    system.add_spacefill(selection = inter.atoms[inter.atoms.layers==n].indices, color=colors[n] )
+
+system.add_spacefill(selection = (u.atoms - inter.atoms).indices, color='gray' )
+```
+
+```python
+v
+```
+
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="380" align="right" style="z-index:999;">
+
+```python
+
+```
 
 ## <a name="non-flat-interfaces"></a> What if the interface is not flat? 
 
