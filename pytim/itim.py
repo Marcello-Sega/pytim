@@ -206,8 +206,6 @@ class ITIM(pytim.PYTIM):
         pytim.PatchTrajectory(self.universe.trajectory, self)
 
         self._assign_layers()
-        self._atoms = self.LayerAtomGroupFactory(
-            self._layers[:].sum().indices, self.universe)
 
     def _assign_mesh(self):
         """determine a mesh size for the testlines that is compatible with the
@@ -222,15 +220,17 @@ class ITIM(pytim.PYTIM):
         if(self.use_kdtree == True):
             # fixing a bug in mgrid(): e.g. np.mgrid[0:46.7227401733:0.399339659][-1] is larger than the limit
             # tested on numpy 1.13.3
-            delta=np.array([0.,0.])
-            maxd = [ np.max(np.mgrid[0:box[0]:self.mesh_dx]), np.max(np.mgrid[0:box[1]:self.mesh_dy]) ]
-            delta[maxd>=box[:2]]=1e-6
-            _x, _y = np.mgrid[0:box[0]-delta[0]:self.mesh_dx, 0:box[1]-delta[1]:self.mesh_dy]
+            delta = np.array([0., 0.])
+            maxd = [np.max(np.mgrid[0:box[0]:self.mesh_dx]),
+                    np.max(np.mgrid[0:box[1]:self.mesh_dy])]
+            delta[maxd >= box[:2]] = 1e-6
+            _x, _y = np.mgrid[0:box[0] - delta[0]
+                :self.mesh_dx, 0:box[1] - delta[1]:self.mesh_dy]
             self.meshpoints = builtin_zip(_x.ravel(), _y.ravel())
             # cKDTree requires a box vetor with length double the dimension,
             _box = np.zeros(4)
             _box[:2] = box[:2]
-            try: # older scipy versions
+            try:  # older scipy versions
                 self.meshtree = cKDTree(self.meshpoints, boxsize=_box)
             except:
                 self.meshtree = cKDTree(self.meshpoints, boxsize=_box[:2])
@@ -344,6 +344,8 @@ class ITIM(pytim.PYTIM):
 
         """
 
+        self.label_group(self.universe.atoms, beta=0.0,
+                         layer=-1, cluster=-1, side=-1)
         self._assign_mesh()
         up = 0
         low = 1
@@ -363,9 +365,9 @@ class ITIM(pytim.PYTIM):
         self.center(planar_to_origin=True)
 
         # first we label all atoms in group to be in the gas phase
-        self.label_group(self.itim_group.atoms, 0.5)
+        self.label_group(self.itim_group.atoms, beta=0.5)
         # then all atoms in the largest group are labelled as liquid-like
-        self.label_group(self.cluster_group.atoms, 0.0)
+        self.label_group(self.cluster_group.atoms, beta=0.0)
 
         _radius = self.cluster_group.radii
         self._seen = [[], []]
@@ -412,11 +414,12 @@ class ITIM(pytim.PYTIM):
                     low, sort[::], _x, _y, _z, _radius)):
                 self._layers[low][index] = group
 
-        # assign labels to all layers. This can be the bfactor or the
-        # tempfactor property, depending on the MDA version
+        # Assign to all layers a label (tempfactor) that can be used in pdb files.
+        # Additionally, set the new layers and sides
         for uplow in [up, low]:
             for nlayer, layer in enumerate(self._layers[uplow]):
-                self.label_group(layer, nlayer + 1.0)
+                self.label_group(layer, beta=nlayer + 1.0,
+                                 layer=nlayer + 1, side=uplow)
 
         for nlayer, layer in enumerate(self._layers[0]):
             self._surfaces[nlayer] = Surface(self, options={'layer': nlayer})
