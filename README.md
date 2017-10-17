@@ -58,7 +58,7 @@ as well as common structure file formats such as XYZ or PDB (have a look at the 
 
 # <a name="example"></a> Show me an example usage, now!
 
-Ok, ok ... have a look below: the pytim part of the notebook is actually all enclosed in cells [1] and [2]. Cells from [3] to [6] are for visualization. This example is about computing molecular layers of a flat interface:
+Ok, ok ... have a look below: this example is about computing molecular layers of a flat interface:
 
 ### Step 1: interface identification
 
