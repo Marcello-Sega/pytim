@@ -14,9 +14,9 @@ import __builtin__
 from difflib import get_close_matches
 
 
-def PatchMDTRAJ(trajectory,universe):
+def PatchMDTRAJ(trajectory, universe):
     """ Patch the mdtraj Trajectory class
-    
+
         automates the data exchange between MDAnalysis and mdtraj classes
     """
     try:
@@ -26,10 +26,10 @@ def PatchMDTRAJ(trajectory,universe):
 
         class PatchedMdtrajTrajectory(trajectory.__class__):
 
-            def __getitem__(self,key):
+            def __getitem__(self, key):
                 slice_ = self.slice(key)
                 PatchMDTRAJ(slice_, universe)
-                if isinstance(key,int):
+                if isinstance(key, int):
                     # mdtraj uses nm as distance unit, we need to convert to Angstrom for MDAnalysis
                     slice_.universe.atoms.positions = slice_.xyz[0] * 10.0
                     dimensions = slice_.universe.dimensions[:]
@@ -128,7 +128,7 @@ def _create_property(property_name, docstring=None,
 class SanityCheck(object):
 
     def __init__(self, interface):
-         
+
         self.interface = interface
         self.interface._MDAversion = MDAnalysis.__version__
         self.VERS = LooseVersion(self.interface._MDAversion)
@@ -378,12 +378,13 @@ class SanityCheck(object):
             import os
             import tempfile
             import mdtraj
-            if isinstance(input_obj,mdtraj.core.trajectory.Trajectory):
-                _file = tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False)
+            if isinstance(input_obj, mdtraj.core.trajectory.Trajectory):
+                _file = tempfile.NamedTemporaryFile(
+                    mode='w', suffix='.pdb', delete=False)
                 _file.close()
                 input_obj[0].save_pdb(_file.name)
                 self.interface.universe = MDAnalysis.Universe(_file.name)
-                PatchMDTRAJ(input_obj,self.interface.universe)
+                PatchMDTRAJ(input_obj, self.interface.universe)
                 os.remove(_file.name)
                 _mode = 'mdtraj'
         except:
@@ -393,10 +394,13 @@ class SanityCheck(object):
             from simtk.openmm.app.simulation import Simulation
             from simtk.openmm.app import pdbfile
             if isinstance(input_obj, Simulation):
-                _file = tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False)
+                _file = tempfile.NamedTemporaryFile(
+                    mode='w', suffix='.pdb', delete=False)
                 top = input_obs.topology
-                pos = input_obj.context.getState(getPositions=True).getPositions(asNumpy=True).value_in_unit(simtk.units.nanometers)
-                pdbfile.PDBFile.writeFile(topology=top, positions=pos,file=file_)
+                pos = input_obj.context.getState(getPositions=True).getPositions(
+                    asNumpy=True).value_in_unit(simtk.units.nanometers)
+                pdbfile.PDBFile.writeFile(
+                    topology=top, positions=pos, file=file_)
                 _file.close()
                 self.interface.universe = MDAnalysis.Universe(_file.name)
                 # patch openmm step()
@@ -660,21 +664,19 @@ class PYTIM(object):
             # MDAnalysis forgets to do so for successive frames. A bugfix
             # should be on the way for the next version...
             self.PDB[filename].CRYST1(
-                self.PDB[filename].convert_dimensions_to_unitcell(
-                    self.universe.trajectory.ts
-                )
-            )
-        except BaseException:
+                self.PDB[filename].convert_dimensions_to_unitcell(self.universe.trajectory.ts))
+        except:
             if LooseVersion(self._MDAversion) >= LooseVersion('0.16'):
                 bondvalue = None
             else:
                 bondvalue = False
             self.PDB[filename] = MDAnalysis.Writer(
-                filename, multiframe=True,
+                filename, multiframe=multiframe,
                 n_atoms=self.group.atoms.n_atoms,
                 bonds=bondvalue
             )
         self.PDB[filename].write(self.group.atoms)
+        self.PDB[filename].pdbfile.flush()
         self.universe.atoms.positions = np.copy(temp_pos)
 
     def savepdb(self, filename='layers.pdb', centered='no', multiframe=True):
