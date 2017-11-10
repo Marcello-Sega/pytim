@@ -79,10 +79,7 @@ def PatchTrajectory(trajectory, interface):
         trajectory.interface = interface
         trajectory.original_read_next_timestep = trajectory._read_next_timestep
 
-        if LooseVersion(interface._MDAversion) >= LooseVersion('0.16'):
-            trajectory.original_read_frame_with_aux = trajectory._read_frame_with_aux
-        else:
-            raise RuntimeError("MDAnalysis versions < 0.16 are not supported")
+        trajectory.original_read_frame_with_aux = trajectory._read_frame_with_aux
 
         class PatchedTrajectory(trajectory.__class__):
 
@@ -131,11 +128,7 @@ class SanityCheck(object):
 
         self.interface = interface
         self.interface._MDAversion = MDAnalysis.__version__
-        self.VERS = LooseVersion(self.interface._MDAversion)
-        self.V015 = LooseVersion('0.15')
         self.V016 = LooseVersion('0.16')
-        if self.VERS < self.V016:
-            raise Exception("Must use MDAnalysis  >= 0.16")
 
     def assign_radii(self):
         try:
@@ -215,39 +208,38 @@ class SanityCheck(object):
             self.interface.itim_group = self.interface.all_atoms
 
     def _missing_attributes(self, universe):
-        if self.VERS >= self.V016:  # new topology system
-            self.topologyattrs = importlib.import_module(
-                'MDAnalysis.core.topologyattrs'
-            )
-            guessers = MDAnalysis.topology.guessers
-            self._check_missing_attribute('names', 'Atomnames', universe.atoms,
-                                          universe.atoms.ids.astype(str), universe)
-            # NOTE _check_missing_attribute() relies on radii being set to np.nan
-            # if the attribute radii is not present
-            self._check_missing_attribute('radii', 'Radii', universe.atoms,
-                                          np.nan, universe)
-            self._check_missing_attribute('tempfactors', 'Tempfactors',
-                                          universe.atoms, 0.0, universe)
-            self._check_missing_attribute('bfactors', 'Bfactors',
-                                          universe.atoms, 0.0, universe)
-            self._check_missing_attribute('altLocs', 'AltLocs',
-                                          universe.atoms, ' ', universe)
-            self._check_missing_attribute('icodes', 'ICodes',
-                                          universe.residues, ' ', universe)
-            self._check_missing_attribute('occupancies', 'Occupancies',
-                                          universe.atoms, 1, universe)
-            self._check_missing_attribute('elements', 'Elements',
-                                          universe.atoms, 1, universe)
-            # we add here the new layer, cluster and side information
+        self.topologyattrs = importlib.import_module(
+            'MDAnalysis.core.topologyattrs'
+        )
+        guessers = MDAnalysis.topology.guessers
+        self._check_missing_attribute('names', 'Atomnames', universe.atoms,
+                                      universe.atoms.ids.astype(str), universe)
+        # NOTE _check_missing_attribute() relies on radii being set to np.nan
+        # if the attribute radii is not present
+        self._check_missing_attribute('radii', 'Radii', universe.atoms,
+                                      np.nan, universe)
+        self._check_missing_attribute('tempfactors', 'Tempfactors',
+                                      universe.atoms, 0.0, universe)
+        self._check_missing_attribute('bfactors', 'Bfactors',
+                                      universe.atoms, 0.0, universe)
+        self._check_missing_attribute('altLocs', 'AltLocs',
+                                      universe.atoms, ' ', universe)
+        self._check_missing_attribute('icodes', 'ICodes',
+                                      universe.residues, ' ', universe)
+        self._check_missing_attribute('occupancies', 'Occupancies',
+                                      universe.atoms, 1, universe)
+        self._check_missing_attribute('elements', 'Elements',
+                                      universe.atoms, 1, universe)
+        # we add here the new layer, cluster and side information
 
-            layers = np.zeros(len(universe.atoms), dtype=np.int) - 1
-            universe.add_TopologyAttr(Layers(layers))
+        layers = np.zeros(len(universe.atoms), dtype=np.int) - 1
+        universe.add_TopologyAttr(Layers(layers))
 
-            clusters = np.zeros(len(universe.atoms), dtype=np.int) - 1
-            universe.add_TopologyAttr(Clusters(clusters))
+        clusters = np.zeros(len(universe.atoms), dtype=np.int) - 1
+        universe.add_TopologyAttr(Clusters(clusters))
 
-            sides = np.zeros(len(universe.atoms), dtype=np.int) - 1
-            universe.add_TopologyAttr(Sides(sides))
+        sides = np.zeros(len(universe.atoms), dtype=np.int) - 1
+        universe.add_TopologyAttr(Sides(sides))
 
     def _check_missing_attribute(self, name, classname, group, value, universe):
         """ Add an attribute, which is necessary for pytim but
