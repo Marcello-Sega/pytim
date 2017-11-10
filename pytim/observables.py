@@ -515,6 +515,26 @@ class Number(Observable):
         """
         return np.ones(len(inp))
 
+class Mass(Observable):
+    """The number of atoms."""
+
+    def __init__(self, *arg, **kwarg):
+        """ No need to pass a universe for this observable. We accept
+            extra arguments not to fail if they are passed anyway by mistake.
+        """
+        Observable.__init__(self, None)
+
+    def compute(self, inp):
+        """Compute the observable.
+
+        :param AtomGroup inp:  the input atom group
+        :returns: one, for each atom in the group
+
+        """
+        return 2*np.ones(len(inp))
+
+
+
 
 class NumberOfResidues(Observable):
     """The number of residues.
