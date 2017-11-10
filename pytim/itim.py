@@ -77,6 +77,7 @@ class ITIM(pytim.PYTIM):
         Example:
 
         >>> import MDAnalysis as mda
+        >>> import numpy as np
         >>> import pytim
         >>> from pytim.datafiles import *
         >>>
