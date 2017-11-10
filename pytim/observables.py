@@ -515,8 +515,9 @@ class Number(Observable):
         """
         return np.ones(len(inp))
 
+
 class Mass(Observable):
-    """The number of atoms."""
+    """Atomic masses"""
 
     def __init__(self, *arg, **kwarg):
         """ No need to pass a universe for this observable. We accept
@@ -528,12 +529,29 @@ class Mass(Observable):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
-        :returns: one, for each atom in the group
+        :returns: an array of masses for each atom in the group
 
         """
-        return 2*np.ones(len(inp))
+        return inp.masses
 
 
+class Charge(Observable):
+    """Atomic charges"""
+
+    def __init__(self, *arg, **kwarg):
+        """ No need to pass a universe for this observable. We accept
+            extra arguments not to fail if they are passed anyway by mistake.
+        """
+        Observable.__init__(self, None)
+
+    def compute(self, inp):
+        """Compute the observable.
+
+        :param AtomGroup inp:  the input atom group
+        :returns: an array of charges for each atom in the group
+
+        """
+        return inp.charges
 
 
 class NumberOfResidues(Observable):
@@ -602,14 +620,14 @@ class Velocity(Observable):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
-        :returns: atomic positions
+        :returns: atomic velocities 
 
         """
         return inp.velocities
 
 
 class Force(Observable):
-    """Atomic velocities"""
+    """Atomic forces"""
 
     def __init__(self, *arg, **kwarg):
         """ No need to pass a universe for this observable. We accept
@@ -621,7 +639,7 @@ class Force(Observable):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
-        :returns: atomic positions
+        :returns: atomic forces
 
         """
         return inp.forces
@@ -684,7 +702,8 @@ class Profile(object):
                                     this group
     :param str        direction:    'x','y', or 'z' : calculate the\
                                     profile along this direction
-    :param Observable observable:   calculate the profile of this\
+    :param Observable observable:   'Number', 'Mass', or 'Charge' : \
+                                    calculate the profile of this\
                                     quantity. If None is supplied, it \
                                     defaults to the number density
     :param ITIM       interface:    if provided, calculate the intrinsic\
