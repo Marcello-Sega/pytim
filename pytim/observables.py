@@ -532,7 +532,12 @@ class Mass(Observable):
         :returns: an array of masses for each atom in the group
 
         """
+    try:
         return inp.masses
+    except:
+        raise Exception(
+        "Error, the passed Atomgroup has no masses attribute"
+        "i.e. your topology lacks this information.")
 
 
 class Charge(Observable):
@@ -551,7 +556,12 @@ class Charge(Observable):
         :returns: an array of charges for each atom in the group
 
         """
+    try:
         return inp.charges
+    except:
+        raise Exception(
+        "Error, the passed Atomgroup has no charges attribute"
+        "i.e. your topology lacks this information.")
 
 
 class NumberOfResidues(Observable):
