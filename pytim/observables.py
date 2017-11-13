@@ -522,6 +522,16 @@ class Mass(Observable):
     def __init__(self, *arg, **kwarg):
         """ No need to pass a universe for this observable. We accept
             extra arguments not to fail if they are passed anyway by mistake.
+
+	    >>> import pytim
+	    >>> import MDAnalysis as mda
+	    >>> from pytim.datafiles import WATERSMALL_GRO
+	    >>> from pytim.observables import Mass
+	    >>> u = mda.Universe(WATERSMALL_GRO)
+	    >>> obs = Mass()
+	    >>> print obs.compute(u.atoms)[0]
+	    15.999
+
         """
         Observable.__init__(self, None)
 
