@@ -532,10 +532,7 @@ class Mass(Observable):
         :returns: an array of masses for each atom in the group
 
         """
-        try:
-            return inp.masses
-        except:
-            raise AttributeError("Error, the passed Atomgroup has no masses attribute")
+        return inp.masses
 
 
 class Charge(Observable):
