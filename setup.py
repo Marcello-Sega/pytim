@@ -4,7 +4,12 @@
 """
 
 # Always prefer setuptools over distutils
-from   setuptools import find_packages
+try:
+    from setuptools import find_packages
+except ImportError:
+    sys.stderr.write ("Error : setuptools is not installed\n"
+                      "Use pip install --user setuptools\n")
+    exit(100)
 # To use a consistent encoding
 import codecs
 import os
@@ -13,7 +18,12 @@ import sys
 from   setuptools import setup
 from   setuptools.command.test import test as TestCommand
 from   distutils.extension import Extension
-from   Cython.Distutils import build_ext
+try:
+    from Cython.Distutils import build_ext
+except ImportError:
+    sys.stderr.write ("Error : cython is not installed\n"
+                      "Use pip install --user cython\n")
+    exit(100)
 
 import numpy
 
