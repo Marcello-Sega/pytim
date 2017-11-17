@@ -54,8 +54,8 @@
             
   <div class="section" id="how-to-install-pytim">
 <h1>How to Install Pytim<a class="headerlink" href="#how-to-install-pytim" title="Permalink to this headline">¶</a></h1>
-<p>NOTE that Pytim (mainly because of its dependency on MDAnalysis) is compatible with <strong>Python 2.7 only</strong>. Python 3.x is not supported.</p>
-<p>There are two ways to install Pytim:</p>
+<p><strong>IMPORTANT:</strong> Pytim (mainly because of its dependency on MDAnalysis) is compatible with <strong>Python 2.7 only</strong>. Python 3.x is not supported.</p>
+<p>There are three ways to install Pytim:</p>
 <div class="section" id="download-the-source-from-github">
 <h2>Download the source from github<a class="headerlink" href="#download-the-source-from-github" title="Permalink to this headline">¶</a></h2>
 <p>The package will download all the dependencies which are needed. Prerequisites for running the setup.py script are <cite>setuptools</cite> and <cite>cython</cite>.</p>
@@ -71,7 +71,20 @@ python setup.py install --user
 </div>
 <div class="section" id="using-pip-to-access-the-python-package-index">
 <h2>Using pip to access the Python Package Index<a class="headerlink" href="#using-pip-to-access-the-python-package-index" title="Permalink to this headline">¶</a></h2>
-<p>(soon to be made available)</p>
+<p>The package can also be installed directly from the Python Package Index, along with the prerequisites <cite>setuptools</cite> and <cite>cython</cite>.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install setuptools --user  --upgrade
+pip install cython     --user  --upgrade
+
+pip install pytim      --user  --upgrade
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-anaconda">
+<h2>Using Anaconda<a class="headerlink" href="#using-anaconda" title="Permalink to this headline">¶</a></h2>
+<p>Finally, Pytim is also available in the Anaconda Package Manager.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>conda install -c conda-forge pytim
+</pre></div>
+</div>
 <hr class="docutils" />
 <div class="toctree-wrapper compound">
 </div>
@@ -104,7 +117,8 @@ python setup.py install --user
 <li class="toctree-l1"><a class="reference internal" href="quick.html">Pytim: Quick Tour</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">How to Install Pytim</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#download-the-source-from-github">Download the source from github</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#using-pip-to-access-the-python-package-index">Using pip to access the Python Package Index</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="#using-pip-to-access-the-python-package-index">Using pip to access the Python Package Index</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-anaconda">Using Anaconda</a><ul class="simple">
 </ul>
 </li>
 </ul>
@@ -171,7 +185,7 @@ python setup.py install --user
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Marcello Sega.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
     </div>
   </body>
 </html>

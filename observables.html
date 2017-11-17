@@ -196,18 +196,17 @@ across the simulation box.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.observables</span> <span class="k">import</span> <span class="n">Profile</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;name OW&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">max_layers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Layers</span><span class="o">=</span><span class="p">[]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">AIL</span> <span class="o">=</span> <span class="n">inter</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">in_layers</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Profile</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">Layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Profile</span><span class="p">(</span><span class="n">AIL</span><span class="p">[::,</span><span class="n">n</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">condition</span> <span class="o">=</span> <span class="n">inter</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="n">n</span>
+<span class="gp">... </span>    <span class="n">Layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Profile</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">condition</span><span class="p">]))</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[::</span><span class="mi">50</span><span class="p">]:</span>
 <span class="gp">... </span>    <span class="k">for</span> <span class="n">L</span> <span class="ow">in</span> <span class="n">Layers</span><span class="p">:</span>
@@ -281,6 +280,7 @@ across the simulation box.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATERSMALL_GRO</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.utilities</span> <span class="k">import</span> <span class="n">lap</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1">#  tmpdir here is specified only for travis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span>  <span class="nn">os</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">WATERSMALL_TRR</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">datafiles</span><span class="o">.</span><span class="n">pytim_data</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s1">&#39;WATERSMALL_LONG_TRR&#39;</span><span class="p">,</span><span class="n">tmpdir</span><span class="o">=</span><span class="s1">&#39;./&#39;</span><span class="p">)</span>
 <span class="go">checking presence of a cached copy... not found. Fetching remote file... done.</span>
 </pre></div>
@@ -310,6 +310,7 @@ as follows:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span><span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">10</span><span class="p">]:</span> <span class="c1"># example only: sample the whole trajectory</span>
 <span class="gp">... </span>    <span class="n">corr</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="s1">&#39;./&#39;</span><span class="o">+</span><span class="n">WATERSMALL_TRR</span><span class="p">)</span> <span class="c1"># cleanup</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">layer_vacf</span> <span class="o">=</span> <span class="n">corr</span><span class="o">.</span><span class="n">correlation</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -647,7 +648,7 @@ three vectors.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Marcello Sega.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
     </div>
   </body>
 </html>
