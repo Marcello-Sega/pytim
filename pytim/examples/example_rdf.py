@@ -18,7 +18,7 @@ radii = pytim_data.vdwradii(G43A1_TOP)
 
 rdf = observables.RDF2D(u, max_radius='full', nbins=120)
 
-interface = pytim.ITIM(u, alpha=2., itim_group=oxygens,
+interface = pytim.ITIM(u, alpha=2., group=oxygens,
                        max_layers=4, radii_dict=radii, cluster_cut=3.5)
 
 for ts in u.trajectory[::sampling_frequency]: 
