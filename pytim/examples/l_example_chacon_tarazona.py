@@ -7,7 +7,7 @@ from pytim import observables
 u = mda.Universe(WATER_GRO)
 g = u.select_atoms('name OW')
 inter = pytim.ChaconTarazona(
-    u, alpha=2., tau=1.5, itim_group=g, info=True, molecular=False)
+    u, alpha=2., tau=1.5, group=g, info=True, molecular=False)
 inter.writepdb('CT.pdb', centered=True)
 print repr(inter.layers)
 exit()
