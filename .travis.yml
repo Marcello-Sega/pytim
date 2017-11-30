@@ -28,6 +28,7 @@ before_install:
         brew update;
         curl -s --location "https://bootstrap.pypa.io/get-pip.py" -o get-pip.py ;
         python get-pip.py --user ; 
+        alias pip='pip2'
         pip install --upgrade pip  ; 
       fi
 #    - if [[ "$TRAVIS_OS_NAME" == "linux" ]] ; then sudo apt-get install liblapack-dev -y   ; fi
