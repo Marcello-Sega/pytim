@@ -18,9 +18,9 @@ matrix:
           python: 2.7
           env: MDAv=0.16
 
-        - os: osx
-          language: generic
-          env: MDAv=0.16
+       # - os: osx
+       #   language: generic
+       #   env: MDAv=0.16
 
 
 before_install:
