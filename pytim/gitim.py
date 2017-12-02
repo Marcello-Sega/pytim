@@ -43,7 +43,8 @@ class GITIM(pytim.PYTIM):
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print repr(layer)
-        <AtomGroup with 547 atoms>
+        <AtomGroup with 872 atoms>
+
 
     """
     _surface = None
@@ -192,7 +193,7 @@ class GITIM(pytim.PYTIM):
         # print utilities.lap()
 
         #prefiltered = self.alpha_prefilter(self.triangulation, alpha)
-        prefiltered = self.triangulation.simplices
+        prefiltered = self.triangulation.simplices # == skip prefiltering
         # print utilities.lap()
 
         a_shape = prefiltered[np.array([self.circumradius(
