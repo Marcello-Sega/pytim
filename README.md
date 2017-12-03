@@ -9,7 +9,7 @@
 [![Code Climate](https://codeclimate.com/github/Marcello-Sega/pytim/badges/gpa.svg)](https://codeclimate.com/github/Marcello-Sega/pytim)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-<sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. The interface has almost converged to its final form, but changes could still be introduced. In the next period we will roll out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on github and/or make a pull request. </sub>
+<sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. The interface has almost converged to its final form, but changes could still be introduced. In the next period, we will roll out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on GitHub and/or make a pull request. </sub>
 
 # What is Pytim
 
@@ -85,7 +85,7 @@ inter.atoms.positions # this is a numpy array holding the position of atoms in t
 u.atoms.layers  # -1 if not in any layer, 1 if in the first layer, ...
 ```
 
-3. Using the layers groups, stored as a a list (of lists, in case of upper/lower layers in flat interfaces) of groups: 
+3. Using the layers groups, stored as a list (of lists, in case of upper/lower layers in flat interfaces) of groups: 
 
 ```pythin
 inter.layers
@@ -98,9 +98,9 @@ array([[<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
 
 ## Visualisation
 
-Pytim can export in different file formats: the `pdb` format with the `beta` field used to tag the layers, `VTK`, `cube` for both continuous surfaces and particles, and, of course, all formats supported by `MDAnalysis`. 
+Pytim can export in different file formats: the `PDB` format with the `beta` field used to tag the layers, `VTK`, `cube` for both continuous surfaces and particles, and, of course, all formats supported by `MDAnalysis`. 
 
-In [`VMD`](www.ks.uiuc.edu/Research/vmd/), for example, using `beta == 1` allows you to select all atoms in the first interfacial layer. Just save your `pdb` file with layers information using
+In [`VMD`](www.ks.uiuc.edu/Research/vmd/), for example, using `beta == 1` allows you to select all atoms in the first interfacial layer. Just save your `PDB` file with layers information using
 
 ```python
 inter.writepdb('myfile.pdb')
@@ -117,21 +117,16 @@ v.camera='orthographic'
 v.center()
 system = v.component_0
 colors = ['','red','orange','yellow','white']
-```
 
-```python
 for n in [1,2,3,4]:
     system.add_spacefill(selection = inter.atoms[inter.atoms.layers==n].indices, color=colors[n] )
 
 system.add_spacefill(selection = (u.atoms - inter.atoms).indices, color='gray' )
+v.display()
 ```
+<p align="center">
 
-```python
-v
-```
-
-<p style="text-align: center;">
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="60%" >
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="60%" align="center" style="z-index:999;">
 </p>
 
 ## Analysing trajectories (`MDAnalysis` and `mdtraj`)
@@ -210,8 +205,10 @@ v.display()
 
 ```
 
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-gitim.png" width="60%" align="middle">
+<p align="center">
 
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-gitim.png" width="40%" align="middle">
+</p>
 
 The **Willard-Chandler** method can be used, instead to find out isodensity surfaces:
 
@@ -251,8 +248,11 @@ view.add_unitcell()
 
 view.display()
 ```
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" width="80%" align="middle">
 
+<p align="center">
+
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" width="60%" align="middle">
+</p>
 
 # More info
 
@@ -274,7 +274,7 @@ Check out the Pytim Poster from the 10th Liquid Matter Conference
 
 ## From the PyPI
 
-this will install the latest release present on the Python Package Index:
+this will install the latest release present in the Python Package Index:
 
 ```
 pip install --user --upgrade pytim
@@ -297,7 +297,7 @@ python setup.py install --user
 
 ## Setting the `PYTHONPATH` variable
 
-If you instll with the option `--user` (which you have to do if you don't have adminstrator rights) you shouldn't forget to tell python where to look for the module by setting the `PYTHONPATH` environment variable. 
+If you install with the option `--user` (which you have to do if you don't have administrator rights) you shouldn't forget to tell python where to look for the module by setting the `PYTHONPATH` environment variable. 
 
 Under Linux, you could do, for example:
 ```
@@ -322,7 +322,7 @@ find $HOME -name site-packages
 ```
 
 
-## Trouble installing ? 
+## Trouble installing? 
 
 Some of the most common issues are the following:
 
@@ -354,7 +354,7 @@ Some of the most common issues are the following:
 # References  <img src="https://raw.githubusercontent.com/Marcello-Sega/gitim/ITIM/media/soot1small.png" width="180" align="right" style="z-index:999;">
 
 
-We plan to submit soon a manuscript to report on the features/improvements of pytim with respect to the previous available code. In the meanwhile, if you use pytim, please cite this web page, and read and cite the papers corresponding to the method you are using:
+We plan to submit soon a manuscript to report on the features/improvements of pytim with respect to the previously available code. In the meanwhile, if you use pytim, please cite this web page, and read and cite the papers corresponding to the method you are using:
 
 
 [M. Sega, S. S. Kantorovich P. Jedlovszky and M. Jorge, _J. Chem. Phys._ **138**, 044110 (2013)](http://dx.doi.org/10.1063/1.4776196) The generalized identification of truly interfacial molecules (ITIM) algorithm for nonplanar interfaces.
