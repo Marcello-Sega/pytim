@@ -449,6 +449,14 @@ class SanityCheck(object):
 
         return True
 
+    def check_multiple_layers_options(self):
+        try:
+            if self.interface.biggest_cluster_only == True and self.interface.cluster_cut == None:
+                self.interface.biggest_cluster_only = False
+                print "Warning: the option biggest_cluster_only has no effect without setting cluster_cut, ignoring it"
+        except:
+            pass
+
 
 class PYTIM(object):
     """ The PYTIM metaclass
