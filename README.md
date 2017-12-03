@@ -130,8 +130,9 @@ system.add_spacefill(selection = (u.atoms - inter.atoms).indices, color='gray' )
 v
 ```
 
-
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="60%" align="middle">
+<p align="justify">
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="60%" >
+</p>
 
 ## Analysing trajectories (`MDAnalysis` and `mdtraj`)
 
