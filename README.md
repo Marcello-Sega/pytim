@@ -1,4 +1,4 @@
-[Supported Formats](#supported-formats) | [Example](#example) | [More info](#more-info)  | [How to Install](#installation) | [References](#references)
+[What is Pytim](#what-is-pytim) | [Example](#example) | [More info](#more-info)  | [How to Install](#installation) | [References](#references)
 
 
 [![Build Status](https://travis-ci.org/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.org/Marcello-Sega/pytim)
@@ -11,18 +11,11 @@
 
 <sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. The interface has almost converged to its final form, but changes could still be introduced. In the next period we will roll out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on github and/or make a pull request. </sub>
 
-# Install from PyPi or Anaconda - [![PyPI version](https://badge.fury.io/py/pytim.svg)](https://badge.fury.io/py/pytim) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pytim/badges/version.svg)](https://anaconda.org/conda-forge/pytim)
-
-PyPi:     ``` pip install --user --upgrade pytim ```
-
-Anaconda: ``` conda install -c conda-forge pytim ```
-
-
-
-
-# Supported Formats
+# What is Pytim
 
 [Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. So far the following methods have been implemented:
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle_cut.png" width="380" align="right" style="z-index:999;">
+
 
 * ITIM
 * GITIM 
@@ -30,6 +23,7 @@ Anaconda: ``` conda install -c conda-forge pytim ```
 * Chacon Tarazona
 * DBSCAN filtering
 
+## Supported formats
 Pytim relies on the [MDAnalysis](http://www.mdanalysis.org/)
 package for reading/writing trajectories, and work therefore seamlessly for a number of popular trajectory formats, including:  
 * GROMACS
@@ -39,6 +33,14 @@ package for reading/writing trajectories, and work therefore seamlessly for a nu
 * DL_Poly
 
 as well as common structure file formats such as XYZ or PDB (have a look at the [complete list](https://pythonhosted.org/MDAnalysis/documentation_pages/coordinates/init.html#id1))
+
+## Install from PyPi or Anaconda - [![PyPI version](https://badge.fury.io/py/pytim.svg)](https://badge.fury.io/py/pytim) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pytim/badges/version.svg)](https://anaconda.org/conda-forge/pytim)
+
+PyPi:     ``` pip install --user --upgrade pytim ```
+
+Anaconda: ``` conda install -c conda-forge pytim ```
+
+
 
 # <a name="example"></a> Show me an example usage, now!
 
@@ -155,8 +157,6 @@ view.display()
 
 
 # More info
-
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle_cut.png" width="380" align="right" style="z-index:999;">
 
 Have a look at some jupyter notebooks:
 
