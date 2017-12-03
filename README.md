@@ -171,8 +171,48 @@ for step in t[:]:
 You could use GITIM, or the Willard-Chandler method. 
 Let's have a look first at **GITIM**:
 
+```python
+import MDAnalysis as mda
+import pytim
+from   pytim.datafiles import *
 
-To use the **Willard-Chandler** method, instead :
+u       = mda.Universe(MICELLE_PDB)
+g       = u.select_atoms('resname DPC')
+
+interface = pytim.GITIM(u,group=g,molecular=False,
+                        symmetry='spherical',alpha=2.5)
+layer = interface.layers[0]
+interface.writepdb('gitim.pdb',centered=False)
+print repr(layer)
+<AtomGroup with 872 atoms>
+```
+
+`nglview` can be used to show a section cut of the micelle in a `jupyter` notebook:
+
+```python
+import nglview
+import numpy as np
+
+v = nglview.show_mdanalysis(u)
+v.camera='orthographic'
+v.center()
+v.add_unitcell()
+system = v.component_0
+system.clear()
+
+selection = g.atoms.positions[:,2]>30.
+system.add_spacefill(selection =g.atoms.indices[selection])
+
+selection = np.logical_and(inter.atoms.layers==1,inter.atoms.positions[:,2]>30.)
+system.add_spacefill(selection =inter.atoms.indices[selection], color='yellow' )
+v.display()
+
+```
+
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-gitim.png" width="80%" align="middle">
+
+
+The **Willard-Chandler** method can be used, instead to find out isodensity surfaces:
 
 ```python
 import MDAnalysis as mda
@@ -202,7 +242,7 @@ view.clear() # looks like this is needed in order for view._display_image() to w
 view.component_0.center()
 view.component_0.add_spacefill(selection='DPC')
 
-# let's add a transparent, red representation for the isodensity surface
+# let's add a transparent, red representation for the isodensity surface at 50% density
 view.component_1.add_surface(color='red',isolevelType="value",isolevel=0.5,opacity=0.6) 
 
 # add a nice simulation box
