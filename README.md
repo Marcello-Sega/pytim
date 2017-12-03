@@ -131,7 +131,7 @@ v
 ```
 
 
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="80%" align="middle">
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="60%" align="middle">
 
 ## Analysing trajectories (`MDAnalysis` and `mdtraj`)
 
@@ -209,7 +209,7 @@ v.display()
 
 ```
 
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-gitim.png" width="80%" align="middle">
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-gitim.png" width="60%" align="middle">
 
 
 The **Willard-Chandler** method can be used, instead to find out isodensity surfaces:
@@ -250,7 +250,7 @@ view.add_unitcell()
 
 view.display()
 ```
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" width="100%" align="middle">
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" width="80%" align="middle">
 
 
 # More info
