@@ -187,7 +187,7 @@ class GITIM(pytim.PYTIM):
     def alpha_shape(self, alpha, group):
         # print  utilities.lap()
         box = self.universe.dimensions[:3]
-        delta = 2.2 * self.alpha + 1e-6
+        delta = 2.1 * self.alpha + 1e-6
         points = group.positions[:]
         nrealpoints = len(points)
         np.random.seed(0)  # pseudo-random for reproducibility
