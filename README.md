@@ -81,8 +81,11 @@ Each atom has now a label that specifies in which layer it is found:
 ```python
 u.atoms.layers 
 ```
-    
-### Use `nglview` to visualize the system
+
+### Visualisation
+
+Pytim can export in different file formats: the `PDB` format with the `beta` field used to tag the layers, `VTK`, `cube` for both continuous surfaces and particles, and, of course, all formats supported by `MDAnalysis`. 
+In [`VMD`](www.ks.uiuc.edu/Research/vmd/) for example, using `beta == 1` allows you to select all atoms in the first interfacial layer. In a `jupyter` notebook, you can use `nglview` like this:
 
 
 ```python
