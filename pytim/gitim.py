@@ -36,16 +36,39 @@ class GITIM(pytim.PYTIM):
         >>>
         >>> u       = mda.Universe(MICELLE_PDB)
         >>> g       = u.select_atoms('resname DPC')
-        >>> radii=pytim_data.vdwradii(G43A1_TOP)
         >>>
         >>> interface =pytim.GITIM(u,group=g,molecular=False,\
                 symmetry='spherical',alpha=2.5)
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print repr(layer)
-        <AtomGroup with 547 atoms>
+        <AtomGroup with 872 atoms>
+
+
+        Successive layers can be identified with GITIM as well. In this example we
+        identify two solvation shells of glucose
+
+
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from   pytim.datafiles import *
+        >>>
+        >>> u       = mda.Universe(GLUCOSE_PDB)
+        >>> g       = u.select_atoms('name OW')
+        >>> # it is faster to consider only oxygens.
+        >>> # Hydrogen atoms are anyway within Oxygen's radius,
+        >>> # in SPC* models.
+        >>> radii=pytim_data.vdwradii(G43A1_TOP)
+        >>> radii['O']=radii['OW']
+        >>> interface =pytim.GITIM(u,group=g,molecular=True,\
+                    symmetry='spherical',radii_dict=radii,alpha=2.0,max_layers=2)
+        >>>
+        >>> interface.writepdb('glucose_shells.pdb')
+        >>> print repr(interface.layers[0]),repr(interface.layers[1])
+        <AtomGroup with 72 atoms> <AtomGroup with 147 atoms>
 
     """
+
     _surface = None
 
     def __init__(
@@ -57,6 +80,7 @@ class GITIM(pytim.PYTIM):
             group=None,
             radii_dict=None,
             max_layers=1,
+            biggest_cluster_only = False,
             cluster_cut=None,
             cluster_threshold_density=None,
             molecular=True,
@@ -70,6 +94,8 @@ class GITIM(pytim.PYTIM):
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
         self.do_center = centered
+
+        self.biggest_cluster_only = biggest_cluster_only
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(
             universe, radii_dict=radii_dict, warnings=warnings)
@@ -102,7 +128,7 @@ class GITIM(pytim.PYTIM):
     @staticmethod
     def alpha_prefilter(triangulation, alpha):
         t = triangulation
-        threshold = 2. * alpha
+        threshold = 2.0 * alpha
         return t.simplices[ np.array([np.max(distance.cdist(t.points[simplex],
                                                   t.points[simplex],
                                                   'euclidean')) >=
@@ -156,11 +182,11 @@ class GITIM(pytim.PYTIM):
             return 0.0
         return np.min(R[R >= 0])
 
-    def alpha_shape(self, alpha):
+    def alpha_shape(self, alpha, group):
         # print  utilities.lap()
         box = self.universe.dimensions[:3]
         delta = 2. * self.alpha + 1e-6
-        points = self.cluster_group.positions[:]
+        points = group.positions[:]
         nrealpoints = len(points)
         np.random.seed(0)  # pseudo-random for reproducibility
         gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
@@ -185,10 +211,11 @@ class GITIM(pytim.PYTIM):
         # print utilities.lap()
         self.triangulation = Delaunay(extrapoints)
         self.triangulation.radii = np.append(
-            self.cluster_group.radii[extraids[extraids >= 0]], np.zeros(8))
+            group.radii[extraids[extraids >= 0]], np.zeros(8))
         # print utilities.lap()
 
-        prefiltered = self.alpha_prefilter(self.triangulation, alpha)
+        #prefiltered = self.alpha_prefilter(self.triangulation, alpha)
+        prefiltered = self.triangulation.simplices # == skip prefiltering
         # print utilities.lap()
 
         a_shape = prefiltered[np.array([self.circumradius(
@@ -219,18 +246,25 @@ class GITIM(pytim.PYTIM):
         # then all atoms in the larges group are labelled as liquid-like
         self.label_group(self.cluster_group.atoms, beta=0.0)
 
-        size = len(self.cluster_group.positions)
+        alpha_group = self.cluster_group
 
-        alpha_ids = self.alpha_shape(self.alpha)
+        # TODO the successive layers analysis should be done by removing points from the triangulation
+        # and updating the circumradius of the neighbors of the removed points only.
+        for layer in range(0,self.max_layers):
+            alpha_ids = self.alpha_shape(self.alpha,alpha_group)
+            if self.molecular:
+                group  = alpha_group[alpha_ids].residues.atoms
+            else:
+                group = alpha_group[alpha_ids]
 
-        # only the 1st layer is implemented in gitim so far
-        if self.molecular:
-            self._layers[0] = self.cluster_group[alpha_ids].residues.atoms
-        else:
-            self._layers[0] = self.cluster_group[alpha_ids]
+            if self.biggest_cluster_only == True: # apply the same clustering algorith as set at init
+                l,c,_ = utilities.do_cluster_analysis_DBSCAN(group,self.cluster_cut[0], self.universe.dimensions[:],
+                                                             self.cluster_threshold_density, self.molecular)
+                group = group [ np.where(np.array(l) == np.argmax(c))[0] ]
 
-        for layer in self._layers:
-            self.label_group(layer, beta = 1.0, layer = 1 )
+            self._layers[layer] = group
+            self.label_group(self._layers[layer], beta = 1.*(layer+1), layer = (layer+1) )
+            alpha_group = alpha_group - self._layers[layer]
 
         # reset the interpolator
         self._interpolator = None

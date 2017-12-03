@@ -22,6 +22,7 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
     ...     print("{:20s} {:s}".format(config,pytim_data.description[config]))
     CCL4_WATER_GRO       Carbon tetrachloride/TIP4p water interface
     FULLERENE_PDB        fullerene
+    GLUCOSE_PDB          solvated beta-d-glucose
     MICELLE_PDB          DPC micelle
     WATERSMALL_GRO       small SPC water/vapour interface
     WATER_520K_GRO       SPC/E water/vapour interface, 520K
@@ -70,6 +71,7 @@ __all__ = [
     "ILBENZENE_GRO",         # Ionic liquid/benzene, partial miscibility
     "MICELLE_PDB",           # PDB of dodecylphosphocholine micelle in water
     "FULLERENE_PDB",         # PDB of C60
+    "GLUCOSE_PDB",           # PDB of solvated beta-d-glucose
     "WATER_XTC",             # GROMACS trajectory, 100 frames, water/vapour interface
     "G43A1_TOP",             # GROMOS 43a1 nonbonded parameters, from gromacs distribution
     "pytim_data",            # class to access the data
@@ -230,6 +232,9 @@ pytim_data.add('MICELLE_PDB',  'config', 'GRO', 'DPC micelle')
 
 FULLERENE_PDB = resource_filename('pytim', 'data/fullerene.pdb')
 pytim_data.add('FULLERENE_PDB',  'config', 'PDB', 'fullerene')
+
+GLUCOSE_PDB   = resource_filename('pytim', 'data/glucose.pdb')
+pytim_data.add('GLUCOSE_PDB',  'config', 'PDB', 'solvated beta-d-glucose')
 
 WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
 pytim_data.add('WATERSMALL_GRO',  'config', 'GRO',
