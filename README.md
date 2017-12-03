@@ -1,4 +1,4 @@
-[A Quick Intro](#a-quick-intro) | [Supported Formats](#supported-formats) | [Example](#example) | [How to Install](#installation) | [References](#references)
+[Supported Formats](#supported-formats) | [Example](#example) | [More info](#more-info)  | [How to Install](#installation) | [References](#references)
 
 
 [![Build Status](https://travis-ci.org/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.org/Marcello-Sega/pytim)
@@ -19,22 +19,6 @@ Anaconda: ``` conda install -c conda-forge pytim ```
 
 
 
-# A Quick Intro
-
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle_cut.png" width="380" align="right" style="z-index:999;">
-
-Have a look at some jupyter notebooks:
-
-1. [An introduction to Pytim](https://github.com/Marcello-Sega/pytim/blob/master/notebooks/An%20introduction%20to%20Pytim.ipynb) 
-2. [The Willard-Chandler method]( https://github.com/Marcello-Sega/pytim/blob/master/notebooks/Willard-Chandler%20and%20Cube%20format.ipynb)
-
-Browse the examples in the online manual:
-
-3. [Pytim Online Manual](https://marcello-sega.github.io/pytim/quick.html)
-
-Check out the Pytim Poster from the 10th Liquid Matter Conference 
-
-4. [Available on ResearchGate](http://dx.doi.org/10.13140/RG.2.2.18613.17126)  DOI:10.13140/RG.2.2.18613.17126
 
 # Supported Formats
 
@@ -170,6 +154,22 @@ view.display()
 <img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" width="100%" align="middle">
 
 
+# More info
+
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle_cut.png" width="380" align="right" style="z-index:999;">
+
+Have a look at some jupyter notebooks:
+
+1. [An introduction to Pytim](https://github.com/Marcello-Sega/pytim/blob/master/notebooks/An%20introduction%20to%20Pytim.ipynb) 
+2. [The Willard-Chandler method]( https://github.com/Marcello-Sega/pytim/blob/master/notebooks/Willard-Chandler%20and%20Cube%20format.ipynb)
+
+Browse the examples in the online manual:
+
+3. [Pytim Online Manual](https://marcello-sega.github.io/pytim/quick.html)
+
+Check out the Pytim Poster from the 10th Liquid Matter Conference 
+
+4. [Available on ResearchGate](http://dx.doi.org/10.13140/RG.2.2.18613.17126)  DOI:10.13140/RG.2.2.18613.17126
 
 
 # <a name="installation"></a> How to install the package and the documentation? 
