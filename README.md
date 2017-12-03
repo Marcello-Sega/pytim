@@ -65,6 +65,7 @@ inter = pytim.ITIM(u,max_layers=4,centered=True)
 
 Now interfacial atoms are accessible in different ways, pick the one you like:
 
+1. Through the `atoms` group accessible as
 
 ```python
 inter.atoms.positions # this is a numpy array holding the position of atoms in the layers
@@ -76,10 +77,16 @@ inter.atoms.positions # this is a numpy array holding the position of atoms in t
            [ 33.70999908,  49.02999878,  62.52632904],
            [ 34.06999969,  48.18000031,  61.16632843]], dtype=float32)
 
-Each atom has now a label that specifies in which layer it is found: 
+2. Using the label that each atom in the `MDAnalysis` universe now has, which specifies in which layer it is found: 
 
 ```python
 u.atoms.layers 
+```
+
+3. Using the layers groups, stored as a a list (of lists, in case of upper/lower layers in flat interfaces) of groups: 
+
+```pythin
+inter.layers
 ```
 
 ### Visualisation
