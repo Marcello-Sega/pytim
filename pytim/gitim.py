@@ -61,7 +61,7 @@ class GITIM(pytim.PYTIM):
         >>> radii=pytim_data.vdwradii(G43A1_TOP)
         >>> radii['O']=radii['OW']
         >>> interface =pytim.GITIM(u,group=g,molecular=True,\
-        >>>         symmetry='spherical',radii_dict=radii,alpha=2.0,max_layers=2)
+                    symmetry='spherical',radii_dict=radii,alpha=2.0,max_layers=2)
         >>>
         >>> interface.writepdb('glucose_shells.pdb')
         >>> print repr(interface.layers[0]),repr(interface.layers[1])
