@@ -82,7 +82,7 @@ inter.atoms.positions # this is a numpy array holding the position of atoms in t
 2. Using the label that each atom in the `MDAnalysis` universe now has, which specifies in which layer it is found: 
 
 ```python
-u.atoms.layers  # -1 if not in any layer, 
+u.atoms.layers  # -1 if not in any layer, 1 if in the first layer, ...
 ```
 
 3. Using the layers groups, stored as a a list (of lists, in case of upper/lower layers in flat interfaces) of groups: 
