@@ -65,7 +65,8 @@ class GITIM(pytim.PYTIM):
         >>>
         >>> interface.writepdb('glucose_shells.pdb')
         >>> print repr(interface.layers[0]),repr(interface.layers[1])
-        <AtomGroup with 72 atoms> <AtomGroup with 147 atoms>
+        <AtomGroup with 72 atoms> <AtomGroup with 144 atoms>
+
 
     """
 
@@ -186,7 +187,7 @@ class GITIM(pytim.PYTIM):
     def alpha_shape(self, alpha, group):
         # print  utilities.lap()
         box = self.universe.dimensions[:3]
-        delta = 2. * self.alpha + 1e-6
+        delta = 2.1 * self.alpha + 1e-6
         points = group.positions[:]
         nrealpoints = len(points)
         np.random.seed(0)  # pseudo-random for reproducibility
@@ -247,25 +248,30 @@ class GITIM(pytim.PYTIM):
         # then all atoms in the larges group are labelled as liquid-like
         self.label_group(self.cluster_group.atoms, beta=0.0)
 
-        alpha_group = self.cluster_group
+        alpha_group = self.cluster_group[:]
 
         # TODO the successive layers analysis should be done by removing points from the triangulation
         # and updating the circumradius of the neighbors of the removed points only.
         for layer in range(0,self.max_layers):
+
             alpha_ids = self.alpha_shape(self.alpha,alpha_group)
-            if self.molecular:
-                group  = alpha_group[alpha_ids].residues.atoms
-            else:
-                group = alpha_group[alpha_ids]
+
+            group = alpha_group[alpha_ids]
 
             if self.biggest_cluster_only == True: # apply the same clustering algorith as set at init
                 l,c,_ = utilities.do_cluster_analysis_DBSCAN(group,self.cluster_cut[0], self.universe.dimensions[:],
-                                                             self.cluster_threshold_density, self.molecular)
+                                                             threshold_density=self.cluster_threshold_density,
+                                                             molecular=self.molecular)
                 group = group [ np.where(np.array(l) == np.argmax(c))[0] ]
 
-            self._layers[layer] = group
+            alpha_group = alpha_group[:] - group[:]
+
+            if self.molecular:
+                self._layers[layer]  = group.residues.atoms
+            else:
+                self._layers[layer] = group
+
             self.label_group(self._layers[layer], beta = 1.*(layer+1), layer = (layer+1) )
-            alpha_group = alpha_group - self._layers[layer]
 
         # reset the interpolator
         self._interpolator = None
