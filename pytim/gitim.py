@@ -36,7 +36,6 @@ class GITIM(pytim.PYTIM):
         >>>
         >>> u       = mda.Universe(MICELLE_PDB)
         >>> g       = u.select_atoms('resname DPC')
-        >>> radii=pytim_data.vdwradii(G43A1_TOP)
         >>>
         >>> interface =pytim.GITIM(u,group=g,molecular=False,\
                 symmetry='spherical',alpha=2.5)
@@ -46,7 +45,30 @@ class GITIM(pytim.PYTIM):
         <AtomGroup with 872 atoms>
 
 
+        Successive layers can be identified with GITIM as well. In this example we
+        identify two solvation shells of glucose
+
+
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from   pytim.datafiles import *
+        >>>
+        >>> u       = mda.Universe(GLUCOSE_PDB)
+        >>> g       = u.select_atoms('name OW')
+        >>> # it is faster to consider only oxygens.
+        >>> # Hydrogen atoms are anyway within Oxygen's radius,
+        >>> # in SPC* models.
+        >>> radii=pytim_data.vdwradii(G43A1_TOP)
+        >>> radii['O']=radii['OW']
+        >>> interface =pytim.GITIM(u,group=g,molecular=True,\
+        >>>         symmetry='spherical',radii_dict=radii,alpha=2.0,max_layers=2)
+        >>>
+        >>> interface.writepdb('glucose_shells.pdb')
+        >>> print repr(interface.layers[0]),repr(interface.layers[1])
+        <AtomGroup with 72 atoms> <AtomGroup with 147 atoms>
+
     """
+
     _surface = None
 
     def __init__(
@@ -58,6 +80,7 @@ class GITIM(pytim.PYTIM):
             group=None,
             radii_dict=None,
             max_layers=1,
+            biggest_cluster_only = False,
             cluster_cut=None,
             cluster_threshold_density=None,
             molecular=True,
@@ -66,14 +89,13 @@ class GITIM(pytim.PYTIM):
             centered=False,
             warnings=False,
             _noextrapoints=False,
-            _keep_biggest = False,
             **kargs):
 
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
         self.do_center = centered
-        # in testing phase:
-        self.keep_biggest = _keep_biggest
+
+        self.biggest_cluster_only = biggest_cluster_only
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(
             universe, radii_dict=radii_dict, warnings=warnings)
@@ -235,11 +257,9 @@ class GITIM(pytim.PYTIM):
             else:
                 group = alpha_group[alpha_ids]
 
-            if self.keep_biggest == True: # apply the same clustering algorith as set at init
-                l,c,_ = utilities.do_cluster_analysis_DBSCAN(group,self.cluster_cut[0],
-                                                             self.universe.dimensions[:],
-                                                             self.cluster_threshold_density,
-                                                             self.molecular)
+            if self.biggest_cluster_only == True: # apply the same clustering algorith as set at init
+                l,c,_ = utilities.do_cluster_analysis_DBSCAN(group,self.cluster_cut[0], self.universe.dimensions[:],
+                                                             self.cluster_threshold_density, self.molecular)
                 group = group [ np.where(np.array(l) == np.argmax(c))[0] ]
 
             self._layers[layer] = group
