@@ -119,7 +119,8 @@ system.add_spacefill(selection = (u.atoms - inter.atoms).indices, color='gray' )
 v
 ```
 
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="100%" align="right" style="z-index:999;">
+
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="80%" align="middle">
 
 
 ## <a name="non-flat-interfaces"></a> What if the interface is not flat? 
@@ -166,7 +167,7 @@ view.add_unitcell()
 
 view.display()
 ```
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" width="100%" align="right" style="z-index:999;">
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" width="100%" align="middle">
 
 
 
