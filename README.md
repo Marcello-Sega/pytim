@@ -1,4 +1,4 @@
-[What is Pytim](#what-is-pytim) | [Example](#example) | [More info](#more-info)  | [How to Install](#installation) | [References](#references)
+[What is Pytim](#what-is-pytim) | [Examples](#example) | [More info](#more-info)  | [How to Install](#installation) | [References](#references)
 
 
 [![Build Status](https://travis-ci.org/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.org/Marcello-Sega/pytim)
@@ -122,6 +122,9 @@ for n in [1,2,3,4]:
     system.add_spacefill(selection = inter.atoms[inter.atoms.layers==n].indices, color=colors[n] )
 
 system.add_spacefill(selection = (u.atoms - inter.atoms).indices, color='gray' )
+```
+```python
+# this must go in a separate cell
 v.display()
 ```
 <p align="center">
@@ -201,8 +204,10 @@ system.add_spacefill(selection =g.atoms.indices[selection])
 
 selection = np.logical_and(inter.atoms.layers==1,inter.atoms.positions[:,2]>30.)
 system.add_spacefill(selection =inter.atoms.indices[selection], color='yellow' )
-v.display()
+```
 
+```python
+v.display()
 ```
 
 <p align="center">
@@ -245,13 +250,66 @@ view.component_1.add_surface(color='red',isolevelType="value",isolevel=0.5,opaci
 
 # add a nice simulation box
 view.add_unitcell()
+```
 
+```python
 view.display()
 ```
 
 <p align="center">
 
 <img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" width="60%" align="middle">
+</p>
+
+### Calculate multiple layers with GITIM: solvation shells of glucose
+```python
+import MDAnalysis as mda
+import pytim
+from   pytim.datafiles import GLUCOSE_PDB
+
+u       = mda.Universe(GLUCOSE_PDB)
+solvent = u.select_atoms('name OW')
+glc     = u.atoms - solvent.residues.atoms
+
+inter = pytim.GITIM(u, group=solvent, molecular=True,
+                    max_layers=3, alpha=2)
+
+for i in [0,1,2]:
+    print "Layer "+str(i),repr(inter.layers[i])
+```
+```python
+Layer 0 <AtomGroup with 81 atoms>
+Layer 1 <AtomGroup with 186 atoms>
+Layer 2 <AtomGroup with 240 atoms>
+```
+
+```python
+import nglview
+import numpy as np
+
+v = nglview.show_mdanalysis(u)
+v.camera='orthographic'
+v.center()
+v.add_unitcell()
+
+v.clear()
+
+# glucose
+v.add_licorice(selection =glc.atoms.indices,radius=.35)
+
+colors = ['yellow','blue','purple']
+# hydration layers
+for layer in [0,1,2]:
+    selection = np.logical_and(inter.atoms.layers==layer+1 ,inter.atoms.positions[:,2]>9)
+    v.add_spacefill(selection =inter.atoms.indices[selection], color=colors[layer] )
+
+```
+```python
+v.display()
+```
+<p align="center">
+
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/glc-gitim.png" width="60%" align="middle">
 </p>
 
 # More info
