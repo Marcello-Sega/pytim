@@ -60,7 +60,7 @@ from pytim.datafiles import WATER_GRO
 u = mda.Universe(WATER_GRO)
 
 # compute the interface using ITIM. Identify 4 layers.
-inter = pytim.ITIM(u,max_layers=4,centered=True)
+inter = pytim.ITIM(u,max_layers=4)
 ```
 
 ### That's it. There's no step 2!
