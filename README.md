@@ -1,4 +1,4 @@
-[A Quick Intro](#a-quick-intro) | [Supported Formats](#supported-formats) | [Example](#example) | [How to Install](#installation) | [References](#references)
+[What is Pytim](#what-is-pytim) | [Examples](#example) | [More info](#more-info)  | [How to Install](#installation) | [References](#references)
 
 
 [![Build Status](https://travis-ci.org/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.org/Marcello-Sega/pytim)
@@ -9,36 +9,15 @@
 [![Code Climate](https://codeclimate.com/github/Marcello-Sega/pytim/badges/gpa.svg)](https://codeclimate.com/github/Marcello-Sega/pytim)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-<sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. The interface has almost converged to its final form, but changes could still be introduced. In the next period we will roll out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on github and/or make a pull request. </sub>
+<sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. The interface has almost converged to its final form, but changes could still be introduced. In the next period, we will roll out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on GitHub and/or make a pull request. </sub>
 
-# Install from PyPi or Anaconda - [![PyPI version](https://badge.fury.io/py/pytim.svg)](https://badge.fury.io/py/pytim) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pytim/badges/version.svg)](https://anaconda.org/conda-forge/pytim)
+# What is Pytim
 
-PyPi:     ``` pip install --user --upgrade pytim ```
+[Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. It is based on [`MDAnalysis`](https://www.mdanalysis.org/), but it integrates also seamlessly with [`mdtraj`](http://mdtraj.org/) (see [further down for an example with `mdtraj`](#mdtraj-example)). 
 
-Anaconda: ``` conda install -c conda-forge pytim ```
-
-
-
-# A Quick Intro
-
+So far the following interface/phase identification methods have been implemented:
 <img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle_cut.png" width="380" align="right" style="z-index:999;">
 
-Have a look at some jupyter notebooks:
-
-1. [An introduction to Pytim](https://github.com/Marcello-Sega/pytim/blob/master/notebooks/An%20introduction%20to%20Pytim.ipynb) 
-2. [The Willard-Chandler method]( https://github.com/Marcello-Sega/pytim/blob/master/notebooks/Willard-Chandler%20and%20Cube%20format.ipynb)
-
-Browse the examples in the online manual:
-
-3. [Pytim Online Manual](https://marcello-sega.github.io/pytim/quick.html)
-
-Check out the Pytim Poster from the 10th Liquid Matter Conference 
-
-4. [Available on ResearchGate](http://dx.doi.org/10.13140/RG.2.2.18613.17126)  DOI:10.13140/RG.2.2.18613.17126
-
-# Supported Formats
-
-[Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. So far the following methods have been implemented:
 
 * ITIM
 * GITIM 
@@ -46,6 +25,7 @@ Check out the Pytim Poster from the 10th Liquid Matter Conference
 * Chacon Tarazona
 * DBSCAN filtering
 
+## Supported formats
 Pytim relies on the [MDAnalysis](http://www.mdanalysis.org/)
 package for reading/writing trajectories, and work therefore seamlessly for a number of popular trajectory formats, including:  
 * GROMACS
@@ -55,6 +35,14 @@ package for reading/writing trajectories, and work therefore seamlessly for a nu
 * DL_Poly
 
 as well as common structure file formats such as XYZ or PDB (have a look at the [complete list](https://pythonhosted.org/MDAnalysis/documentation_pages/coordinates/init.html#id1))
+
+## Install from PyPi or Anaconda - [![PyPI version](https://badge.fury.io/py/pytim.svg)](https://badge.fury.io/py/pytim) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/pytim/badges/version.svg)](https://anaconda.org/conda-forge/pytim)
+
+PyPi:     ``` pip install --user --upgrade pytim ```
+
+Anaconda: ``` conda install -c conda-forge pytim ```
+
+
 
 # <a name="example"></a> Show me an example usage, now!
 
@@ -72,13 +60,14 @@ from pytim.datafiles import WATER_GRO
 u = mda.Universe(WATER_GRO)
 
 # compute the interface using ITIM. Identify 4 layers.
-inter = pytim.ITIM(u,max_layers=4,centered=True)
+inter = pytim.ITIM(u,max_layers=4)
 ```
 
 ### That's it. There's no step 2!
 
 Now interfacial atoms are accessible in different ways, pick the one you like:
 
+1. Through the `atoms` group accessible as
 
 ```python
 inter.atoms.positions # this is a numpy array holding the position of atoms in the layers
@@ -90,13 +79,35 @@ inter.atoms.positions # this is a numpy array holding the position of atoms in t
            [ 33.70999908,  49.02999878,  62.52632904],
            [ 34.06999969,  48.18000031,  61.16632843]], dtype=float32)
 
-Each atom has now a label that specifies in which layer it is found: 
+2. Using the label that each atom in the `MDAnalysis` universe now has, which specifies in which layer it is found: 
 
 ```python
-u.atoms.layers 
+u.atoms.layers  # -1 if not in any layer, 1 if in the first layer, ...
 ```
-    
-### Use `nglview` to visualize the system
+
+3. Using the layers groups, stored as a list (of lists, in case of upper/lower layers in flat interfaces) of groups: 
+
+```pythin
+inter.layers
+
+array([[<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
+        <AtomGroup with 693 atoms>, <AtomGroup with 660 atoms>],
+       [<AtomGroup with 777 atoms>, <AtomGroup with 687 atoms>,
+        <AtomGroup with 663 atoms>, <AtomGroup with 654 atoms>]], dtype=object)
+```
+
+## Visualisation
+
+Pytim can export in different file formats: the `PDB` format with the `beta` field used to tag the layers, `VTK`, `cube` for both continuous surfaces and particles, and, of course, all formats supported by `MDAnalysis`. 
+
+In [`VMD`](www.ks.uiuc.edu/Research/vmd/), for example, using `beta == 1` allows you to select all atoms in the first interfacial layer. Just save your `PDB` file with layers information using
+
+```python
+inter.writepdb('myfile.pdb')
+```
+
+
+In a `jupyter` notebook, you can use `nglview` like this:
 
 
 ```python
@@ -106,34 +117,230 @@ v.camera='orthographic'
 v.center()
 system = v.component_0
 colors = ['','red','orange','yellow','white']
-```
 
-```python
 for n in [1,2,3,4]:
     system.add_spacefill(selection = inter.atoms[inter.atoms.layers==n].indices, color=colors[n] )
 
 system.add_spacefill(selection = (u.atoms - inter.atoms).indices, color='gray' )
 ```
+```python
+# this must go in a separate cell
+v.display()
+```
+<p align="center">
+
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="60%" align="center" style="z-index:999;">
+</p>
+
+## Analysing trajectories (`MDAnalysis` and `mdtraj`)
+
+Once one of the pytim classes (`ITIM`,`GITIM`,`WillardChandler`,...) has been initialised, whenever a new frame is loaded, the interfacial properties will be calculated automatically without need of doing anything else
+
+### MDAnalysis example
 
 ```python
-v
+import MDAnalysis as mda
+import pytim 
+from pytim.datafiles import WATER_GRO, WATER_XTC 
+
+u = mda.Universe(WATER_GRO,WATER_XTC)
+inter = pytim.ITIM(u)
+for step in u.trajectory[:]:
+    print "surface atoms:", repr(inter.atoms)
 ```
 
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="100%" align="right" style="z-index:999;">
+### mdtraj example
+
+Under the hood, `pytim` will use `MDAnalysis`, but this is made (almost completely) transparent to the user, so that interoperability with other software is easy to implement. For example, to analyse a trajectory loaded with `mdtraj`, it is enough to do the following:
+
+```python
+import mdtraj
+import pytim                     
+from pytim.datafiles import WATER_GRO, WATER_XTC 
+
+t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO) 
+inter = pytim.ITIM(t) 
+for step in t[:]:
+        print "surface atoms:" , repr(inter.atoms.indices)
+```
 
 
 ## <a name="non-flat-interfaces"></a> What if the interface is not flat? 
 
-You could use GITIM, or the Willard-Chandler method, look here: 
+You could use GITIM, or the Willard-Chandler method. 
+Let's have a look first at **GITIM**:
 
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/notebook1.png" width="auto" align="center" style="z-index:999;">
+```python
+import MDAnalysis as mda
+import pytim
+from   pytim.datafiles import *
+
+u       = mda.Universe(MICELLE_PDB)
+g       = u.select_atoms('resname DPC')
+
+interface = pytim.GITIM(u,group=g,molecular=False,
+                        symmetry='spherical',alpha=2.5)
+layer = interface.layers[0]
+interface.writepdb('gitim.pdb',centered=False)
+print repr(layer)
+<AtomGroup with 872 atoms>
+```
+
+`nglview` can be used to show a section cut of the micelle in a `jupyter` notebook:
+
+```python
+import nglview
+import numpy as np
+
+v = nglview.show_mdanalysis(u)
+v.camera='orthographic'
+v.center()
+v.add_unitcell()
+system = v.component_0
+system.clear()
+
+selection = g.atoms.positions[:,2]>30.
+system.add_spacefill(selection =g.atoms.indices[selection])
+
+selection = np.logical_and(inter.atoms.layers==1,inter.atoms.positions[:,2]>30.)
+system.add_spacefill(selection =inter.atoms.indices[selection], color='yellow' )
+```
+
+```python
+v.display()
+```
+
+<p align="center">
+
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-gitim.png" width="40%" align="middle">
+</p>
+
+The **Willard-Chandler** method can be used, instead to find out isodensity surfaces:
+
+```python
+import MDAnalysis as mda
+import pytim
+from pytim.datafiles import MICELLE_PDB
+import nglview
+
+u = mda.Universe(MICELLE_PDB)
+g = u.select_atoms('resname DPC')
+```
+
+```python
+interface = pytim.WillardChandler(u, group=g, mesh=1.5, alpha=3.0)
+interface.writecube('data.cube')
+```
+
+Done, the density file is written in `.cube` format, we can now open it with 
+programs such as [`Paraview`](https://www.paraview.org/), or visualize it in a
+jupyter notebook with `nglview`
+
+```python
+view = nglview.show_mdanalysis(u.atoms) # the atoms, this will be component_0 in nglview
+view.add_component('data.cube') # the density data, this will be component_1 in nglview
+
+view.clear() # looks like this is needed in order for view._display_image() to work correctly 
+# let's center the view on our atoms, and draw them as spheres  
+view.component_0.center()
+view.component_0.add_spacefill(selection='DPC')
+
+# let's add a transparent, red representation for the isodensity surface at 50% density
+view.component_1.add_surface(color='red',isolevelType="value",isolevel=0.5,opacity=0.6) 
+
+# add a nice simulation box
+view.add_unitcell()
+```
+
+```python
+view.display()
+```
+
+<p align="center">
+
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" width="60%" align="middle">
+</p>
+
+### Calculate multiple layers with GITIM: solvation shells of glucose
+```python
+import MDAnalysis as mda
+import pytim
+from   pytim.datafiles import GLUCOSE_PDB
+
+u       = mda.Universe(GLUCOSE_PDB)
+solvent = u.select_atoms('name OW')
+glc     = u.atoms - solvent.residues.atoms
+
+inter = pytim.GITIM(u, group=solvent, molecular=True,
+                    max_layers=3, alpha=2)
+
+for i in [0,1,2]:
+    print "Layer "+str(i),repr(inter.layers[i])
+```
+```python
+Layer 0 <AtomGroup with 81 atoms>
+Layer 1 <AtomGroup with 186 atoms>
+Layer 2 <AtomGroup with 240 atoms>
+```
+
+```python
+import nglview
+import numpy as np
+
+v = nglview.show_mdanalysis(u)
+v.camera='orthographic'
+v.center()
+v.add_unitcell()
+
+v.clear()
+
+# glucose
+v.add_licorice(selection =glc.atoms.indices,radius=.35)
+
+colors = ['yellow','blue','purple']
+# hydration layers
+for layer in [0,1,2]:
+    selection = np.logical_and(inter.atoms.layers==layer+1 ,inter.atoms.positions[:,2]>9)
+    v.add_spacefill(selection =inter.atoms.indices[selection], color=colors[layer] )
+
+```
+```python
+v.display()
+```
+<p align="center">
+
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/glc-gitim.png" width="60%" align="middle">
+</p>
+
+When calculating surfaces with `GITIM`, it can happen that several disconnected, closed surfaces are found in a simulation box. To restrict the analysis to the largest, clustered interfacial atoms (also when calculating multiple layers), one can pass the `biggest_cluster_only` option, as in:
+
+```python
+inter = pytim.GITIM(u, group=solvent, molecular=True, max_layers=3, alpha=2, 
+                    biggest_cluster_only=True, cluster_cut = 3.5)
+```
+In order for this option to have any effect, a `cluster_cut` value should also be passed.
+
+# More info
+
+Have a look at some jupyter notebooks:
+
+1. [An introduction to Pytim](https://github.com/Marcello-Sega/pytim/blob/master/notebooks/An%20introduction%20to%20Pytim.ipynb) 
+2. [The Willard-Chandler method]( https://github.com/Marcello-Sega/pytim/blob/master/notebooks/Willard-Chandler%20and%20Cube%20format.ipynb)
+
+Browse the examples in the online manual:
+
+3. [Pytim Online Manual](https://marcello-sega.github.io/pytim/quick.html)
+
+Check out the Pytim Poster from the 10th Liquid Matter Conference 
+
+4. [Available on ResearchGate](http://dx.doi.org/10.13140/RG.2.2.18613.17126)  DOI:10.13140/RG.2.2.18613.17126
 
 
 # <a name="installation"></a> How to install the package and the documentation? 
 
 ## From the PyPI
 
-this will install the latest release present on the Python Package Index:
+this will install the latest release present in the Python Package Index:
 
 ```
 pip install --user --upgrade pytim
@@ -156,7 +363,7 @@ python setup.py install --user
 
 ## Setting the `PYTHONPATH` variable
 
-If you instll with the option `--user` (which you have to do if you don't have adminstrator rights) you shouldn't forget to tell python where to look for the module by setting the `PYTHONPATH` environment variable. 
+If you install with the option `--user` (which you have to do if you don't have administrator rights) you shouldn't forget to tell python where to look for the module by setting the `PYTHONPATH` environment variable. 
 
 Under Linux, you could do, for example:
 ```
@@ -181,7 +388,7 @@ find $HOME -name site-packages
 ```
 
 
-## Trouble installing ? 
+## Trouble installing? 
 
 Some of the most common issues are the following:
 
@@ -213,7 +420,7 @@ Some of the most common issues are the following:
 # References  <img src="https://raw.githubusercontent.com/Marcello-Sega/gitim/ITIM/media/soot1small.png" width="180" align="right" style="z-index:999;">
 
 
-We plan to submit soon a manuscript to report on the features/improvements of pytim with respect to the previous available code. In the meanwhile, if you use pytim, please cite this web page, and read and cite the papers corresponding to the method you are using:
+We plan to submit soon a manuscript to report on the features/improvements of pytim with respect to the previously available code. In the meanwhile, if you use pytim, please cite this web page, and read and cite the papers corresponding to the method you are using:
 
 
 [M. Sega, S. S. Kantorovich P. Jedlovszky and M. Jorge, _J. Chem. Phys._ **138**, 044110 (2013)](http://dx.doi.org/10.1063/1.4776196) The generalized identification of truly interfacial molecules (ITIM) algorithm for nonplanar interfaces.
