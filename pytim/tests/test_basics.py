@@ -106,6 +106,19 @@ class TestBasics():
     ...     pass
 
 
+    >>> # check that using the biggest_cluster_only option without setting cluster_cut
+    >>> # throws a warning and resets to biggest_cluster_only == False
+    >>> import MDAnalysis as mda
+    >>> import pytim
+    >>> from   pytim.datafiles import GLUCOSE_PDB
+    >>>
+    >>> u       = mda.Universe(GLUCOSE_PDB)
+    >>> solvent = u.select_atoms('name OW')
+    >>> inter = pytim.GITIM(u, group=solvent, biggest_cluster_only=True)
+    Warning: the option biggest_cluster_only has no effect without setting cluster_cut, ignoring it
+
+    >>> print inter.biggest_cluster_only
+    False
     """
 
     pass

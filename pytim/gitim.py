@@ -109,6 +109,7 @@ class GITIM(pytim.PYTIM):
         self.PDB = {}
         self.molecular = molecular
         sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
+        sanity.check_multiple_layers_options()
         sanity.assign_radii()
 
         self._assign_symmetry(symmetry)
