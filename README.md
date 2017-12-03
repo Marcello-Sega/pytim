@@ -13,7 +13,9 @@
 
 # What is Pytim
 
-[Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. So far the following methods have been implemented:
+[Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. It is based on [`MDAnalysis`](https://www.mdanalysis.org/), but it integrates also seamlessly with [`mdtraj`](http://mdtraj.org/) (see further down for an example). 
+
+So far the following interface/phase identification methods have been implemented:
 <img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle_cut.png" width="380" align="right" style="z-index:999;">
 
 
