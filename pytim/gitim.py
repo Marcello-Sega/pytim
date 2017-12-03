@@ -72,8 +72,8 @@ class GITIM(pytim.PYTIM):
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
         self.do_center = centered
-        # in testing phase 
-        self.keep_biggest = _keep_biggest 
+        # in testing phase:
+        self.keep_biggest = _keep_biggest
         sanity = pytim.SanityCheck(self)
         sanity.assign_universe(
             universe, radii_dict=radii_dict, warnings=warnings)
@@ -229,20 +229,18 @@ class GITIM(pytim.PYTIM):
         # TODO the successive layers analysis should be done by removing points from the triangulation
         # and updating the circumradius of the neighbors of the removed points only.
         for layer in range(0,self.max_layers):
-            size = len(alpha_group.positions)
-
             alpha_ids = self.alpha_shape(self.alpha,alpha_group)
             if self.molecular:
                 group  = alpha_group[alpha_ids].residues.atoms
             else:
                 group = alpha_group[alpha_ids]
 
-            if self.keep_biggest == True: # apply the same clustering algorith as set at init 
-                l,c,n = utilities.do_cluster_analysis_DBSCAN(group,self.cluster_cut[0],
+            if self.keep_biggest == True: # apply the same clustering algorith as set at init
+                l,c,_ = utilities.do_cluster_analysis_DBSCAN(group,self.cluster_cut[0],
                                                              self.universe.dimensions[:],
-                                                             self.cluster_threshold_density, 
+                                                             self.cluster_threshold_density,
                                                              self.molecular)
-                group = group [ np.where(np.array(l) == np.argmax(c))[0]  ]  
+                group = group [ np.where(np.array(l) == np.argmax(c))[0] ]
 
             self._layers[layer] = group
             self.label_group(self._layers[layer], beta = 1.*(layer+1), layer = (layer+1) )
