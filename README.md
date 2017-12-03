@@ -312,6 +312,14 @@ v.display()
 <img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/glc-gitim.png" width="60%" align="middle">
 </p>
 
+When calculating surfaces with `GITIM`, it can happen that several disconnected, closed surfaces are found in a simulation box. To restrict the analysis to the largest, clustered interfacial atoms (also when calculating multiple layers), one can pass the `biggest_cluster_only` option, as in:
+
+```python
+inter = pytim.GITIM(u, group=solvent, molecular=True, max_layers=3, alpha=2, 
+                    biggest_cluster_only=True, cluster_cut = 3.5)
+```
+In order for this option to have any effect, a `cluster_cut` value should also be passed.
+
 # More info
 
 Have a look at some jupyter notebooks:
