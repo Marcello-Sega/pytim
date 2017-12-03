@@ -13,7 +13,7 @@
 
 # What is Pytim
 
-[Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. It is based on [`MDAnalysis`](https://www.mdanalysis.org/), but it integrates also seamlessly with [`mdtraj`](http://mdtraj.org/) (see further down for an example). 
+[Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. It is based on [`MDAnalysis`](https://www.mdanalysis.org/), but it integrates also seamlessly with [`mdtraj`](http://mdtraj.org/) (see [further down for an example with `mdtraj`](#mdtraj-example)). 
 
 So far the following interface/phase identification methods have been implemented:
 <img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle_cut.png" width="380" align="right" style="z-index:999;">
@@ -91,10 +91,18 @@ u.atoms.layers
 inter.layers
 ```
 
-### Visualisation
+## Visualisation
 
-Pytim can export in different file formats: the `PDB` format with the `beta` field used to tag the layers, `VTK`, `cube` for both continuous surfaces and particles, and, of course, all formats supported by `MDAnalysis`. 
-In [`VMD`](www.ks.uiuc.edu/Research/vmd/) for example, using `beta == 1` allows you to select all atoms in the first interfacial layer. In a `jupyter` notebook, you can use `nglview` like this:
+Pytim can export in different file formats: the `pdb` format with the `beta` field used to tag the layers, `VTK`, `cube` for both continuous surfaces and particles, and, of course, all formats supported by `MDAnalysis`. 
+
+In [`VMD`](www.ks.uiuc.edu/Research/vmd/), for example, using `beta == 1` allows you to select all atoms in the first interfacial layer. Just save your `pdb` file with layers information using
+
+```python
+inter.writepdb('myfile.pdb')
+```
+
+
+In a `jupyter` notebook, you can use `nglview` like this:
 
 
 ```python
@@ -119,6 +127,38 @@ v
 
 
 <img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/output_13_0.png" width="80%" align="middle">
+
+## Analysing trajectories (`MDAnalysis` and `mdtraj`)
+
+Once one of the pytim classes (`ITIM`,`GITIM`,`WillardChandler`,...) has been initialised, whenever a new frame is loaded, the interfacial properties will be calculated automatically without need of doing anything else
+
+### MDAnalysis example
+
+```python
+import MDAnalysis as mda
+import pytim 
+from pytim.datafiles import WATER_GRO, WATER_XTC 
+
+u = mda.Universe(WATER_GRO,WATER_XTC)
+inter = pytim.ITIM(u)
+for step in u.trajectory[:]:
+    print "surface atoms:", repr(inter.atoms)
+```
+
+### mdtraj example
+
+Under the hood, `pytim` will use `MDAnalysis`, but this is made (almost completely) transparent to the user, so that interoperability with other software is easy to implement. For example, to analyse a trajectory loaded with `mdtraj`, it is enough to do the following:
+
+```python
+import mdtraj
+import pytim                     
+from pytim.datafiles import WATER_GRO, WATER_XTC 
+
+t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO) 
+inter = pytim.ITIM(t) 
+for step in t[:]:
+        print "surface atoms:" , repr(inter.atoms.indices)
+```
 
 
 ## <a name="non-flat-interfaces"></a> What if the interface is not flat? 
