@@ -124,9 +124,51 @@ v
 
 ## <a name="non-flat-interfaces"></a> What if the interface is not flat? 
 
-You could use GITIM, or the Willard-Chandler method, look here: 
+You could use GITIM, or the Willard-Chandler method. 
+Let's have a look first at **GITIM**:
 
-<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/notebook1.png" width="auto" align="center" style="z-index:999;">
+
+To use the **Willard-Chandler** method, instead :
+
+```python
+import MDAnalysis as mda
+import pytim
+from pytim.datafiles import MICELLE_PDB
+import nglview
+
+u = mda.Universe(MICELLE_PDB)
+g = u.select_atoms('resname DPC')
+```
+
+```python
+interface = pytim.WillardChandler(u, group=g, mesh=1.5, alpha=3.0)
+interface.writecube('data.cube')
+```
+
+Done, the density file is written in `.cube` format, we can now open it with 
+programs such as [`Paraview`](https://www.paraview.org/), or visualize it in a
+jupyter notebook with `nglview`
+
+```python
+view = nglview.show_mdanalysis(u.atoms) # the atoms, this will be component_0 in nglview
+view.add_component('data.cube') # the density data, this will be component_1 in nglview
+
+view.clear() # looks like this is needed in order for view._display_image() to work correctly 
+# let's center the view on our atoms, and draw them as spheres  
+view.component_0.center()
+view.component_0.add_spacefill(selection='DPC')
+
+# let's add a transparent, red representation for the isodensity surface
+view.component_1.add_surface(color='red',isolevelType="value",isolevel=0.5,opacity=0.6) 
+
+# add a nice simulation box
+view.add_unitcell()
+
+view.display()
+```
+<img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" width="100%" align="right" style="z-index:999;">
+
+
 
 
 # <a name="installation"></a> How to install the package and the documentation? 
