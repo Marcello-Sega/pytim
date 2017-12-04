@@ -9,7 +9,6 @@ from scipy import stats
 
 from MDAnalysis.lib import distances
 from scipy.spatial import cKDTree
-from itertools import chain
 from pytim import utilities
 
 # we try here to have no options passed
