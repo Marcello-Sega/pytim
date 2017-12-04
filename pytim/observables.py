@@ -9,7 +9,6 @@ from scipy import stats
 
 from MDAnalysis.lib import distances
 from scipy.spatial import cKDTree
-from itertools import chain
 from pytim import utilities
 
 # we try here to have no options passed
@@ -876,9 +875,9 @@ class Profile(object):
             self.observable = Number()
         else:
             self.observable = observable
-        self.binsize = 0.1  # this is used for internal calculations, the
-        # output binsize can be specified in
-        # self.get_values()
+        self.binsize = 0.01  # this is used for internal calculations, the
+                             # output binsize can be specified in
+                             # self.get_values()
 
         self.sampled_values = []
         self.sampled_bins = []
@@ -927,11 +926,9 @@ class Profile(object):
             nbins += 1
 
         avg, bins, _ = stats.binned_statistic(
-            list(
-                chain.from_iterable(
-                    self.sampled_bins)), list(
-                chain.from_iterable(
-                    self.sampled_values)), range=self._range, statistic='sum',
+            np.array(self.sampled_bins).flatten(),
+            np.array(self.sampled_values).flatten(),
+            range=self._range, statistic='sum',
             bins=nbins)
         avg[np.isnan(avg)] = 0.0
         vol = np.prod(self.box) / nbins
