@@ -20,13 +20,13 @@ class TestBasics():
     >>> from pytim.datafiles import *
     >>> u         = mda.Universe(WATER_GRO)
     >>> oxygens   = u.select_atoms("name OW")
-    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4)
+    >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4)
     >>> print len(interface.layers[0,0])
-    780
+    786
     >>> del interface
-    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4, multiproc=False)
+    >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4, multiproc=False)
     >>> print len(interface.layers[0,0])
-    780
+    786
     >>> del interface
 
     >>> # TEST:2 basic functionality
@@ -52,12 +52,12 @@ class TestBasics():
     >>> # TEST:4 interchangeability of Universe/AtomGroup
     >>> u         = mda.Universe(WATER_GRO)
     >>> oxygens   = u.select_atoms("name OW")
-    >>> interface = pytim.ITIM(u, alpha=2.0,group=oxygens, max_layers=1,multiproc=False,molecular=False)
+    >>> interface = pytim.ITIM(u, alpha=1.5,group=oxygens, max_layers=1,multiproc=False,molecular=False)
     >>> print len(interface.layers[0,0])
-    265
-    >>> interface = pytim.ITIM(oxygens, alpha=2.0,max_layers=1,multiproc=False,molecular=False)
+    262
+    >>> interface = pytim.ITIM(oxygens, alpha=1.5,max_layers=1,multiproc=False,molecular=False)
     >>> print len(interface.layers[0,0])
-    265
+    262
 
 
     >>> # PDB FILE FORMAT
@@ -66,7 +66,7 @@ class TestBasics():
     >>> from pytim.datafiles import WATER_GRO
     >>> u         = mda.Universe(WATER_GRO)
     >>> oxygens   = u.select_atoms("name OW")
-    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=True)
+    >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4,molecular=True)
     >>> interface.writepdb('test.pdb',centered=False)
     >>> PDB =open('test.pdb','r').readlines()
     >>> line = filter(lambda l: 'ATOM     19 ' in l, PDB)[0]
@@ -83,10 +83,16 @@ class TestBasics():
     ...         import MDAnalysis as mda
     ...         import pytim
     ...         from pytim.datafiles import WATER_GRO,WATER_XTC
+    ...         from pytim.datafiles import pytim_data,G43A1_TOP
+    ...         # MDAnalysis 
     ...         u = mda.Universe(WATER_GRO,WATER_XTC)
-    ...         t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO)
-    ...         inter = pytim.ITIM(t)
     ...         ref = pytim.ITIM(u)
+    ...         # mdtraj
+    ...         t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO)
+    ...         # mdtraj manipulates the name of atoms, we need to set the 
+    ...         # radii by hand
+    ...         _dict = { 'O':pytim_data.vdwradii(G43A1_TOP)['OW'],'H':0.0}
+    ...         inter = pytim.ITIM(t, radii_dict=_dict)
     ...         ids_mda = []
     ...         ids_mdtraj = []
     ...         for ts in u.trajectory[0:2]:

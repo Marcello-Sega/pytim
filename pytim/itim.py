@@ -84,34 +84,34 @@ class ITIM(pytim.PYTIM):
         >>> u         = mda.Universe(WATER_GRO)
         >>> oxygens   = u.select_atoms("name OW")
         >>>
-        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=True)
+        >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4,molecular=True)
 
         >>> # atoms in the layers can be accesses either through
         >>> # the layers array:
         >>> print interface.layers
-        [[<AtomGroup with 780 atoms> <AtomGroup with 690 atoms>
-          <AtomGroup with 693 atoms> <AtomGroup with 660 atoms>]
-         [<AtomGroup with 777 atoms> <AtomGroup with 687 atoms>
-          <AtomGroup with 663 atoms> <AtomGroup with 654 atoms>]]
-
+        [[<AtomGroup with 786 atoms> <AtomGroup with 681 atoms>
+          <AtomGroup with 663 atoms> <AtomGroup with 651 atoms>]
+         [<AtomGroup with 786 atoms> <AtomGroup with 702 atoms>
+          <AtomGroup with 666 atoms> <AtomGroup with 636 atoms>]]
 
 
         >>> interface.layers[0,0] # upper side, first layer
-        <AtomGroup with 780 atoms>
+        <AtomGroup with 786 atoms>
 
         >>> interface.layers[1,2] # lower side, third layer
-        <AtomGroup with 663 atoms>
+        <AtomGroup with 666 atoms>
 
         >>> # or as a whole AtomGroup. This can include all atoms in all layers:
         >>> interface.atoms
-        <AtomGroup with 5604 atoms>
+        <AtomGroup with 5571 atoms>
+
 
         >>> selection = interface.atoms.sides == 0
         >>> interface.atoms[ selection ] # all atoms in the upper side layer
-        <AtomGroup with 2823 atoms>
+        <AtomGroup with 2781 atoms>
         >>> selection = np.logical_and(interface.atoms.layers == 2 , selection)
         >>> interface.atoms[ selection ] # upper side, second layer
-        <AtomGroup with 690 atoms>
+        <AtomGroup with 681 atoms>
 
         >>> # the whole system can be quickly saved to a pdb file
         >>> # including the layer information, written in the beta field
@@ -138,34 +138,33 @@ class ITIM(pytim.PYTIM):
         >>> u         = mda.Universe(WATER_GRO)
         >>> oxygens   = u.select_atoms("name OW")
         >>>
-        >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=4,molecular=True)
+        >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4,molecular=True)
         >>> interface.layers[0,:]  # upper side (0), all layers
-        array([<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
-               <AtomGroup with 693 atoms>, <AtomGroup with 660 atoms>],\
- dtype=object)
+        array([<AtomGroup with 786 atoms>, <AtomGroup with 681 atoms>,
+               <AtomGroup with 663 atoms>, <AtomGroup with 651 atoms>], \
+dtype=object)
 
         >>> interface.layers[1,0]  # lower side (1), first layer (0)
-        <AtomGroup with 777 atoms>
+        <AtomGroup with 786 atoms>
 
 
         >>> interface.layers[:,0:3] # 1st - 3rd layer (0:3), on both sides
-        array([[<AtomGroup with 780 atoms>, <AtomGroup with 690 atoms>,
-                <AtomGroup with 693 atoms>],
-               [<AtomGroup with 777 atoms>, <AtomGroup with 687 atoms>,
-                <AtomGroup with 663 atoms>]], dtype=object)
-
+        array([[<AtomGroup with 786 atoms>, <AtomGroup with 681 atoms>,
+                <AtomGroup with 663 atoms>],
+               [<AtomGroup with 786 atoms>, <AtomGroup with 702 atoms>,
+                <AtomGroup with 666 atoms>]], dtype=object)
 
 
         >>> interface.layers[1,0:4:2] # side 1, layers 1-4 & stride 2 (0:4:2)
-        array([<AtomGroup with 777 atoms>, <AtomGroup with 663 atoms>],\
- dtype=object)
+        array([<AtomGroup with 786 atoms>, <AtomGroup with 666 atoms>], \
+dtype=object)
 
 
         """
 
         return self._layers
 
-    def __init__(self, universe, mesh=0.4, alpha=2.0, normal='guess',
+    def __init__(self, universe, mesh=0.4, alpha=1.5, normal='guess',
                  group=None, radii_dict=None, max_layers=1,
                  cluster_cut=None, cluster_threshold_density=None,
                  molecular=True, extra_cluster_groups=None, info=False,

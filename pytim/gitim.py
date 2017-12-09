@@ -42,7 +42,7 @@ class GITIM(pytim.PYTIM):
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print repr(layer)
-        <AtomGroup with 872 atoms>
+        <AtomGroup with 793 atoms>
 
 
         Successive layers can be identified with GITIM as well. In this example we
@@ -58,14 +58,13 @@ class GITIM(pytim.PYTIM):
         >>> # it is faster to consider only oxygens.
         >>> # Hydrogen atoms are anyway within Oxygen's radius,
         >>> # in SPC* models.
-        >>> radii=pytim_data.vdwradii(G43A1_TOP)
-        >>> radii['O']=radii['OW']
-        >>> interface =pytim.GITIM(u,group=g,molecular=True,\
-                    symmetry='spherical',radii_dict=radii,alpha=2.0,max_layers=2)
+        >>> interface =pytim.GITIM(u, group=g, molecular=True, \
+                    symmetry='spherical', alpha=2.0, max_layers=2)
         >>>
         >>> interface.writepdb('glucose_shells.pdb')
         >>> print repr(interface.layers[0]),repr(interface.layers[1])
-        <AtomGroup with 72 atoms> <AtomGroup with 144 atoms>
+        <AtomGroup with 54 atoms> <AtomGroup with 117 atoms>
+
 
 
     """

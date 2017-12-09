@@ -415,7 +415,7 @@ class LayerTriangulation(Observable):
                             interface,return_triangulation=False)
         >>> stats     = surface.compute()
         >>> print ("Surface= {:04.0f} A^2".format(stats[0]))
-        Surface= 6751 A^2
+        Surface= 6328 A^2
 
     """
 

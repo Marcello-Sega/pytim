@@ -37,7 +37,8 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
     Example: list all topologies
 
     >>> print pytim_data.topol
-    ['WATER_LMP_DATA', 'G43A1_TOP']
+    ['WATER_LMP_DATA', 'AMBER03_TOP', 'G43A1_TOP', 'CHARMM27_TOP']
+
 
 
     Example: list all trajectories
@@ -73,7 +74,9 @@ __all__ = [
     "FULLERENE_PDB",         # PDB of C60
     "GLUCOSE_PDB",           # PDB of solvated beta-d-glucose
     "WATER_XTC",             # GROMACS trajectory, 100 frames, water/vapour interface
-    "G43A1_TOP",             # GROMOS 43a1 nonbonded parameters, from gromacs distribution
+    "G43A1_TOP",             # GROMOS 43a1 nonbonded parameters, from the gromacs distribution
+    "AMBER03_TOP",           # AMBER03 nonbonded parameters, from the gromacs distribution
+    "CHARMM27_TOP",          # CHARM27 nonbonded parameters, from the gromacs distribution
     "pytim_data",            # class to access the data
     "_TEST_ORIENTATION_GRO",  # test file
     "_TEST_PROFILE_GRO",  # test file
@@ -181,29 +184,35 @@ class Data(object):
     nm2angs = 10.0
 
     def vdwradii(self, filename):
+        input_type = 'sigeps'
         if self.type[filename] == 'topol' and self.format[filename] == 'GMX':
-            with open(filename) as _f:
+            with open(filename) as f:
                 scan = False
-                _radii = dict()
-                for _line in _f:
-                    if (scan and re.match('^ *\[', _line)):
-                        return _radii
+                radii = dict()
+                for line in f:
+                    if (scan and re.match('^ *\[', line)):
+                        return radii
                     if (scan):
                         try:
-                            _data = (_line.split(";")[0]).split()
-                            _atom = str(_data[0])
-                            _c6 = float(_data[5])
-                            _c12 = float(_data[6])
-                            if (_c6 == 0.0 or _c12 == 0.0):
-                                _sigma = 0.0
+                            if re.match(';.*name.*c6 *c12',line):
+                                input_type = 'c6c12'
+                            data = (line.split(";")[0]).split()
+                            atom , sigma, epsilon = str(data[0]) ,float(data[5]) ,float(data[6])
+                            if input_type == 'c6c12':
+                                c6 , c12 = sigma, epsilon 
+                                if (c6 == 0.0 or c12 == 0.0):
+                                    sigma = 0.0
+                                else:
+                                    sigma = (c12 / c6)**(1. / 6.) * self.nm2angs
                             else:
-                                _sigma = (_c12 / _c6)**(1. / 6.) * self.nm2angs
-                            _radii[_atom] = _sigma / 2.
+                                sigma *= self.nm2angs
+
+                            radii[atom] = sigma / 2.
                         except Exception:
                             pass
-                    if (re.match('^ *\[ *atomtypes *\]', _line)):
+                    if (re.match('^ *\[ *atomtypes *\]', line)):
                         scan = True
-            return _radii
+            return radii
 
 
 pytim_data = Data()
@@ -269,9 +278,15 @@ WATER_LMP_DATA = resource_filename('pytim', 'data/water_lmp.data')
 pytim_data.add('WATER_LMP_DATA', 'topol', 'DATA',
                'LAMMPS topology for WATER_LAMMPS')
 
-# This should be the last line: clean up namespace
 G43A1_TOP = resource_filename('pytim', 'data/ffg43a1.nonbonded.itp')
 pytim_data.add('G43A1_TOP', 'topol', 'GMX', 'GROMOS 43A1 topology for GROMACS')
 
+AMBER03_TOP = resource_filename('pytim', 'data/ffamber03.nonbonded.itp')
+pytim_data.add('AMBER03_TOP', 'topol', 'GMX', 'AMBER 03 topology for GROMACS')
 
+CHARMM27_TOP = resource_filename('pytim', 'data/ffcharmm27.nonbonded.itp')
+pytim_data.add('CHARMM27_TOP', 'topol', 'GMX', 'CHARMM 27 topology for GROMACS')
+
+
+# This should be the last line: clean up namespace
 del resource_filename
