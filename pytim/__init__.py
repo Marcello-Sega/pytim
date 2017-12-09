@@ -11,7 +11,7 @@ from MDAnalysis.topology import tables
 from difflib import get_close_matches
 import importlib
 import __builtin__
-from difflib import get_close_matches
+from . import datafiles
 
 
 def PatchMDTRAJ(trajectory, universe):
@@ -138,7 +138,6 @@ class SanityCheck(object):
         groups.append(self.interface.itim_group)
         total = self.interface.universe.atoms[0:0]  # empty group
         for g in groups:
-            # NOTE: maybe add a switch to use the atom name instead of the type
             if g is not None:
                 self.guess_radii(group=g)
                 radii = np.copy(g.radii)
@@ -155,7 +154,7 @@ class SanityCheck(object):
             if self.guessed_radii != {} and self.interface.warnings == True:
                 print "guessed radii: ", self.guessed_radii,
                 print "You can override this by using, e.g.: pytim." + self.interface.__class__.__name__,
-                print "(u,radii_dic={ '" + self.guessed_radii.keys()[0] + "':1.2 , ... } )"
+                print "(u,radii_dict={ '" + self.guessed_radii.keys()[0] + "':1.2 , ... } )"
         except:
             pass
 
@@ -275,6 +274,17 @@ class SanityCheck(object):
             if name == 'radii':
                 self.guess_radii()
 
+    def weighted_close_match(self,string,dictionary):
+        # increase weight of the first letter 
+        # this fixes problems with atom names like CH12
+        _wdict = {}
+        _dict = dictionary
+        _str = string[0]+string[0]+string
+        for key in _dict.keys(): 
+            _wdict[key[0]+key[0]+key] = _dict[key]
+        m = get_close_matches(_str, _wdict.keys(), n=1, cutoff=0.1)[0]
+        return m[2:]
+
     def guess_radii(self, group=None):
         # NOTE: this code depends on the assumption that not-set radii,
         # have the value np.nan (see _missing_attributes() ), so don't change it
@@ -312,20 +322,26 @@ class SanityCheck(object):
             except:
                 pass
 
-        # We give precedence to types
+        # We give precedence to atom names, then to types
         if have_types:
             radii = np.copy(group.radii)
-            for atype in np.unique(group.types):
+
+            _dict =  self.interface.radii_dict
+            for aname in np.unique(group.names):
                 try:
-                    matching_type = get_close_matches(
-                        atype, self.interface.radii_dict.keys(), n=1, cutoff=0.1
-                    )
-                    radii[group.types ==
-                          atype] = self.interface.radii_dict[matching_type[0]]
-                    guessed.update(
-                        {atype: self.interface.radii_dict[matching_type[0]]})
+                    matching_type = self.weighted_close_match(aname,_dict)
+                    radii[group.names == aname] = _dict[matching_type]
+                    guessed.update( {aname: _dict[matching_type] } )
                 except:
-                    pass
+                    try:
+                        atype = group.types[group.names == aname][0]
+                        matching_type = self.weighted_close_match(atype, _dict)
+                        radii[group.types == atype] = _dict[matching_type]
+                        guessed.update( {atype: _dict[matching_type] } )
+                    except:
+                        pass
+
+                    
             group.radii = np.copy(radii)
         # We fill in the remaining ones using masses information
 
@@ -404,14 +420,23 @@ class SanityCheck(object):
 
         if _mode is None:
             raise Exception(self.interface.WRONG_UNIVERSE)
-
+        
         self.interface.all_atoms = self.interface.universe.select_atoms('all')
-        self.interface.radii_dict = tables.vdwradii.copy()
+        #self.interface.radii_dict = tables.vdwradii.copy()
+        self.interface.radii_dict = datafiles.pytim_data.vdwradii(datafiles.G43A1_TOP).copy()
+        self.patch_radii_dict()
         self.interface.warnings = warnings
         if radii_dict is not None:
-            self.interface.radii_dict.update(radii_dict)
+            self.interface.radii_dict = radii_dict.copy()
 
         self._missing_attributes(self.interface.universe)
+
+    def patch_radii_dict(self):
+        # fix here by hand common problems with radii assignment
+        self.interface.radii_dict['D']   = 0.0  
+        self.interface.radii_dict['M']   = 0.0  
+        self.interface.radii_dict['HW']  = 0.0  
+        self.interface.radii_dict['Me']  = self.interface.radii_dict['CMet'] 
 
     def assign_alpha(self, alpha):
         try:

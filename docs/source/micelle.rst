@@ -43,10 +43,13 @@ all DPC molecules
 In order to calculate the surface atoms, we invoke :class:`~pytim.gitim.GITIM`, passing
 the group `g` as the `group` option, and set `molecular=False` in order to mark
 only the atoms at the surface, and not the whole residues to which these atoms belong.
+We override the standard radii (from the gromos 43a1 forcefield) with a simple set that 
+will match the atom types.
 
-
+    >>> # define radii for atom types
+    >>> rdict  = {'C':1.5, 'O':1.5, 'P':1.6, 'N':1.8}
     >>> # calculate the atoms at the interface ...
-    >>> inter = pytim.GITIM(u,group=g,molecular=False,alpha=2.5)
+    >>> inter = pytim.GITIM(u, group=g, molecular=False, alpha=2.5, radii_dict=rdict )
     >>> #
     >>> # ... and write a pdb file (default:'layers.pdb') with layer information in the beta field
     >>> inter.writepdb()
@@ -68,7 +71,7 @@ Some statistics
 It's easy to calculate some simple statistical properties. For example, the percentage of atoms of DPC at the surface is
 
     >>> print "percentage of atoms at the surface: {:.1f}".format(len(inter.layers[0])*100./len(g))
-    percentage of atoms at the surface: 36.6
+    percentage of atoms at the surface: 47.2
 
 This is a rather high percentage, but is due to the small size of the micelle (large surface/volume ratio)
 
@@ -79,62 +82,34 @@ We can also easily find out which atom is more likely to be found at the surface
     ...     total   = np.sum(g.names==name)
     ...     surface = np.sum(inter.layers[0].names == name )
     ...     print('{:>4s} ---> {:>2.0f}%'.format(name, surface*100./total))
-      C1 ---> 86%
-      C2 ---> 57%
-      C3 ---> 78%
-      N4 --->  0%
-      C5 ---> 72%
-      C6 ---> 88%
-      O7 ---> 58%
-      P8 --->  2%
-      O9 ---> 69%
-     O10 ---> 78%
-     O11 ---> 46%
-     C12 ---> 34%
-     C13 ---> 34%
-     C14 ---> 12%
-     C15 ---> 18%
-     C16 ---> 11%
+      C1 ---> 97%
+      C2 ---> 95%
+      C3 ---> 100%
+      N4 ---> 98%
+      C5 ---> 98%
+      C6 ---> 92%
+      O7 ---> 75%
+      P8 --->  3%
+      O9 ---> 72%
+     O10 ---> 83%
+     O11 ---> 48%
+     C12 ---> 31%
+     C13 ---> 29%
+     C14 ---> 14%
+     C15 ---> 17%
+     C16 ---> 15%
      C17 ---> 18%
-     C18 ---> 11%
-     C19 ---> 17%
-     C20 --->  9%
-     C21 ---> 14%
-     C22 ---> 12%
-     C23 ---> 15%
+     C18 ---> 12%
+     C19 ---> 18%
+     C20 ---> 12%
+     C21 ---> 17%
+     C22 ---> 17%
+     C23 ---> 22%
 
 
 
-One immediately notices that P and N are never (or almost never) at the surface: this is because they are always buried wihin their bonded neighbors in the headgroup.
-Also, a non negligible part of the fatty tails are also found from time to time at the surface.
+One immediately notices that with this choice of radii, P atoms are rarely at the surface: this is because they are always buried wihin their bonded neighbors in the headgroup.  Also, a non negligible part of the fatty tails are also found from time to time at the surface.
 
-
-Close inspection
-----------------
-
-One might wonder how accurately surface atoms are detected. In principle, looking at close distance, one could find some atoms that look to be below the surface, but are marked as interfacial ones. In the next figure, surface atoms are depicted with spheres, non-surface atoms with sticks, and the suspicious atom (an oxygen) in purple.
-
-
-.. image:: micelle4.png
-   :width: 35%
-   :align: center
-
-We check now all DPC atoms that are within a radius of 0.4 nm (that is, the radius of oxygen, 0.15 nm, plus the radius of the probe sphere, 0.25 nm)
-There is in fact a pocket opening between the camera and our purple oxygen, althouth it is still not clear from the picture
-
-.. image:: micelle5.png
-   :width: 35%
-   :align: center
-
-If we include also the water molecules that are within the 0.4 nm radius, it becomes immediately clear that the purple oxygen is a surface one as, in fact,
-water molecules have entered the pocket:
-
-.. image:: micelle6.png
-   :width: 35%
-   :align: center
-
-
-So, the :class:`~pytim.gitim.GITIM` algorithm is in fact spotting correctly surface atoms.
 
 ....
 
