@@ -8,7 +8,7 @@ try:
     from setuptools import find_packages
 except ImportError:
     sys.stderr.write ("Error : setuptools is not installed\n"
-                      "Use pip install --user setuptools\n")
+                      "Use pip install setuptools\n")
     exit(100)
 # To use a consistent encoding
 import codecs
@@ -22,10 +22,15 @@ try:
     from Cython.Distutils import build_ext
 except ImportError:
     sys.stderr.write ("Error : cython is not installed\n"
-                      "Use pip install --user cython\n")
+                      "Use pip install cython\n")
     exit(100)
 
-import numpy
+try:
+    import numpy
+except ImportError:
+    sys.stderr.write ("Error : numpy is not installed\n"
+                      "Use pip install numpy\n")
+    exit(100)
 
 class NoseTestCommand(TestCommand):
     def finalize_options(self):
