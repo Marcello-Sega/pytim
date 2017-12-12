@@ -78,8 +78,9 @@ __all__ = [
     "AMBER03_TOP",           # AMBER03 nonbonded parameters, from the gromacs distribution
     "CHARMM27_TOP",          # CHARM27 nonbonded parameters, from the gromacs distribution
     "pytim_data",            # class to access the data
-    "_TEST_ORIENTATION_GRO",  # test file
-    "_TEST_PROFILE_GRO",  # test file
+    "_TEST_BCC_GRO",         # test file
+    "_TEST_ORIENTATION_GRO", # test file
+    "_TEST_PROFILE_GRO",     # test file
 ]
 
 
@@ -266,6 +267,10 @@ pytim_data.add('ILBENZENE_GRO',  'conf', 'GRO', 'BMIM PF4 / benzene interface')
 WATER_XTC = resource_filename('pytim', 'data/water.xtc')
 pytim_data.add('WATER_XTC',  'traj', 'XTC',
                'SPC water/vapour interface trajectory')
+
+_TEST_BCC_GRO= resource_filename(
+    'pytim', 'data/_test_bcc.gro')
+pytim_data.add('_TEST_BCC_GRO',  'config', 'GRO', 'test file')
 
 _TEST_ORIENTATION_GRO = resource_filename(
     'pytim', 'data/_test_orientation.gro')
