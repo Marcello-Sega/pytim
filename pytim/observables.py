@@ -632,7 +632,7 @@ class Velocity(Observable):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
-        :returns: atomic velocities 
+        :returns: atomic velocities
 
         """
         return inp.velocities
@@ -1083,53 +1083,77 @@ class Correlator(object):
 class FreeVolume(object):
     """ Calculates the fraction of free volume in the system, or its profile.
 
-        Note that this does not fit in the usual observable class as i it can not be 
+        Note that this does not fit in the usual observable class as it can not be
         expressed as a property of particles, and needs some kind of gridding to be calculated.
 
         :param Universe universe:  the universe
         :param int npoints: number of Monte Carlo sampling points (default: 10x the number of atoms in the universe)
 
-        Example:
+        Returns:
+        :(free volume, error) tuple : A tuple with the free volume and the estimated error
+
+        Examples:
         >>> import MDAnalysis as mda
         >>> import numpy as np
         >>> import pytim
-        >>> from pytim.datafiles import CCL4_WATER_GRO
+        >>> from pytim.datafiles import CCL4_WATER_GRO, _TEST_BCC_GRO
 
         >>> u = mda.Universe(CCL4_WATER_GRO)
-        >>> inter = pytim.ITIM(u) # just to make sure all radii are set 
-        >>> np.random.seed(0) # ensure reproducibility of test
+        >>> inter = pytim.ITIM(u) # just to make sure all radii are set
+        >>> np.random.seed(1) # ensure reproducibility of test
         >>> FV = pytim.observables.FreeVolume(u)
         >>> bins, prof ,err = FV.compute_profile()
 
         >>> free, err = FV.compute()
         >>> print '{0:.3f}'.format(free)+' +/- {0:.3f}'.format(err)
-        0.707 +/- 0.001
+        0.431 +/- 0.001
+
+        >>> # strict test on bcc volume fraction
+        >>> u = mda.Universe(_TEST_BCC_GRO)
+        >>> inter = pytim.GITIM(u,radii_dict={'C':10.*np.sqrt(3.)/4.})
+        Warning, singular matrix for  [[ 10.   0.  10.]
+         [  0.   0.  10.]
+         [ 10.  10.  10.]
+         [  0.  10.  10.]]
+        >>> np.random.seed(1) # ensure reproducibility of test
+        >>> nsamples = int(1e4)
+        >>> FV = pytim.observables.FreeVolume(u,npoints = nsamples)
+        >>> free, err = FV.compute()
+        >>> np.isclose(free,1.0-0.6802)
+        True
+        >>> lst, _ = FV._compute()
+        >>> np.isclose(free,1.0-len(lst)*1.0/nsamples)
+        True
 
     """
 
     def __init__(self, universe, npoints=None):
-        self.u = universe 
+        self.u = universe
         if npoints is None:
             npoints =  10* len(universe.atoms)
-        self.npoints = npoints 
+        self.npoints = npoints
 
     def _compute(self,inp=None):
         res = np.array(0)
-        box = self.u.dimensions[:3].copy()
-        tree = cKDTree(np.random.random((self.npoints,3)) * box)
+        _box = self.u.dimensions.copy()
+        box = _box[:3]
+        try: # older scipy versions
+            tree = cKDTree(np.random.random((self.npoints,3)) * box,boxsize=_box[:6])
+        except:
+            tree = cKDTree(np.random.random((self.npoints,3)) * box,boxsize=_box[:3])
         if inp is None:
             inp = self.u.atoms
         if not isinstance(inp,AtomGroup):
             raise RuntimeError(self.__class__.__name__+'compute needs AtomGroup as an input')
-        # np.unique here avoids counting contributions from overlapping spheres    
+        # np.unique here avoids counting contributions from overlapping spheres
         radii = np.unique(inp.radii)
-   
+
         for radius in radii:
             where = np.where(np.isclose(  inp.radii ,  radius ))
             lst = [ e for l in tree.query_ball_point(inp.positions[where],radius) for e in l]
             res = np.append(res, lst)
         return np.unique(res),tree.data
-    
+
     def compute_profile(self,inp=None,nbins=30,direction = 2):
         """ Compute a profile of the free volume fraction
 
@@ -1139,29 +1163,28 @@ class FreeVolume(object):
 
             :returns bins,fraction,error: the left limit of the bins, the free volume fraction in each bin, the associated std deviation
         """
-        nbins+=1
         box = self.u.dimensions[:3].copy()
- 
+
         slabwidth = box[direction] / nbins
-        slabvol = self.u.trajectory.ts.volume / nbins 
-        
-        bins = np.arange(nbins) * slabwidth
-        
+        slabvol = self.u.trajectory.ts.volume / nbins
+
+        bins = np.arange(nbins+1) * slabwidth
+
         histo = []
         error = []
         res,data = self._compute(inp)
-        for i in range(nbins-1):
-            condition = np.logical_and(data[:,direction]> bins[i],data[:,direction]<bins[i+1])
-            in_slab  = np.where(condition)
+        for i in range(nbins):
+            condition = np.logical_and(data[:,direction]>= bins[i],data[:,direction]<bins[i+1])
+            in_slab  = np.where(condition)[0]
             n_in_slab = np.sum(condition*1.0)
             if n_in_slab == 0:
                 histo.append(0.0)
                 error.append(0.0)
             else:
-                ratio = np.sum(np.isin(res, in_slab)*1.0) / n_in_slab
+                ratio = np.sum(np.isin(res, in_slab)*1.0) / n_in_slab # occupied volume
                 histo.append(1.-ratio)
                 error.append(np.sqrt(ratio*(1.-ratio)/n_in_slab))
-        return bins,np.array(histo),np.array(error)    
+        return bins,np.array(histo),np.array(error)
 
     def compute(self,inp=None):
         """ Compute the total free volume fraction in the simulation box
