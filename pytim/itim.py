@@ -9,7 +9,6 @@
 from multiprocessing import Process, Queue
 import numpy as np
 from scipy.spatial import cKDTree
-from __builtin__ import zip as builtin_zip
 from pytim import utilities, surface
 import pytim
 
@@ -202,25 +201,24 @@ dtype=object)
         self._assign_layers()
 
     def _assign_mesh(self):
-        """determine a mesh size for the testlines that is compatible with the
-        simulation box."""
-        box = utilities.get_box(self.universe, self.normal)
+        """ Mesh assignment method
+
+            Based on a target value, determine a mesh size for the testlines
+            that is compatible with the simulation box.
+            Create the grid and initialize a cKDTree object with it to
+            facilitate fast searching of the gridpoints touched by molecules.
+        """
+        box  = utilities.get_box(self.universe, self.normal)
         n, d = utilities.compute_compatible_mesh_params(self.target_mesh, box)
         self.mesh_nx = n[0]
         self.mesh_ny = n[1]
         self.mesh_dx = d[0]
         self.mesh_dy = d[1]
-        self.delta = np.minimum(self.mesh_dx, self.mesh_dy) / 10.
-        if(self.use_kdtree == True):
-            # fixing a bug in mgrid(): e.g. np.mgrid[0:46.7227401733:0.399339659][-1] is larger than the limit
-            # tested on numpy 1.13.3
-            delta = np.array([0., 0.])
-            maxd = [np.max(np.mgrid[0:box[0]:self.mesh_dx]),
-                    np.max(np.mgrid[0:box[1]:self.mesh_dy])]
-            delta[maxd >= box[:2]] = 1e-6
-            _x, _y = np.mgrid[0:box[0] - delta[0]
-                :self.mesh_dx, 0:box[1] - delta[1]:self.mesh_dy]
-            self.meshpoints = builtin_zip(_x.ravel(), _y.ravel())
+        if (self.use_kdtree == True):
+            _x = np.linspace(0,box[0],num=self.mesh_nx, endpoint=False)
+            _y = np.linspace(0,box[1],num=self.mesh_ny, endpoint=False)
+            _X,_Y = np.meshgrid(_x,_y)
+            self.meshpoints = zip(_X.ravel(), _Y.ravel())
             # cKDTree requires a box vetor with length double the dimension,
             _box = np.zeros(4)
             _box[:2] = box[:2]
