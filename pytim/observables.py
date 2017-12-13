@@ -1115,14 +1115,15 @@ class FreeVolume(object):
          [  0.   0.  10.]
          [ 10.  10.  10.]
          [  0.  10.  10.]]
-        >>> np.random.seed(1) # ensure reproducibility of test
-        >>> nsamples = int(1e4)
+        >>> nsamples = int(1e5)
         >>> FV = pytim.observables.FreeVolume(u,npoints = nsamples)
+        >>> np.random.seed(1) # ensure reproducibility of test
         >>> free, err = FV.compute()
-        >>> np.isclose(free,1.0-0.6802)
+        >>> np.isclose(free,1.0-0.6802,rtol=1e-3)
         True
+        >>> np.random.seed(1) # ensure reproducibility of test
         >>> lst, _ = FV._compute()
-        >>> np.isclose(free,1.0-len(lst)*1.0/nsamples)
+        >>> np.isclose(free,1.0-len(lst)*1.0/nsamples, rtol=1e-6)
         True
 
     """
