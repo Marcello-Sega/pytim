@@ -7,6 +7,7 @@ from pytim_dbscan import dbscan_inner
 from scipy.spatial import cKDTree
 from scipy.stats import gaussian_kde
 from scipy.cluster import vq
+from sys import stderr
 
 try:  # MDA >=0.16
     from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
@@ -16,6 +17,11 @@ except BaseException:
 
 
 def lap(show=False):
+    """ Timer function
+
+        :param bool show: (optional) print timer information to stderr
+    """
+
     if not hasattr(lap, "tic"):
         lap.tic = timer()
     else:
@@ -23,7 +29,7 @@ def lap(show=False):
         dt = toc - lap.tic
         lap.tic = toc
         if show:
-            print("LAP >>> " + str(dt))
+            stderr.write("LAP >>> " + str(dt) + "\n")
         return dt
 
 
