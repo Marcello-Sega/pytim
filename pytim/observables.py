@@ -367,7 +367,7 @@ class RDF2D(RDF):
         RDF.sample(self, g1, g2)
         if self.true2D:
             self.g1.positions = np.copy(_p1)
-            self.g1.positions = np.copy(_p2)
+            self.g2.positions = np.copy(_p2)
         # we subtract the volume added for the 3d case,
         # and we add the surface
         self.volume += _ts.volume * (1. / _ts.dimensions[excl] - 1.)
