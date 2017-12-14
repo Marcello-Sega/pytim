@@ -16,6 +16,8 @@ except:
 
 class GITIM(pytim.PYTIM):
     """Identifies interfacial molecules at macroscopically flat interfaces.
+       (Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M.
+        J. Chem. Phys. 138, 044110, 2013)
 
         :param Universe universe:      the MDAnalysis universe
         :param float alpha:            the probe sphere radius

@@ -43,8 +43,8 @@ class Surface(surface.Surface):
 
 class ChaconTarazona(pytim.PYTIM):
     """Identifies the dividing surface using the Chacon-Tarazona method
-       (Chacón, E., and P. Tarazona. Phys. Rev. Lett. 91, 166103,2003)
-       (Tarazona, P., and E. Chacón. Phys. Rev. B 70, 235407,2004)
+       (Chacón, E.; Tarazona, P. Phys. Rev. Lett. 91, 166103,2003)
+       (Tarazona, P.; Chacón, E. Phys. Rev. B 70, 235407,2004)
 
     :param Universe universe: the MDAnalysis universe
     :param float alpha:       molecular scale cutoff
