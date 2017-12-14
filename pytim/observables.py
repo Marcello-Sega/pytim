@@ -734,19 +734,22 @@ class Profile(object):
     >>> from   pytim.observables import Profile
     >>>
     >>> u = mda.Universe(WATER_GRO,WATER_XTC)
-    >>> g=u.select_atoms('name OW')
-    >>> inter = pytim.ITIM(u,group=g,max_layers=4,centered=True)
+    >>> g = u.select_atoms('name OW')
+    >>> # here we calculate the profiles of oxygens only (note molecular=False)
+    >>> inter = pytim.ITIM(u,group=g,max_layers=4,centered=True, molecular=False)
     >>>
     >>> Layers=[]
-    >>>
-    >>> Layers.append(Profile(u.atoms))
-    >>> for n in np.arange(1,5):
-    ...     condition = inter.atoms.layers == n
-    ...     Layers.append(Profile(inter.atoms[condition]))
+    >>> # by default Profile() uses the number of atoms as an observable
+    >>> for n in np.arange(0,5):
+    ...     Layers.append(Profile())
     >>>
     >>> for ts in u.trajectory[::50]:
-    ...     for L in Layers:
-    ...         L.sample()
+    ...     for n in range(len(Layers)):
+    ...         if n>0:
+    ...             group = u.atoms[u.atoms.layers == n ]
+    ...         else:
+    ...             group = g
+    ...         Layers[n].sample(group)
     >>>
     >>> density=[]
     >>> for L in Layers:
@@ -759,57 +762,57 @@ class Profile(object):
 
     .. plot::
 
+        from matplotlib import pyplot as plt
+
         import numpy as np
         import MDAnalysis as mda
         import pytim
         from   pytim.datafiles import *
         from   pytim.observables import Profile
-        from matplotlib import pyplot as plt
 
         u = mda.Universe(WATER_GRO,WATER_XTC)
         g=u.select_atoms('name OW')
-        inter = pytim.ITIM(u,group=g,max_layers=4,centered=True)
+        # here we calculate the profiles of oxygens only (note molecular=False)
+        inter = pytim.ITIM(u,group=g,max_layers=4,centered=True, molecular=False)
 
         Layers=[]
-
-        Layers.append(Profile(u.atoms))
-        for n in np.arange(1,5):
-            condition = inter.atoms.layers == n
-            Layers.append(Profile(inter.atoms[condition]))
+        # by default Profile() uses the number of atoms as an observable
+        for n in np.arange(0,5):
+            Layers.append(Profile())
 
         for ts in u.trajectory[::]:
-            for L in Layers:
-                L.sample()
+            for n in range(len(Layers)):
+                if n>0:
+                    group = u.atoms[u.atoms.layers == n ]
+                else:
+                    group = g
+                Layers[n].sample(group)
 
-        density=[]
         for L in Layers:
             low,up,avg = L.get_values(binwidth=0.5)
-            density.append(avg)
-
-
-        for dens in density:
-            plt.plot(low,dens)
+            plt.plot(low,avg)
 
         plt.gca().set_xlim([80,120])
         plt.show()
 
+    Example (intrinsic, one layer):
 
-    Example (intrinsic):
+    >>> import numpy as np
+    >>> import MDAnalysis as mda
+    >>> import pytim
+    >>> from   pytim.datafiles import *
+    >>> from   pytim.observables import Profile
 
-    >>> from pytim import observables
-
-    >>> u       = mda.Universe(WATER_GRO,WATER_XTC)
-    >>> oxygens = u.select_atoms("name OW")
+    >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+    >>> g = u.select_atoms("name OW")
     >>>
-    >>> obs     = observables.Number()
-    >>>
-    >>> interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5,centered=True,molecular=False)
-    >>> profile = observables.Profile(group=oxygens,observable=obs,interface=interface)
+    >>> inter = pytim.ITIM(u, group=g,max_layers=1,cluster_cut=3.5,centered=True, molecular=False)
+    >>> profile = Profile(interface=inter)
     >>>
     >>> for ts in u.trajectory[::50]:
-    ...     profile.sample()
+    ...     profile.sample(inter.atoms)
     >>>
-    >>> low, up, avg = profile.get_values(binwidth=0.1)
+    >>> low, up, avg = profile.get_values(binwidth=0.2)
     >>> np.savetxt('profile.dat',list(zip(low,up,avg)))
 
 
@@ -817,39 +820,35 @@ class Profile(object):
 
     .. plot::
 
-        import MDAnalysis as mda
-        import numpy as np
-        import pytim
         import matplotlib.pyplot as plt
-        from   pytim.datafiles   import *
+        import numpy as np
+        import MDAnalysis as mda
+        import pytim
+        from   pytim.datafiles import *
+        from   pytim.observables import Profile
 
-        u       = mda.Universe(WATER_GRO,WATER_XTC)
-        oxygens = u.select_atoms("name OW")
+        u = mda.Universe(WATER_GRO,WATER_XTC)
+        g = u.select_atoms("name OW")
 
-        obs     = pytim.observables.Number()
-
-        interface = pytim.ITIM(u, alpha=2.0, max_layers=1,cluster_cut=3.5,centered=True,molecular=False)
-        profile = pytim.observables.Profile(group=oxygens,observable=obs,interface=interface)
+        inter = pytim.ITIM(u, group=g,max_layers=1,cluster_cut=3.5,centered=True, molecular=False)
+        profile = Profile(interface=inter)
 
         for ts in u.trajectory[::]:
-            profile.sample()
+            profile.sample(g)
 
         low, up, avg = profile.get_values(binwidth=0.2)
+
         z = (low+up)/2.
         plt.plot(z, avg)
         axes = plt.gca()
-        axes.set_xlim([-20,20])
-        axes.set_ylim([0,0.1])
+        axes.set_xlim([-15,5])
+        axes.set_ylim([0,0.05])
         plt.show()
-
-
-
 
     """
 
     def __init__(
             self,
-            group,
             direction='z',
             observable=None,
             interface=None,
@@ -857,20 +856,9 @@ class Profile(object):
         # TODO: the directions are handled differently, fix it in the code
         _dir = {'x': 0, 'y': 1, 'z': 2}
         self._dir = _dir[direction]
-        self.universe = group.universe
-        self.group = group
         self.interface = interface
         self.center_group = center_group
-        self.box = self.universe.dimensions[:3]
 
-        self._range = [0., self.box[self._dir]]
-
-        if self.interface is not None:
-            self._range -= self.box[self._dir] / 2.
-
-        if not isinstance(group, AtomGroup):
-            raise TypeError("The first argument passed to "
-                            "Profile() must be an AtomGroup.")
         if observable is None:
             self.observable = Number()
         else:
@@ -881,30 +869,38 @@ class Profile(object):
 
         self.sampled_values = []
         self.sampled_bins = []
-        self.pos = [utilities.get_x, utilities.get_y, utilities.get_z]
+        self._range = [-1.,-1.]
 
-    def sample(self):
+    def sample(self,group):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
-        self.box = self.universe.dimensions[:3]
+        if not isinstance(group, AtomGroup):
+            raise TypeError("The first argument passed to "
+                            "Profile.sample() must be an AtomGroup.")
+
+        box = group.universe.trajectory.ts.dimensions[:3]
 
         if self.interface is None:
-            pos = self.group.positions[::, self._dir]
+            pos = group.positions[::, self._dir]
         else:
-            pos = IntrinsicDistance(self.interface).compute(self.group)
-
-        values = self.observable.compute(self.group)
-        nbins = int(
-            self.universe.trajectory.ts.dimensions[self._dir] / self.binsize)
+            pos = IntrinsicDistance(self.interface).compute(group)
+        values = self.observable.compute(group)
+        nbins = int( box[self._dir] / self.binsize)
         # we need to make sure that the number of bins is odd, so that the
         # central one encompasses zero (to make the delta-function
         # contribution appear always in this bin)
         if(nbins % 2 > 0):
             nbins += 1
+        _range = [0., box[self._dir]]
+        if self.interface is not None:
+            _range -= box[self._dir] / 2.
         avg, bins, binnumber = stats.binned_statistic(
-            pos, values, range=self._range, statistic='sum', bins=nbins)
+            pos, values, range=_range, statistic='sum', bins=nbins)
+        vol = np.prod(box) / nbins
+        if _range[1] > self._range[1]:
+            self._range = _range[:] # copy list
         avg[np.isnan(avg)] = 0.0
-        self.sampled_values.append(avg)
+        self.sampled_values.append(avg/vol)
         # these are the bins midpoints
         self.sampled_bins.append(bins[1:] - self.binsize / 2.)
 
@@ -924,15 +920,13 @@ class Profile(object):
 
         if(nbins % 2 > 0):
             nbins += 1
-
-        avg, bins, _ = stats.binned_statistic(
-            np.array(self.sampled_bins).flatten(),
-            np.array(self.sampled_values).flatten(),
-            range=self._range, statistic='sum',
+        _bins = [ e for l in self.sampled_bins for e in l]
+        _vals = [ e for l in self.sampled_values for e in l]
+        avg, bins, _ = stats.binned_statistic( _bins, _vals,
+            range=self._range, statistic='mean',
             bins=nbins)
         avg[np.isnan(avg)] = 0.0
-        vol = np.prod(self.box) / nbins
-        return [bins[0:-1], bins[1:], avg / len(self.sampled_values) / vol]
+        return [bins[0:-1], bins[1:], avg  ]
 
 
 class Correlator(object):
