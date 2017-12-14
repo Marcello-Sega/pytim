@@ -47,6 +47,8 @@ class Surface(surface.Surface):
 
 class ITIM(pytim.PYTIM):
     """Identifies interfacial molecules at macroscopically flat interfaces.
+       (Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G.
+        J. Comp. Chem. 29, 945, 2008)
 
         :param Universe universe: the MDAnalysis universe
         :param float mesh:        the grid spacing used for the testlines

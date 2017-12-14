@@ -14,7 +14,7 @@ import pytim
 
 class WillardChandler(pytim.PYTIM):
     """Identifies the dividing surface using the Willard-Chandler method
-       (A. P. Willard and D. Chandler, J. Phys. Chem. B 2010, 114, 1954–1958)
+       (Willard, A. P.; Chandler, D. J. Phys. Chem. B 2010, 114, 1954–1958)
 
     :param Universe universe: the MDAnalysis universe
     :param float mesh:        the grid spacing for the density calculation
