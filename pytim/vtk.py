@@ -20,19 +20,18 @@ def write_scalar_grid(filename, grid_size, spacing, scalars):
                              directions
        :param array scalars: a (grid_size,) array with the scalar field values
     """
-    f = open(filename, "w")
-    f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
-    f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
-    f.write(_format_vector(grid_size, format_str="{:d}") + "\n")
-    f.write("SPACING " + _format_vector(spacing) + "\n")
-    f.write("\n")
-    f.write("ORIGIN " + _format_vector(spacing / 2.) + "\n")
-    f.write("POINT_DATA " + str(len(scalars)) + "\n")
-    f.write("SCALARS kernel floats 1\nLOOKUP_TABLE default\n")
+    with open(filename, "w") as f:
+        f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
+        f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
+        f.write(_format_vector(grid_size, format_str="{:d}") + "\n")
+        f.write("SPACING " + _format_vector(spacing) + "\n")
+        f.write("\n")
+        f.write("ORIGIN " + _format_vector(spacing / 2.) + "\n")
+        f.write("POINT_DATA " + str(len(scalars)) + "\n")
+        f.write("SCALARS kernel floats 1\nLOOKUP_TABLE default\n")
 
-    for val in scalars:
-        f.write(str(val) + "\n")
-    f.close()
+        for val in scalars:
+            f.write(str(val) + "\n")
 
 # TODO: should move  all AtomGroup references to a higher level
 
@@ -47,25 +46,24 @@ def write_atomgroup(filename, group, color=None, radius=None):
     """
     pos = group.positions
     npos = len(pos)
-    f = open(filename, "w")
-    f.write("# vtk DataFile Version 2.0\ntriangles\nASCII\nDATASET POLYDATA\n")
-    f.write("POINTS " + str(len(pos)) + " floats\n")
-    for p in pos:
-        f.write(str(p[0]) + " " + str(p[1]) + " " + str(p[2]) + "\n")
-    f.write("\nVERTICES " + str(len(pos)) + " " + str(len(pos) * 2) + "\n")
-    for i in range(npos):
-        f.write("1 " + str(i) + "\n")
-    if radius is not None:
-        f.write("\nPOINT_DATA " + str(len(pos)) +
-                "\nSCALARS radius float 1\n")
-        f.write("LOOKUP_TABLE default\n")
-        for rad in radius:
-            f.write(str(rad) + "\n")
-    if color is not None:
-        f.write("COLOR_SCALARS color 3\n")
-        for c in color:
-            f.write(_format_vector(c, format_str="{:1.2f}") + "\n")
-    f.close()
+    with open(filename, "w") as f:
+        f.write("# vtk DataFile Version 2.0\ntriangles\nASCII\nDATASET POLYDATA\n")
+        f.write("POINTS " + str(len(pos)) + " floats\n")
+        for p in pos:
+            f.write(str(p[0]) + " " + str(p[1]) + " " + str(p[2]) + "\n")
+        f.write("\nVERTICES " + str(len(pos)) + " " + str(len(pos) * 2) + "\n")
+        for i in range(npos):
+            f.write("1 " + str(i) + "\n")
+        if radius is not None:
+            f.write("\nPOINT_DATA " + str(len(pos)) +
+                    "\nSCALARS radius float 1\n")
+            f.write("LOOKUP_TABLE default\n")
+            for rad in radius:
+                f.write(str(rad) + "\n")
+        if color is not None:
+            f.write("COLOR_SCALARS color 3\n")
+            for c in color:
+                f.write(_format_vector(c, format_str="{:1.2f}") + "\n")
 
 
 def write_triangulation(filename, vertices, triangles, normals=None):
