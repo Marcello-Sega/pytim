@@ -27,8 +27,8 @@ class TestObservables():
     >>> # OBSERVABLES TEST: 2
     >>> u=mda.Universe(_TEST_PROFILE_GRO)
     >>> o=observables.Number()
-    >>> p=observables.Profile(u.atoms,direction='x',observable=o)
-    >>> p.sample()
+    >>> p=observables.Profile(direction='x',observable=o)
+    >>> p.sample(u.atoms)
     >>> low,up,avg =  p.get_values(binwidth=1.0)
     >>> print(low[0:3])
     [ 0.  1.  2.]
@@ -57,24 +57,26 @@ class TestObservables():
     >>> from   pytim.observables import Profile
     >>> u = mda.Universe(WATER_GRO,WATER_XTC)
     >>> g=u.select_atoms('name OW')
-    >>> inter = pytim.ITIM(u,group=g,max_layers=4,centered=True)
+    >>> inter = pytim.ITIM(u,group=g,max_layers=4,centered=True, molecular=False)
     >>> 
     >>> Layers=[]
     >>> 
-    >>> Layers.append(Profile(u.atoms))
-    >>> for n in np.arange(1,5):
-    ...     condition = inter.atoms.layers == n
-    ...     Layers.append(Profile(inter.atoms[condition]))
+    >>> for n in np.arange(0,5):
+    ...     Layers.append(Profile())
     >>> Val=[]
     >>> for ts in u.trajectory[:4]:
-    ...     for L in Layers:
-    ...         L.sample()
+    ...     for n in range(len(Layers)):
+    ...         if n == 0:
+    ...             group = g
+    ...         else:
+    ...             group = u.atoms[u.atoms.layers == n]
+    ...         Layers[n].sample(group)
     >>> for L in Layers:
     ...     Val.append(L.get_values(binwidth=2.0)[2])
     >>> 
 
-    >>> print Val[0].sum()
-    2.432
+    >>> print np.round(np.sum(np.array(Val[0]) * np.prod(u.dimensions[:3])) / len(Val[0]),decimals=0)
+    4000.0
 
     >>> # the sum of the layers' contribution is expected to add up only close
     >>> # to the surface
