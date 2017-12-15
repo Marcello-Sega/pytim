@@ -13,7 +13,7 @@
 
 # What is Pytim
 
-[Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. It is based on [`MDAnalysis`](https://www.mdanalysis.org/), but it integrates also seamlessly with [`mdtraj`](http://mdtraj.org/) (see [further down for an example with `mdtraj`](#mdtraj-example)). 
+[Pytim](https://marcello-sega.github.io/pytim/) is a cross-platform python implementation of several methods for the detection of fluid interfaces in molecular simulations. It is based on [`MDAnalysis`](https://www.mdanalysis.org/), but it integrates also seamlessly with `MDTraj`, and can be even used for *online* analysis during an `OpenMM` simulation (see further down for examples [with `MDTraj`](#mdtraj-example) and [with `OpenMM`](#openmm-example)).
 
 So far the following interface/phase identification methods have been implemented:
 <img src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle_cut.png" width="380" align="right" style="z-index:999;">
@@ -151,7 +151,7 @@ for step in u.trajectory[:]:
 
 ### mdtraj example
 
-Under the hood, `pytim` will use `MDAnalysis`, but this is made (almost completely) transparent to the user, so that interoperability with other software is easy to implement. For example, to analyse a trajectory loaded with `mdtraj`, it is enough to do the following:
+Under the hood, `pytim` uses `MDAnalysis`, but this is made (almost completely) transparent to the user, so that interoperability with other software is easy to implement. For example, to analyse a trajectory loaded with [`MDTraj`](https://mdtraj.org), it is enough to do the following:
 
 ```python
 import mdtraj
@@ -163,6 +163,39 @@ inter = pytim.ITIM(t)
 for step in t[:]:
         print "surface atoms:" , repr(inter.atoms.indices)
 ```
+
+### openmm example
+
+Another example is using `pytim` to perform *online* interfacial analysis during an [`OpenMM`](https://openmm.org/) simulation:
+```python
+# openmm imports
+from simtk.openmm.app import *
+from simtk.openmm import *
+from simtk.unit import *
+# pytim
+import pytim
+from pytim.datafiles import WATER_PDB
+
+# usual openmm setup, we load one of pytim's example files
+pdb = PDBFile(WATER_PDB)
+forcefield = ForceField('amber99sb.xml', 'spce.xml')
+system = forcefield.createSystem(pdb.topology, nonbondedMethod=PME,
+        nonbondedCutoff=1*nanometer)
+integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds)
+simulation = Simulation(pdb.topology, system, integrator)
+simulation.context.setPositions(pdb.positions)
+
+# just pass the openmm Simulation object to pytim
+inter = pytim.ITIM(simulation)
+print repr(inter.atoms)
+
+# the new interfacial atoms will be computed at the end
+# of the integration cycle
+simulation.step(10)
+print repr(inter.atoms)
+
+```
+
 
 
 ## <a name="non-flat-interfaces"></a> What if the interface is not flat? 
