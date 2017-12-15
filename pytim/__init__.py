@@ -427,29 +427,29 @@ class SanityCheck(object):
                 PatchMDTRAJ(input_obj, self.interface.universe)
                 os.remove(_file.name)
                 return 'mdtraj'
-        except:
+        except ImportError:
             pass
-        #try:
-        import os
-        from simtk.openmm.app.simulation import Simulation
-        from simtk.openmm.app import pdbfile
-        from simtk.unit import angstrom as openmm_AA
+        try:
+            import os
+            from simtk.openmm.app.simulation import Simulation
+            from simtk.openmm.app import pdbfile
+            from simtk.unit import angstrom as openmm_AA
 
-        if isinstance(input_obj, Simulation):
-            _file = tempfile.NamedTemporaryFile(
-                mode='w', suffix='.pdb', delete=False)
-            top = input_obj.topology
-            pos = input_obj.context.getState(getPositions=True).getPositions(
-                asNumpy=True).value_in_unit(openmm_AA)
-            pdbfile.PDBFile.writeFile(
-                topology=top, positions=pos, file=_file)
-            _file.close()
-            self.interface.universe = MDAnalysis.Universe(_file.name)
-            PatchOpenMM(input_obj,self.interface)
-            os.remove(_file.name)
-            return 'openmm'
-        #except:
-        #    pass
+            if isinstance(input_obj, Simulation):
+                _file = tempfile.NamedTemporaryFile(
+                    mode='w', suffix='.pdb', delete=False)
+                top = input_obj.topology
+                pos = input_obj.context.getState(getPositions=True).getPositions(
+                    asNumpy=True).value_in_unit(openmm_AA)
+                pdbfile.PDBFile.writeFile(
+                    topology=top, positions=pos, file=_file)
+                _file.close()
+                self.interface.universe = MDAnalysis.Universe(_file.name)
+                PatchOpenMM(input_obj,self.interface)
+                os.remove(_file.name)
+                return 'openmm'
+        except ImportError:
+            pass
         return None
 
 
