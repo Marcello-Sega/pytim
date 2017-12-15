@@ -13,6 +13,36 @@ import importlib
 import __builtin__
 from . import datafiles
 
+def PatchOpenMM(simulation, interface):
+ #       return _openmm.CompoundIntegrator_step(self, steps)
+
+    """ Patch the mdtraj Trajectory class
+
+        automates the data exchange between MDAnalysis and mdtraj classes
+    """
+    from simtk.unit import angstrom as openmm_AA
+    try:
+        simulation.interface
+    except:
+        simulation.interface = interface 
+        simulation.original_step = simulation.step
+
+        class PatchedOpenMMSimulation(simulation.__class__):
+
+            def step(self, steps):
+                tmp = self.original_step(steps)
+                pos = self.context.getState(getPositions=True).getPositions(
+                                asNumpy=True).value_in_unit(openmm_AA)
+                self.interface.universe.atoms.positions = pos
+                self.interface._assign_layers()
+                return tmp
+
+        oldname = simulation.__class__.__name__
+        oldmodule = simulation.__class__.__module__
+
+        PatchedOpenMMSimulation.__name__ = oldname
+        PatchedOpenMMSimulation.__module__ = oldmodule
+        simulation.__class__ = PatchedOpenMMSimulation
 
 def PatchMDTRAJ(trajectory, universe):
     """ Patch the mdtraj Trajectory class
@@ -372,16 +402,18 @@ class SanityCheck(object):
             group.radii = radii
         self.guessed_radii.update(guessed)
 
-    def assign_universe(self, input_obj, radii_dict=None, warnings=False):
-        _mode = None
+    def _apply_patches(self, input_obj):
+
         if isinstance(input_obj, MDAnalysis.core.universe.Universe):
             self.interface.universe = input_obj
             self.interface.itim_group = None
-            _mode = 'MDAnalysis'
+            return 'MDAnalysis'
+
         if isinstance(input_obj, MDAnalysis.core.groups.AtomGroup):
             self.interface.universe = input_obj.universe
             self.interface.itim_group = input_obj
-            _mode = 'MDAnalysis'
+            return 'MDAnalysis'
+
         try:
             import os
             import tempfile
@@ -394,30 +426,37 @@ class SanityCheck(object):
                 self.interface.universe = MDAnalysis.Universe(_file.name)
                 PatchMDTRAJ(input_obj, self.interface.universe)
                 os.remove(_file.name)
-                _mode = 'mdtraj'
+                return 'mdtraj'
         except:
             pass
-        try:
-            import os
-            from simtk.openmm.app.simulation import Simulation
-            from simtk.openmm.app import pdbfile
-            if isinstance(input_obj, Simulation):
-                _file = tempfile.NamedTemporaryFile(
-                    mode='w', suffix='.pdb', delete=False)
-                top = input_obs.topology
-                pos = input_obj.context.getState(getPositions=True).getPositions(
-                    asNumpy=True).value_in_unit(simtk.units.nanometers)
-                pdbfile.PDBFile.writeFile(
-                    topology=top, positions=pos, file=file_)
-                _file.close()
-                self.interface.universe = MDAnalysis.Universe(_file.name)
-                # patch openmm step()
-                os.remove(_file.name)
-                _mode = 'openmm'
-        except:
-            pass
-        # add here additional checks
+        #try:
+        import os
+        from simtk.openmm.app.simulation import Simulation
+        from simtk.openmm.app import pdbfile
+        from simtk.unit import angstrom as openmm_AA
 
+        if isinstance(input_obj, Simulation):
+            _file = tempfile.NamedTemporaryFile(
+                mode='w', suffix='.pdb', delete=False)
+            top = input_obj.topology
+            pos = input_obj.context.getState(getPositions=True).getPositions(
+                asNumpy=True).value_in_unit(openmm_AA)
+            pdbfile.PDBFile.writeFile(
+                topology=top, positions=pos, file=_file)
+            _file.close()
+            self.interface.universe = MDAnalysis.Universe(_file.name)
+            PatchOpenMM(input_obj,self.interface)
+            os.remove(_file.name)
+            return 'openmm'
+        #except:
+        #    pass
+        return None
+
+
+
+    def assign_universe(self, input_obj, radii_dict=None, warnings=False):
+
+        _mode = self._apply_patches(input_obj)
         if _mode is None:
             raise Exception(self.interface.WRONG_UNIVERSE)
         
