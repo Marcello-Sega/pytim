@@ -12,6 +12,7 @@ from difflib import get_close_matches
 import importlib
 import __builtin__
 from . import datafiles
+from version import __version__
 
 
 def PatchMDTRAJ(trajectory, universe):
@@ -275,12 +276,12 @@ class SanityCheck(object):
                 self.guess_radii()
 
     def weighted_close_match(self,string,dictionary):
-        # increase weight of the first letter 
+        # increase weight of the first letter
         # this fixes problems with atom names like CH12
         _wdict = {}
         _dict = dictionary
         _str = string[0]+string[0]+string
-        for key in _dict.keys(): 
+        for key in _dict.keys():
             _wdict[key[0]+key[0]+key] = _dict[key]
         m = get_close_matches(_str, _wdict.keys(), n=1, cutoff=0.1)[0]
         return m[2:]
@@ -341,7 +342,7 @@ class SanityCheck(object):
                     except:
                         pass
 
-                    
+
             group.radii = np.copy(radii)
         # We fill in the remaining ones using masses information
 
@@ -420,7 +421,7 @@ class SanityCheck(object):
 
         if _mode is None:
             raise Exception(self.interface.WRONG_UNIVERSE)
-        
+
         self.interface.all_atoms = self.interface.universe.select_atoms('all')
         #self.interface.radii_dict = tables.vdwradii.copy()
         self.interface.radii_dict = datafiles.pytim_data.vdwradii(datafiles.G43A1_TOP).copy()
@@ -433,10 +434,10 @@ class SanityCheck(object):
 
     def patch_radii_dict(self):
         # fix here by hand common problems with radii assignment
-        self.interface.radii_dict['D']   = 0.0  
-        self.interface.radii_dict['M']   = 0.0  
-        self.interface.radii_dict['HW']  = 0.0  
-        self.interface.radii_dict['Me']  = self.interface.radii_dict['CMet'] 
+        self.interface.radii_dict['D']   = 0.0
+        self.interface.radii_dict['M']   = 0.0
+        self.interface.radii_dict['HW']  = 0.0
+        self.interface.radii_dict['Me']  = self.interface.radii_dict['CMet']
 
     def assign_alpha(self, alpha):
         try:
