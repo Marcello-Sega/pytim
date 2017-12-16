@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>How to Install Pytim &#8212; Pytim 0.6.3 documentation</title>
+    <title>Pytim’s Main Features &#8212; Pytim 0.6.3 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
@@ -23,9 +23,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="shortcut icon" href="_static/pytim.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Surface of a micelle" href="micelle.html" />
-    <link rel="prev" title="Pytim: Quick Tour" href="quick.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -37,12 +35,6 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="micelle.html" title="Surface of a micelle"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="quick.html" title="Pytim: Quick Tour"
-             accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
       </ul>
     </div>  
@@ -52,54 +44,40 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="how-to-install-pytim">
-<h1>How to Install Pytim<a class="headerlink" href="#how-to-install-pytim" title="Permalink to this headline">¶</a></h1>
-<p><strong>IMPORTANT:</strong> Pytim (mainly because of its dependency on MDAnalysis) is compatible with <strong>Python 2.7 only</strong>. Python 3.x is not supported.</p>
-<p>There are three ways to install Pytim:</p>
-<div class="section" id="download-the-source-from-github">
-<h2>Download the source from github<a class="headerlink" href="#download-the-source-from-github" title="Permalink to this headline">¶</a></h2>
-<p>The package will download all the dependencies which are needed. Prerequisites for running the setup.py script are <cite>setuptools</cite> and <cite>cython</cite>.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install setuptools --user  --upgrade
-pip install cython     --user  --upgrade
-
-git clone https://github.com/Marcello-Sega/pytim.git
-<span class="nb">cd</span> pytim
-python setup.py install --user
-</pre></div>
-</div>
-<p>Note that on os-x it is usually better not to install Pytim system-wide using <cite>sudo</cite>, unless you know what you are doing, as newer versions of the operating system are protecting some system files to be overwritten even being super user.</p>
-</div>
-<div class="section" id="using-pip-to-access-the-python-package-index">
-<h2>Using pip to access the Python Package Index<a class="headerlink" href="#using-pip-to-access-the-python-package-index" title="Permalink to this headline">¶</a></h2>
-<p>The package can also be installed directly from the Python Package Index, along with the prerequisites <cite>setuptools</cite> and <cite>cython</cite>.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install setuptools --user  --upgrade
-pip install cython     --user  --upgrade
-
-pip install pytim      --user  --upgrade
-</pre></div>
-</div>
-</div>
-<div class="section" id="using-anaconda">
-<h2>Using Anaconda<a class="headerlink" href="#using-anaconda" title="Permalink to this headline">¶</a></h2>
-<p>Finally, Pytim is also available in the Anaconda Package Manager.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>conda install -c conda-forge pytim
-</pre></div>
-</div>
-<hr class="docutils" />
-<div class="toctree-wrapper compound">
-</div>
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-92682414-1', 'auto');
-  ga('send', 'pageview');
-
-</script>
-
-</div>
+  <div class="section" id="pytim-s-main-features">
+<h1>Pytim’s Main Features<a class="headerlink" href="#pytim-s-main-features" title="Permalink to this headline">¶</a></h1>
+<ul>
+<li><p class="first">It’s easy to use! While many optional arguments can be used to trigger special features,
+or to fine-tune the behavior of the algorithm, just invoking the class with the minimal
+set of arguments, as in the example shown here, delivers what you expect.</p>
+</li>
+<li><p class="first">Works for planar (<a class="reference internal" href="ITIM.html#module-pytim.itim" title="pytim.itim"><code class="xref py py-mod docutils literal"><span class="pre">itim</span></code></a>)  and arbitrary (<a class="reference internal" href="GITIM.html#module-pytim.gitim" title="pytim.gitim"><code class="xref py py-mod docutils literal"><span class="pre">gitim</span></code></a>) interfaces</p>
+</li>
+<li><p class="first">Thanks to <a href="#id1"><span class="problematic" id="id2">MDAnalysis_</span></a>, Pytim can work with several common file formats, including:</p>
+<ul class="simple">
+<li>CHARMM &amp; NAMD,</li>
+<li>LAMMPS</li>
+<li>GROMACS</li>
+<li>AMBER</li>
+<li>DL_POLY</li>
+<li>GAMESS</li>
+</ul>
+<p>For the full list see the <a href="#id3"><span class="problematic" id="id4">Supported_Formats_</span></a></p>
+</li>
+<li><p class="first">It’s <em>fast!</em> The planar interface identification, as well as the clustering analysis to filter the vapor or diluted phases both scale in theory, in the average case, like O(N log N). In practice, sublinear scaling is observed for systems up to 10,000 atoms, and ~ O(N^1.3) up to 100,000 atoms, on an 1,7 GHz Intel Core i7. The surface identification for a system of 10,000 atoms, for example, requires only 0.2 s on this hardware.</p>
+</li>
+<li><p class="first">It comes with several analysis tools, specifically written for the properties of the interfacial atoms, such as</p>
+<ul class="simple">
+<li>in-layer radial distribution functions</li>
+<li>intrinsic and non-intrinsic density profiles</li>
+<li>calculation of surface triangulation and associated geometrical parameters</li>
+<li>…</li>
+</ul>
+</li>
+<li><p class="first">It is easy to extend: as it relies on the <a href="#id5"><span class="problematic" id="id6">MDAnalysis_</span></a> interface,
+it is easy to modify the core classes and/or to add new observables</p>
+</li>
+</ul>
 </div>
 
 
@@ -113,16 +91,9 @@ pip install pytim      --user  --upgrade
             </a></p>
 <h3><a href="index.html">Table Of Contents</a></h3>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="quick.html">Pytim: Quick Tour</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">How to Install Pytim</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#download-the-source-from-github">Download the source from github</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#using-pip-to-access-the-python-package-index">Using pip to access the Python Package Index</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#using-anaconda">Using Anaconda</a><ul class="simple">
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">How to Install Pytim</a></li>
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
@@ -138,16 +109,10 @@ pip install pytim      --user  --upgrade
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="quick.html"
-                        title="previous chapter">Pytim: Quick Tour</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="micelle.html"
-                        title="next chapter">Surface of a micelle</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/install.rst.txt"
+      <li><a href="_sources/features.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -174,12 +139,6 @@ pip install pytim      --user  --upgrade
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="micelle.html" title="Surface of a micelle"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="quick.html" title="Pytim: Quick Tour"
-             >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
       </ul>
     </div>

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>GITIM &#8212; Pytim 0.5.3 documentation</title>
+    <title>GITIM &#8212; Pytim 0.6.3 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.3',
+        VERSION:     '0.6.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="ITIM.html" title="ITIM"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.5.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -54,26 +54,63 @@
             
   <div class="section" id="module-pytim.gitim">
 <span id="gitim"></span><h1>GITIM<a class="headerlink" href="#module-pytim.gitim" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-gtim">
-<h2>Module: gtim<a class="headerlink" href="#module-gtim" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-gitim">
+<h2>Module: gitim<a class="headerlink" href="#module-gitim" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytim.gitim.GITIM">
-<em class="property">class </em><code class="descclassname">pytim.gitim.</code><code class="descname">GITIM</code><span class="sig-paren">(</span><em>universe</em>, <em>alpha=2.0</em>, <em>symmetry='spherical'</em>, <em>normal='guess'</em>, <em>group=None</em>, <em>radii_dict=None</em>, <em>max_layers=1</em>, <em>cluster_cut=None</em>, <em>cluster_threshold_density=None</em>, <em>molecular=True</em>, <em>extra_cluster_groups=None</em>, <em>info=False</em>, <em>centered=False</em>, <em>warnings=False</em>, <em>_noextrapoints=False</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.gitim.GITIM" title="Permalink to this definition">¶</a></dt>
-<dd><p>Identifies interfacial molecules at macroscopically flat interfaces.</p>
-<table class="docutils field-list" frame="void" rules="none">
+<em class="property">class </em><code class="descclassname">pytim.gitim.</code><code class="descname">GITIM</code><span class="sig-paren">(</span><em>universe</em>, <em>group=None</em>, <em>alpha=2.0</em>, <em>normal='guess'</em>, <em>molecular=True</em>, <em>max_layers=1</em>, <em>radii_dict=None</em>, <em>cluster_cut=None</em>, <em>cluster_threshold_density=None</em>, <em>extra_cluster_groups=None</em>, <em>biggest_cluster_only=False</em>, <em>symmetry='spherical'</em>, <em>centered=False</em>, <em>info=False</em>, <em>warnings=False</em>, <em>_noextrapoints=False</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.gitim.GITIM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identifies interfacial molecules at macroscopically flat interfaces.
+(Sega, M.;&nbsp;Kantorovich, S.;&nbsp;Jedlovszky, P.; Jorge, M.  J. Chem. Phys. 138, 044110, 2013)</p>
+<blockquote>
+<div><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>universe</strong> (<em>Universe</em>) – the MDAnalysis universe</li>
-<li><strong>alpha</strong> (<em>float</em>) – the probe sphere radius</li>
-<li><strong>group</strong> (<em>AtomGroup</em>) – identify the interfacial molecules                                       from this group</li>
-<li><strong>radii_dict</strong> (<em>dict</em>) – dictionary with the atomic radii of                                       the elements in the group.
-If None is supplied, the default one                                       (from GROMOS 43a1) will be used.</li>
-<li><strong>max_layers</strong> (<em>int</em>) – the number of layers to be identified</li>
-<li><strong>info</strong> (<em>bool</em>) – print additional info</li>
-</ul>
-</td>
+<tr class="field-odd field"><th class="field-name" colspan="2">param Object universe:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">the MDAnalysis Universe, MDTraj trajectory                                       or OpenMM Simulation objects.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param Object group:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">An AtomGroup, or an array-like object with                                       the indices of the atoms in the group.                                       Will dentify the interfacial molecules from                                       this group</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param float alpha:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">the probe sphere radius</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param str normal:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">‘x’,’y,’z’ or ‘guess’  (for planar interfaces only)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param bool molecular:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">Switches between search of interfacial                                       molecules / atoms (default: True)</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param int max_layers:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">the number of layers to be identified</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param dict radii_dict:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">dictionary with the atomic radii of                                       the elements in the group.
+If None is supplied, the default one                                       (from GROMOS 43a1) will be used.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param float cluster_cut:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">cutoff used for neighbors or density-based                                       cluster search (default: None disables the                                       cluster analysis)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param float cluster_threshold_density:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">Number density threshold for                                       the density-based cluster search. ‘auto’                                       determines the threshold automatically.                                       Default: None uses simple neighbors cluster                                       search, if cluster_cut is not None</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param Object extra_cluster_groups:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Additional groups, to allow for mixed interfaces</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param bool biggest_cluster_only:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">tag as surface atoms/molecules only those                                       in the largest cluster. Need to specify also                                       a <code class="xref py py-obj docutils literal"><span class="pre">cluster_cut</span></code> value.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param str symmetry:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">gives the code a hint about the topology of the                                       interface: ‘spherical’ (default) or  ‘planar’</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param bool centered:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">center the  <code class="xref py py-obj docutils literal"><span class="pre">group</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param bool info:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">print additional info</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param bool warnings:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">print warnings</td>
 </tr>
 </tbody>
 </table>
@@ -84,92 +121,59 @@ If None is supplied, the default one                                       (from
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span>       <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>       <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">radii</span><span class="o">=</span><span class="n">pytim_data</span><span class="o">.</span><span class="n">vdwradii</span><span class="p">(</span><span class="n">G43A1_TOP</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span><span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>                <span class="n">symmetry</span><span class="o">=</span><span class="s1">&#39;spherical&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span><span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">layer</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;gitim.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="nb">repr</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
-<span class="go">&lt;AtomGroup with 547 atoms&gt;</span>
+<span class="go">&lt;AtomGroup with 793 atoms&gt;</span>
 </pre></div>
 </div>
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.alpha">
-<code class="descname">alpha</code><a class="headerlink" href="#pytim.gitim.GITIM.alpha" title="Permalink to this definition">¶</a></dt>
-<dd><p>(float) real space cutoff</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.cluster_cut">
-<code class="descname">cluster_cut</code><a class="headerlink" href="#pytim.gitim.GITIM.cluster_cut" title="Permalink to this definition">¶</a></dt>
-<dd><p>(real) cutoff for phaseidentification</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.cluster_threshold_density">
-<code class="descname">cluster_threshold_density</code><a class="headerlink" href="#pytim.gitim.GITIM.cluster_threshold_density" title="Permalink to this definition">¶</a></dt>
-<dd><p>(float) threshold for the density-based filtering</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.extra_cluster_groups">
-<code class="descname">extra_cluster_groups</code><a class="headerlink" href="#pytim.gitim.GITIM.extra_cluster_groups" title="Permalink to this definition">¶</a></dt>
-<dd><p>(ndarray) additional cluster groups</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.info">
-<code class="descname">info</code><a class="headerlink" href="#pytim.gitim.GITIM.info" title="Permalink to this definition">¶</a></dt>
-<dd><p>(bool) print additional information</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.itim_group">
-<code class="descname">itim_group</code><a class="headerlink" href="#pytim.gitim.GITIM.itim_group" title="Permalink to this definition">¶</a></dt>
-<dd><p>(AtomGroup) the group,the surface of which should be computed</p>
-</dd></dl>
-
+<p>Successive layers can be identified with GITIM as well. In this example we
+identify two solvation shells of glucose</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span>       <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">GLUCOSE_PDB</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>       <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;name OW&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># it is faster to consider only oxygens.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Hydrogen atoms are anyway within Oxygen&#39;s radius,</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># in SPC* models.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span><span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">molecular</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">max_layers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;glucose_shells.pdb&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="nb">repr</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">repr</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="go">&lt;AtomGroup with 54 atoms&gt; &lt;AtomGroup with 117 atoms&gt;</span>
+</pre></div>
+</div>
+</div></blockquote>
 <dl class="attribute">
 <dt id="pytim.gitim.GITIM.layers">
 <code class="descname">layers</code><a class="headerlink" href="#pytim.gitim.GITIM.layers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access the layers as numpy arrays of AtomGroups.</p>
-<p>The object can be sliced as usual with numpy arrays.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.max_layers">
-<code class="descname">max_layers</code><a class="headerlink" href="#pytim.gitim.GITIM.max_layers" title="Permalink to this definition">¶</a></dt>
-<dd><p>(int) maximum number of layers to be identified</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.molecular">
-<code class="descname">molecular</code><a class="headerlink" href="#pytim.gitim.GITIM.molecular" title="Permalink to this definition">¶</a></dt>
-<dd><p>(bool) wheter to computesurface atoms or surface molecules</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.multiproc">
-<code class="descname">multiproc</code><a class="headerlink" href="#pytim.gitim.GITIM.multiproc" title="Permalink to this definition">¶</a></dt>
-<dd><p>(bool) use parallel implementation</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.radii_dict">
-<code class="descname">radii_dict</code><a class="headerlink" href="#pytim.gitim.GITIM.radii_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p>(dict) custom atomic radii</p>
+<p>The object can be sliced as usual with numpy arrays. Differently from ITIM, 
+there are no sides. Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">MICELLE_PDB</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">micelle</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">micelle</span><span class="p">,</span> <span class="n">max_layers</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span><span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span>  <span class="c1">#all layers</span>
+<span class="go">array([&lt;AtomGroup with 909 atoms&gt;, &lt;AtomGroup with 301 atoms&gt;,</span>
+<span class="go">       &lt;AtomGroup with 164 atoms&gt;], dtype=object)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># first layer (0)</span>
+<span class="go">&lt;AtomGroup with 909 atoms&gt;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytim.gitim.GITIM.savepdb">
 <code class="descname">savepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>multiframe=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.gitim.GITIM.savepdb" title="Permalink to this definition">¶</a></dt>
 <dd><p>An alias to <a class="reference internal" href="#pytim.gitim.GITIM.writepdb" title="pytim.gitim.GITIM.writepdb"><code class="xref py py-func docutils literal"><span class="pre">writepdb()</span></code></a></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="pytim.gitim.GITIM.surfaces">
-<code class="descname">surfaces</code><a class="headerlink" href="#pytim.gitim.GITIM.surfaces" title="Permalink to this definition">¶</a></dt>
-<dd><p>Surfaces associated to the interface</p>
 </dd></dl>
 
 <dl class="method">
@@ -248,13 +252,13 @@ The :multiframe: option set to :False: will overwrite the file.</dd>
 <li class="toctree-l1"><a class="reference internal" href="install.html">How to Install Pytim</a></li>
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Topologies without atomi radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="ITIM.html">ITIM</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">GITIM</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-gtim">Module: gtim</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-gitim">Module: gitim</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="WillardChandler.html">WillardChandler</a></li>
@@ -306,7 +310,7 @@ The :multiframe: option set to :False: will overwrite the file.</dd>
         <li class="right" >
           <a href="ITIM.html" title="ITIM"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.5.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

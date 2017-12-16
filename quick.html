@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Pytim: Quick Tour &#8212; Pytim 0.5.3 documentation</title>
+    <title>Pytim: Quick Tour &#8212; Pytim 0.6.3 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.3',
+        VERSION:     '0.6.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="index.html" title="Pytim: Quick Tour"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.5.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -55,6 +55,7 @@
   <div class="section" id="pytim-quick-tour">
 <h1>Pytim: Quick Tour<a class="headerlink" href="#pytim-quick-tour" title="Permalink to this headline">¶</a></h1>
 <p>Pytim is a package based on <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a> for the identification and analysis of surface molecules in configuration files or in trajectories from molecular dynamics simulations.</p>
+<p>Although <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a> is needed to perform the interfacial analysis, you can also use Pytim on top  <a class="reference external" href="http://www.mdtraj.org/">MDTraj</a> or directly online from a simulation performed using <a class="reference external" href="http://www.openmm.org/">OpenMM</a>. For more information see the <a class="reference internal" href="Tutorials.html"><span class="doc">Tutorials</span></a>.</p>
 <div class="section" id="basic-example">
 <h2>Basic Example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h2>
 <p>This is a basic example that shows how easy is to use the <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a> class
@@ -66,14 +67,15 @@ for planar interfaces:</p>
 <span class="c1"># load an example configuration file</span>
 <span class="n">u</span>         <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
 
-<span class="c1"># initialize the interface</span>
+<span class="c1"># initialize the interface, this has to be called only once</span>
+<span class="c1"># before iterating over the trajectory!</span>
 <span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 
 <span class="c1"># write a pdb with the information on the surface layers</span>
 <span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;middle&#39;</span><span class="p">)</span>
 
 <span class="c1"># access the atoms in the layers as an MDAnalysis&#39; AtomGroups</span>
-<span class="n">upper_layer</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">upper_layer</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>The above lines are doing the following:</p>
@@ -96,45 +98,189 @@ they belong to).</li>
 <p>The result of the calculation can be seen in the following picture,
 where surface oxygen atoms are highlighted in blue.</p>
 <a class="reference internal image-reference" href="_images/example_water.png"><img alt="_images/example_water.png" class="align-center" src="_images/example_water.png" style="width: 70%;" /></a>
-<p>This is a very basic example, and many more are given in the <a class="reference internal" href="Tutorials.html"><span class="doc">Tutorials</span></a>.</p>
+<p>This is a very basic example, and more are given below, in the <a class="reference internal" href="Tutorials.html"><span class="doc">Tutorials</span></a>, and in the documentation pages of the modules.</p>
 </div>
-<div class="section" id="pytim-s-main-features">
-<h2>Pytim’s Main Features<a class="headerlink" href="#pytim-s-main-features" title="Permalink to this headline">¶</a></h2>
-<ul>
-<li><p class="first">It’s easy to use! While many optional arguments can be used to trigger special features,
-or to fine-tune the behavior of the algorithm, just invoking the class with the minimal
-set of arguments, as in the example shown here, delivers what you expect.</p>
-</li>
-<li><p class="first">Works for planar (<a class="reference internal" href="ITIM.html#module-pytim.itim" title="pytim.itim"><code class="xref py py-mod docutils literal"><span class="pre">itim</span></code></a>)  and arbitrary (<a class="reference internal" href="GITIM.html#module-pytim.gitim" title="pytim.gitim"><code class="xref py py-mod docutils literal"><span class="pre">gitim</span></code></a>) interfaces</p>
-</li>
-<li><p class="first">Thanks to <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a>, Pytim can work with several common file formats, including:</p>
-<ul class="simple">
-<li>CHARMM &amp; NAMD,</li>
-<li>LAMMPS</li>
-<li>GROMACS</li>
-<li>AMBER</li>
-<li>DL_POLY</li>
-<li>GAMESS</li>
-</ul>
-<p>For the full list see the <a class="reference external" href="https://pythonhosted.org/MDAnalysis/documentation_pages/coordinates/init.html#id1">Supported_Formats</a></p>
-</li>
-<li><p class="first">It’s <em>fast!</em> The planar interface identification, as well as the clustering analysis to filter the vapor or diluted phases both scale in theory, in the average case, like O(N log N). In practice, sublinear scaling is observed for systems up to 10,000 atoms, and ~ O(N^1.3) up to 100,000 atoms, on an 1,7 GHz Intel Core i7. The surface identification for a system of 10,000 atoms, for example, requires only 0.2 s on this hardware.</p>
-</li>
-<li><p class="first">It comes with several analysis tools, specifically written for the properties of the interfacial atoms, such as</p>
-<ul class="simple">
-<li>in-layer radial distribution functions</li>
-<li>intrinsic and non-intrinsic density profiles</li>
-<li>calculation of surface triangulation and associated geometrical parameters</li>
-<li>…</li>
-</ul>
-</li>
-<li><p class="first">It is easy to extend: as it relies on the <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a> interface,
-it is easy to modify the core classes and/or to add new observables</p>
-</li>
-</ul>
-<hr class="docutils" />
-<div class="toctree-wrapper compound">
+<div class="section" id="non-planar-interfaces">
+<h2>Non-planar interfaces<a class="headerlink" href="#non-planar-interfaces" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="gitim">
+<h3>GITIM<a class="headerlink" href="#gitim" title="Permalink to this headline">¶</a></h3>
+<p>One of the possibilities is to use  <code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code> to identify surface atoms in a conceptually similar way to <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a>.
+We make here the example of multiple solvation layers around glucose:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<span class="kn">import</span> <span class="nn">pytim</span>
+<span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">GLUCOSE_PDB</span>
+
+<span class="n">u</span>       <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">GLUCOSE_PDB</span><span class="p">)</span>
+<span class="n">solvent</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;name OW&#39;</span><span class="p">)</span>
+<span class="n">glc</span>     <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">atoms</span> <span class="o">-</span> <span class="n">solvent</span><span class="o">.</span><span class="n">residues</span><span class="o">.</span><span class="n">atoms</span>
+
+<span class="c1"># alpha is the probe-sphere radius</span>
+<span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">solvent</span><span class="p">,</span> <span class="n">max_layers</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]:</span>
+    <span class="k">print</span> <span class="s2">&quot;Layer &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="nb">repr</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+<span class="n">Layer</span> <span class="mi">0</span> <span class="o">&lt;</span><span class="n">AtomGroup</span> <span class="k">with</span> <span class="mi">54</span> <span class="n">atoms</span><span class="o">&gt;</span>
+<span class="n">Layer</span> <span class="mi">1</span> <span class="o">&lt;</span><span class="n">AtomGroup</span> <span class="k">with</span> <span class="mi">117</span> <span class="n">atoms</span><span class="o">&gt;</span>
+<span class="n">Layer</span> <span class="mi">2</span> <span class="o">&lt;</span><span class="n">AtomGroup</span> <span class="k">with</span> <span class="mi">216</span> <span class="n">atoms</span><span class="o">&gt;</span>
+</pre></div>
 </div>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/Marcello-Sega/pytim/IMAGES/_images/glc-gitim.png"><img alt="https://raw.githubusercontent.com/Marcello-Sega/pytim/IMAGES/_images/glc-gitim.png" class="align-center" src="https://raw.githubusercontent.com/Marcello-Sega/pytim/IMAGES/_images/glc-gitim.png" style="width: 40%;" /></a>
+</div>
+<div class="section" id="willard-chandler">
+<h3>Willard-Chandler<a class="headerlink" href="#willard-chandler" title="Permalink to this headline">¶</a></h3>
+<p>If one is not directly interested in interfacial atoms, but in the location of the instantaneous, continuous surface, it is possible to use
+the method of Willard and Chandler. Options for the output are the <cite>wavefront</cite> <code class="xref py py-obj docutils literal"><span class="pre">obj</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">cube</span></code> and <code class="xref py py-obj docutils literal"><span class="pre">vtk</span></code> formats, the last two being able to carry also the information about the atomic positions, besides the surface. The formats can be read by <a class="reference external" href="https://www.paraview.org/">Paraview</a>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<span class="kn">import</span> <span class="nn">pytim</span>
+<span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">MICELLE_PDB</span>
+<span class="kn">import</span> <span class="nn">nglview</span>
+
+<span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
+<span class="c1"># In the WillardChandler module, `alpha` is the Gaussian width  of the kernel</span>
+<span class="c1"># and `mesh` is the grid size where the continuum surface is sampled</span>
+<span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+<span class="c1"># particles are written using the option `group`</span>
+<span class="n">interface</span><span class="o">.</span><span class="n">writecube</span><span class="p">(</span><span class="s1">&#39;data.cube&#39;</span><span class="p">,</span> <span class="n">group</span> <span class="o">=</span> <span class="n">g</span> <span class="p">)</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png"><img alt="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" class="align-center" src="https://github.com/Marcello-Sega/pytim/raw/IMAGES/_images/micelle-willard-chandler.png" style="width: 50%;" /></a>
+</div>
+</div>
+<div class="section" id="molecular-vs-atomic">
+<h2>Molecular vs Atomic<a class="headerlink" href="#molecular-vs-atomic" title="Permalink to this headline">¶</a></h2>
+<p>By default methods like <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a> or
+<a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code></a> use the <code class="xref py py-obj docutils literal"><span class="pre">molecular=True</span></code> option,
+meaning that whenever an atom is identified as interfacial, all
+other atoms in the same residue will be tagged as interfacial. This
+is usually the appropriate option for small molecular liquids,
+especially if successive layers are going to be analyzed. Taking
+the example of water, if all atoms are passed to, say,
+<a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a>, and <code class="xref py py-obj docutils literal"><span class="pre">molecular=False</span></code>, the first
+layer will be composed only of oxygen atoms (the hydrogen atoms
+being located within the radius of oxygen). As a consequence, the
+second layer would be composed mostly of hydrogen atoms, and so on.
+For larger molecules like in the case of lipids, instead, it is
+more informative to look at the location of different atoms along
+the surface normal, therefore the <code class="xref py py-obj docutils literal"><span class="pre">molecular=False</span></code> option
+is advisable, otherwise, as in the case of a small micelle, all
+atoms in the lipids would be tagged as interfacial.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<span class="kn">import</span> <span class="nn">pytim</span>
+<span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">MICELLE_PDB</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
+<span class="c1"># pass the `molecular=False` option to identify surface atoms instead of molecules</span>
+<span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">molecular</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="first last reference internal image-reference" href="_images/molecular.png"><img alt="_images/molecular.png" class="align-center" src="_images/molecular.png" style="width: 50%;" /></a>
+</td>
+<td><a class="first last reference internal image-reference" href="_images/atomic.png"><img alt="_images/atomic.png" class="align-center" src="_images/atomic.png" style="width: 50%;" /></a>
+</td>
+</tr>
+<tr class="row-even"><td><a class="first last reference internal image-reference" href="_images/micelle_molecular.png"><img alt="_images/micelle_molecular.png" class="align-center" src="_images/micelle_molecular.png" style="width: 59%;" /></a>
+</td>
+<td><a class="first last reference internal image-reference" href="_images/micelle_atomic.png"><img alt="_images/micelle_atomic.png" class="align-center" src="_images/micelle_atomic.png" style="width: 59%;" /></a>
+</td>
+</tr>
+<tr class="row-odd"><td colspan="2">Left: layers of interfacial water and micelle (section cut)
+using <code class="xref py py-obj docutils literal"><span class="pre">molecular=True</span></code>.
+Right: same using <code class="xref py py-obj docutils literal"><span class="pre">molecular=False</span></code>
+blue: 1st layer; red: 2nd layer ; yellow: 3rd layer ; orange: 4th layer</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="filtering-vapour-molecules">
+<h2>Filtering vapour molecules<a class="headerlink" href="#filtering-vapour-molecules" title="Permalink to this headline">¶</a></h2>
+<p>Pytim offers the option to identify the relevant phases before
+proceeding to the surface identification. This is a necessary step,
+for example, if the vapour phase of a water/vapour interface is not
+empty, or if a two-components system has non-negligible miscibilities.</p>
+<p>In order to filter out molecules in the vapour (or in the opposite) phase,
+pytim relies on different clustering schemes, where the system is partitioned
+in a set of atoms belonging to the largest cluster, the remaining atoms belonging to the
+smaller clusters. The available criteria for building the clusters are</p>
+<ol class="arabic simple">
+<li>A simple cutoff criterion of connectivity</li>
+<li>A local density based clustering criterion (DBSCAN)</li>
+</ol>
+<dl class="docutils">
+<dt>In order to use the simple cutoff criterion, it is enough to pass the cluster cutoff to the</dt>
+<dd><a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a> or  <code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code> classes, for example:</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<span class="kn">import</span> <span class="nn">pytim</span>
+<span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">WATER_550K_GRO</span>
+
+<span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_550K_GRO</span><span class="p">)</span>
+<span class="c1"># 3.5 Angstrom is the approx location of the oxygen g(r) minimum</span>
+<span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">cluster_cut</span><span class="o">=</span><span class="mf">3.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>At high temperatures, as in this case, using the <code class="xref py py-obj docutils literal"><span class="pre">cluster_cut</span></code> option solves the problem with the molecules in the vapour phase</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="first last reference internal image-reference" href="_images/nocluster.png"><img alt="_images/nocluster.png" class="align-center" src="_images/nocluster.png" style="width: 95%;" /></a>
+</td>
+<td><a class="first last reference internal image-reference" href="_images/cluster.png"><img alt="_images/cluster.png" class="align-center" src="_images/cluster.png" style="width: 95%;" /></a>
+</td>
+</tr>
+<tr class="row-even"><td colspan="2">Left:  Interfacial molecules identified using <code class="xref py py-obj docutils literal"><span class="pre">ITIM</span></code>
+and no clustering pre-filtering.
+Right: same system  using <code class="xref py py-obj docutils literal"><span class="pre">cluster_cut=3.5</span></code>
+(blue: first layer; red: vapour phase)</td>
+</tr>
+</tbody>
+</table>
+<p>In some cases, the density of the vapour (or opposite) phase is so high, that using any reasonable cutoff, the molecules are percolating
+the simulation box. In this case, it is advisable to switch to a density based cluster approach. Pytim uses the <cite>DBSCAN</cite> algorithm, with, in addition, an automated procedure to determine which density should be used to discriminate between liquid and vapour (or high-concentration/low-concentration) regions. An example is a binary mixture of ionic liquids and benzene, which have, respectively, a low and high mutual miscibility.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<span class="kn">import</span> <span class="nn">pytim</span>
+<span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">ILBENZENE_GRO</span>
+
+<span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">ILBENZENE_GRO</span><span class="p">)</span>
+<span class="c1"># LIG is benzene</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname LIG&#39;</span><span class="p">)</span>
+<span class="c1"># 1. To switch from the simple clustering scheme to DBSCAN, set the `cluster_threshold_density`</span>
+<span class="c1"># 2. To estimate correctly the local density, use a larger cutoff than that of the simple clustering</span>
+<span class="c1"># 3. With `cluster_threshold_density=&#39;auto&#39;`, the threshold density is estimated by pytim</span>
+<span class="n">inter</span>  <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">cluster_cut</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span><span class="n">cluster_threshold_density</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="first last reference internal image-reference" href="_images/IL-benzene1.jpg"><img alt="_images/IL-benzene1.jpg" class="align-center" src="_images/IL-benzene1.jpg" style="width: 85%;" /></a>
+</td>
+<td><a class="first last reference internal image-reference" href="_images/IL-benzene2.jpg"><img alt="_images/IL-benzene2.jpg" class="align-center" src="_images/IL-benzene2.jpg" style="width: 85%;" /></a>
+</td>
+</tr>
+<tr class="row-even"><td colspan="2">Left:  the ionic-liquid / benzene mixture, all molecule shown,
+including the ionic liquid (spheres) and benzene (sticks)
+Right: benzene phases/interface determined using DBSCAN
+(options <code class="xref py py-obj docutils literal"><span class="pre">cluster_cut=10.</span></code> and
+<code class="xref py py-obj docutils literal"><span class="pre">cluster_threshold_density='auto'</span></code>
+(blue: low-concentration phase; gray: high-concentration phase
+; red: interfacial benzene rings.</td>
+</tr>
+</tbody>
+</table>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -163,15 +309,19 @@ it is easy to modify the core classes and/or to add new observables</p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Pytim: Quick Tour</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basic-example">Basic Example</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pytim-s-main-features">Pytim’s Main Features</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="#non-planar-interfaces">Non-planar interfaces</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gitim">GITIM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#willard-chandler">Willard-Chandler</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#molecular-vs-atomic">Molecular vs Atomic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#filtering-vapour-molecules">Filtering vapour molecules</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">How to Install Pytim</a></li>
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Topologies without atomi radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul>
@@ -226,7 +376,7 @@ it is easy to modify the core classes and/or to add new observables</p>
         <li class="right" >
           <a href="index.html" title="Pytim: Quick Tour"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.5.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

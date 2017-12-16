@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Surface of a micelle &#8212; Pytim 0.5.3 documentation</title>
+    <title>Surface of a micelle &#8212; Pytim 0.6.3 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.5.3',
+        VERSION:     '0.6.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -43,7 +43,7 @@
         <li class="right" >
           <a href="install.html" title="How to Install Pytim"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.5.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -83,9 +83,13 @@ all DPC molecules</p>
 </div>
 <p>In order to calculate the surface atoms, we invoke <a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code></a>, passing
 the group <cite>g</cite> as the <cite>group</cite> option, and set <cite>molecular=False</cite> in order to mark
-only the atoms at the surface, and not the whole residues to which these atoms belong.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># calculate the atoms at the interface ...</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
+only the atoms at the surface, and not the whole residues to which these atoms belong.
+We override the standard radii (from the gromos 43a1 forcefield) with a simple set that
+will match the atom types.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># define radii for atom types</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rdict</span>  <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span><span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span><span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">:</span><span class="mf">1.6</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">:</span><span class="mf">1.8</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># calculate the atoms at the interface ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">radii_dict</span><span class="o">=</span><span class="n">rdict</span> <span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1">#</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... and write a pdb file (default:&#39;layers.pdb&#39;) with layer information in the beta field</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writepdb</span><span class="p">()</span>
@@ -110,7 +114,7 @@ only the atoms at the surface, and not the whole residues to which these atoms b
 <h2>Some statistics<a class="headerlink" href="#some-statistics" title="Permalink to this headline">¶</a></h2>
 <p>It’s easy to calculate some simple statistical properties. For example, the percentage of atoms of DPC at the surface is</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="s2">&quot;percentage of atoms at the surface: </span><span class="si">{:.1f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="mf">100.</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
-<span class="go">percentage of atoms at the surface: 36.6</span>
+<span class="go">percentage of atoms at the surface: 47.2</span>
 </pre></div>
 </div>
 <p>This is a rather high percentage, but is due to the small size of the micelle (large surface/volume ratio)</p>
@@ -120,45 +124,32 @@ only the atoms at the surface, and not the whole residues to which these atoms b
 <span class="gp">... </span>    <span class="n">total</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">names</span><span class="o">==</span><span class="n">name</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">surface</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">names</span> <span class="o">==</span> <span class="n">name</span> <span class="p">)</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:&gt;4s}</span><span class="s1"> ---&gt; </span><span class="si">{:&gt;2.0f}</span><span class="s1">%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">surface</span><span class="o">*</span><span class="mf">100.</span><span class="o">/</span><span class="n">total</span><span class="p">))</span>
-<span class="go">  C1 ---&gt; 86%</span>
-<span class="go">  C2 ---&gt; 57%</span>
-<span class="go">  C3 ---&gt; 78%</span>
-<span class="go">  N4 ---&gt;  0%</span>
-<span class="go">  C5 ---&gt; 72%</span>
-<span class="go">  C6 ---&gt; 88%</span>
-<span class="go">  O7 ---&gt; 58%</span>
-<span class="go">  P8 ---&gt;  2%</span>
-<span class="go">  O9 ---&gt; 69%</span>
-<span class="go"> O10 ---&gt; 78%</span>
-<span class="go"> O11 ---&gt; 46%</span>
-<span class="go"> C12 ---&gt; 34%</span>
-<span class="go"> C13 ---&gt; 34%</span>
-<span class="go"> C14 ---&gt; 12%</span>
-<span class="go"> C15 ---&gt; 18%</span>
-<span class="go"> C16 ---&gt; 11%</span>
+<span class="go">  C1 ---&gt; 97%</span>
+<span class="go">  C2 ---&gt; 95%</span>
+<span class="go">  C3 ---&gt; 100%</span>
+<span class="go">  N4 ---&gt; 98%</span>
+<span class="go">  C5 ---&gt; 98%</span>
+<span class="go">  C6 ---&gt; 92%</span>
+<span class="go">  O7 ---&gt; 75%</span>
+<span class="go">  P8 ---&gt;  3%</span>
+<span class="go">  O9 ---&gt; 72%</span>
+<span class="go"> O10 ---&gt; 83%</span>
+<span class="go"> O11 ---&gt; 48%</span>
+<span class="go"> C12 ---&gt; 31%</span>
+<span class="go"> C13 ---&gt; 29%</span>
+<span class="go"> C14 ---&gt; 14%</span>
+<span class="go"> C15 ---&gt; 17%</span>
+<span class="go"> C16 ---&gt; 15%</span>
 <span class="go"> C17 ---&gt; 18%</span>
-<span class="go"> C18 ---&gt; 11%</span>
-<span class="go"> C19 ---&gt; 17%</span>
-<span class="go"> C20 ---&gt;  9%</span>
-<span class="go"> C21 ---&gt; 14%</span>
-<span class="go"> C22 ---&gt; 12%</span>
-<span class="go"> C23 ---&gt; 15%</span>
+<span class="go"> C18 ---&gt; 12%</span>
+<span class="go"> C19 ---&gt; 18%</span>
+<span class="go"> C20 ---&gt; 12%</span>
+<span class="go"> C21 ---&gt; 17%</span>
+<span class="go"> C22 ---&gt; 17%</span>
+<span class="go"> C23 ---&gt; 22%</span>
 </pre></div>
 </div>
-<p>One immediately notices that P and N are never (or almost never) at the surface: this is because they are always buried wihin their bonded neighbors in the headgroup.
-Also, a non negligible part of the fatty tails are also found from time to time at the surface.</p>
-</div>
-<div class="section" id="close-inspection">
-<h2>Close inspection<a class="headerlink" href="#close-inspection" title="Permalink to this headline">¶</a></h2>
-<p>One might wonder how accurately surface atoms are detected. In principle, looking at close distance, one could find some atoms that look to be below the surface, but are marked as interfacial ones. In the next figure, surface atoms are depicted with spheres, non-surface atoms with sticks, and the suspicious atom (an oxygen) in purple.</p>
-<a class="reference internal image-reference" href="_images/micelle4.png"><img alt="_images/micelle4.png" class="align-center" src="_images/micelle4.png" style="width: 35%;" /></a>
-<p>We check now all DPC atoms that are within a radius of 0.4 nm (that is, the radius of oxygen, 0.15 nm, plus the radius of the probe sphere, 0.25 nm)
-There is in fact a pocket opening between the camera and our purple oxygen, althouth it is still not clear from the picture</p>
-<a class="reference internal image-reference" href="_images/micelle5.png"><img alt="_images/micelle5.png" class="align-center" src="_images/micelle5.png" style="width: 35%;" /></a>
-<p>If we include also the water molecules that are within the 0.4 nm radius, it becomes immediately clear that the purple oxygen is a surface one as, in fact,
-water molecules have entered the pocket:</p>
-<a class="reference internal image-reference" href="_images/micelle6.png"><img alt="_images/micelle6.png" class="align-center" src="_images/micelle6.png" style="width: 35%;" /></a>
-<p>So, the <a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code></a> algorithm is in fact spotting correctly surface atoms.</p>
+<p>One immediately notices that with this choice of radii, P atoms are rarely at the surface: this is because they are always buried wihin their bonded neighbors in the headgroup.  Also, a non negligible part of the fatty tails are also found from time to time at the surface.</p>
 <hr class="docutils" />
 <div class="toctree-wrapper compound">
 </div>
@@ -193,14 +184,13 @@ water molecules have entered the pocket:</p>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Surface of a micelle</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#the-dpc-micelle">The DPC micelle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#some-statistics">Some statistics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#close-inspection">Close inspection</a><ul class="simple">
+<li class="toctree-l2"><a class="reference internal" href="#some-statistics">Some statistics</a><ul class="simple">
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
-<li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Topologies without atomi radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul>
@@ -255,7 +245,7 @@ water molecules have entered the pocket:</p>
         <li class="right" >
           <a href="install.html" title="How to Install Pytim"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.5.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

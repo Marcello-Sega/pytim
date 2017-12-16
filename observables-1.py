@@ -7,7 +7,7 @@ u = mda.Universe(WATER_GRO,WATER_XTC)
 oxygens = u.select_atoms("name OW")
 interface = pytim.ITIM(u,alpha=2.,group=oxygens,                               cluster_cut=3.5, molecular=False)
 rdf=pytim.observables.RDF2D(u,nbins=250)
-for ts in u.trajectory[::] :
+for ts in u.trajectory[::50] :
     layer=interface.layers[0,0]
     rdf.sample(layer,layer)
 rdf.count[0]=0
