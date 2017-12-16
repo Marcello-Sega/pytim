@@ -13,7 +13,6 @@ from scipy.spatial import cKDTree
 from pytim import utilities, surface
 import pytim
 
-
 class Surface(surface.Surface):
 
     def distance(self, inp):
@@ -47,21 +46,24 @@ class Surface(surface.Surface):
 
 class ITIM(pytim.PYTIM):
     """Identifies interfacial molecules at macroscopically flat interfaces.
-       (Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G.
-        J. Comp. Chem. 29, 945, 2008)
+       (Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G.  J. Comp. Chem. 29, 945, 2008)
 
-        :param Universe universe: the MDAnalysis universe
-        :param float mesh:        the grid spacing used for the testlines
+        :param Object universe:   the MDAnalysis Universe, MDTraj trajectory\
+                                  or OpenMM Simulation objects.
+        :param Object group:      An AtomGroup, or an array-like object with\
+                                  the indices of the atoms in the group.\
+                                  Will dentify the interfacial molecules from\
+                                  this group
         :param float alpha:       the probe sphere radius
         :param str normal:        the macroscopic interface normal direction\
-                                  'x','y' or 'z' (by default is 'guess')
-        :param AtomGroup group:   identify the interfacial molecules from\
-                                     this group
-        :param dict radii_dict:   dictionary with the atomic radii of the\
-                                  elements in the group. If None is\
-                                  supplied, the default one (from MDAnalysis)\
-                                  will be used.
+                                  'x','y', 'z' or 'guess' (default)
+        :param bool molecular:    Switches between search of interfacial\
+                                  molecules / atoms (default: True)
         :param int max_layers:    the number of layers to be identified
+        :param dict radii_dict:   dictionary with the atomic radii of\
+                                  the elements in the group.
+                                  If None is supplied, the default one\
+                                  (from GROMOS 43a1) will be used.
         :param float cluster_cut: cutoff used for neighbors or density-based\
                                   cluster search (default: None disables the\
                                   cluster analysis)
@@ -70,11 +72,13 @@ class ITIM(pytim.PYTIM):
                                   determines the threshold automatically.\
                                   Default: None uses simple neighbors cluster\
                                   search, if cluster_cut is not None
-        :param bool molecular:    Switches between search of interfacial\
-                                  molecules / atoms (default: True)
+        :param Object extra_cluster_groups: Additional groups, to allow for mixed interfaces
         :param bool info:         print additional info
         :param bool multiproc:    parallel version (default: True. Switch off\
                                   for debugging)
+        :param bool centered:     center the  :py:obj:`group`
+        :param bool warnings:     print warnings
+        :param float mesh:        the grid spacing used for the testlines (default 0.4 Angstrom)
 
         Example:
 
@@ -166,11 +170,12 @@ dtype=object)
 
         return self._layers
 
-    def __init__(self, universe, mesh=0.4, alpha=1.5, normal='guess',
-                 group=None, radii_dict=None, max_layers=1,
+    def __init__(self, universe, group=None, alpha=1.5, normal='guess',
+                 molecular=True, max_layers=1,radii_dict=None,
                  cluster_cut=None, cluster_threshold_density=None,
-                 molecular=True, extra_cluster_groups=None, info=False,
-                 multiproc=True, centered=False, warnings=False, **kargs):
+                 extra_cluster_groups=None, info=False,
+                 multiproc=True, centered=False, warnings=False, mesh=0.4, **kargs):
+
 
         self.symmetry = 'planar'
         self.do_center = centered

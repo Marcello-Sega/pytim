@@ -261,15 +261,18 @@ class SanityCheck(object):
         self._check_missing_attribute('elements', 'Elements',
                                       universe.atoms, 1, universe)
         # we add here the new layer, cluster and side information
+        # they are not part of MDAnalysis.core.topologyattrs
+        if 'layers' not in dir(universe.atoms):
+            layers = np.zeros(len(universe.atoms), dtype=np.int) - 1
+            universe.add_TopologyAttr(Layers(layers))
 
-        layers = np.zeros(len(universe.atoms), dtype=np.int) - 1
-        universe.add_TopologyAttr(Layers(layers))
+        if 'clusters' not in dir(universe.atoms):
+            clusters = np.zeros(len(universe.atoms), dtype=np.int) - 1
+            universe.add_TopologyAttr(Clusters(clusters))
 
-        clusters = np.zeros(len(universe.atoms), dtype=np.int) - 1
-        universe.add_TopologyAttr(Clusters(clusters))
-
-        sides = np.zeros(len(universe.atoms), dtype=np.int) - 1
-        universe.add_TopologyAttr(Sides(sides))
+        if 'sides' not in dir(universe.atoms):
+            sides = np.zeros(len(universe.atoms), dtype=np.int) - 1
+            universe.add_TopologyAttr(Sides(sides))
 
     def _check_missing_attribute(self, name, classname, group, value, universe):
         """ Add an attribute, which is necessary for pytim but
@@ -457,8 +460,8 @@ class SanityCheck(object):
 
     def assign_universe(self, input_obj, radii_dict=None, warnings=False):
 
-        _mode = self._apply_patches(input_obj)
-        if _mode is None:
+        self.interface._mode = self._apply_patches(input_obj)
+        if self.interface._mode is None:
             raise Exception(self.interface.WRONG_UNIVERSE)
 
         self.interface.all_atoms = self.interface.universe.select_atoms('all')
@@ -490,14 +493,22 @@ class SanityCheck(object):
         self.interface.alpha = alpha
         return True
 
+    def wrap_group(self, obj):
+        if obj is None:
+            return None
+        if self.interface._mode == 'mdtraj' or self.interface._mode == 'openmm':
+            return self.interface.universe.atoms[obj] 
+        return obj
+
     def assign_groups(self, itim_group, cluster_cut, extra_cluster_groups):
         elements = 0
         extraelements = -1
 
         if self.interface.itim_group is None:
-            self.interface.itim_group = itim_group
-        self.interface.cluster_cut = cluster_cut
-        self.interface.extra_cluster_groups = extra_cluster_groups
+            self.interface.itim_group = self.wrap_group(itim_group)
+
+        self.interface.cluster_cut = self.wrap_group(cluster_cut)
+        self.interface.extra_cluster_groups = self.wrap_group(extra_cluster_groups)
 
         self._define_groups()
         if(len(self.interface.itim_group) == 0):

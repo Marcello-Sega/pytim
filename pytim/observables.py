@@ -320,7 +320,7 @@ class RDF2D(RDF):
         interface = pytim.ITIM(u,alpha=2.,group=oxygens,\
                                cluster_cut=3.5, molecular=False)
         rdf=pytim.observables.RDF2D(u,nbins=250)
-        for ts in u.trajectory[::] :
+        for ts in u.trajectory[::50] :
             layer=interface.layers[0,0]
             rdf.sample(layer,layer)
         rdf.count[0]=0
@@ -780,7 +780,7 @@ class Profile(object):
         for n in np.arange(0,5):
             Layers.append(Profile())
 
-        for ts in u.trajectory[::]:
+        for ts in u.trajectory[::50]:
             for n in range(len(Layers)):
                 if n>0:
                     group = u.atoms[u.atoms.layers == n ]
@@ -833,7 +833,7 @@ class Profile(object):
         inter = pytim.ITIM(u, group=g,max_layers=1,cluster_cut=3.5,centered=True, molecular=False)
         profile = Profile(interface=inter)
 
-        for ts in u.trajectory[::]:
+        for ts in u.trajectory[::50]:
             profile.sample(g)
 
         low, up, avg = profile.get_values(binwidth=0.2)
@@ -867,9 +867,10 @@ class Profile(object):
                              # output binsize can be specified in
                              # self.get_values()
 
-        self.sampled_values = []
-        self.sampled_bins = []
-        self._range = [-1.,-1.]
+        self.sampled_bins = None
+        self.sampled_values = None
+        self._range = None
+        self._counts = 0
 
     def sample(self,group):
         # TODO: implement progressive averaging to handle very long trajs
@@ -879,38 +880,47 @@ class Profile(object):
                             "Profile.sample() must be an AtomGroup.")
 
         box = group.universe.trajectory.ts.dimensions[:3]
+        if self._range is None:
+            _range = [0., box[self._dir]]
+            nbins = int( box[self._dir] / self.binsize)
+            # we need to make sure that the number of bins is odd, so that the
+            # central one encompasses zero (to make the delta-function
+            # contribution appear always in this bin)
+            if(nbins % 2 > 0):
+                nbins += 1
+            self._nbins = nbins
+            if self.interface is not None:
+                _range -= box[self._dir] / 2.
+            self._range = _range
+            self._vol = np.prod(box) / nbins
 
         if self.interface is None:
             pos = group.positions[::, self._dir]
         else:
             pos = IntrinsicDistance(self.interface).compute(group)
+
         values = self.observable.compute(group)
-        nbins = int( box[self._dir] / self.binsize)
-        # we need to make sure that the number of bins is odd, so that the
-        # central one encompasses zero (to make the delta-function
-        # contribution appear always in this bin)
-        if(nbins % 2 > 0):
-            nbins += 1
-        _range = [0., box[self._dir]]
-        if self.interface is not None:
-            _range -= box[self._dir] / 2.
-        avg, bins, binnumber = stats.binned_statistic(
-            pos, values, range=_range, statistic='sum', bins=nbins)
-        vol = np.prod(box) / nbins
-        if _range[1] > self._range[1]:
-            self._range = _range[:] # copy list
-        avg[np.isnan(avg)] = 0.0
-        self.sampled_values.append(avg/vol)
-        # these are the bins midpoints
-        self.sampled_bins.append(bins[1:] - self.binsize / 2.)
+
+        accum , bins , _ = stats.binned_statistic(
+            pos, values, range=self._range, statistic='sum', bins=self._nbins)
+
+        accum[np.isnan(accum)] = 0.0
+
+        if self.sampled_values is None:
+            self.sampled_values = accum.copy()
+            # stores the midpoints
+            self.sampled_bins   = bins[1:]-self.binsize / 2.
+        else:
+            self.sampled_values += accum
+        self._counts += 1
 
     def get_values(self, binwidth=None, nbins=None):
-        if not self.sampled_values:
-            raise UserWarning("No profile sampled so far")
+        if self.sampled_values is None:
+            print "Warning no profile sampled so far"
         # we use the largest box (largest number of bins) as reference.
         # Statistics will be poor at the boundaries, but like that we don't
         # loose information
-        max_bins = np.max(map(len, self.sampled_bins))
+        max_bins = len(self.sampled_bins)
         max_size = max_bins * self.binsize
 
         if binwidth is not None:  # overrides nbins
@@ -920,11 +930,10 @@ class Profile(object):
 
         if(nbins % 2 > 0):
             nbins += 1
-        _bins = [ e for l in self.sampled_bins for e in l]
-        _vals = [ e for l in self.sampled_values for e in l]
-        avg, bins, _ = stats.binned_statistic( _bins, _vals,
-            range=self._range, statistic='mean',
-            bins=nbins)
+
+        avg, bins, _ = stats.binned_statistic( self.sampled_bins,
+                                self.sampled_values*1./(self._counts*self._vol),
+                                range=self._range, statistic='mean', bins=nbins)
         avg[np.isnan(avg)] = 0.0
         return [bins[0:-1], bins[1:], avg  ]
 
