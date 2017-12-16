@@ -12,8 +12,6 @@ from __builtin__ import zip as builtin_zip
 from scipy.spatial import cKDTree
 from pytim import utilities, surface
 import pytim
-from pympler import tracker
-
 
 class Surface(surface.Surface):
 
