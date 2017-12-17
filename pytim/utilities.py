@@ -9,7 +9,7 @@ from sys import stderr
 
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
-from pytim.utilities_geometry import trim_triangulated_surface,
+from pytim.utilities_geometry import trim_triangulated_surface
 from pytim.utilities_geometry import triangulated_surface_stats
 from pytim.utilities_geometry import polygonalArea, fit_sphere, EulerRotation
 from pytim.utilities_pbc import generate_periodic_border, rebox
