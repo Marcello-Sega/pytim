@@ -8,6 +8,7 @@ import numpy as np
 from pytim import utilities
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
+
 class Correlator(object):
     """ Computes the (self) correlation of an observable (scalar or vector)
 
@@ -87,7 +88,7 @@ class Correlator(object):
     """
 
     def __init__(self, universe=None, observable=None, reduced=True, normalize=True, reference=None, memory_warn=None):
-        pass # wrong implementation
+        pass  # wrong implementation
         name = self.__class__.__name__
         self.observable = observable
         self.reference = reference
@@ -151,5 +152,3 @@ class Correlator(object):
         if self.normalize == True:
             corr = corr / corr[0]
         return corr
-
-

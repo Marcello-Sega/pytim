@@ -11,12 +11,12 @@ from MDAnalysis.topology import tables
 from difflib import get_close_matches
 import importlib
 import __builtin__
-from pytim import datafiles
+from . import datafiles
 from version import __version__
+
 
 def PatchOpenMM(simulation, interface):
  #       return _openmm.CompoundIntegrator_step(self, steps)
-
     """ Patch the mdtraj Trajectory class
 
         automates the data exchange between MDAnalysis and mdtraj classes
@@ -25,7 +25,7 @@ def PatchOpenMM(simulation, interface):
     try:
         simulation.interface
     except AttributeError:
-        simulation.interface = interface 
+        simulation.interface = interface
         simulation.original_step = simulation.step
 
         class PatchedOpenMMSimulation(simulation.__class__):
@@ -33,7 +33,7 @@ def PatchOpenMM(simulation, interface):
             def step(self, steps):
                 tmp = self.original_step(steps)
                 pos = self.context.getState(getPositions=True).getPositions(
-                                asNumpy=True).value_in_unit(openmm_AA)
+                    asNumpy=True).value_in_unit(openmm_AA)
                 self.interface.universe.atoms.positions = pos
                 self.interface._assign_layers()
                 return tmp
@@ -44,6 +44,7 @@ def PatchOpenMM(simulation, interface):
         PatchedOpenMMSimulation.__name__ = oldname
         PatchedOpenMMSimulation.__module__ = oldmodule
         simulation.__class__ = PatchedOpenMMSimulation
+
 
 def PatchMDTRAJ(trajectory, universe):
     """ Patch the mdtraj Trajectory class
@@ -61,7 +62,8 @@ def PatchMDTRAJ(trajectory, universe):
                 slice_ = self.slice(key)
                 PatchMDTRAJ(slice_, universe)
                 if isinstance(key, int):
-                    # mdtraj uses nm as distance unit, we need to convert to Angstrom for MDAnalysis
+                    # mdtraj uses nm as distance unit, we need to convert to
+                    # Angstrom for MDAnalysis
                     slice_.universe.atoms.positions = slice_.xyz[0] * 10.0
                     dimensions = slice_.universe.dimensions[:]
                     dimensions[0:3] = slice_.unitcell_lengths[0:3] * 10.0
@@ -303,19 +305,21 @@ class SanityCheck(object):
                 types = MDAnalysis.topology.guessers.guess_types(group.names)
                 # is there an inconsistency in the way 'element' is defined
                 # different modules in MDA?
+                n0 = {'number': 0} 
+                # Note: the second arg in .get() is the default.
                 group.elements = np.array(
-                    [utilities.atomic_number_map.get(t, 0) for t in types])
+                    [utilities.atoms_maps.get(t, n0)['number'] for t in types])
             if name == 'radii':
                 self.guess_radii()
 
-    def weighted_close_match(self,string,dictionary):
+    def weighted_close_match(self, string, dictionary):
         # increase weight of the first letter
         # this fixes problems with atom names like CH12
         _wdict = {}
         _dict = dictionary
-        _str = string[0]+string[0]+string
+        _str = string[0] + string[0] + string
         for key in _dict.keys():
-            _wdict[key[0]+key[0]+key] = _dict[key]
+            _wdict[key[0] + key[0] + key] = _dict[key]
         m = get_close_matches(_str, _wdict.keys(), n=1, cutoff=0.1)[0]
         return m[2:]
 
@@ -362,21 +366,20 @@ class SanityCheck(object):
         if have_types:
             radii = np.copy(group.radii)
 
-            _dict =  self.interface.radii_dict
+            _dict = self.interface.radii_dict
             for aname in np.unique(group.names):
                 try:
-                    matching_type = self.weighted_close_match(aname,_dict)
+                    matching_type = self.weighted_close_match(aname, _dict)
                     radii[group.names == aname] = _dict[matching_type]
-                    guessed.update( {aname: _dict[matching_type] } )
+                    guessed.update({aname: _dict[matching_type]})
                 except:
                     try:
                         atype = group.types[group.names == aname][0]
                         matching_type = self.weighted_close_match(atype, _dict)
                         radii[group.types == atype] = _dict[matching_type]
-                        guessed.update( {atype: _dict[matching_type] } )
+                        guessed.update({atype: _dict[matching_type]})
                     except:
                         pass
-
 
             group.radii = np.copy(radii)
         # We fill in the remaining ones using masses information
@@ -390,10 +393,10 @@ class SanityCheck(object):
             unique_masses = np.unique(masses)
             # Let's not consider atoms with zero mass.
             unique_masses = unique_masses[unique_masses > 0]
-            d = utilities.atomic_mass_map
+            d = utilities.atoms_maps
             for target_mass in unique_masses:
                 atype, mass = min(d.items(), key=lambda (
-                    _, v): abs(v - target_mass))
+                    _, entry): abs(entry['mass'] - target_mass))
                 try:
                     matching_type = get_close_matches(
                         atype, self.interface.radii_dict.keys(), n=1, cutoff=0.1
@@ -451,14 +454,12 @@ class SanityCheck(object):
                     topology=top, positions=pos, file=_file)
                 _file.close()
                 self.interface.universe = MDAnalysis.Universe(_file.name)
-                PatchOpenMM(input_obj,self.interface)
+                PatchOpenMM(input_obj, self.interface)
                 os.remove(_file.name)
                 return 'openmm'
         except ImportError:
             pass
         return None
-
-
 
     def assign_universe(self, input_obj, radii_dict=None, warnings=False):
 
@@ -468,7 +469,8 @@ class SanityCheck(object):
 
         self.interface.all_atoms = self.interface.universe.select_atoms('all')
         #self.interface.radii_dict = tables.vdwradii.copy()
-        self.interface.radii_dict = datafiles.pytim_data.vdwradii(datafiles.G43A1_TOP).copy()
+        self.interface.radii_dict = datafiles.pytim_data.vdwradii(
+            datafiles.G43A1_TOP).copy()
         self.patch_radii_dict()
         self.interface.warnings = warnings
         if radii_dict is not None:
@@ -478,10 +480,10 @@ class SanityCheck(object):
 
     def patch_radii_dict(self):
         # fix here by hand common problems with radii assignment
-        self.interface.radii_dict['D']   = 0.0
-        self.interface.radii_dict['M']   = 0.0
-        self.interface.radii_dict['HW']  = 0.0
-        self.interface.radii_dict['Me']  = self.interface.radii_dict['CMet']
+        self.interface.radii_dict['D'] = 0.0
+        self.interface.radii_dict['M'] = 0.0
+        self.interface.radii_dict['HW'] = 0.0
+        self.interface.radii_dict['Me'] = self.interface.radii_dict['CMet']
 
     def assign_alpha(self, alpha):
         try:
@@ -498,9 +500,9 @@ class SanityCheck(object):
     def wrap_group(self, inp):
         if inp is None:
             return None
-        if isinstance(inp,int):
-            return self.interface.universe.atoms[inp:inp+1]
-        if isinstance(inp,list) or isinstance(inp,np.ndarray):
+        if isinstance(inp, int):
+            return self.interface.universe.atoms[inp:inp + 1]
+        if isinstance(inp, list) or isinstance(inp, np.ndarray):
             return self.interface.universe.atoms[inp]
         return inp
 
@@ -512,7 +514,8 @@ class SanityCheck(object):
             self.interface.itim_group = self.wrap_group(itim_group)
 
         self.interface.cluster_cut = self.wrap_group(cluster_cut)
-        self.interface.extra_cluster_groups = self.wrap_group(extra_cluster_groups)
+        self.interface.extra_cluster_groups = self.wrap_group(
+            extra_cluster_groups)
 
         self._define_groups()
         if(len(self.interface.itim_group) == 0):

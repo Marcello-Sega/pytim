@@ -7,6 +7,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
+
 class FreeVolume(object):
     """ Calculates the fraction of free volume in the system, or its profile.
 
@@ -58,31 +59,35 @@ class FreeVolume(object):
     def __init__(self, universe, npoints=None):
         self.u = universe
         if npoints is None:
-            npoints =  10* len(universe.atoms)
+            npoints = 10 * len(universe.atoms)
         self.npoints = npoints
 
-    def _compute(self,inp=None):
+    def _compute(self, inp=None):
         res = np.array(0)
         _box = self.u.dimensions.copy()
         box = _box[:3]
-        try: # older scipy versions
-            tree = cKDTree(np.random.random((self.npoints,3)) * box,boxsize=_box[:6])
+        try:  # older scipy versions
+            tree = cKDTree(np.random.random((self.npoints, 3))
+                           * box, boxsize=_box[:6])
         except:
-            tree = cKDTree(np.random.random((self.npoints,3)) * box,boxsize=_box[:3])
+            tree = cKDTree(np.random.random((self.npoints, 3))
+                           * box, boxsize=_box[:3])
         if inp is None:
             inp = self.u.atoms
-        if not isinstance(inp,AtomGroup):
-            raise RuntimeError(self.__class__.__name__+'compute needs AtomGroup as an input')
+        if not isinstance(inp, AtomGroup):
+            raise RuntimeError(self.__class__.__name__ +
+                               'compute needs AtomGroup as an input')
         # np.unique here avoids counting contributions from overlapping spheres
         radii = np.unique(inp.radii)
 
         for radius in radii:
-            where = np.where(np.isclose(  inp.radii ,  radius ))
-            lst = [ e for l in tree.query_ball_point(inp.positions[where],radius) for e in l]
+            where = np.where(np.isclose(inp.radii,  radius))
+            lst = [e for l in tree.query_ball_point(
+                inp.positions[where], radius) for e in l]
             res = np.append(res, lst)
-        return np.unique(res),tree.data
+        return np.unique(res), tree.data
 
-    def compute_profile(self,inp=None,nbins=30,direction = 2):
+    def compute_profile(self, inp=None, nbins=30, direction=2):
         """ Compute a profile of the free volume fraction
 
             :param AtomGroup inp:  compute the volume fraction of this group, None selects the complete universe
@@ -96,25 +101,28 @@ class FreeVolume(object):
         slabwidth = box[direction] / nbins
         slabvol = self.u.trajectory.ts.volume / nbins
 
-        bins = np.arange(nbins+1) * slabwidth
+        bins = np.arange(nbins + 1) * slabwidth
 
         histo = []
         error = []
-        res,data = self._compute(inp)
+        res, data = self._compute(inp)
         for i in range(nbins):
-            condition = np.logical_and(data[:,direction]>= bins[i],data[:,direction]<bins[i+1])
-            in_slab  = np.where(condition)[0]
-            n_in_slab = np.sum(condition*1.0)
+            condition = np.logical_and(
+                data[:, direction] >= bins[i],
+                data[:, direction] < bins[i + 1])
+            in_slab = np.where(condition)[0]
+            n_in_slab = np.sum(condition * 1.0)
             if n_in_slab == 0:
                 histo.append(0.0)
                 error.append(0.0)
             else:
-                ratio = np.sum(np.isin(res, in_slab)*1.0) / n_in_slab # occupied volume
-                histo.append(1.-ratio)
-                error.append(np.sqrt(ratio*(1.-ratio)/n_in_slab))
-        return bins,np.array(histo),np.array(error)
+                ratio = np.sum(np.isin(res, in_slab) * 1.0) / \
+                    n_in_slab  # occupied volume
+                histo.append(1. - ratio)
+                error.append(np.sqrt(ratio * (1. - ratio) / n_in_slab))
+        return bins, np.array(histo), np.array(error)
 
-    def compute(self,inp=None):
+    def compute(self, inp=None):
         """ Compute the total free volume fraction in the simulation box
 
             :param AtomGroup inp:  compute the volume fraction of this group, None selects the complete universe
@@ -123,7 +131,5 @@ class FreeVolume(object):
             :returns fraction, error: the free volume fraction and associated error
 
         """
-        _,free, err =  self.compute_profile(inp,nbins=1)
-        return free[0],err[0]
-
-
+        _, free, err = self.compute_profile(inp, nbins=1)
+        return free[0], err[0]

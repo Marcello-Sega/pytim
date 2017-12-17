@@ -140,16 +140,16 @@ todo_include_todos = True
 html_theme = 'classic'
 
 html_theme_options = {
-#'sidebarbgcolor':'#cccccc',
-'sidebarbgcolor':'#0063A6',
-'headtextcolor':'#0063A6',
-'headbgcolor':'#ffffff',
-'sidebarlinkcolor':'#F6A800',
-'relbarbgcolor':'#ffffff',
-'relbartextcolor':'#0063A6',
-'relbarlinkcolor':'#0063A6',
-'bgcolor':'#ffffff',
-'codebgcolor':'#e0e0e0',
+    #'sidebarbgcolor':'#cccccc',
+    'sidebarbgcolor': '#0063A6',
+    'headtextcolor': '#0063A6',
+    'headbgcolor': '#ffffff',
+    'sidebarlinkcolor': '#F6A800',
+    'relbarbgcolor': '#ffffff',
+    'relbartextcolor': '#0063A6',
+    'relbarlinkcolor': '#0063A6',
+    'bgcolor': '#ffffff',
+    'codebgcolor': '#e0e0e0',
 
 }
 
@@ -212,7 +212,8 @@ html_static_path = ['_static']
 # Custom sidebar templates, maps document names to template names.
 #
 
-html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'], }
+html_sidebars = {'**': ['globaltoc.html',
+                        'relations.html', 'sourcelink.html', 'searchbox.html'], }
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -276,21 +277,21 @@ htmlhelp_basename = 'Pytimdoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-     # The paper size ('letterpaper' or 'a4paper').
-     #
-     # 'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #
+    # 'papersize': 'letterpaper',
 
-     # The font size ('10pt', '11pt' or '12pt').
-     #
-     # 'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #
+    # 'pointsize': '10pt',
 
-     # Additional stuff for the LaTeX preamble.
-     #
-     # 'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #
+    # 'preamble': '',
 
-     # Latex figure (float) alignment
-     #
-     # 'figure_align': 'htbp',
+    # Latex figure (float) alignment
+    #
+    # 'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -379,10 +380,11 @@ autodoc_member_order = 'bysource'
 # -- Customization to Sphinx autodoc generation ------------------------------
 import sphinx.ext.autodoc
 
+
 def dont_skip_any_doctests(app, what, name, obj, skip, options):
     return False
+
 
 if 'doctest' in sys.argv:
     def setup(app):
         app.connect('autodoc-skip-member', dont_skip_any_doctests)
-

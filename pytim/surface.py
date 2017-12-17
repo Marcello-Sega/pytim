@@ -28,10 +28,11 @@ class Surface(object):
         self.options = options
         try:
             self._layer = options['layer']
-        except (TypeError,KeyError) as err :
+        except (TypeError, KeyError) as err:
             self._layer = 0
 
-    # see the implemenation in each of the modules (itim.py, gitim.py,... ) for all @abstractproperties
+    # see the implemenation in each of the modules (itim.py, gitim.py,... )
+    # for all @abstractproperties
     @abstractproperty
     def interpolation(self, inp):
         """ returns interpolated position on the surface """
@@ -159,11 +160,11 @@ class Surface(object):
         pos[cond] += box[cond[1]]
 
         elevation = self.interpolation(pos)
-        if np.sum(np.isnan(elevation)) > 1+int(0.01*len(pos)) :
+        if np.sum(np.isnan(elevation)) > 1 + int(0.01 * len(pos)):
             Warning("more than 1% of points have fallen outside"
-                          "the convex hull while determining the"
-                          "interpolated position on the surface."
-                          "Something is wrong.")
+                    "the convex hull while determining the"
+                    "interpolated position on the surface."
+                    "Something is wrong.")
         # positive values are outside the surface, negative inside
         distance = (pos[:, 2] - elevation) * np.sign(pos[:, 2])
         return distance
@@ -177,4 +178,3 @@ class Surface(object):
             self._interpolator[side] = LinearNDInterpolator(
                 self.surf_triang[layer],
                 self.triangulation_points[layer][:, 2])
-

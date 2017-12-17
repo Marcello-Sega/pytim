@@ -6,6 +6,7 @@
 import numpy as np
 from MDAnalysis.lib import distances
 
+
 class RDF(object):
     """Calculates a radial distribution function of some observable from two
     groups.
@@ -301,6 +302,3 @@ class RDF2D(RDF):
         self._rdf = self.count / (density * vol * self.n_frames)
 
         return self._rdf
-
-
-

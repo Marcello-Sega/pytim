@@ -13,6 +13,7 @@ from scipy.spatial import cKDTree
 from pytim import utilities, surface
 import pytim
 
+
 class Surface(surface.Surface):
 
     def distance(self, inp):
@@ -172,11 +173,10 @@ dtype=object)
         return self._layers
 
     def __init__(self, universe, group=None, alpha=1.5, normal='guess',
-                 molecular=True, max_layers=1,radii_dict=None,
+                 molecular=True, max_layers=1, radii_dict=None,
                  cluster_cut=None, cluster_threshold_density=None,
                  extra_cluster_groups=None, info=False,
                  multiproc=True, centered=False, warnings=False, mesh=0.4, **kargs):
-
 
         self.symmetry = 'planar'
         self.do_center = centered
@@ -189,7 +189,8 @@ dtype=object)
 
         self.cluster_threshold_density = cluster_threshold_density
         self.max_layers = max_layers
-        self._layers = np.empty([2, max_layers], dtype=self.universe.atoms[0].__class__)
+        self._layers = np.empty(
+            [2, max_layers], dtype=self.universe.atoms[0].__class__)
         self._surfaces = np.empty(max_layers, dtype=type(Surface))
         self.info = info
         self.normal = None
@@ -217,16 +218,16 @@ dtype=object)
             Create the grid and initialize a cKDTree object with it to
             facilitate fast searching of the gridpoints touched by molecules.
         """
-        box  = utilities.get_box(self.universe, self.normal)
+        box = utilities.get_box(self.universe, self.normal)
         n, d = utilities.compute_compatible_mesh_params(self.target_mesh, box)
         self.mesh_nx = n[0]
         self.mesh_ny = n[1]
         self.mesh_dx = d[0]
         self.mesh_dy = d[1]
         if (self.use_kdtree == True):
-            _x = np.linspace(0,box[0],num=self.mesh_nx, endpoint=False)
-            _y = np.linspace(0,box[1],num=self.mesh_ny, endpoint=False)
-            _X,_Y = np.meshgrid(_x,_y)
+            _x = np.linspace(0, box[0], num=self.mesh_nx, endpoint=False)
+            _y = np.linspace(0, box[1], num=self.mesh_ny, endpoint=False)
+            _X, _Y = np.meshgrid(_x, _y)
             self.meshpoints = builtin_zip(_X.ravel(), _Y.ravel())
             # cKDTree requires a box vetor with length double the dimension,
             _box = np.zeros(4)

@@ -14,6 +14,7 @@ try:
 except ImportError:
     from scipy.spatial import Delaunay
 
+
 class GITIM(pytim.PYTIM):
     """ Identifies interfacial molecules at curved interfaces.
 
@@ -68,8 +69,8 @@ class GITIM(pytim.PYTIM):
         <AtomGroup with 793 atoms>
 
 
-        Successive layers can be identified with GITIM as well. In this example we
-        identify two solvation shells of glucose
+        Successive layers can be identified with GITIM as well.
+        In this example we identify two solvation shells of glucose:
 
 
         >>> import MDAnalysis as mda
@@ -81,7 +82,7 @@ class GITIM(pytim.PYTIM):
         >>> # it is faster to consider only oxygens.
         >>> # Hydrogen atoms are anyway within Oxygen's radius,
         >>> # in SPC* models.
-        >>> interface =pytim.GITIM(u, group=g, molecular=True, alpha=2.0, max_layers=2)
+        >>> interface =pytim.GITIM(u, group=g, alpha=2.0, max_layers=2)
         >>>
         >>> interface.writepdb('glucose_shells.pdb')
         >>> print repr(interface.layers[0]),repr(interface.layers[1])
@@ -103,7 +104,7 @@ class GITIM(pytim.PYTIM):
             cluster_cut=None,
             cluster_threshold_density=None,
             extra_cluster_groups=None,
-            biggest_cluster_only = False,
+            biggest_cluster_only=False,
             symmetry='spherical',
             centered=False,
             info=False,
@@ -150,11 +151,11 @@ class GITIM(pytim.PYTIM):
     def alpha_prefilter(triangulation, alpha):
         t = triangulation
         threshold = 2.0 * alpha
-        return t.simplices[ np.array([np.max(distance.cdist(t.points[simplex],
-                                                  t.points[simplex],
-                                                  'euclidean')) >=
-                            threshold + 2. * np.min(t.radii[simplex])
-                            for simplex in t.simplices])]
+        return t.simplices[np.array([np.max(distance.cdist(t.points[simplex],
+                                                           t.points[simplex],
+                                                           'euclidean')) >=
+                                     threshold + 2. * np.min(t.radii[simplex])
+                                     for simplex in t.simplices])]
 
     def circumradius(self, simplex):
 
@@ -219,13 +220,15 @@ class GITIM(pytim.PYTIM):
             extrapoints = np.copy(points)
             extraids = np.arange(len(points), dtype=np.int)
         # add points at the vertices of the expanded (by 2 alpha) box
-        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 1.0, 0.0],
-                                  [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0],
+        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0],
+                                  [0.0, 1.0, 0.0], [0.0, 1.0, 1.0],
+                                  [1.0, 0.0, 0.0], [1.0, 0.0, 1.0],
                                   [1.0, 1.0, 0.0], [1.0, 1.0, 1.0]])
         if self._noextrapoints == False:
-            for dim,vertex in enumerate(cube_vertices):
-                vertex = vertex * box + delta + gitter[dim] # added to prevent coplanar points
-                vertex [vertex < box / 2.] -= 2*delta
+            for dim, vertex in enumerate(cube_vertices):
+                # added to prevent coplanar points
+                vertex = vertex * box + delta + gitter[dim]
+                vertex[vertex < box / 2.] -= 2 * delta
                 vertex = np.reshape(vertex, (1, 3))
                 extrapoints = np.append(extrapoints, vertex, axis=0)
                 extraids = np.append(extraids, -1)
@@ -236,7 +239,7 @@ class GITIM(pytim.PYTIM):
         # print utilities.lap()
 
         #prefiltered = self.alpha_prefilter(self.triangulation, alpha)
-        prefiltered = self.triangulation.simplices # == skip prefiltering
+        prefiltered = self.triangulation.simplices  # == skip prefiltering
         # print utilities.lap()
 
         a_shape = prefiltered[np.array([self.circumradius(
@@ -252,7 +255,8 @@ class GITIM(pytim.PYTIM):
     def _assign_layers(self):
         """Determine the GITIM layers."""
         # this can be used later to shift back to the original shift
-        self.label_group(self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
+        self.label_group(self.universe.atoms, beta=0.0,
+                         layer=-1, cluster=-1, side=-1)
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 
@@ -269,28 +273,32 @@ class GITIM(pytim.PYTIM):
 
         alpha_group = self.cluster_group[:]
 
-        # TODO the successive layers analysis should be done by removing points from the triangulation
-        # and updating the circumradius of the neighbors of the removed points only.
-        for layer in range(0,self.max_layers):
+        # TODO the successive layers analysis should be done by removing points
+        # from the triangulation and updating the circumradius of the neighbors
+        # of the removed points  only.
+        for layer in range(0, self.max_layers):
 
-            alpha_ids = self.alpha_shape(self.alpha,alpha_group)
+            alpha_ids = self.alpha_shape(self.alpha, alpha_group)
 
             group = alpha_group[alpha_ids]
 
-            if self.biggest_cluster_only == True: # apply the same clustering algorith as set at init
-                l,c,_ = utilities.do_cluster_analysis_DBSCAN(group,self.cluster_cut[0], self.universe.dimensions[:],
-                                                             threshold_density=self.cluster_threshold_density,
-                                                             molecular=self.molecular)
-                group = group [ np.where(np.array(l) == np.argmax(c))[0] ]
+            if self.biggest_cluster_only is True:
+                # apply the same clustering algorith as set at init
+                l, c, _ = utilities.do_cluster_analysis_DBSCAN(group,
+                                                               self.cluster_cut[0], self.universe.dimensions[:],
+                                                               threshold_density=self.cluster_threshold_density,
+                                                               molecular=self.molecular)
+                group = group[np.where(np.array(l) == np.argmax(c))[0]]
 
             alpha_group = alpha_group[:] - group[:]
 
             if self.molecular:
-                self._layers[layer]  = group.residues.atoms
+                self._layers[layer] = group.residues.atoms
             else:
                 self._layers[layer] = group
 
-            self.label_group(self._layers[layer], beta = 1.*(layer+1), layer = (layer+1) )
+            self.label_group(
+                self._layers[layer], beta=1. * (layer + 1), layer=(layer + 1))
 
         # reset the interpolator
         self._interpolator = None
@@ -299,8 +307,8 @@ class GITIM(pytim.PYTIM):
     def layers(self):
         """Access the layers as numpy arrays of AtomGroups.
 
-        The object can be sliced as usual with numpy arrays. Differently from ITIM,
-        there are no sides. Example:
+        The object can be sliced as usual with numpy arrays.
+        Differently from ITIM, there are no sides. Example:
 
         >>> import MDAnalysis as mda
         >>> import pytim
@@ -308,11 +316,11 @@ class GITIM(pytim.PYTIM):
         >>>
         >>> u = mda.Universe(MICELLE_PDB)
         >>> micelle = u.select_atoms('resname DPC')
-        >>> interface = pytim.GITIM(u, group=micelle, max_layers=3,molecular=False)
-        >>> interface.layers  #all layers
+        >>> inter = pytim.GITIM(u, group=micelle, max_layers=3,molecular=False)
+        >>> inter.layers  #all layers
         array([<AtomGroup with 909 atoms>, <AtomGroup with 301 atoms>,
                <AtomGroup with 164 atoms>], dtype=object)
-        >>> interface.layers[0]  # first layer (0)
+        >>> inter.layers[0]  # first layer (0)
         <AtomGroup with 909 atoms>
 
         """

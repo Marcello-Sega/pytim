@@ -11,6 +11,7 @@ from skimage import measure
 from pytim import utilities, vtk, cube, wavefront_obj
 import pytim
 
+
 class WillardChandler(pytim.PYTIM):
     """ Identifies the dividing surface using the Willard-Chandler method
 
@@ -120,7 +121,6 @@ class WillardChandler(pytim.PYTIM):
         self._atoms = self._layers[:]  # this is an empty AtomGroup
         self.writevtk = pytim.willard_chandler.Writevtk(self)
 
-
     def writecube(self, filename="pytim.cube", group=None, sequence=False):
         """ Write to cube files (sequences) the volumentric density and the atomic positions.
 
@@ -224,6 +224,7 @@ class WillardChandler(pytim.PYTIM):
         self.surface_area = measure.mesh_surface_area(verts, faces)
         verts += spacing[::-1] / 2.
 
+
 class Writevtk(object):
     def __init__(self, interface):
         self.interface = interface
@@ -233,7 +234,7 @@ class Writevtk(object):
         number."""
         radii = group.radii
         types = group.types
-        color = [utilities.colormap[element] for element in types]
+        color = [(utilities.atoms_maps[element])['color'] for element in types]
         color = (np.array(color) / 256.).tolist()
         vtk.write_atomgroup(filename, group, color=color, radius=radii)
 

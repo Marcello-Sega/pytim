@@ -6,7 +6,8 @@
 import numpy as np
 from scipy import stats
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
-from pytim.observables import Number,IntrinsicDistance
+from pytim.observables import Number, IntrinsicDistance
+
 
 class Profile(object):
     """Calculates the profile (normal, or intrinsic) of a given observable
@@ -167,15 +168,15 @@ class Profile(object):
         else:
             self.observable = observable
         self.binsize = 0.01  # this is used for internal calculations, the
-                             # output binsize can be specified in
-                             # self.get_values()
+        # output binsize can be specified in
+        # self.get_values()
 
         self.sampled_bins = None
         self.sampled_values = None
         self._range = None
         self._counts = 0
 
-    def sample(self,group):
+    def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
         if not isinstance(group, AtomGroup):
@@ -185,7 +186,7 @@ class Profile(object):
         box = group.universe.trajectory.ts.dimensions[:3]
         if self._range is None:
             _range = [0., box[self._dir]]
-            nbins = int( box[self._dir] / self.binsize)
+            nbins = int(box[self._dir] / self.binsize)
             # we need to make sure that the number of bins is odd, so that the
             # central one encompasses zero (to make the delta-function
             # contribution appear always in this bin)
@@ -204,7 +205,7 @@ class Profile(object):
 
         values = self.observable.compute(group)
 
-        accum , bins , _ = stats.binned_statistic(
+        accum, bins, _ = stats.binned_statistic(
             pos, values, range=self._range, statistic='sum', bins=self._nbins)
 
         accum[np.isnan(accum)] = 0.0
@@ -212,7 +213,7 @@ class Profile(object):
         if self.sampled_values is None:
             self.sampled_values = accum.copy()
             # stores the midpoints
-            self.sampled_bins   = bins[1:]-self.binsize / 2.
+            self.sampled_bins = bins[1:] - self.binsize / 2.
         else:
             self.sampled_values += accum
         self._counts += 1
@@ -234,10 +235,10 @@ class Profile(object):
         if(nbins % 2 > 0):
             nbins += 1
 
-        avg, bins, _ = stats.binned_statistic( self.sampled_bins,
-                                self.sampled_values*1./(self._counts*self._vol),
-                                range=self._range, statistic='mean', bins=nbins)
+        avg, bins, _ = stats.binned_statistic(self.sampled_bins,
+                                              self.sampled_values * 1. /
+                                              (self._counts * self._vol),
+                                              range=self._range,
+                                              statistic='mean', bins=nbins)
         avg[np.isnan(avg)] = 0.0
-        return [bins[0:-1], bins[1:], avg  ]
-
-
+        return [bins[0:-1], bins[1:], avg]
