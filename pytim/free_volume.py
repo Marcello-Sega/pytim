@@ -108,7 +108,8 @@ class FreeVolume(object):
         res, data = self._compute(inp)
         for i in range(nbins):
             condition = np.logical_and(
-                data[:, direction] >= bins[i], data[:, direction] < bins[i + 1])
+                data[:, direction] >= bins[i], 
+                data[:, direction] < bins[i + 1])
             in_slab = np.where(condition)[0]
             n_in_slab = np.sum(condition * 1.0)
             if n_in_slab == 0:
