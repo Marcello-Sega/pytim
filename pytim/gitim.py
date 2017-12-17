@@ -19,22 +19,22 @@ class GITIM(pytim.PYTIM):
 
         *(Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M.  J. Chem. Phys. 138, 044110, 2013)*
 
-        :param Object universe:        the MDAnalysis Universe, MDTraj trajectory\
+        :param Object universe:        The MDAnalysis Universe, MDTraj trajectory\
                                        or OpenMM Simulation objects.
         :param Object group:           An AtomGroup, or an array-like object with\
                                        the indices of the atoms in the group.\
-                                       Will dentify the interfacial molecules from\
+                                       Will identify the interfacial molecules from\
                                        this group
-        :param float alpha:            the probe sphere radius
+        :param float alpha:            The probe sphere radius
         :param str normal:             'x','y,'z' or 'guess'  (for planar interfaces only)
         :param bool molecular:         Switches between search of interfacial\
                                        molecules / atoms (default: True)
-        :param int max_layers:         the number of layers to be identified
-        :param dict radii_dict:        dictionary with the atomic radii of\
+        :param int max_layers:         The number of layers to be identified
+        :param dict radii_dict:        Dictionary with the atomic radii of\
                                        the elements in the group.
                                        If None is supplied, the default one\
                                        (from GROMOS 43a1) will be used.
-        :param float cluster_cut:      cutoff used for neighbors or density-based\
+        :param float cluster_cut:      Cutoff used for neighbors or density-based\
                                        cluster search (default: None disables the\
                                        cluster analysis)
         :param float cluster_threshold_density: Number density threshold for\
@@ -43,14 +43,14 @@ class GITIM(pytim.PYTIM):
                                        Default: None uses simple neighbors cluster\
                                        search, if cluster_cut is not None
         :param Object extra_cluster_groups: Additional groups, to allow for mixed interfaces
-        :param bool biggest_cluster_only: tag as surface atoms/molecules only those\
+        :param bool biggest_cluster_only: Tag as surface atoms/molecules only those\
                                        in the largest cluster. Need to specify also\
                                        a :py:obj:`cluster_cut` value.
-        :param str symmetry:           gives the code a hint about the topology of the\
+        :param str symmetry:           Gives the code a hint about the topology of the\
                                        interface: 'spherical' (default) or  'planar'
-        :param bool centered:          center the  :py:obj:`group`
-        :param bool info:              print additional info
-        :param bool warnings:          print warnings
+        :param bool centered:          Center the  :py:obj:`group`
+        :param bool info:              Print additional info
+        :param bool warnings:          Print warnings
 
         Example:
 

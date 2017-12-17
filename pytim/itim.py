@@ -49,23 +49,23 @@ class ITIM(pytim.PYTIM):
 
         *(Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G.  J. Comp. Chem. 29, 945, 2008)*
 
-        :param Object universe:   the MDAnalysis Universe, MDTraj trajectory\
+        :param Object universe:   The MDAnalysis Universe, MDTraj trajectory\
                                   or OpenMM Simulation objects.
         :param Object group:      An AtomGroup, or an array-like object with\
                                   the indices of the atoms in the group.\
-                                  Will dentify the interfacial molecules from\
+                                  Will identify the interfacial molecules from\
                                   this group
-        :param float alpha:       the probe sphere radius
-        :param str normal:        the macroscopic interface normal direction\
+        :param float alpha:       The probe sphere radius
+        :param str normal:        The macroscopic interface normal direction\
                                   'x','y', 'z' or 'guess' (default)
         :param bool molecular:    Switches between search of interfacial\
                                   molecules / atoms (default: True)
-        :param int max_layers:    the number of layers to be identified
-        :param dict radii_dict:   dictionary with the atomic radii of\
+        :param int max_layers:    The number of layers to be identified
+        :param dict radii_dict:   Dictionary with the atomic radii of\
                                   the elements in the group.
                                   If None is supplied, the default one\
                                   (from GROMOS 43a1) will be used.
-        :param float cluster_cut: cutoff used for neighbors or density-based\
+        :param float cluster_cut: Cutoff used for neighbors or density-based\
                                   cluster search (default: None disables the\
                                   cluster analysis)
         :param float cluster_threshold_density: Number density threshold for\
@@ -74,12 +74,12 @@ class ITIM(pytim.PYTIM):
                                   Default: None uses simple neighbors cluster\
                                   search, if cluster_cut is not None
         :param Object extra_cluster_groups: Additional groups, to allow for mixed interfaces
-        :param bool info:         print additional info
-        :param bool multiproc:    parallel version (default: True. Switch off\
+        :param bool info:         Print additional info
+        :param bool multiproc:    Parallel version (default: True. Switch off\
                                   for debugging)
-        :param bool centered:     center the  :py:obj:`group`
-        :param bool warnings:     print warnings
-        :param float mesh:        the grid spacing used for the testlines (default 0.4 Angstrom)
+        :param bool centered:     Center the  :py:obj:`group`
+        :param bool warnings:     Print warnings
+        :param float mesh:        The grid spacing used for the testlines (default 0.4 Angstrom)
 
         Example:
 
