@@ -30,7 +30,7 @@ def _write_atomgroup(f, group, atomic_numbers):
         try:
             atomic_numbers = [el for el in group.elements]
         except AttributeError:
-            n0 = {'number':0}
+            n0 = {'number': 0}
             atomic_numbers = [
                 utilities.atoms_maps.get(t,n0)['number'] for t in types]
 
