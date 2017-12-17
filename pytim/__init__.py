@@ -11,7 +11,7 @@ from MDAnalysis.topology import tables
 from difflib import get_close_matches
 import importlib
 import __builtin__
-from . import datafiles
+from pytim import datafiles
 from version import __version__
 
 def PatchOpenMM(simulation, interface):
