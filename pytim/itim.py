@@ -45,8 +45,9 @@ class Surface(surface.Surface):
 
 
 class ITIM(pytim.PYTIM):
-    """Identifies interfacial molecules at macroscopically flat interfaces.
-       (Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G.  J. Comp. Chem. 29, 945, 2008)
+    """ Identifies interfacial molecules at macroscopically flat interfaces.
+
+        *(Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G.  J. Comp. Chem. 29, 945, 2008)*
 
         :param Object universe:   the MDAnalysis Universe, MDTraj trajectory\
                                   or OpenMM Simulation objects.

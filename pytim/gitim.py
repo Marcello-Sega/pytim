@@ -15,8 +15,9 @@ except:
     from scipy.spatial import Delaunay
 
 class GITIM(pytim.PYTIM):
-    """Identifies interfacial molecules at macroscopically flat interfaces.
-       (Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M.  J. Chem. Phys. 138, 044110, 2013)
+    """ Identifies interfacial molecules at curved interfaces.
+
+        *(Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M.  J. Chem. Phys. 138, 044110, 2013)*
 
         :param Object universe:        the MDAnalysis Universe, MDTraj trajectory\
                                        or OpenMM Simulation objects.
@@ -46,10 +47,10 @@ class GITIM(pytim.PYTIM):
                                        in the largest cluster. Need to specify also\
                                        a :py:obj:`cluster_cut` value.
         :param str symmetry:           gives the code a hint about the topology of the\
-                                       interface: 'spherical' (default) or  'planar' 
+                                       interface: 'spherical' (default) or  'planar'
         :param bool centered:          center the  :py:obj:`group`
         :param bool info:              print additional info
-        :param bool warnings:          print warnings 
+        :param bool warnings:          print warnings
 
         Example:
 
@@ -85,8 +86,6 @@ class GITIM(pytim.PYTIM):
         >>> interface.writepdb('glucose_shells.pdb')
         >>> print repr(interface.layers[0]),repr(interface.layers[1])
         <AtomGroup with 54 atoms> <AtomGroup with 117 atoms>
-
-
 
     """
 
@@ -300,7 +299,7 @@ class GITIM(pytim.PYTIM):
     def layers(self):
         """Access the layers as numpy arrays of AtomGroups.
 
-        The object can be sliced as usual with numpy arrays. Differently from ITIM, 
+        The object can be sliced as usual with numpy arrays. Differently from ITIM,
         there are no sides. Example:
 
         >>> import MDAnalysis as mda

@@ -42,36 +42,37 @@ class Surface(surface.Surface):
 
 
 class ChaconTarazona(pytim.PYTIM):
-    """Identifies the dividing surface using the Chacon-Tarazona method
-       (Chacón, E.; Tarazona, P. Phys. Rev. Lett. 91, 166103,2003)
-       (Tarazona, P.; Chacón, E. Phys. Rev. B 70, 235407,2004)
+    """ Identifies the dividing surface using the Chacon-Tarazona method
 
-    :param Universe universe: the MDAnalysis universe
-    :param float alpha:       molecular scale cutoff
-    :param float tau:         particles within this distance form the\
-                              surface will be added durin the\
-                              self-consistent procedure.
-    :param bool molecular:    Switches between search of interfacial\
-                              molecules / atoms (default: True)
-    :param AtomGroup group:   compute the density using this group
-    :param dict radii_dict:   dictionary with the atomic radii of the\
-                              elements in the group. If None is\
-                              supplied, the default one (from MDAnalysis)\
-                              will be used.
+        *(Chacón, E.; Tarazona, P. Phys. Rev. Lett. 91, 166103, 2003)*
+        *(Tarazona, P.; Chacón, E. Phys. Rev. B 70, 235407, 2004)*
 
-    Example:
+        :param Universe universe: the MDAnalysis universe
+        :param float alpha:       molecular scale cutoff
+        :param float tau:         particles within this distance form the\
+                                  surface will be added during the\
+                                  self-consistent procedure.
+        :param bool molecular:    Switches between search of interfacial\
+                                  molecules / atoms (default: True)
+        :param AtomGroup group:   compute the density using this group
+        :param dict radii_dict:   dictionary with the atomic radii of the\
+                                  elements in the group. If None is\
+                                  supplied, the default one (from MDAnalysis)\
+                                  will be used.
 
-    >>> import MDAnalysis as mda
-    >>> import numpy as np
-    >>> import pytim
-    >>> from pytim.datafiles import WATER_GRO
-    >>> u = mda.Universe(WATER_GRO)
-    >>> g = u.select_atoms('name OW')
-    >>> interface = pytim.ChaconTarazona(u,alpha=2.,tau=1.5,group=g,info=False,molecular=False)
-    >>> interface.writepdb('CT.pdb',centered=True)
-    >>> print repr(interface.layers)
-    array([[<AtomGroup with 175 atoms>],
-           [<AtomGroup with 159 atoms>]], dtype=object)
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import numpy as np
+        >>> import pytim
+        >>> from pytim.datafiles import WATER_GRO
+        >>> u = mda.Universe(WATER_GRO)
+        >>> g = u.select_atoms('name OW')
+        >>> interface = pytim.ChaconTarazona(u,alpha=2.,tau=1.5,group=g,info=False,molecular=False)
+        >>> interface.writepdb('CT.pdb',centered=True)
+        >>> print repr(interface.layers)
+        array([[<AtomGroup with 175 atoms>],
+               [<AtomGroup with 159 atoms>]], dtype=object)
 
     """
     _surface = None
