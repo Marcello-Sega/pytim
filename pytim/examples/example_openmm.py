@@ -1,16 +1,16 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 """ 
-	This example shows how to use pytim classes online during
-	a simulation performed with openmm (http://mdtraj.org/)
+    This example shows how to use pytim classes online during
+    a simulation performed with openmm (http://mdtraj.org/)
 
-	(see also the mdtraj interoperability)
+    (see also the mdtraj interoperability)
 """
-# openmm imports 
+# openmm imports
 from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
-# pytim 
+# pytim
 import pytim
 from pytim.datafiles import WATER_PDB
 
@@ -18,8 +18,9 @@ from pytim.datafiles import WATER_PDB
 pdb = PDBFile(WATER_PDB)
 forcefield = ForceField('amber99sb.xml', 'spce.xml')
 system = forcefield.createSystem(pdb.topology, nonbondedMethod=PME,
-        nonbondedCutoff=1*nanometer)
-integrator = LangevinIntegrator(300*kelvin, 1/picosecond, 0.002*picoseconds)
+                                 nonbondedCutoff=1 * nanometer)
+integrator = LangevinIntegrator(
+    300 * kelvin, 1 / picosecond, 0.002 * picoseconds)
 simulation = Simulation(pdb.topology, system, integrator)
 simulation.context.setPositions(pdb.positions)
 
@@ -31,5 +32,3 @@ print repr(inter.atoms)
 # of the integration cycle
 simulation.step(10)
 print repr(inter.atoms)
-
-

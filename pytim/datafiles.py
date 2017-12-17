@@ -79,7 +79,7 @@ __all__ = [
     "CHARMM27_TOP",          # CHARM27 nonbonded parameters, from the gromacs distribution
     "pytim_data",            # class to access the data
     "_TEST_BCC_GRO",         # test file
-    "_TEST_ORIENTATION_GRO", # test file
+    "_TEST_ORIENTATION_GRO",  # test file
     "_TEST_PROFILE_GRO",     # test file
 ]
 
@@ -90,7 +90,6 @@ import os.path
 import re as re
 import urllib
 import hashlib
-import tempfile
 
 
 class Data(object):
@@ -195,16 +194,18 @@ class Data(object):
                         return radii
                     if (scan):
                         try:
-                            if re.match(';.*name.*c6 *c12',line):
+                            if re.match(';.*name.*c6 *c12', line):
                                 input_type = 'c6c12'
                             data = (line.split(";")[0]).split()
-                            atom , sigma, epsilon = str(data[0]) ,float(data[5]) ,float(data[6])
+                            atom, sigma, epsilon = str(data[0]), float(
+                                data[5]), float(data[6])
                             if input_type == 'c6c12':
-                                c6 , c12 = sigma, epsilon 
+                                c6, c12 = sigma, epsilon
                                 if (c6 == 0.0 or c12 == 0.0):
                                     sigma = 0.0
                                 else:
-                                    sigma = (c12 / c6)**(1. / 6.) * self.nm2angs
+                                    sigma = (c12 / c6)**(1. / 6.) * \
+                                        self.nm2angs
                             else:
                                 sigma *= self.nm2angs
 
@@ -243,7 +244,7 @@ pytim_data.add('MICELLE_PDB',  'config', 'GRO', 'DPC micelle')
 FULLERENE_PDB = resource_filename('pytim', 'data/fullerene.pdb')
 pytim_data.add('FULLERENE_PDB',  'config', 'PDB', 'fullerene')
 
-GLUCOSE_PDB   = resource_filename('pytim', 'data/glucose.pdb')
+GLUCOSE_PDB = resource_filename('pytim', 'data/glucose.pdb')
 pytim_data.add('GLUCOSE_PDB',  'config', 'PDB', 'solvated beta-d-glucose')
 
 WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
@@ -268,7 +269,7 @@ WATER_XTC = resource_filename('pytim', 'data/water.xtc')
 pytim_data.add('WATER_XTC',  'traj', 'XTC',
                'SPC water/vapour interface trajectory')
 
-_TEST_BCC_GRO= resource_filename(
+_TEST_BCC_GRO = resource_filename(
     'pytim', 'data/_test_bcc.gro')
 pytim_data.add('_TEST_BCC_GRO',  'config', 'GRO', 'test file')
 
@@ -290,7 +291,8 @@ AMBER03_TOP = resource_filename('pytim', 'data/ffamber03.nonbonded.itp')
 pytim_data.add('AMBER03_TOP', 'topol', 'GMX', 'AMBER 03 topology for GROMACS')
 
 CHARMM27_TOP = resource_filename('pytim', 'data/ffcharmm27.nonbonded.itp')
-pytim_data.add('CHARMM27_TOP', 'topol', 'GMX', 'CHARMM 27 topology for GROMACS')
+pytim_data.add('CHARMM27_TOP', 'topol', 'GMX',
+               'CHARMM 27 topology for GROMACS')
 
 
 # This should be the last line: clean up namespace

@@ -21,7 +21,7 @@ rdf = observables.RDF2D(u, max_radius='full', nbins=120)
 interface = pytim.ITIM(u, alpha=2., group=oxygens,
                        max_layers=4, radii_dict=radii, cluster_cut=3.5)
 
-for ts in u.trajectory[::sampling_frequency]: 
+for ts in u.trajectory[::sampling_frequency]:
     print ("frame " + str(ts.frame) + " / " + str(len(u.trajectory)))
     layer = interface.layers[0, 0]
     rdf.sample(layer, layer)
