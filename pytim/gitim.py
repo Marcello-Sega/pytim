@@ -307,7 +307,7 @@ class GITIM(pytim.PYTIM):
     def layers(self):
         """Access the layers as numpy arrays of AtomGroups.
 
-        The object can be sliced as usual with numpy arrays. 
+        The object can be sliced as usual with numpy arrays.
         Differently from ITIM, there are no sides. Example:
 
         >>> import MDAnalysis as mda
