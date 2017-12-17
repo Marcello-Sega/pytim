@@ -30,8 +30,9 @@ def _write_atomgroup(f, group, atomic_numbers):
         try:
             atomic_numbers = [el for el in group.elements]
         except AttributeError:
+            n0 = {'number':0}
             atomic_numbers = [
-                utilities.atoms_maps.get(t, {'number': 0})['number'] for t in types]
+                utilities.atoms_maps.get(t,n0)['number'] for t in types]
 
     for i, p in enumerate(group.positions):
         f.write(_format_atom(p / Bohr, atomic_numbers[i]))
