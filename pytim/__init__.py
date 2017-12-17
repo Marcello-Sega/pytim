@@ -305,10 +305,10 @@ class SanityCheck(object):
                 types = MDAnalysis.topology.guessers.guess_types(group.names)
                 # is there an inconsistency in the way 'element' is defined
                 # different modules in MDA?
-
+                n0 = {'number':0} 
                 # Note: the second arg in .get() is the default.
                 group.elements = np.array(
-                    [utilities.atoms_maps.get(t, {'number': 0})['number'] for t in types])
+                    [utilities.atoms_maps.get(t, n0)['number'] for t in types])
             if name == 'radii':
                 self.guess_radii()
 
