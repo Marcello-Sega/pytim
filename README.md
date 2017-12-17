@@ -43,7 +43,6 @@ PyPi:     ``` pip install --user --upgrade pytim ```
 Anaconda: ``` conda install -c conda-forge pytim ```
 
 
-
 # <a name="example"></a> Show me an example usage, now!
 
 Ok, ok ... have a look below: this example is about computing molecular layers of a flat interface:
