@@ -11,7 +11,7 @@ from sys import stderr
 
 try:  # MDA >=0.16
     from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
-except BaseException:
+except ImportError:
     from MDAnalysis.core.AtomGroup import Atom, AtomGroup, Residue,\
         ResidueGroup
 

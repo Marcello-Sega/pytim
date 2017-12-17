@@ -11,7 +11,7 @@ from pytim import utilities
 import pytim
 try:
     from pytetgen import Delaunay
-except:
+except ImportError:
     from scipy.spatial import Delaunay
 
 class GITIM(pytim.PYTIM):

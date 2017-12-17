@@ -28,7 +28,7 @@ class Surface(object):
         self.options = options
         try:
             self._layer = options['layer']
-        except:
+        except (TypeError,KeyError) as err :
             self._layer = 0
 
     # see the implemenation in each of the modules (itim.py, gitim.py,... ) for all @abstractproperties
