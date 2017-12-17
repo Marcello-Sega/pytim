@@ -493,12 +493,14 @@ class SanityCheck(object):
         self.interface.alpha = alpha
         return True
 
-    def wrap_group(self, obj):
-        if obj is None:
+    def wrap_group(self, inp):
+        if inp is None:
             return None
-        if self.interface._mode == 'mdtraj' or self.interface._mode == 'openmm':
-            return self.interface.universe.atoms[obj] 
-        return obj
+        if isinstance(inp,int):
+            return self.interface.universe.atoms[inp:inp+1]
+        if isinstance(inp,list) or isinstance(inp,np.ndarray):
+            return self.interface.universe.atoms[inp]
+        return inp
 
     def assign_groups(self, itim_group, cluster_cut, extra_cluster_groups):
         elements = 0
