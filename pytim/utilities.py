@@ -17,6 +17,8 @@ from pytim.gaussian_kde_pbc import gaussian_kde_pbc
 from pytim.utilities_dbscan import do_cluster_analysis_DBSCAN
 
 from atoms_maps import atoms_maps
+from pytim.utilities_mesh import compute_compatible_mesh_params
+from pytim.utilities_mesh import generate_grid_in_box
 
 
 def lap(show=False):
@@ -147,10 +149,6 @@ def get_y(group, normal=2):
 
 def get_z(group, normal=2):
     return get_coord(2, group=group, normal=normal)
-
-
-from pytim.utilities_mesh import compute_compatible_mesh_params, generate_grid_in_box
-
 
 def centerbox(universe, x=None, y=None, z=None, vector=None,
               center_direction=2, halfbox_shift=True):
