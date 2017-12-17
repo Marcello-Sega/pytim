@@ -3,6 +3,11 @@
 """A python based tool for interfacial molecules analysis
 """
 
+# To use a consistent encoding
+import codecs
+import os
+import sys
+
 # Always prefer setuptools over distutils
 try:
     from setuptools import find_packages
@@ -10,10 +15,6 @@ except ImportError:
     sys.stderr.write("Error : setuptools is not installed\n"
                      "Use pip install setuptools\n")
     exit(100)
-# To use a consistent encoding
-import codecs
-import os
-import sys
 
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
