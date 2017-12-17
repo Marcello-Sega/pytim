@@ -69,8 +69,8 @@ class GITIM(pytim.PYTIM):
         <AtomGroup with 793 atoms>
 
 
-        Successive layers can be identified with GITIM as well. 
-        In this example we identify two solvation shells of glucose
+        Successive layers can be identified with GITIM as well.
+        In this example we identify two solvation shells of glucose:
 
 
         >>> import MDAnalysis as mda
