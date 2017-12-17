@@ -345,7 +345,7 @@ class RDF2D(RDF):
         if excluded_dir == 'auto':
             try:
                 self.excluded_dir = self.universe.interface.normal
-            except:
+            except AttributeError:
                 self.excluded_dir = 2
         else:
             self.excluded_dir = _dir[excluded_dir]
@@ -562,8 +562,8 @@ class Charge(Observable):
         """
         try:
             return inp.charges
-        except:
-            raise AttributeError("Error, the passed Atomgroup has no charges attribute")
+        except AttributeError:
+            print "Error, the passed Atomgroup has no charges attribute"
 
 
 class NumberOfResidues(Observable):

@@ -29,7 +29,7 @@ def _write_atomgroup(f, group, atomic_numbers):
     if atomic_numbers is None:
         try:
             atomic_numbers = [el for el in group.elements]
-        except:
+        except AttributeError:
             atomic_numbers = [
                 utilities.atomic_number_map.get(t, 0) for t in types]
 

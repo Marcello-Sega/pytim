@@ -24,7 +24,7 @@ def PatchOpenMM(simulation, interface):
     from simtk.unit import angstrom as openmm_AA
     try:
         simulation.interface
-    except:
+    except AttributeError:
         simulation.interface = interface 
         simulation.original_step = simulation.step
 
@@ -52,7 +52,7 @@ def PatchMDTRAJ(trajectory, universe):
     """
     try:
         trajectory.universe
-    except:
+    except AttributeError:
         trajectory.universe = universe
 
         class PatchedMdtrajTrajectory(trajectory.__class__):
@@ -106,7 +106,7 @@ def PatchTrajectory(trajectory, interface):
     """
     try:
         trajectory.interface
-    except:
+    except AttributeError:
         trajectory.interface = interface
         trajectory.original_read_next_timestep = trajectory._read_next_timestep
 
@@ -186,7 +186,7 @@ class SanityCheck(object):
                 print "guessed radii: ", self.guessed_radii,
                 print "You can override this by using, e.g.: pytim." + self.interface.__class__.__name__,
                 print "(u,radii_dict={ '" + self.guessed_radii.keys()[0] + "':1.2 , ... } )"
-        except:
+        except BaseException:
             pass
 
     def assign_mesh(self, mesh):
@@ -326,7 +326,7 @@ class SanityCheck(object):
         guessed = {}
         try:
             self.guessed_radii.update({})
-        except:
+        except AttributeError:
             self.guessed_radii = {}
 
         universe = self.interface.universe
@@ -351,9 +351,11 @@ class SanityCheck(object):
             try:
                 # When atom types are str(ints), e.g. lammps ,
                 # we cannot use them to guess radii
+
+                # trying to convert strings to integers:
                 group.types.astype(int)
                 have_types = False
-            except:
+            except ValueError:
                 pass
 
         # We give precedence to atom names, then to types
@@ -736,7 +738,7 @@ class PYTIM(object):
                     # original_positions are (must) always be defined
                     self.universe.atoms.positions = self.original_positions
                 except:
-                    raise NameError
+                    raise AttributeError
         try:
             # it exists already, let's add information about the box, as
             # MDAnalysis forgets to do so for successive frames. A bugfix
