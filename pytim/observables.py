@@ -20,6 +20,7 @@ from pytim import utilities
 
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
+
 class Observable(object):
     """ Instantiate an observable.
 
@@ -83,6 +84,7 @@ class Observable(object):
     @abstractmethod
     def compute(self, inp, kargs={}):
         pass
+
 
 class LayerTriangulation(Observable):
     """ Computes the triangulation of the surface and some associated
@@ -219,14 +221,14 @@ class Mass(Observable):
         """ No need to pass a universe for this observable. We accept
             extra arguments not to fail if they are passed anyway by mistake.
 
-	    >>> import pytim
-	    >>> import MDAnalysis as mda
-	    >>> from pytim.datafiles import WATERSMALL_GRO
-	    >>> from pytim.observables import Mass
-	    >>> u = mda.Universe(WATERSMALL_GRO)
-	    >>> obs = Mass()
-	    >>> print obs.compute(u.atoms)[0]
-	    15.999
+            >>> import pytim
+            >>> import MDAnalysis as mda
+            >>> from pytim.datafiles import WATERSMALL_GRO
+            >>> from pytim.observables import Mass
+            >>> u = mda.Universe(WATERSMALL_GRO)
+            >>> obs = Mass()
+            >>> print obs.compute(u.atoms)[0]
+            15.999
 
         """
         Observable.__init__(self, None)
@@ -401,8 +403,6 @@ class Orientation(Observable):
             v = np.array(a + b)
         v = np.array([el / np.sqrt(np.dot(el, el)) for el in v])
         return v
-
-
 
 
 from profile import Profile

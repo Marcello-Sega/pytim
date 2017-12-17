@@ -6,7 +6,7 @@ import pytim
 from pytim import observables
 from pytim.datafiles import *
 
-use_matplotlib  = False
+use_matplotlib = False
 
 interface = pytim.ITIM(mda.Universe(WATER_GRO))
 box = interface.universe.dimensions[:3]
@@ -21,7 +21,7 @@ stats, tri, points, trim = surface.compute()
 
 
 msg = 'The total triangulated surface has an area of {:04.1f} Angstrom^2'
-print(msg.format( stats[0]))
+print(msg.format(stats[0]))
 
 if use_matplotlib == False:
     print "set use_matplotlib = True to display the triangulated surface"
