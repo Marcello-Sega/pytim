@@ -43,7 +43,7 @@ def do_cluster_analysis_DBSCAN(
     if len(neighborhoods.shape) != 1:
         raise ValueError("Error in do_cluster_analysis_DBSCAN(), the cutoff\
                           is probably too small")
-    if molecular == False:
+    if molecular is False:
         n_neighbors = np.array([len(neighbors)
                                 for neighbors in neighborhoods])
     else:
