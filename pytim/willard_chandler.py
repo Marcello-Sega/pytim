@@ -16,20 +16,20 @@ class WillardChandler(pytim.PYTIM):
 
         *(Willard, A. P.; Chandler, D. J. Phys. Chem. B 2010, 114, 1954–1958)*
 
-        :param Object universe:   the MDAnalysis Universe, MDTraj trajectory\
+        :param Object universe:   The MDAnalysis Universe, MDTraj trajectory\
                                   or OpenMM Simulation objects.
         :param Object group:      An AtomGroup, or an array-like object with\
                                   the indices of the atoms in the group.\
-                                  Will dentify the interfacial molecules from\
+                                  Will identify the interfacial molecules from\
                                   this group
-        :param float alpha:       the width of the Gaussian kernel
-        :param float mesh:        the grid spacing for the density calculation
-        :param AtomGroup group:   compute the density using this group
-        :param dict radii_dict:   dictionary with the atomic radii of\
+        :param float alpha:       The width of the Gaussian kernel
+        :param float mesh:        The grid spacing for the density calculation
+        :param AtomGroup group:   Compute the density using this group
+        :param dict radii_dict:   Dictionary with the atomic radii of\
                                   the elements in the group.
                                   If None is supplied, the default one\
                                   (from GROMOS 43a1) will be used.
-        :param float cluster_cut: cutoff used for neighbors or density-based\
+        :param float cluster_cut: Cutoff used for neighbors or density-based\
                                   cluster search (default: None disables the\
                                   cluster analysis)
         :param float cluster_threshold_density: Number density threshold for\
@@ -38,9 +38,9 @@ class WillardChandler(pytim.PYTIM):
                                   Default: None uses simple neighbors cluster\
                                   search, if cluster_cut is not None
         :param Object extra_cluster_groups: Additional groups, to allow for mixed interfaces
-        :param bool centered:     center the  :py:obj:`group`
-        :param bool warnings:     print warnings
-        :param bool fast:         use a faster version with truncated Gaussians (default: True)
+        :param bool centered:     Center the  :py:obj:`group`
+        :param bool warnings:     Print warnings
+        :param bool fast:         Use a faster version with truncated Gaussians (default: True)
 
 
         Example:

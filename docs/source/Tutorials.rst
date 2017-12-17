@@ -1,3 +1,5 @@
+:orphan:
+
 *********
 Tutorials
 *********
@@ -7,7 +9,6 @@ Tutorials
     :name: Tutorials
 
     quick
-    trajectories
     micelle
     guessing_radii
 

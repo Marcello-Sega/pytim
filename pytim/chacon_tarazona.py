@@ -47,15 +47,15 @@ class ChaconTarazona(pytim.PYTIM):
         *(Chacón, E.; Tarazona, P. Phys. Rev. Lett. 91, 166103, 2003)*
         *(Tarazona, P.; Chacón, E. Phys. Rev. B 70, 235407, 2004)*
 
-        :param Universe universe: the MDAnalysis universe
-        :param float alpha:       molecular scale cutoff
-        :param float tau:         particles within this distance form the\
+        :param Universe universe: The MDAnalysis universe
+        :param float alpha:       Molecular scale cutoff
+        :param float tau:         Particles within this distance form the\
                                   surface will be added during the\
                                   self-consistent procedure.
         :param bool molecular:    Switches between search of interfacial\
                                   molecules / atoms (default: True)
-        :param AtomGroup group:   compute the density using this group
-        :param dict radii_dict:   dictionary with the atomic radii of the\
+        :param AtomGroup group:   Compute the density using this group
+        :param dict radii_dict:   Dictionary with the atomic radii of the\
                                   elements in the group. If None is\
                                   supplied, the default one (from MDAnalysis)\
                                   will be used.
