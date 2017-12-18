@@ -40,20 +40,24 @@ class SanityCheck(object):
             self.interface.guessed_radii.update({nantype: avg})
         total.radii = radii
         try:
-            if self.interface.guessed_radii != {} and self.interface.warnings == True:
+            if self.interface.guessed_radii != {} and self.interface.warnings:
                 print "guessed radii: ", self.interface.guessed_radii,
-                print "You can override this by using, e.g.: pytim." + self.interface.__class__.__name__,
-                print "(u,radii_dict={ '" + self.interface.guessed_radii.keys()[0] + "':1.2 , ... } )"
+                print "You can override this by using, e.g.: pytim.",
+                print self.interface.__class__.__name__,
+                print "(u,radii_dict={ '"
+                print self.interface.guessed_radii.keys()[0] + "':1.2, ... } )"
         except BaseException:
             pass
 
     def assign_mesh(self, mesh):
-        self.interface.target_mesh = mesh
-        if not isinstance(self.interface.target_mesh, (int, float)):
+        interface = self.interface
+        box = interface.universe.dimensions[:3]
+        interface.target_mesh = mesh
+        if not isinstance(interface.target_mesh, (int, float)):
             raise TypeError(messages.MESH_NAN)
-        if self.interface.target_mesh <= 0:
+        if interface.target_mesh <= 0:
             raise ValueError(messages.MESH_NEGATIVE)
-        if self.interface.target_mesh >= np.amin(self.interface.universe.dimensions[:3]) / 2.:
+        if interface.target_mesh >= np.amin(box) / 2.:
             raise ValueError(messages.MESH_LARGE)
 
         try:
@@ -67,18 +71,19 @@ class SanityCheck(object):
             raise ValueError
 
     def assign_normal(self, normal):
-        if not (self.interface.symmetry == 'planar'):
+        interface = self.interface
+        if not (interface.symmetry == 'planar'):
             raise ValueError(" wrong symmetry for normal assignement")
-        if self.interface.itim_group is None:
+        if interface.itim_group is None:
             raise TypeError(messages.UNDEFINED_ITIM_GROUP)
         if normal == 'guess':
-            self.interface.normal = utilities.guess_normal(self.interface.universe,
-                                                           self.interface.itim_group)
+            interface.normal = utilities.guess_normal(interface.universe,
+                                                         interface.itim_group)
         else:
             dirdict = {'x': 0, 'y': 1, 'z': 2}
-            if not (normal in self.interface.directions_dict):
+            if not (normal in interface.directions_dict):
                 raise ValueError(messages.WRONG_DIRECTION)
-            self.interface.normal = dirdict[self.interface.directions_dict[normal]]
+            interface.normal = dirdict[interface.directions_dict[normal]]
 
     def _define_groups(self):
         # we first make sure cluster_cut is either None, or an array
@@ -132,7 +137,8 @@ class SanityCheck(object):
                 _file = tempfile.NamedTemporaryFile(
                     mode='w', suffix='.pdb', delete=False)
                 top = input_obj.topology
-                pos = input_obj.context.getState(getPositions=True).getPositions(
+                context = input_obj.context
+                pos = context.getState(getPositions=True).getPositions(
                     asNumpy=True).value_in_unit(openmm_AA)
                 pdbfile.PDBFile.writeFile(
                     topology=top, positions=pos, file=_file)
@@ -217,8 +223,11 @@ class SanityCheck(object):
 
     def check_multiple_layers_options(self):
         try:
-            if self.interface.biggest_cluster_only == True and self.interface.cluster_cut == None:
+            interface = self.interface
+            biggest_cluster_only = interface.interface.biggest_cluster_only
+            if biggest_cluster_only is True and interface.cluster_cut is None:
                 self.interface.biggest_cluster_only = False
-                print "Warning: the option biggest_cluster_only has no effect without setting cluster_cut, ignoring it"
+                print "Warning: the option biggest_cluster_only has no effect",
+                print "without setting cluster_cut, ignoring it"
         except:
             pass
