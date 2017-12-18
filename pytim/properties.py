@@ -53,23 +53,23 @@ def _missing_attributes(interface, universe):
     )
     guessers = MDAnalysis.topology.guessers
     _check_missing_attribute(interface, 'names', 'Atomnames', universe.atoms,
-                             universe.atoms.ids.astype(str), universe)
+                             universe.atoms.ids.astype(str))
     # NOTE _check_missing_attribute() relies on radii being set to np.nan
     # if the attribute radii is not present
     _check_missing_attribute(interface, 'radii', 'Radii', universe.atoms,
                              np.nan, universe)
     _check_missing_attribute(interface, 'tempfactors', 'Tempfactors',
-                             universe.atoms, 0.0, universe)
+                             universe.atoms, 0.0)
     _check_missing_attribute(interface, 'bfactors', 'Bfactors',
-                             universe.atoms, 0.0, universe)
+                             universe.atoms, 0.0)
     _check_missing_attribute(interface, 'altLocs', 'AltLocs',
-                             universe.atoms, ' ', universe)
+                             universe.atoms, ' ')
     _check_missing_attribute(interface, 'icodes', 'ICodes',
-                             universe.residues, ' ', universe)
+                             universe.residues, ' ')
     _check_missing_attribute(interface, 'occupancies', 'Occupancies',
-                             universe.atoms, 1, universe)
+                             universe.atoms, 1)
     _check_missing_attribute(interface, 'elements', 'Elements',
-                             universe.atoms, 1, universe)
+                             universe.atoms, 1)
     # we add here the new layer, cluster and side information
     # they are not part of MDAnalysis.core.topologyattrs
     if 'layers' not in dir(universe.atoms):
@@ -85,7 +85,7 @@ def _missing_attributes(interface, universe):
         universe.add_TopologyAttr(Sides(sides))
 
 
-def _check_missing_attribute(interface, name, classname, group, value, universe):
+def _check_missing_attribute(interface, name, classname, group, value):
     """ Add an attribute, which is necessary for pytim but
         missing from the present topology.
 
@@ -100,6 +100,7 @@ def _check_missing_attribute(interface, name, classname, group, value, universe)
          * Radii -> missing_class
          * radii -> values
     """
+    universe = interface.universe
     if name not in dir(universe.atoms):
         missing_class = getattr(interface._topologyattrs, classname)
         if isinstance(value, np.ndarray) or isinstance(value, list):
@@ -221,13 +222,13 @@ def guess_radii(interface, group=None):
             atype, mass = min(d.items(), key=lambda (
                 _, entry): abs(entry['mass'] - target_mass))
             try:
-                matching_type = get_close_matches(
+                match_type = get_close_matches(
                     atype, interface.radii_dict.keys(), n=1, cutoff=0.1
                 )
+                rd = interface.radii_dict
+                radii[masses == target_mass] = rd[match_type[0]]
 
-                radii[masses == target_mass] = interface.radii_dict[matching_type[0]]
-
-                [guessed.update({t: interface.radii_dict[matching_type[0]]})
+                [guessed.update({t: rd[match_type[0]]})
                  for t in types[masses == target_mass]]
             except:
                 pass
