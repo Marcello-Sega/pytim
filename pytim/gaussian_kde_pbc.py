@@ -11,21 +11,10 @@ class gaussian_kde_pbc(gaussian_kde):
     # note that here "points" are those on the grid
 
     def search(self, p, grid, d):
-        condition_x = np.logical_and(
-            grid[0] > p[0] - d,
-            grid[0] < p[0] + d
-        )
-
-        condition_y = np.logical_and(
-            grid[1] > p[1] - d,
-            grid[1] < p[1] + d
-        )
-        condition_z = np.logical_and(
-            grid[2] > p[2] - d,
-            grid[2] < p[2] + d
-        )
-        condition = np.logical_and(
-            condition_z, np.logical_and(condition_x, condition_y))
+        cond = []
+        for n in [0, 1, 2]:
+            cond.append(np.logical_and(grid[n] > p[n] - d, grid[n] < p[n] + d))
+        condition = np.logical_and(cond[2], np.logical_and(cond[0], cond[1]))
         return np.where(condition)
 
     def evaluate_pbc_fast(self, points):
