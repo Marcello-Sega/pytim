@@ -40,7 +40,7 @@ class SanityCheck(object):
             self.interface.guessed_radii.update({nantype: avg})
         total.radii = radii
         try:
-            if self.interface.guessed_radii != {} and self.interface.warnings:
+            if self.interface.guessed_radii and self.interface.warnings:
                 print "guessed radii: ", self.interface.guessed_radii,
                 print "You can override this by using, e.g.: pytim.",
                 print self.interface.__class__.__name__,
@@ -223,11 +223,10 @@ class SanityCheck(object):
 
     def check_multiple_layers_options(self):
         try:
-            interface = self.interface
-            biggest_cluster_only = interface.interface.biggest_cluster_only
-            if biggest_cluster_only is True and interface.cluster_cut is None:
-                self.interface.biggest_cluster_only = False
-                print "Warning: the option biggest_cluster_only has no effect",
-                print "without setting cluster_cut, ignoring it"
+            if self.interface.biggest_cluster_only is True:
+                if self.interface.cluster_cut is None:
+                    self.interface.biggest_cluster_only = False
+                    print "Warning: the option biggest_cluster_only has no",
+                    print "effect without setting cluster_cut, ignoring it"
         except:
             pass
