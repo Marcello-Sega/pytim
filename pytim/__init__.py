@@ -2,7 +2,6 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 
 from abc import ABCMeta, abstractmethod, abstractproperty
-from distutils.version import LooseVersion
 import numpy as np
 from scipy.interpolate import LinearNDInterpolator
 import MDAnalysis
@@ -15,6 +14,7 @@ from pytim.patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 from pytim.properties import Layers,Clusters,Sides,_create_property
 from pytim.sanity_check import SanityCheck
 from . import messages
+from pytim.pdb import _writepdb
 
 class PYTIM(object):
     """ The PYTIM metaclass
@@ -115,70 +115,6 @@ class PYTIM(object):
             if not (symmetry in self.symmetry_dict):
                 raise ValueError(messages.WRONG_DIRECTION)
             self.symmetry = symmetry
-
-    def writepdb(self, filename='layers.pdb', centered='no', group='all', multiframe=True):
-        """ Write the frame to a pdb file, marking the atoms belonging
-            to the layers with different beta factor.
-
-            :param filename:   string  -- the output file name
-            :param centered:   string  -- 'origin', 'middle', or 'no'
-            :param group:      AtomGroup -- if 'all' is passed, the universe is used
-            :param multiframe: boolean -- append to pdb file if True
-
-            Example: save the positions (centering the interface in the cell) without appending
-
-            >>> import pytim
-            >>> import MDAnalysis as mda
-            >>> from pytim.datafiles import WATER_GRO
-            >>> u = mda.Universe(WATER_GRO)
-            >>> interface = pytim.ITIM(u)
-            >>> interface.writepdb('layers.pdb',multiframe=False)
-
-            Example: save the positions without centering the interface. This will
-                     not shift the atoms from the original position (still, they will
-                     be put into the basic cell).
-                     The :multiframe: option set to :False: will overwrite the file.
-
-            >>> interface.writepdb('layers.pdb',centered='no')
-
-        """
-        if isinstance(group, self.universe.atoms.__class__):
-            self.group = group
-        else:
-            self.group = self.universe.atoms
-
-        temp_pos = np.copy(self.universe.atoms.positions)
-        options = {'no': False, False: False, 'middle': True, True: True}
-
-        if options[centered] != self.do_center:
-            # i.e. we don't have already what we want ...
-            if self.do_center == False:  # we need to center
-                self.center(planar_to_origin=True)
-            else:  # we need to put back the original positions
-                try:
-                    # original_positions are (must) always be defined
-                    self.universe.atoms.positions = self.original_positions
-                except:
-                    raise AttributeError
-        try:
-            # it exists already, let's add information about the box, as
-            # MDAnalysis forgets to do so for successive frames. A bugfix
-            # should be on the way for the next version...
-            self.PDB[filename].CRYST1(
-                self.PDB[filename].convert_dimensions_to_unitcell(self.universe.trajectory.ts))
-        except:
-            if LooseVersion(self._MDAversion) >= LooseVersion('0.16'):
-                bondvalue = None
-            else:
-                bondvalue = False
-            self.PDB[filename] = MDAnalysis.Writer(
-                filename, multiframe=multiframe,
-                n_atoms=self.group.atoms.n_atoms,
-                bonds=bondvalue
-            )
-        self.PDB[filename].write(self.group.atoms)
-        self.PDB[filename].pdbfile.flush()
-        self.universe.atoms.positions = np.copy(temp_pos)
 
     def _define_cluster_group(self):
         if(self.cluster_cut is not None):
@@ -322,6 +258,8 @@ class PYTIM(object):
             self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
             self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
+    def writepdb(self, filename='layers.pdb', centered='no', group='all', multiframe=True):
+        _writepdb(self,filename=filename,centered=centered,group=group,multiframe=multiframe)
 
 from pytim.itim import ITIM
 from pytim.gitim import GITIM

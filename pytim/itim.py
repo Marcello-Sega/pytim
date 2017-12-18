@@ -308,29 +308,6 @@ dtype=object)
         else:
             queue.put(_layers)
 
-    def _sanity_checks(self):
-        """ Basic checks to be performed after the initialization.
-
-            We test them also here in the docstring:
-
-            >>> import pytim
-            >>> import pytest
-            >>> import MDAnalysis as mda
-            >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
-            >>>
-            >>> with pytest.raises(Exception):
-            ...     pytim.ITIM(u,alpha=-1.0)
-
-            >>> with pytest.raises(Exception):
-            ...     pytim.ITIM(u,alpha=1000000)
-
-            >>> pytim.ITIM(u,mesh=-1)
-            Traceback (most recent call last):
-            ...
-            ValueError: parameter mesh must be positive
-
-        """
-
     def _assign_layers(self):
         """ Determine the ITIM layers.
 
