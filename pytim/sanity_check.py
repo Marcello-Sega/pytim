@@ -78,7 +78,7 @@ class SanityCheck(object):
             raise TypeError(messages.UNDEFINED_ITIM_GROUP)
         if normal == 'guess':
             interface.normal = utilities.guess_normal(interface.universe,
-                                                         interface.itim_group)
+                                                      interface.itim_group)
         else:
             dirdict = {'x': 0, 'y': 1, 'z': 2}
             if not (normal in interface.directions_dict):
