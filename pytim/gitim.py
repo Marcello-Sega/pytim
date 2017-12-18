@@ -94,24 +94,11 @@ class GITIM(pytim.PYTIM):
     _surface = None
 
     def __init__(
-            self,
-            universe,
-            group=None,
-            alpha=2.0,
-            normal='guess',
-            molecular=True,
-            max_layers=1,
-            radii_dict=None,
-            cluster_cut=None,
-            cluster_threshold_density=None,
-            extra_cluster_groups=None,
-            biggest_cluster_only=False,
-            symmetry='spherical',
-            centered=False,
-            info=False,
-            warnings=False,
-            _noextrapoints=False,
-            **kargs):
+            self, universe, group=None, alpha=2.0, normal='guess',
+            molecular=True, max_layers=1, radii_dict=None, cluster_cut=None,
+            cluster_threshold_density=None, extra_cluster_groups=None,
+            biggest_cluster_only=False, symmetry='spherical', centered=False,
+            info=False, warnings=False, _noextrapoints=False, **kargs):
 
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
