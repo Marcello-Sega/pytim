@@ -135,18 +135,6 @@ def weighted_close_match(string, dictionary):
     return m[2:]
 
 
-def weighted_close_match(string, dictionary):
-    # increase weight of the first letter
-    # this fixes problems with atom names like CH12
-    _wdict = {}
-    _dict = dictionary
-    _str = string[0] + string[0] + string
-    for key in _dict.keys():
-        _wdict[key[0] + key[0] + key] = _dict[key]
-    m = get_close_matches(_str, _wdict.keys(), n=1, cutoff=0.1)[0]
-    return m[2:]
-
-
 def guess_radii(interface, group=None):
     # NOTE: this code depends on the assumption that not-set radii,
     # have the value np.nan (see _missing_attributes() ), so don't change it
