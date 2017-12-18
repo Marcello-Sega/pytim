@@ -57,7 +57,7 @@ def _missing_attributes(interface, universe):
     # NOTE _check_missing_attribute() relies on radii being set to np.nan
     # if the attribute radii is not present
     _check_missing_attribute(interface, 'radii', 'Radii', universe.atoms,
-                             np.nan, universe)
+                             np.nan)
     _check_missing_attribute(interface, 'tempfactors', 'Tempfactors',
                              universe.atoms, 0.0)
     _check_missing_attribute(interface, 'bfactors', 'Bfactors',
@@ -167,7 +167,7 @@ def guess_radii(interface, group=None):
         return
     nones = np.equal(group.radii, None)
     group.radii[nones] = np.array([np.nan] * len(group.radii[nones]))
-    #group.radii = group.radii.astype(np.float32)
+    # group.radii = group.radii.astype(np.float32)
 
     group = group[np.isnan(group.radii)]
 
@@ -219,8 +219,8 @@ def guess_radii(interface, group=None):
         unique_masses = unique_masses[unique_masses > 0]
         d = atoms_maps
         for target_mass in unique_masses:
-            atype, mass = min(d.items(), key=lambda (
-                _, entry): abs(entry['mass'] - target_mass))
+            atype, mass = min(d.items(), key=lambda (_,
+                entry): abs(entry['mass'] - target_mass))
             try:
                 match_type = get_close_matches(
                     atype, interface.radii_dict.keys(), n=1, cutoff=0.1
