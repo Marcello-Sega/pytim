@@ -10,6 +10,7 @@ import numpy as np
 from skimage import measure
 from pytim import utilities, vtk, cube, wavefront_obj
 import pytim
+from . import messages
 
 
 class WillardChandler(pytim.PYTIM):
@@ -99,7 +100,7 @@ class WillardChandler(pytim.PYTIM):
         sanity.assign_alpha(alpha)
 
         if mesh <= 0:
-            raise ValueError(self.MESH_NEGATIVE)
+            raise ValueError(messages.MESH_NEGATIVE)
         self.mesh = mesh
         self.spacing = None
         self.ngrid = None

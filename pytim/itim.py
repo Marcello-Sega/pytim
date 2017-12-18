@@ -12,6 +12,7 @@ from __builtin__ import zip as builtin_zip
 from scipy.spatial import cKDTree
 from pytim import utilities, surface
 import pytim
+from . import messages
 
 
 class Surface(surface.Surface):
@@ -298,7 +299,7 @@ dtype=object)
 
                     # one of the two layers (upper,lower) or both are empty
                     if not _inlayer_group:
-                        raise Exception(self.EMPTY_LAYER)
+                        raise Exception(messages.EMPTY_LAYER)
 
                     _layers.append(_inlayer_group)
                     break

@@ -6,6 +6,7 @@ import numpy as np
 from scipy.spatial import Delaunay
 from scipy.interpolate import LinearNDInterpolator
 from pytim import utilities
+from . import messages
 
 
 class Surface(object):
@@ -122,7 +123,7 @@ class Surface(object):
                            which are also stored in self.surf_triang
         """
         if layer > len(self.interface._layers[0]):
-            raise ValueError(self.UNDEFINED_LAYER)
+            raise ValueError(messages.UNDEFINED_LAYER)
 
         box = self.interface.universe.dimensions[:3]
 
