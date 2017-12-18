@@ -9,6 +9,7 @@ from . import datafiles
 from . import utilities
 from pytim.properties import Layers,Clusters,Sides,_create_property
 from difflib import get_close_matches
+from . import messages
 
 class SanityCheck(object):
 
@@ -49,11 +50,11 @@ class SanityCheck(object):
     def assign_mesh(self, mesh):
         self.interface.target_mesh = mesh
         if not isinstance(self.interface.target_mesh, (int, float)):
-            raise TypeError(self.interface.MESH_NAN)
+            raise TypeError(messages.MESH_NAN)
         if self.interface.target_mesh <= 0:
-            raise ValueError(self.interface.MESH_NEGATIVE)
+            raise ValueError(messages.MESH_NEGATIVE)
         if self.interface.target_mesh >= np.amin(self.interface.universe.dimensions[:3]) / 2.:
-            raise ValueError(self.interface.MESH_LARGE)
+            raise ValueError(messages.MESH_LARGE)
 
         try:
             np.arange(int(self.interface.alpha / self.interface.target_mesh))
@@ -69,14 +70,14 @@ class SanityCheck(object):
         if not (self.interface.symmetry == 'planar'):
             raise ValueError(" wrong symmetry for normal assignement")
         if self.interface.itim_group is None:
-            raise TypeError(self.interface.UNDEFINED_ITIM_GROUP)
+            raise TypeError(messages.UNDEFINED_ITIM_GROUP)
         if normal == 'guess':
             self.interface.normal = utilities.guess_normal(self.interface.universe,
                                                            self.interface.itim_group)
         else:
             dirdict = {'x': 0, 'y': 1, 'z': 2}
             if not (normal in self.interface.directions_dict):
-                raise ValueError(self.interface.WRONG_DIRECTION)
+                raise ValueError(messages.WRONG_DIRECTION)
             self.interface.normal = dirdict[self.interface.directions_dict[normal]]
 
     def _define_groups(self):
@@ -320,7 +321,7 @@ class SanityCheck(object):
 
         self.interface._mode = self._apply_patches(input_obj)
         if self.interface._mode is None:
-            raise Exception(self.interface.WRONG_UNIVERSE)
+            raise Exception(messages.WRONG_UNIVERSE)
 
         self.interface.all_atoms = self.interface.universe.select_atoms('all')
         #self.interface.radii_dict = tables.vdwradii.copy()
@@ -346,9 +347,9 @@ class SanityCheck(object):
         except:
             raise Exception("Cannot set alpha before having a simulation box")
         if alpha < 0:
-            raise ValueError(self.interface.ALPHA_NEGATIVE)
+            raise ValueError(messages.ALPHA_NEGATIVE)
         if alpha >= np.amin(box):
-            raise ValueError(self.interface.ALPHA_LARGE)
+            raise ValueError(messages.ALPHA_LARGE)
         self.interface.alpha = alpha
 
     def wrap_group(self, inp):
@@ -373,7 +374,7 @@ class SanityCheck(object):
 
         self._define_groups()
         if(len(self.interface.itim_group) == 0):
-            raise StandardError(self.interface.UNDEFINED_ITIM_GROUP)
+            raise StandardError(messages.UNDEFINED_ITIM_GROUP)
         interface = self.interface
 
         if(interface.cluster_cut is not None):
@@ -382,7 +383,7 @@ class SanityCheck(object):
             extraelements = len(interface.extra_cluster_groups)
 
         if not (elements == 1 or elements == 1 + extraelements):
-            raise StandardError(self.interface.MISMATCH_CLUSTER_SEARCH)
+            raise StandardError(messages.MISMATCH_CLUSTER_SEARCH)
 
         return True
 

@@ -9,6 +9,7 @@ import numpy as np
 from scipy.spatial import distance
 from pytim import utilities
 import pytim
+from . import messages
 try:
     from pytetgen import Delaunay
 except ImportError:

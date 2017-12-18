@@ -9,48 +9,24 @@ import MDAnalysis
 from MDAnalysis import Universe
 from MDAnalysis.topology import tables
 import __builtin__
-from distutils.version import LooseVersion
 import importlib
 from version import __version__
 from pytim.patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 from pytim.properties import Layers,Clusters,Sides,_create_property
 from pytim.sanity_check import SanityCheck
-
+from . import messages
 
 class PYTIM(object):
     """ The PYTIM metaclass
     """
     __metaclass__ = ABCMeta
 
-    directions_dict = {
-        0: 'x',
-        1: 'y',
-        2: 'z',
-        'x': 'x',
-        'y': 'y',
-        'z': 'z',
-        'X': 'x',
-        'Y': 'y',
-        'Z:': 'z'}
-    symmetry_dict = {
-        'cylindrical': 'cylindrical',
-        'spherical': 'spherical',
-        'planar': 'planar'}
-
-    ALPHA_NEGATIVE = "parameter alpha must be positive"
-    ALPHA_LARGE = "parameter alpha must be smaller than the smaller box side"
-    MESH_NEGATIVE = "parameter mesh must be positive"
-    MESH_LARGE = "parameter mesh must be smaller than the smaller box side"
-    UNDEFINED_RADIUS = "one or more atoms do not have a corresponding radius in the default or provided dictionary"
-    UNDEFINED_CLUSTER_SEARCH = "If extra_cluster_groups is defined, a cluster_cut should e provided"
-    MISMATCH_CLUSTER_SEARCH = "cluster_cut should be either a scalar or an array matching the number of groups (including itim_group)"
-    EMPTY_LAYER = "One or more layers are empty"
-    CLUSTER_FAILURE = "Cluster algorithm failed: too small cluster cutoff provided?"
-    UNDEFINED_LAYER = "No layer defined: forgot to call _assign_layers() or not enough layers requested"
-    WRONG_UNIVERSE = "Wrong Universe passed to ITIM class"
-    UNDEFINED_ITIM_GROUP = "No itim_group defined, or empty"
-    WRONG_DIRECTION = "Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
-    CENTERING_FAILURE = "Cannot center the group in the box. Wrong direction supplied?"
+    directions_dict = { 0: 'x', 1: 'y', 2: 'z',
+                       'x': 'x', 'y': 'y', 'z': 'z',
+                       'X': 'x', 'Y': 'y', 'Z:': 'z'}
+    symmetry_dict = { 'cylindrical': 'cylindrical',
+                      'spherical': 'spherical',
+                      'planar': 'planar'}
 
     # main properties shared by all implementations of the class
     # When required=True is passed, the implementation of the class *must*
@@ -100,6 +76,14 @@ class PYTIM(object):
     def __init__(self):
         pass
 
+    @abstractmethod
+    def _assign_layers(self):
+        pass
+
+    @property
+    def atoms(self):
+        return self._layers[:].sum()
+
     @property
     def method(self):
         return self.__class__.__name__
@@ -124,55 +108,13 @@ class PYTIM(object):
 
     def _assign_symmetry(self, symmetry):
         if self.itim_group is None:
-            raise TypeError(self.UNDEFINED_ITIM_GROUP)
+            raise TypeError(messages.UNDEFINED_ITIM_GROUP)
         if symmetry == 'guess':
             raise ValueError("symmetry 'guess' To be implemented")
         else:
             if not (symmetry in self.symmetry_dict):
-                raise ValueError(self.WRONG_DIRECTION)
+                raise ValueError(messages.WRONG_DIRECTION)
             self.symmetry = symmetry
-
-    def _generate_periodic_border_2d(self, group):
-        _box = utilities.get_box(group.universe, self.normal)
-
-        positions = utilities.get_pos(group, self.normal)
-
-        shift = np.diagflat(_box)
-
-        eps = min(2. * self.alpha, _box[0], _box[1])
-        L = [eps, eps]
-        low = [None, None]
-        upp = [None, None]
-        U = [_box[0] - eps, _box[1] - eps]
-
-        pos = positions[:]
-        for xy in [0, 1]:
-            low[xy] = positions[positions[:, xy] <= L[xy]] + shift[xy]
-            upp[xy] = positions[positions[:, xy] >= U[xy]] - shift[xy]
-
-        low_x_low_y = positions[np.logical_and(
-            positions[:, 0] <= L[0], positions[:, 1] <= L[1])] + (shift[0] + shift[1])
-        upp_x_upp_y = positions[np.logical_and(
-            positions[:, 0] >= U[0], positions[:, 1] >= U[1])] - (shift[0] + shift[1])
-        low_x_upp_y = positions[np.logical_and(
-            positions[:, 0] <= L[0], positions[:, 1] >= U[1])] + (shift[0] - shift[1])
-        upp_x_low_y = positions[np.logical_and(
-            positions[:, 0] >= U[0], positions[:, 1] <= L[1])] - (shift[0] - shift[1])
-
-        return np.concatenate(
-            (pos,
-             low[0],
-             low[1],
-             upp[0],
-             upp[1],
-             low_x_low_y,
-             upp_x_upp_y,
-             low_x_upp_y,
-             upp_x_low_y))
-
-    @property
-    def atoms(self):
-        return self._layers[:].sum()
 
     def writepdb(self, filename='layers.pdb', centered='no', group='all', multiframe=True):
         """ Write the frame to a pdb file, marking the atoms belonging
@@ -238,11 +180,6 @@ class PYTIM(object):
         self.PDB[filename].pdbfile.flush()
         self.universe.atoms.positions = np.copy(temp_pos)
 
-    def savepdb(self, filename='layers.pdb', centered='no', multiframe=True):
-        """ An alias to :func:`writepdb`
-        """
-        self.writepdb(filename, centered, multiframe)
-
     def _define_cluster_group(self):
         if(self.cluster_cut is not None):
             # groups have been checked already in _sanity_checks()
@@ -304,17 +241,15 @@ class PYTIM(object):
         total_shift = 0
 
         if not (direction in self.directions_dict):
-            raise ValueError(self.WRONG_DIRECTION)
+            raise ValueError(messages.WRONG_DIRECTION)
         _dir = self.directions_dict[direction]
-        if _dir == 'x':
-            direction = 0
-            _pos_group = utilities.get_x(group)
-        if _dir == 'y':
-            direction = 1
-            _pos_group = utilities.get_y(group)
-        if _dir == 'z':
-            direction = 2
-            _pos_group = utilities.get_z(group)
+        _xyz = {'x':(0,utilities.get_x),
+                'y':(1,utilities.get_y),
+                'z':(2,utilities.get_z)}
+
+        if _dir in _xyz.keys():
+            direction = _xyz[_dir][0]
+            _pos_group = (_xyz[_dir][1])(group)
 
         shift = dim[direction] / 100.
 
@@ -322,16 +257,14 @@ class PYTIM(object):
         _y = utilities.get_y(group.universe.atoms)
         _z = utilities.get_z(group.universe.atoms)
 
+        _range = (0., dim[direction])
         if(halfbox_shift == True):
             _range = (-dim[direction] / 2., dim[direction] / 2.)
-        else:
-            _range = (0., dim[direction])
 
         histo, _ = np.histogram(_pos_group, bins=10, range=_range,
                                 density=True)
 
-        max_val = np.amax(histo)
-        min_val = np.amin(histo)
+        max_val, min_val  = np.amax(histo), np.amin(histo)
         # NOTE maybe allow user to set different values
         delta = min_val + (max_val - min_val) / 3.
 
@@ -339,7 +272,7 @@ class PYTIM(object):
         while(histo[0] > delta or histo[-1] > delta):
             total_shift += shift
             if total_shift >= dim[direction]:
-                raise ValueError(self.CENTERING_FAILURE)
+                raise ValueError(messages.CENTERING_FAILURE)
             _pos_group += shift
             if _dir == 'x':
                 utilities.centerbox(group.universe, x=_pos_group,
@@ -361,12 +294,9 @@ class PYTIM(object):
             box_half = dim[direction] / 2.
         else:
             box_half = 0.
-        if _dir == 'x':
-            _x += total_shift - _center + box_half
-        if _dir == 'y':
-            _y += total_shift - _center + box_half
-        if _dir == 'z':
-            _z += total_shift - _center + box_half
+        _pos={'x':_x,'y':_y,'z':_z}
+        if _dir in _pos.keys():
+            _pos[_dir] += total_shift - _center + box_half
         # finally, we copy everything back
         group.universe.atoms.positions = np.column_stack((_x, _y, _z))
 
@@ -387,15 +317,10 @@ class PYTIM(object):
             self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
         if self.symmetry == 'spherical':
-            self._center(self.cluster_group, 'x', halfbox_shift=False)
-            self._center(self.cluster_group, 'y', halfbox_shift=False)
-            self._center(self.cluster_group, 'z', halfbox_shift=False)
+            for xyz in ['x','y','z']:
+                self._center(self.cluster_group, xyz, halfbox_shift=False)
             self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
             self.centered_positions = np.copy(self.universe.atoms.positions[:])
-
-    @abstractmethod
-    def _assign_layers(self):
-        pass
 
 
 from pytim.itim import ITIM
@@ -403,5 +328,3 @@ from pytim.gitim import GITIM
 from pytim.willard_chandler import WillardChandler
 from pytim.chacon_tarazona import ChaconTarazona
 from pytim import observables, utilities, datafiles
-
-#__all__ = [ 'itim' , 'gitim' , 'observables', 'datafiles', 'utilities']
