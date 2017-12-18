@@ -37,9 +37,9 @@ def _create_property(property_name, docstring=None,
     def setter(self, value):
         self.__setattr__('_' + property_name, value)
 
-    if readonly == True:
+    if readonly is True:
         setter = None
-    if required == False:
+    if required is False:
         absprop = None
     else:
         absprop = abstractproperty(None)
