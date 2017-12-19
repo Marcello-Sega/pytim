@@ -3,6 +3,7 @@
 """ Module: observables
     ===================
 """
+from __future__ import print_function
 
 # here go all and only those classes derived from Observable
 from abc import ABCMeta, abstractmethod
@@ -39,7 +40,7 @@ class Observable(object):
         >>>
         >>> u = mda.Universe(WATER_GRO)
         >>> o = TotalNumberOfParticles(u)
-        >>> print o.compute()
+        >>> print (o.compute())
         12000
 
     """
@@ -227,7 +228,7 @@ class Mass(Observable):
             >>> from pytim.observables import Mass
             >>> u = mda.Universe(WATERSMALL_GRO)
             >>> obs = Mass()
-            >>> print obs.compute(u.atoms)[0]
+            >>> print (obs.compute(u.atoms)[0])
             15.999
 
         """
@@ -262,7 +263,7 @@ class Charge(Observable):
         try:
             return inp.charges
         except AttributeError:
-            print "Error, the passed Atomgroup has no charges attribute"
+            print("Error, the passed Atomgroup has no charges attribute")
 
 
 class NumberOfResidues(Observable):

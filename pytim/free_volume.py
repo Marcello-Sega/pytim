@@ -3,6 +3,7 @@
 """ Module: free_volume
     ===================
 """
+from __future__ import print_function
 import numpy as np
 from scipy.spatial import cKDTree
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
@@ -33,7 +34,7 @@ class FreeVolume(object):
         >>> bins, prof ,err = FV.compute_profile()
 
         >>> free, err = FV.compute()
-        >>> print '{0:.3f}'.format(free)+' +/- {0:.3f}'.format(err)
+        >>> print ('{:0.3f} +/- {:0.3f}'.format(free,err))
         0.431 +/- 0.001
 
         >>> # strict test on bcc volume fraction

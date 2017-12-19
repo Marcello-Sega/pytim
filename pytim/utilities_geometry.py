@@ -1,6 +1,7 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 
+from __future__ import print_function
 import numpy as np
 
 
@@ -128,7 +129,7 @@ def EulerRotation(phi, theta, psi):
         >>> import pytim
         >>> from pytim.utilities import *
         >>> np.set_printoptions(suppress=True)
-        >>> print EulerRotation(np.pi/2.,0,0)
+        >>> print (EulerRotation(np.pi/2.,0,0))
         [[ 0.  1.  0.]
          [-1.  0.  0.]
          [ 0. -0.  1.]]

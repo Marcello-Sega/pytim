@@ -3,6 +3,7 @@
 """ Module: profile 
     ===============
 """
+from __future__ import print_function
 import numpy as np
 from scipy import stats
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
@@ -220,7 +221,7 @@ class Profile(object):
 
     def get_values(self, binwidth=None, nbins=None):
         if self.sampled_values is None:
-            print "Warning no profile sampled so far"
+            print("Warning no profile sampled so far")
         # we use the largest box (largest number of bins) as reference.
         # Statistics will be poor at the boundaries, but like that we don't
         # loose information

@@ -1,8 +1,10 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 """ Module: utilities
     =================
 """
+from __future__ import print_function
 from timeit import default_timer as timer
 import numpy as np
 from sys import stderr
@@ -66,7 +68,7 @@ def correlate(a1=np.ndarray(0), a2=None):
         >>> # we need to subtract the average value
         >>> corr = pytim.utilities.correlate(size-np.mean(size))
         >>> corr = corr/corr[0] # normalize to 1
-        >>> print corr
+        >>> print (corr)
         [ 1.          0.1420121   0.10364119  0.14718647  0.37093981  0.09908694
           0.16514898  0.0946748   0.33824381  0.2187186  -0.02084513  0.08711942
           0.24537069 -0.0102749  -0.1934566   0.10323017  0.02911581 -0.00939353
@@ -150,6 +152,7 @@ def get_y(group, normal=2):
 def get_z(group, normal=2):
     return get_coord(2, group=group, normal=normal)
 
+
 def centerbox(universe, x=None, y=None, z=None, vector=None,
               center_direction=2, halfbox_shift=True):
     # in ITIM, the system is always centered at 0 along the normal direction (halfbox_shift==True)
@@ -207,7 +210,8 @@ def guess_normal(universe, group):
         delta.append(np.sqrt((max_val - min_val)**2))
 
     if np.max(delta) / np.min(delta) < 5.0:
-        print "Warning: the result of the automatic normal detection (", np.argmax(delta), ") is not reliable"
+        print("Warning: the result of the automatic normal detection (",
+              np.argmax(delta), ") is not reliable")
     return np.argmax(delta)
 
 

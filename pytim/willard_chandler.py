@@ -6,6 +6,7 @@
     ========================
 """
 
+from __future__ import print_function
 import numpy as np
 from skimage import measure
 from pytim import utilities, vtk, cube, wavefront_obj
@@ -59,14 +60,14 @@ class WillardChandler(pytim.PYTIM):
         >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0, fast=False)
         >>> R, _, _, _ = pytim.utilities.fit_sphere(\
                            interface.triangulated_surface[0])
-        >>> print "Radius={:.3f}".format(R)
+        >>> print ("Radius={:.3f}".format(R))
         Radius=19.325
 
         >>> # the fast kernel gives a slightly (<0.1 Angstrom) different result
         >>> interface = pytim.WillardChandler(u, group=g, alpha=3.0, fast=True)
         >>> R, _, _, _ = pytim.utilities.fit_sphere(\
                            interface.triangulated_surface[0])
-        >>> print "Radius={:.3f}".format(R)
+        >>> print ("Radius={:.3f}".format(R))
         Radius=19.383
 
     """

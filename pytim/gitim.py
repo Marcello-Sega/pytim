@@ -4,7 +4,7 @@
 """ Module: gitim
     =============
 """
-
+from __future__ import print_function
 import numpy as np
 from scipy.spatial import distance
 from pytim import utilities
@@ -66,7 +66,7 @@ class GITIM(pytim.PYTIM):
         >>> interface =pytim.GITIM(u,group=g,molecular=False, alpha=2.5)
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
-        >>> print repr(layer)
+        >>> print (repr(layer))
         <AtomGroup with 793 atoms>
 
 
@@ -86,8 +86,10 @@ class GITIM(pytim.PYTIM):
         >>> interface =pytim.GITIM(u, group=g, alpha=2.0, max_layers=2)
         >>>
         >>> interface.writepdb('glucose_shells.pdb')
-        >>> print repr(interface.layers[0]),repr(interface.layers[1])
-        <AtomGroup with 54 atoms> <AtomGroup with 117 atoms>
+        >>> print (repr(interface.layers[0]))
+        <AtomGroup with 54 atoms>
+        >>> print (repr(interface.layers[1]))
+        <AtomGroup with 117 atoms>
 
     """
 
@@ -166,7 +168,7 @@ class GITIM(pytim.PYTIM):
             v = r_i[0] - np.dot(invM, s)
         except np.linalg.linalg.LinAlgError as err:
             if 'Singular matrix' in err.message:
-                print "Warning, singular matrix for ", r_i
+                print("Warning, singular matrix for ", r_i)
                 # TODO is this correct? The singular matrix most likely comes
                 # out of points alinged in the plane
                 return 0

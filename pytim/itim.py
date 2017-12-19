@@ -6,6 +6,7 @@
     ============
 """
 
+from __future__ import print_function
 from multiprocessing import Process, Queue
 import numpy as np
 from __builtin__ import zip as builtin_zip
@@ -97,7 +98,7 @@ class ITIM(pytim.PYTIM):
 
         >>> # atoms in the layers can be accesses either through
         >>> # the layers array:
-        >>> print interface.layers
+        >>> print (interface.layers)
         [[<AtomGroup with 786 atoms> <AtomGroup with 681 atoms>
           <AtomGroup with 663 atoms> <AtomGroup with 651 atoms>]
          [<AtomGroup with 786 atoms> <AtomGroup with 702 atoms>

@@ -5,7 +5,7 @@
 """ Module: chacon_tarazona
     =======================
 """
-
+from __future__ import print_function
 import numpy as np
 from pytim import utilities, surface
 import pytim
@@ -70,7 +70,7 @@ class ChaconTarazona(pytim.PYTIM):
         >>> g = u.select_atoms('name OW')
         >>> interface = pytim.ChaconTarazona(u,alpha=2.,tau=1.5,group=g,info=False,molecular=False)
         >>> interface.writepdb('CT.pdb',centered=True)
-        >>> print repr(interface.layers)
+        >>> print (repr(interface.layers))
         array([[<AtomGroup with 175 atoms>],
                [<AtomGroup with 159 atoms>]], dtype=object)
 
@@ -177,8 +177,8 @@ class ChaconTarazona(pytim.PYTIM):
             s = surf.surface_from_modes(p, modes.reshape(surf.modes_shape))
             d = p[::, 2] - s
             if self.info == True:
-                print "side", side, "->", len(pivot), "pivots, msd=",\
-                    np.sqrt(np.sum(d * d) / len(d))
+                print("side", side, "->", len(pivot), "pivots, msd=",
+                      np.sqrt(np.sum(d * d) / len(d)))
             # TODO handle failure
             modes = modes.reshape(surf.modes_shape)
             new_pivot = np.sort(
