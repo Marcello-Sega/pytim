@@ -68,7 +68,7 @@ def correlate(a1=np.ndarray(0), a2=None):
         >>> # we need to subtract the average value
         >>> corr = pytim.utilities.correlate(size-np.mean(size))
         >>> corr = corr/corr[0] # normalize to 1
-        >>> print corr
+        >>> print (corr)
         [ 1.          0.1420121   0.10364119  0.14718647  0.37093981  0.09908694
           0.16514898  0.0946748   0.33824381  0.2187186  -0.02084513  0.08711942
           0.24537069 -0.0102749  -0.1934566   0.10323017  0.02911581 -0.00939353

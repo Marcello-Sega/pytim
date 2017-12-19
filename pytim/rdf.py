@@ -66,8 +66,10 @@ class RDF(object):
     >>> rdf1.sample(layer)
     >>> rdf2.sample(layer,layer)
     >>> rdf3.sample(layer,layer)
-    >>> print np.all(rdf1.rdf[:]==rdf2.rdf[:]),np.all(rdf1.rdf[:]==rdf3.rdf[:])
-    True True
+    >>> print (np.all(rdf1.rdf[:]==rdf2.rdf[:]))
+    True
+    >>> print (np.all(rdf1.rdf[:]==rdf3.rdf[:]))
+    True
 
     """
 
