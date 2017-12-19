@@ -1,5 +1,6 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
+from __future__ import print_function
 import MDAnalysis
 import importlib
 import numpy as np
@@ -135,6 +136,51 @@ def weighted_close_match(string, dictionary):
     return m[2:]
 
 
+def _guess_radii_from_masses(interface, group, guessed):
+    radii = np.copy(group.radii)
+    masses = group.masses
+    types = group.types
+    unique_masses = np.unique(masses)
+    # Let's not consider atoms with zero mass.
+    unique_masses = unique_masses[unique_masses > 0]
+    d = atoms_maps
+    for target_mass in unique_masses:
+        atype, mass = min(
+            d.items(), key=lambda __entry: abs(
+                __entry[1]['mass'] - target_mass))
+        try:
+            match_type = get_close_matches(
+                atype, interface.radii_dict.keys(), n=1, cutoff=0.1
+            )
+            rd = interface.radii_dict
+            radii[masses == target_mass] = rd[match_type[0]]
+            for t in types[masses == target_mass]:
+                guessed.update({t: rd[match_type[0]]})
+        except BaseException:
+            pass
+        group.radii = radii
+
+
+def _guess_radii_from_types(interface, group, guessed):
+    radii = np.copy(group.radii)
+
+    _dict = interface.radii_dict
+    for aname in np.unique(group.names):
+        try:
+            matching_type = weighted_close_match(aname, _dict)
+            radii[group.names == aname] = _dict[matching_type]
+            guessed.update({aname: _dict[matching_type]})
+        except (KeyError,IndexError) as e :
+            try:
+                atype = group.types[group.names == aname][0]
+                matching_type = weighted_close_match(atype, _dict)
+                radii[group.types == atype] = _dict[matching_type]
+                guessed.update({atype: _dict[matching_type]})
+            except (KeyError,IndexError) as ee :
+                pass
+    group.radii = np.copy(radii)
+
+
 def guess_radii(interface, group=None):
     # NOTE: this code depends on the assumption that not-set radii,
     # have the value np.nan (see _missing_attributes() ), so don't change it
@@ -176,49 +222,12 @@ def guess_radii(interface, group=None):
 
     # We give precedence to atom names, then to types
     if have_types:
-        radii = np.copy(group.radii)
+        _guess_radii_from_types(interface, group, guessed)
 
-        _dict = interface.radii_dict
-        for aname in np.unique(group.names):
-            try:
-                matching_type = weighted_close_match(aname, _dict)
-                radii[group.names == aname] = _dict[matching_type]
-                guessed.update({aname: _dict[matching_type]})
-            except KeyError:
-                try:
-                    atype = group.types[group.names == aname][0]
-                    matching_type = weighted_close_match(atype, _dict)
-                    radii[group.types == atype] = _dict[matching_type]
-                    guessed.update({atype: _dict[matching_type]})
-                except KeyError:
-                    pass
-
-        group.radii = np.copy(radii)
     # We fill in the remaining ones using masses information
 
     group = group[np.isnan(group.radii)]
 
     if have_masses:
-        radii = np.copy(group.radii)
-        masses = group.masses
-        types = group.types
-        unique_masses = np.unique(masses)
-        # Let's not consider atoms with zero mass.
-        unique_masses = unique_masses[unique_masses > 0]
-        d = atoms_maps
-        for target_mass in unique_masses:
-            atype, mass = min(d.items(), key=lambda (_,
-                entry): abs(entry['mass'] - target_mass))
-            try:
-                match_type = get_close_matches(
-                    atype, interface.radii_dict.keys(), n=1, cutoff=0.1
-                )
-                rd = interface.radii_dict
-                radii[masses == target_mass] = rd[match_type[0]]
-
-                [guessed.update({t: rd[match_type[0]]})
-                 for t in types[masses == target_mass]]
-            except:
-                pass
-        group.radii = radii
+        _guess_radii_from_masses(interface, group, guessed)
     interface.guessed_radii.update(guessed)

@@ -4,7 +4,7 @@
 """ Module: gitim
     =============
 """
-
+from __future__ import print_function
 import numpy as np
 from scipy.spatial import distance
 from pytim import utilities
@@ -166,7 +166,7 @@ class GITIM(pytim.PYTIM):
             v = r_i[0] - np.dot(invM, s)
         except np.linalg.linalg.LinAlgError as err:
             if 'Singular matrix' in err.message:
-                print "Warning, singular matrix for ", r_i
+                print("Warning, singular matrix for ", r_i)
                 # TODO is this correct? The singular matrix most likely comes
                 # out of points alinged in the plane
                 return 0

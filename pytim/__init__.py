@@ -1,6 +1,5 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-
 from abc import ABCMeta, abstractmethod, abstractproperty
 import numpy as np
 from scipy.interpolate import LinearNDInterpolator
@@ -11,22 +10,23 @@ import __builtin__
 import importlib
 from version import __version__
 from pytim.patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
-from pytim.properties import Layers,Clusters,Sides,_create_property
+from pytim.properties import _create_property
 from pytim.sanity_check import SanityCheck
 from . import messages
 from pytim.pdb import _writepdb
+
 
 class PYTIM(object):
     """ The PYTIM metaclass
     """
     __metaclass__ = ABCMeta
 
-    directions_dict = { 0: 'x', 1: 'y', 2: 'z',
+    directions_dict = {0: 'x', 1: 'y', 2: 'z',
                        'x': 'x', 'y': 'y', 'z': 'z',
                        'X': 'x', 'Y': 'y', 'Z:': 'z'}
-    symmetry_dict = { 'cylindrical': 'cylindrical',
-                      'spherical': 'spherical',
-                      'planar': 'planar'}
+    symmetry_dict = {'cylindrical': 'cylindrical',
+                     'spherical': 'spherical',
+                     'planar': 'planar'}
 
     # main properties shared by all implementations of the class
     # When required=True is passed, the implementation of the class *must*
@@ -179,9 +179,9 @@ class PYTIM(object):
         if not (direction in self.directions_dict):
             raise ValueError(messages.WRONG_DIRECTION)
         _dir = self.directions_dict[direction]
-        _xyz = {'x':(0,utilities.get_x),
-                'y':(1,utilities.get_y),
-                'z':(2,utilities.get_z)}
+        _xyz = {'x': (0, utilities.get_x),
+                'y': (1, utilities.get_y),
+                'z': (2, utilities.get_z)}
 
         if _dir in _xyz.keys():
             direction = _xyz[_dir][0]
@@ -200,7 +200,7 @@ class PYTIM(object):
         histo, _ = np.histogram(_pos_group, bins=10, range=_range,
                                 density=True)
 
-        max_val, min_val  = np.amax(histo), np.amin(histo)
+        max_val, min_val = np.amax(histo), np.amin(histo)
         # NOTE maybe allow user to set different values
         delta = min_val + (max_val - min_val) / 3.
 
@@ -230,7 +230,7 @@ class PYTIM(object):
             box_half = dim[direction] / 2.
         else:
             box_half = 0.
-        _pos={'x':_x,'y':_y,'z':_z}
+        _pos = {'x': _x, 'y': _y, 'z': _z}
         if _dir in _pos.keys():
             _pos[_dir] += total_shift - _center + box_half
         # finally, we copy everything back
@@ -253,13 +253,15 @@ class PYTIM(object):
             self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
         if self.symmetry == 'spherical':
-            for xyz in ['x','y','z']:
+            for xyz in ['x', 'y', 'z']:
                 self._center(self.cluster_group, xyz, halfbox_shift=False)
             self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
             self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
     def writepdb(self, filename='layers.pdb', centered='no', group='all', multiframe=True):
-        _writepdb(self,filename=filename,centered=centered,group=group,multiframe=multiframe)
+        _writepdb(self, filename=filename, centered=centered,
+                  group=group, multiframe=multiframe)
+
 
 from pytim.itim import ITIM
 from pytim.gitim import GITIM
