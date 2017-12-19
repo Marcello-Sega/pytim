@@ -40,7 +40,7 @@ class Observable(object):
         >>>
         >>> u = mda.Universe(WATER_GRO)
         >>> o = TotalNumberOfParticles(u)
-        >>> print o.compute()
+        >>> print (o.compute())
         12000
 
     """
@@ -228,7 +228,7 @@ class Mass(Observable):
             >>> from pytim.observables import Mass
             >>> u = mda.Universe(WATERSMALL_GRO)
             >>> obs = Mass()
-            >>> print obs.compute(u.atoms)[0]
+            >>> print (obs.compute(u.atoms)[0])
             15.999
 
         """

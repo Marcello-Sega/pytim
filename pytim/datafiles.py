@@ -14,7 +14,7 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
     >>> import pytim
     >>> from pytim.datafiles import *
     >>> u         = mda.Universe(WATER_GRO,WATER_XTC)
-    >>> print u
+    >>> print(u)
     <Universe with 12000 atoms>
 
     Example: list all configurations
@@ -37,14 +37,14 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
 
     Example: list all topologies
 
-    >>> print pytim_data.topol
+    >>> print (pytim_data.topol)
     ['WATER_LMP_DATA', 'AMBER03_TOP', 'G43A1_TOP', 'CHARMM27_TOP']
 
 
 
     Example: list all trajectories
 
-    >>> print pytim_data.traj
+    >>> print (pytim_data.traj)
     ['WATER_LMP_XTC', 'WATER_XTC']
 
 
@@ -116,7 +116,7 @@ class Data(object):
 
             >>> u = mda.Universe(WATERSMALL_GRO,WATERSMALL_TRR)
             >>> os.unlink('./'+WATERSMALL_TRR)
-            >>> print u
+            >>> print(u)
             <Universe with 648 atoms>
 
         """

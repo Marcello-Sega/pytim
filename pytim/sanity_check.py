@@ -40,13 +40,13 @@ class SanityCheck(object):
             self.interface.guessed_radii.update({nantype: avg})
         total.radii = radii
         try:
-            if self.interface.guessed_radii and self.interface.warnings:
-                print("guessed radii: ", self.interface.guessed_radii, end=' ')
-                print("You can override this by using, e.g.: pytim.", end=' ')
+            gr = self.interface.guessed_radii
+            if gr and self.interface.warnings:
+                print("guessed radii: ", gr, end=' ')
+                print("You can override this by using, e.g.: pytim.", end='')
                 print(self.interface.__class__.__name__, end=' ')
-                print("(u,radii_dict={ '")
-                print(self.interface.guessed_radii.keys()
-                      [0] + "':1.2, ... } )")
+                print("(u,radii_dict={ '", end='')
+                print(gr.keys()[0] + "':1.2 , ... } )")
         except BaseException:
             pass
 
@@ -227,7 +227,8 @@ class SanityCheck(object):
             if self.interface.biggest_cluster_only is True:
                 if self.interface.cluster_cut is None:
                     self.interface.biggest_cluster_only = False
-                    print("Warning: the option biggest_cluster_only has no", end=' ')
-                    print("effect without setting cluster_cut, ignoring it")
+                    print("Warning: the option biggest_cluster_only", end=' ')
+                    print("has no effect without setting cluster_cut,", end=' ')
+                    print("ignoring it")
         except:
             pass

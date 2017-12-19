@@ -66,7 +66,7 @@ class GITIM(pytim.PYTIM):
         >>> interface =pytim.GITIM(u,group=g,molecular=False, alpha=2.5)
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
-        >>> print repr(layer)
+        >>> print (repr(layer))
         <AtomGroup with 793 atoms>
 
 
@@ -86,7 +86,7 @@ class GITIM(pytim.PYTIM):
         >>> interface =pytim.GITIM(u, group=g, alpha=2.0, max_layers=2)
         >>>
         >>> interface.writepdb('glucose_shells.pdb')
-        >>> print repr(interface.layers[0]),repr(interface.layers[1])
+        >>> print (repr(interface.layers[0]),repr(interface.layers[1]))
         <AtomGroup with 54 atoms> <AtomGroup with 117 atoms>
 
     """
