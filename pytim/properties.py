@@ -7,6 +7,7 @@ from pytim.utilities import atoms_maps
 from difflib import get_close_matches
 from __future__ import print_function
 
+
 class Layers(MDAnalysis.core.topologyattrs.AtomAttr):
     """Layers for each atom"""
     attrname = 'layers'

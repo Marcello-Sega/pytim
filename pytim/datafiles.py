@@ -90,7 +90,9 @@ from pkg_resources import resource_filename
 import tempfile
 import os.path
 import re as re
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import hashlib
 
 
@@ -130,7 +132,8 @@ class Data(object):
         urlbase_md5 = 'https://raw.githubusercontent.com/Marcello-Sega/pytim/extended_datafiles/files/'
         urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'
         try:
-            md5 = urllib.request.urlopen(urlbase_md5 + filename + '.MD5').readline()
+            md5 = urllib.request.urlopen(
+                urlbase_md5 + filename + '.MD5').readline()
             print("checking presence of a cached copy...", end=' ')
             md5_local = hashlib.md5(
                 open(dirname + filename, 'rb').read()).hexdigest()

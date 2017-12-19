@@ -3,6 +3,8 @@
 import numpy as np
 from distutils.version import LooseVersion
 import MDAnalysis
+
+
 def _writepdb(interface, filename='layers.pdb', centered='no', group='all', multiframe=True):
     """ Write the frame to a pdb file, marking the atoms belonging
         to the layers with different beta factor.
@@ -66,5 +68,3 @@ def _writepdb(interface, filename='layers.pdb', centered='no', group='all', mult
     interface.PDB[filename].write(interface.group.atoms)
     interface.PDB[filename].pdbfile.flush()
     interface.universe.atoms.positions = np.copy(temp_pos)
-
-

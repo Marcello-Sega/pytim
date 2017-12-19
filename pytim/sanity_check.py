@@ -11,6 +11,7 @@ from . import messages
 from pytim.properties import guess_radii, _missing_attributes
 from __future__ import print_function
 
+
 class SanityCheck(object):
 
     def __init__(self, interface):
@@ -45,7 +46,8 @@ class SanityCheck(object):
                 print("You can override this by using, e.g.: pytim.", end=' ')
                 print(self.interface.__class__.__name__, end=' ')
                 print("(u,radii_dict={ '")
-                print(list(self.interface.guessed_radii.keys())[0] + "':1.2, ... } )")
+                print(list(self.interface.guessed_radii.keys())
+                      [0] + "':1.2, ... } )")
         except BaseException:
             pass
 

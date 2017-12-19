@@ -11,6 +11,7 @@ from pytim import utilities, surface
 import pytim
 from __future__ import print_function
 
+
 class Surface(surface.Surface):
 
     def dump(self):
@@ -177,8 +178,8 @@ class ChaconTarazona(pytim.PYTIM):
             s = surf.surface_from_modes(p, modes.reshape(surf.modes_shape))
             d = p[::, 2] - s
             if self.info == True:
-                print(("side", side, "->", len(pivot), "pivots, msd=",\
-                    np.sqrt(np.sum(d * d) / len(d))))
+                print(("side", side, "->", len(pivot), "pivots, msd=",
+                       np.sqrt(np.sum(d * d) / len(d))))
             # TODO handle failure
             modes = modes.reshape(surf.modes_shape)
             new_pivot = np.sort(

@@ -9,6 +9,7 @@ from pytim import utilities
 from . import messages
 from __future__ import print_function
 
+
 class Surface(object, metaclass=ABCMeta):
     """ Everything about the continuum description of surfaces.
 

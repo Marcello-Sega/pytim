@@ -10,7 +10,6 @@ from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 from __future__ import print_function
 
 
-
 class Correlator(object):
     """ Computes the (self) correlation of an observable (scalar or vector)
 
