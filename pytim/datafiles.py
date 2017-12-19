@@ -1,5 +1,6 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
+from __future__ import print_function
 """
 Location of data files for Pytim examples and tests
 ====================================================
@@ -129,19 +130,19 @@ class Data(object):
         urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'
         try:
             md5 = urllib.urlopen(urlbase_md5 + filename + '.MD5').readline()
-            print "checking presence of a cached copy...",
+            print("checking presence of a cached copy...", end=' ')
             md5_local = hashlib.md5(
                 open(dirname + filename, 'rb').read()).hexdigest()
             if md5_local in md5:
-                print "found"
+                print("found")
                 return dirname + filename
         except BaseException:
             pass
-        print "not found. Fetching remote file...",
+        print("not found. Fetching remote file...", end=' ')
         newfile = urllib.urlopen(urlbase + filename + '?raw=true')
         with open(dirname + filename, 'wb') as output:
             output.write(newfile.read())
-        print "done."
+        print("done.")
         return dirname + filename
 
     def _generate_data_property(self, name):

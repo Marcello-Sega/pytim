@@ -1,8 +1,10 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
+
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 """ Module: utilities
     =================
 """
+from __future__ import print_function
 from timeit import default_timer as timer
 import numpy as np
 from sys import stderr
@@ -207,7 +209,7 @@ def guess_normal(universe, group):
         delta.append(np.sqrt((max_val - min_val)**2))
 
     if np.max(delta) / np.min(delta) < 5.0:
-        print "Warning: the result of the automatic normal detection (", np.argmax(delta), ") is not reliable"
+        print("Warning: the result of the automatic normal detection (", np.argmax(delta), ") is not reliable")
     return np.argmax(delta)
 
 
