@@ -5,7 +5,7 @@ import importlib
 import numpy as np
 from pytim.utilities import atoms_maps
 from difflib import get_close_matches
-
+from __future__ import print_function
 
 class Layers(MDAnalysis.core.topologyattrs.AtomAttr):
     """Layers for each atom"""
@@ -129,9 +129,9 @@ def weighted_close_match(string, dictionary):
     _wdict = {}
     _dict = dictionary
     _str = string[0] + string[0] + string
-    for key in _dict.keys():
+    for key in list(_dict.keys()):
         _wdict[key[0] + key[0] + key] = _dict[key]
-    m = get_close_matches(_str, _wdict.keys(), n=1, cutoff=0.1)[0]
+    m = get_close_matches(_str, list(_wdict.keys()), n=1, cutoff=0.1)[0]
     return m[2:]
 
 
@@ -145,11 +145,11 @@ def _guess_radii_from_masses(interface, group, guessed):
     d = atoms_maps
     for target_mass in unique_masses:
         atype, mass = min(
-            d.items(), key=lambda __entry: abs(
+            list(d.items()), key=lambda __entry: abs(
                 __entry[1]['mass'] - target_mass))
         try:
             match_type = get_close_matches(
-                atype, interface.radii_dict.keys(), n=1, cutoff=0.1
+                atype, list(interface.radii_dict.keys()), n=1, cutoff=0.1
             )
             rd = interface.radii_dict
             radii[masses == target_mass] = rd[match_type[0]]

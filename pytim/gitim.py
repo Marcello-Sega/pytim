@@ -14,6 +14,7 @@ try:
     from pytetgen import Delaunay
 except ImportError:
     from scipy.spatial import Delaunay
+from __future__ import print_function
 
 
 class GITIM(pytim.PYTIM):
@@ -166,7 +167,7 @@ class GITIM(pytim.PYTIM):
             v = r_i[0] - np.dot(invM, s)
         except np.linalg.linalg.LinAlgError as err:
             if 'Singular matrix' in err.message:
-                print "Warning, singular matrix for ", r_i
+                print("Warning, singular matrix for ", r_i)
                 # TODO is this correct? The singular matrix most likely comes
                 # out of points alinged in the plane
                 return 0

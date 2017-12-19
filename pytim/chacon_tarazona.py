@@ -9,7 +9,7 @@
 import numpy as np
 from pytim import utilities, surface
 import pytim
-
+from __future__ import print_function
 
 class Surface(surface.Surface):
 
@@ -70,7 +70,7 @@ class ChaconTarazona(pytim.PYTIM):
         >>> g = u.select_atoms('name OW')
         >>> interface = pytim.ChaconTarazona(u,alpha=2.,tau=1.5,group=g,info=False,molecular=False)
         >>> interface.writepdb('CT.pdb',centered=True)
-        >>> print repr(interface.layers)
+        >>> print(repr(interface.layers))
         array([[<AtomGroup with 175 atoms>],
                [<AtomGroup with 159 atoms>]], dtype=object)
 
@@ -149,7 +149,7 @@ class ChaconTarazona(pytim.PYTIM):
         pos = utilities.get_pos(self.cluster_group, normal=self.normal)
         for ind in sorted_ind:
             part = pos[ind]
-            nx, ny = map(int, 2.999 * part[0:2] / box[0:2])
+            nx, ny = list(map(int, 2.999 * part[0:2] / box[0:2]))
             if sectors[nx, ny] == 0:
                 pivot.append(ind)
                 sectors[nx, ny] = 1
@@ -177,8 +177,8 @@ class ChaconTarazona(pytim.PYTIM):
             s = surf.surface_from_modes(p, modes.reshape(surf.modes_shape))
             d = p[::, 2] - s
             if self.info == True:
-                print "side", side, "->", len(pivot), "pivots, msd=",\
-                    np.sqrt(np.sum(d * d) / len(d))
+                print(("side", side, "->", len(pivot), "pivots, msd=",\
+                    np.sqrt(np.sum(d * d) / len(d))))
             # TODO handle failure
             modes = modes.reshape(surf.modes_shape)
             new_pivot = np.sort(

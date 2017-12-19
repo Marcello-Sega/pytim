@@ -9,7 +9,7 @@ from . import utilities
 from pytim.properties import Layers, Clusters, Sides, _create_property
 from . import messages
 from pytim.properties import guess_radii, _missing_attributes
-
+from __future__ import print_function
 
 class SanityCheck(object):
 
@@ -31,7 +31,7 @@ class SanityCheck(object):
                 guess_radii(self.interface, group=g)
                 radii = np.copy(g.radii)
                 total += g
-        avg = round(np.average(self.interface.radii_dict.values()), 3)
+        avg = round(np.average(list(self.interface.radii_dict.values())), 3)
 
         nantypes = total.types[np.isnan(total.radii)]
         radii = np.copy(total.radii)
@@ -41,11 +41,11 @@ class SanityCheck(object):
         total.radii = radii
         try:
             if self.interface.guessed_radii and self.interface.warnings:
-                print "guessed radii: ", self.interface.guessed_radii,
-                print "You can override this by using, e.g.: pytim.",
-                print self.interface.__class__.__name__,
-                print "(u,radii_dict={ '"
-                print self.interface.guessed_radii.keys()[0] + "':1.2, ... } )"
+                print("guessed radii: ", self.interface.guessed_radii, end=' ')
+                print("You can override this by using, e.g.: pytim.", end=' ')
+                print(self.interface.__class__.__name__, end=' ')
+                print("(u,radii_dict={ '")
+                print(list(self.interface.guessed_radii.keys())[0] + "':1.2, ... } )")
         except BaseException:
             pass
 
@@ -63,11 +63,11 @@ class SanityCheck(object):
         try:
             np.arange(int(self.interface.alpha / self.interface.target_mesh))
         except BaseException:
-            print(
+            print((
                 "Error while initializing ITIM: alpha ({0:f}) too large or\
                   mesh ({1:f}) too small".format(
                     self.interface.alpha,
-                    self.interface.target_mesh))
+                    self.interface.target_mesh)))
             raise ValueError
 
     def assign_normal(self, normal):
@@ -208,7 +208,7 @@ class SanityCheck(object):
 
         self._define_groups()
         if(len(self.interface.itim_group) == 0):
-            raise StandardError(messages.UNDEFINED_ITIM_GROUP)
+            raise Exception(messages.UNDEFINED_ITIM_GROUP)
         interface = self.interface
 
         if(interface.cluster_cut is not None):
@@ -217,7 +217,7 @@ class SanityCheck(object):
             extraelements = len(interface.extra_cluster_groups)
 
         if not (elements == 1 or elements == 1 + extraelements):
-            raise StandardError(messages.MISMATCH_CLUSTER_SEARCH)
+            raise Exception(messages.MISMATCH_CLUSTER_SEARCH)
 
         return True
 
@@ -226,7 +226,7 @@ class SanityCheck(object):
             if self.interface.biggest_cluster_only is True:
                 if self.interface.cluster_cut is None:
                     self.interface.biggest_cluster_only = False
-                    print "Warning: the option biggest_cluster_only has no",
-                    print "effect without setting cluster_cut, ignoring it"
+                    print("Warning: the option biggest_cluster_only has no", end=' ')
+                    print("effect without setting cluster_cut, ignoring it")
         except:
             pass

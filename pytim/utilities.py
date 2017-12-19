@@ -16,10 +16,10 @@ from pytim.utilities_pbc import generate_periodic_border, rebox
 from pytim.gaussian_kde_pbc import gaussian_kde_pbc
 from pytim.utilities_dbscan import do_cluster_analysis_DBSCAN
 
-from atoms_maps import atoms_maps
+from .atoms_maps import atoms_maps
 from pytim.utilities_mesh import compute_compatible_mesh_params
 from pytim.utilities_mesh import generate_grid_in_box
-
+from __future__ import print_function
 
 def lap(show=False):
     """ Timer function
@@ -207,7 +207,7 @@ def guess_normal(universe, group):
         delta.append(np.sqrt((max_val - min_val)**2))
 
     if np.max(delta) / np.min(delta) < 5.0:
-        print "Warning: the result of the automatic normal detection (", np.argmax(delta), ") is not reliable"
+        print("Warning: the result of the automatic normal detection (", np.argmax(delta), ") is not reliable")
     return np.argmax(delta)
 
 

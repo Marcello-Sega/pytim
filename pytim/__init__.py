@@ -7,19 +7,19 @@ from scipy.interpolate import LinearNDInterpolator
 import MDAnalysis
 from MDAnalysis import Universe
 from MDAnalysis.topology import tables
-import __builtin__
+import builtins
 import importlib
-from version import __version__
+from .version import __version__
 from pytim.patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 from pytim.properties import Layers,Clusters,Sides,_create_property
 from pytim.sanity_check import SanityCheck
 from . import messages
 from pytim.pdb import _writepdb
 
-class PYTIM(object):
+
+class PYTIM(object, metaclass=ABCMeta):
     """ The PYTIM metaclass
     """
-    __metaclass__ = ABCMeta
 
     directions_dict = { 0: 'x', 1: 'y', 2: 'z',
                        'x': 'x', 'y': 'y', 'z': 'z',
@@ -183,7 +183,7 @@ class PYTIM(object):
                 'y':(1,utilities.get_y),
                 'z':(2,utilities.get_z)}
 
-        if _dir in _xyz.keys():
+        if _dir in list(_xyz.keys()):
             direction = _xyz[_dir][0]
             _pos_group = (_xyz[_dir][1])(group)
 
@@ -231,7 +231,7 @@ class PYTIM(object):
         else:
             box_half = 0.
         _pos={'x':_x,'y':_y,'z':_z}
-        if _dir in _pos.keys():
+        if _dir in list(_pos.keys()):
             _pos[_dir] += total_shift - _center + box_half
         # finally, we copy everything back
         group.universe.atoms.positions = np.column_stack((_x, _y, _z))

@@ -8,11 +8,12 @@
 
 from multiprocessing import Process, Queue
 import numpy as np
-from __builtin__ import zip as builtin_zip
+from builtins import zip as builtin_zip
 from scipy.spatial import cKDTree
 from pytim import utilities, surface
 import pytim
 from . import messages
+from __future__ import print_function
 
 
 class Surface(surface.Surface):

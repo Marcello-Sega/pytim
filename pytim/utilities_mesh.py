@@ -1,13 +1,15 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 import numpy as np
+from __future__ import print_function
+
 
 
 def compute_compatible_mesh_params(mesh, box):
     """ given a target mesh size and a box, return the number of grid elements
         and spacing in each direction, which are commensurate with the box
     """
-    n = map(int, np.ceil(box / mesh))
+    n = list(map(int, np.ceil(box / mesh)))
     d = box / n
     return n, d
 
