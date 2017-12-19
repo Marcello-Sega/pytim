@@ -227,7 +227,8 @@ class SanityCheck(object):
             if self.interface.biggest_cluster_only is True:
                 if self.interface.cluster_cut is None:
                     self.interface.biggest_cluster_only = False
-                    print("Warning: the option biggest_cluster_only has no", end=' ')
-                    print("effect without setting cluster_cut, ignoring it")
+                    print("Warning: the option biggest_cluster_only ", end=' ')
+                    print("has noeffect without setting cluster_cut,", end=' ')
+                    print("ignoring it.")
         except:
             pass
