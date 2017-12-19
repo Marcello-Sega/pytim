@@ -1,5 +1,6 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
+from __future__ import print_function
 """
 Location of data files for Pytim examples and tests
 ====================================================
@@ -129,19 +130,19 @@ class Data(object):
         urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'
         try:
             md5 = urllib.urlopen(urlbase_md5 + filename + '.MD5').readline()
-            print "checking presence of a cached copy...",
+            print("checking presence of a cached copy...", end=' ')
             md5_local = hashlib.md5(
                 open(dirname + filename, 'rb').read()).hexdigest()
             if md5_local in md5:
-                print "found"
+                print("found")
                 return dirname + filename
-        except:
+        except BaseException:
             pass
-        print "not found. Fetching remote file...",
+        print("not found. Fetching remote file...", end=' ')
         newfile = urllib.urlopen(urlbase + filename + '?raw=true')
         with open(dirname + filename, 'wb') as output:
             output.write(newfile.read())
-        print "done."
+        print("done.")
         return dirname + filename
 
     def _generate_data_property(self, name):
@@ -181,40 +182,45 @@ class Data(object):
         self.description[file] = desc
         self.description[label] = desc
 
-    nm2angs = 10.0
+    def sigeps(self, data, input_type):
+        nm2angs = 10.0
+        a, b = float(data[5]), float(data[6])
+        sigma = 0
+        if input_type == 'c6c12':
+            c6, c12 = a, b
+            if (c6 > 0.0):
+                sigma = (c12 / c6)**(1. / 6.)
+        else:
+            sigma = a
+
+        return sigma * nm2angs
 
     def vdwradii(self, filename):
-        input_type = 'sigeps'
         if self.type[filename] == 'topol' and self.format[filename] == 'GMX':
-            with open(filename) as f:
-                scan = False
-                radii = dict()
-                for line in f:
-                    if (scan and re.match('^ *\[', line)):
-                        return radii
-                    if (scan):
-                        try:
-                            if re.match(';.*name.*c6 *c12', line):
-                                input_type = 'c6c12'
-                            data = (line.split(";")[0]).split()
-                            atom, sigma, epsilon = str(data[0]), float(
-                                data[5]), float(data[6])
-                            if input_type == 'c6c12':
-                                c6, c12 = sigma, epsilon
-                                if (c6 == 0.0 or c12 == 0.0):
-                                    sigma = 0.0
-                                else:
-                                    sigma = (c12 / c6)**(1. / 6.) * \
-                                        self.nm2angs
-                            else:
-                                sigma *= self.nm2angs
+            return self._vdwradii_gmx(filename)
 
-                            radii[atom] = sigma / 2.
-                        except Exception:
-                            pass
-                    if (re.match('^ *\[ *atomtypes *\]', line)):
-                        scan = True
-            return radii
+    def _vdwradii_gmx(self, filename):
+        with open(filename) as f:
+            input_type = 'sigeps'
+            content = f.read()
+            if re.match('.*name.*c6 *c12.*', content.replace('\n', ' ')):
+                input_type = 'c6c12'
+            f.seek(0)
+            scan = False
+            radii = dict()
+            for line in f:
+                if (scan and re.match('^ *\[', line)):
+                    return radii
+                if (scan):
+                    try:
+                        data = (line.split(";")[0]).split()
+                        atom = data[0]
+                        radii[atom] = 0.5 * self.sigeps(data, input_type)
+                    except IndexError:
+                        pass
+                if (re.match('^ *\[ *atomtypes *\]', line)):
+                    scan = True
+        return radii
 
 
 pytim_data = Data()
@@ -222,63 +228,63 @@ pytim_data = Data()
 # NOTE: to add a new datafile, make sure it is listed in setup.py (in the root directory)
 # in the package_data option (a glob like 'data/*' is usually enough)
 CCL4_WATER_GRO = resource_filename('pytim', 'data/CCL4.H2O.GRO')
-pytim_data.add('CCL4_WATER_GRO',  'config', 'GRO',
+pytim_data.add('CCL4_WATER_GRO', 'config', 'GRO',
                'Carbon tetrachloride/TIP4p water interface')
 
 WATER_GRO = resource_filename('pytim', 'data/water.gro')
-pytim_data.add('WATER_GRO',  'config', 'GRO', 'SPC water/vapour interface')
+pytim_data.add('WATER_GRO', 'config', 'GRO', 'SPC water/vapour interface')
 
 WATER_LMP_XTC = resource_filename('pytim', 'data/water_lmp.xtc')
-pytim_data.add('WATER_LMP_XTC',  'traj', 'LAMMPS',
+pytim_data.add('WATER_LMP_XTC', 'traj', 'LAMMPS',
                'SPC water/vapour interface')
 
 WATER_PDB = resource_filename('pytim', 'data/water.pdb')
-pytim_data.add('WATER_PDB',  'config', 'PDB', 'SPC water/vapour interface')
+pytim_data.add('WATER_PDB', 'config', 'PDB', 'SPC water/vapour interface')
 
 WATER_XYZ = resource_filename('pytim', 'data/water.xyz')
-pytim_data.add('WATER_XYZ',  'config', 'XYZ', 'SPC water/vapour interface')
+pytim_data.add('WATER_XYZ', 'config', 'XYZ', 'SPC water/vapour interface')
 
 MICELLE_PDB = resource_filename('pytim', 'data/micelle.pdb')
-pytim_data.add('MICELLE_PDB',  'config', 'GRO', 'DPC micelle')
+pytim_data.add('MICELLE_PDB', 'config', 'GRO', 'DPC micelle')
 
 FULLERENE_PDB = resource_filename('pytim', 'data/fullerene.pdb')
-pytim_data.add('FULLERENE_PDB',  'config', 'PDB', 'fullerene')
+pytim_data.add('FULLERENE_PDB', 'config', 'PDB', 'fullerene')
 
 GLUCOSE_PDB = resource_filename('pytim', 'data/glucose.pdb')
-pytim_data.add('GLUCOSE_PDB',  'config', 'PDB', 'solvated beta-d-glucose')
+pytim_data.add('GLUCOSE_PDB', 'config', 'PDB', 'solvated beta-d-glucose')
 
 WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
-pytim_data.add('WATERSMALL_GRO',  'config', 'GRO',
+pytim_data.add('WATERSMALL_GRO', 'config', 'GRO',
                'small SPC water/vapour interface')
 
 WATER_520K_GRO = resource_filename('pytim', 'data/water_520K.gro')
-pytim_data.add('WATER_520K_GRO',  'config', 'GRO',
+pytim_data.add('WATER_520K_GRO', 'config', 'GRO',
                'SPC/E water/vapour interface, 520K')
 
 WATER_550K_GRO = resource_filename('pytim', 'data/water_550K.gro')
-pytim_data.add('WATER_550K_GRO',  'config', 'GRO',
+pytim_data.add('WATER_550K_GRO', 'config', 'GRO',
                'SPC/E water/vapour interface, 550K')
 
 METHANOL_GRO = resource_filename('pytim', 'data/methanol.gro')
-pytim_data.add('METHANOL_GRO',  'conf', 'GRO', 'methanol/vapour interface')
+pytim_data.add('METHANOL_GRO', 'conf', 'GRO', 'methanol/vapour interface')
 
 ILBENZENE_GRO = resource_filename('pytim', 'data/ilbenzene.gro')
-pytim_data.add('ILBENZENE_GRO',  'conf', 'GRO', 'BMIM PF4 / benzene interface')
+pytim_data.add('ILBENZENE_GRO', 'conf', 'GRO', 'BMIM PF4 / benzene interface')
 
 WATER_XTC = resource_filename('pytim', 'data/water.xtc')
-pytim_data.add('WATER_XTC',  'traj', 'XTC',
+pytim_data.add('WATER_XTC', 'traj', 'XTC',
                'SPC water/vapour interface trajectory')
 
 _TEST_BCC_GRO = resource_filename(
     'pytim', 'data/_test_bcc.gro')
-pytim_data.add('_TEST_BCC_GRO',  'config', 'GRO', 'test file')
+pytim_data.add('_TEST_BCC_GRO', 'config', 'GRO', 'test file')
 
 _TEST_ORIENTATION_GRO = resource_filename(
     'pytim', 'data/_test_orientation.gro')
-pytim_data.add('_TEST_ORIENTATION_GRO',  'config', 'GRO', 'test file')
+pytim_data.add('_TEST_ORIENTATION_GRO', 'config', 'GRO', 'test file')
 
 _TEST_PROFILE_GRO = resource_filename('pytim', 'data/_test_profile.gro')
-pytim_data.add('_TEST_PROFILE_GRO',  'config', 'GRO', 'test file')
+pytim_data.add('_TEST_PROFILE_GRO', 'config', 'GRO', 'test file')
 
 WATER_LMP_DATA = resource_filename('pytim', 'data/water_lmp.data')
 pytim_data.add('WATER_LMP_DATA', 'topol', 'DATA',

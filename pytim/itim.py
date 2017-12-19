@@ -6,6 +6,7 @@
     ============
 """
 
+from __future__ import print_function
 from multiprocessing import Process, Queue
 import numpy as np
 from __builtin__ import zip as builtin_zip

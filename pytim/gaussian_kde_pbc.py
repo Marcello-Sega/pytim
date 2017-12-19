@@ -3,6 +3,7 @@
 """ Module: pytim.gaussian_kde_pbc
     ==============================
 """
+from __future__ import print_function
 import numpy as np
 from scipy.stats import gaussian_kde
 

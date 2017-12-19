@@ -3,6 +3,7 @@
 """ Module: correlator
     ==================
 """
+from __future__ import print_function
 
 import numpy as np
 from pytim import utilities
@@ -130,8 +131,8 @@ class Correlator(object):
         self.timeseries.append(list(sampled.flatten()))
         self.mem_usage += sampled.nbytes / 1024.0 / 1024.0  # in Mb
         if self.mem_usage > self.memory_warn and self.warned == False:
-            print "Warning: warning threshold of",
-            print self.memory_warn, "Mb exceeded"
+            print("Warning: warning threshold of", end=' ')
+            print(self.memory_warn, "Mb exceeded")
             self.warned = True
 
         if self.shape == None:

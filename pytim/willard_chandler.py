@@ -6,6 +6,7 @@
     ========================
 """
 
+from __future__ import print_function
 import numpy as np
 from skimage import measure
 from pytim import utilities, vtk, cube, wavefront_obj

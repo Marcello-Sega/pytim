@@ -1,6 +1,6 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-
+from __future__ import print_function
 from distutils.version import LooseVersion
 import numpy as np
 import MDAnalysis
@@ -40,12 +40,13 @@ class SanityCheck(object):
             self.interface.guessed_radii.update({nantype: avg})
         total.radii = radii
         try:
-            if self.interface.guessed_radii and self.interface.warnings:
-                print "guessed radii: ", self.interface.guessed_radii,
-                print "You can override this by using, e.g.: pytim.",
-                print self.interface.__class__.__name__,
-                print "(u,radii_dict={ '"
-                print self.interface.guessed_radii.keys()[0] + "':1.2, ... } )"
+            gr = self.interface.guessed_radii
+            if gr and self.interface.warnings:
+                print("guessed radii: ", gr, end=' ')
+                print("You can override this by using, e.g.: pytim.", end=' ')
+                print(self.interface.__class__.__name__, end=' ')
+                print("(u,radii_dict={ '", end=' ')
+                print(gr.keys()[0] + "':1.2, ... } )")
         except BaseException:
             pass
 
@@ -63,11 +64,11 @@ class SanityCheck(object):
         try:
             np.arange(int(self.interface.alpha / self.interface.target_mesh))
         except BaseException:
-            print(
+            print((
                 "Error while initializing ITIM: alpha ({0:f}) too large or\
                   mesh ({1:f}) too small".format(
                     self.interface.alpha,
-                    self.interface.target_mesh))
+                    self.interface.target_mesh)))
             raise ValueError
 
     def assign_normal(self, normal):
@@ -226,7 +227,8 @@ class SanityCheck(object):
             if self.interface.biggest_cluster_only is True:
                 if self.interface.cluster_cut is None:
                     self.interface.biggest_cluster_only = False
-                    print "Warning: the option biggest_cluster_only has no",
-                    print "effect without setting cluster_cut, ignoring it"
+                    print("Warning: the option biggest_cluster_only", end=' ')
+                    print("has no effect without setting cluster_cut,", end=' ')
+                    print("ignoring it")
         except:
             pass

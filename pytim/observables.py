@@ -3,6 +3,7 @@
 """ Module: observables
     ===================
 """
+from __future__ import print_function
 
 # here go all and only those classes derived from Observable
 from abc import ABCMeta, abstractmethod
@@ -262,7 +263,7 @@ class Charge(Observable):
         try:
             return inp.charges
         except AttributeError:
-            print "Error, the passed Atomgroup has no charges attribute"
+            print("Error, the passed Atomgroup has no charges attribute")
 
 
 class NumberOfResidues(Observable):
