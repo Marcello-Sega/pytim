@@ -45,7 +45,8 @@ class SanityCheck(object):
                 print("You can override this by using, e.g.: pytim.", end=' ')
                 print(self.interface.__class__.__name__, end=' ')
                 print("(u,radii_dict={ '")
-                print(self.interface.guessed_radii.keys()[0] + "':1.2, ... } )")
+                print(self.interface.guessed_radii.keys()
+                      [0] + "':1.2, ... } )")
         except BaseException:
             pass
 

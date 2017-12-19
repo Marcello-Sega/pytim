@@ -15,4 +15,3 @@ WRONG_UNIVERSE = "Wrong Universe passed to ITIM class"
 UNDEFINED_ITIM_GROUP = "No itim_group defined, or empty"
 WRONG_DIRECTION = "Wrong direction supplied. Use 'x','y','z' , 'X', 'Y', 'Z' or 0, 1, 2"
 CENTERING_FAILURE = "Cannot center the group in the box. Wrong direction supplied?"
-

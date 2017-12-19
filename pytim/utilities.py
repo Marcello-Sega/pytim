@@ -152,6 +152,7 @@ def get_y(group, normal=2):
 def get_z(group, normal=2):
     return get_coord(2, group=group, normal=normal)
 
+
 def centerbox(universe, x=None, y=None, z=None, vector=None,
               center_direction=2, halfbox_shift=True):
     # in ITIM, the system is always centered at 0 along the normal direction (halfbox_shift==True)
@@ -209,7 +210,8 @@ def guess_normal(universe, group):
         delta.append(np.sqrt((max_val - min_val)**2))
 
     if np.max(delta) / np.min(delta) < 5.0:
-        print("Warning: the result of the automatic normal detection (", np.argmax(delta), ") is not reliable")
+        print("Warning: the result of the automatic normal detection (",
+              np.argmax(delta), ") is not reliable")
     return np.argmax(delta)
 
 
