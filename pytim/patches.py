@@ -1,6 +1,7 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 
+
 def PatchTrajectory(trajectory, interface):
     """ Patch the MDAnalysis trajectory class
 
@@ -35,7 +36,6 @@ def PatchTrajectory(trajectory, interface):
         PatchedTrajectory.__name__ = oldname
         PatchedTrajectory.__module__ = oldmodule
         trajectory.__class__ = PatchedTrajectory
-
 
 
 def PatchOpenMM(simulation, interface):
@@ -99,6 +99,3 @@ def PatchMDTRAJ(trajectory, universe):
         PatchedMdtrajTrajectory.__name__ = oldname
         PatchedMdtrajTrajectory.__module__ = oldmodule
         trajectory.__class__ = PatchedMdtrajTrajectory
-
-
-

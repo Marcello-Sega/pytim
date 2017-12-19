@@ -7,9 +7,10 @@ from scipy.spatial import Delaunay
 from scipy.interpolate import LinearNDInterpolator
 from pytim import utilities
 from . import messages
+from __future__ import print_function
 
 
-class Surface(object):
+class Surface(object, metaclass=ABCMeta):
     """ Everything about the continuum description of surfaces.
 
         Any implementation must provide the following methods:
@@ -19,7 +20,6 @@ class Surface(object):
         regular_grid()  -> the surface elevation on a regular grid, if available
         dump()          -> save to disk in format of choice
     """
-    __metaclass__ = ABCMeta
     # TODO: so far includes only methods for CT. Gather also other ones here
 
     def __init__(self, interface, options=None):
@@ -75,7 +75,7 @@ class Surface(object):
 
     def _compute_q_vectors(self, box):
         self.box = np.roll(box, 2 - self.normal)
-        nmax = map(int, np.ceil(self.box[0:2] / self.alpha))
+        nmax = list(map(int, np.ceil(self.box[0:2] / self.alpha)))
         q_indices = np.mgrid[0:nmax[0], 0:nmax[1]]
         self.q_vectors = q_indices * 1.0
         self.q_vectors[0] *= 2. * np.pi / box[0]

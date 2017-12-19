@@ -9,6 +9,8 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 
 from pytim import utilities
+from __future__ import print_function
+
 # check also imports at the end
 
 # we try here to have no options passed
@@ -21,7 +23,7 @@ from pytim import utilities
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
 
-class Observable(object):
+class Observable(object, metaclass=ABCMeta):
     """ Instantiate an observable.
 
         This is a metaclass: it can be used to define observables that
@@ -43,8 +45,6 @@ class Observable(object):
         12000
 
     """
-
-    __metaclass__ = ABCMeta
 
     def __init__(self, universe, options=''):
         self.u = universe
@@ -262,7 +262,7 @@ class Charge(Observable):
         try:
             return inp.charges
         except AttributeError:
-            print "Error, the passed Atomgroup has no charges attribute"
+            print("Error, the passed Atomgroup has no charges attribute")
 
 
 class NumberOfResidues(Observable):
@@ -405,7 +405,7 @@ class Orientation(Observable):
         return v
 
 
-from profile import Profile
-from rdf import RDF, RDF2D
-from free_volume import FreeVolume
-from correlator import Correlator
+from .profile import Profile
+from .rdf import RDF, RDF2D
+from .free_volume import FreeVolume
+from .correlator import Correlator
