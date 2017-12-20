@@ -97,7 +97,22 @@ class Data(object):
     """" a class for storing/accessing configurations, trajectories, topologies
     """
 
-    def fetch(self, name, tmpdir=None):
+    @staticmethod
+    def sigeps(data, input_type):
+        nm2angs = 10.0
+        a, b = float(data[5]), float(data[6])
+        sigma = 0
+        if input_type == 'c6c12':
+            c6, c12 = a, b
+            if (c6 > 0.0):
+                sigma = (c12 / c6)**(1. / 6.)
+        else:
+            sigma = a
+
+        return sigma * nm2angs
+
+    @staticmethod
+    def fetch(name, tmpdir=None):
         """ Fetch a sample trajectory from the github repository.
 
             Have a look at https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/
@@ -181,19 +196,6 @@ class Data(object):
         self.format[label] = fileformat
         self.description[file] = desc
         self.description[label] = desc
-
-    def sigeps(self, data, input_type):
-        nm2angs = 10.0
-        a, b = float(data[5]), float(data[6])
-        sigma = 0
-        if input_type == 'c6c12':
-            c6, c12 = a, b
-            if (c6 > 0.0):
-                sigma = (c12 / c6)**(1. / 6.)
-        else:
-            sigma = a
-
-        return sigma * nm2angs
 
     def vdwradii(self, filename):
         if self.type[filename] == 'topol' and self.format[filename] == 'GMX':

@@ -100,7 +100,6 @@ class FreeVolume(object):
         box = self.u.dimensions[:3].copy()
 
         slabwidth = box[direction] / nbins
-        slabvol = self.u.trajectory.ts.volume / nbins
 
         bins = np.arange(nbins + 1) * slabwidth
 

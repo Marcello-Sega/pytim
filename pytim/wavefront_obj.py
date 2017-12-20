@@ -2,7 +2,6 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
 from pytim import utilities
-import numpy as np
 
 
 def consecutive_filename(universe, basename):

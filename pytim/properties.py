@@ -168,13 +168,13 @@ def _guess_radii_from_types(interface, group, guessed):
             matching_type = weighted_close_match(aname, _dict)
             radii[group.names == aname] = _dict[matching_type]
             guessed.update({aname: _dict[matching_type]})
-        except (KeyError, IndexError) as e:
+        except (KeyError, IndexError):
             try:
                 atype = group.types[group.names == aname][0]
                 matching_type = weighted_close_match(atype, _dict)
                 radii[group.types == atype] = _dict[matching_type]
                 guessed.update({atype: _dict[matching_type]})
-            except (KeyError, IndexError) as ee:
+            except (KeyError, IndexError):
                 pass
     group.radii = np.copy(radii)
 

@@ -76,7 +76,10 @@ class RDF(object):
     def __init__(self, universe,
                  nbins=75, max_radius='full',
                  start=None, stop=None, step=None,
-                 observable=None, observable2=None, kargs1={}, kargs2={}):
+                 observable=None, observable2=None, kargs1=None, kargs2=None):
+
+        kargs1 = kargs1 or {}
+        kargs2 = kargs2 or {}
         if max_radius is 'full':
             self.max_radius = np.min(universe.dimensions[:3])
         else:
@@ -256,11 +259,12 @@ class RDF2D(RDF):
     def __init__(self, universe,
                  nbins=75, max_radius='full',
                  start=None, stop=None, step=None, excluded_dir='auto',
-                 true2D=False, observable=None, kargs1={}, kargs2={}):
+                 true2D=False, observable=None, kargs1=None, kargs2=None):
+
         RDF.__init__(self, universe, nbins=nbins, max_radius=max_radius,
                      start=start, stop=stop, step=step,
                      observable=observable, kargs1=kargs1, kargs2=kargs2)
-        _dir = {'x': 0, 'y': 1, 'z': 2}
+        _dir={'x': 0, 'y': 1, 'z': 2}
         self.true2D = true2D
         if excluded_dir == 'auto':
             try:

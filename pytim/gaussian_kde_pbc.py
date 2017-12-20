@@ -11,7 +11,8 @@ from scipy.stats import gaussian_kde
 class gaussian_kde_pbc(gaussian_kde):
     # note that here "points" are those on the grid
 
-    def search(self, p, grid, d):
+    @staticmethod
+    def search(p, grid, d):
         cond = []
         for n in [0, 1, 2]:
             cond.append(np.logical_and(grid[n] > p[n] - d, grid[n] < p[n] + d))
