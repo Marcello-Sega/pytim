@@ -73,6 +73,7 @@ def _missing_attributes(interface, universe):
                              universe.atoms, 1)
     _extra_attributes(interface, universe)
 
+
 def _extra_attributes(interface, universe):
     # we add here the new layer, cluster and side information
     # they are not part of MDAnalysis.core.topologyattrs
@@ -209,7 +210,7 @@ def guess_radii(interface, group=None):
         # used to guess the type (in this code)
         group.types.astype(int)
     except AttributeError:  # no types at all
-        have_types = False
+        pass  # will try with masses
     except ValueError:  # types are there, and are not integers
         _guess_radii_from_types(interface, group, guessed)
 
