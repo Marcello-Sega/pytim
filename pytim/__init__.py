@@ -12,7 +12,7 @@ from version import __version__
 from pytim.patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 from pytim.properties import _create_property
 from pytim.sanity_check import SanityCheck
-from . import messages
+import pytim.messages
 from pytim.pdb import _writepdb
 
 

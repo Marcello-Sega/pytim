@@ -73,17 +73,13 @@ def _missing_attributes(interface, universe):
                              universe.atoms, 1)
     # we add here the new layer, cluster and side information
     # they are not part of MDAnalysis.core.topologyattrs
-    if 'layers' not in dir(universe.atoms):
-        layers = np.zeros(len(universe.atoms), dtype=np.int) - 1
-        universe.add_TopologyAttr(Layers(layers))
+    attr = { 'layers': Layers, 'clusters': Clusters, 'sides': Sides}
 
-    if 'clusters' not in dir(universe.atoms):
-        clusters = np.zeros(len(universe.atoms), dtype=np.int) - 1
-        universe.add_TopologyAttr(Clusters(clusters))
+    for key in attr.keys():
+        if key not in dir(universe.atoms):
+            vals = np.zeros(len(universe.atoms), dtype=np.int) - 1
+            universe.add_TopologyAttr(attr[key](vals))
 
-    if 'sides' not in dir(universe.atoms):
-        sides = np.zeros(len(universe.atoms), dtype=np.int) - 1
-        universe.add_TopologyAttr(Sides(sides))
 
 
 def _check_missing_attribute(interface, name, classname, group, value):
@@ -201,7 +197,6 @@ def guess_radii(interface, group=None):
         return
     nones = np.equal(group.radii, None)
     group.radii[nones] = np.array([np.nan] * len(group.radii[nones]))
-    # group.radii = group.radii.astype(np.float32)
 
     group = group[np.isnan(group.radii)]
 

@@ -78,8 +78,6 @@ class ITIM(pytim.PYTIM):
                                   search, if cluster_cut is not None
         :param Object extra_cluster_groups: Additional groups, to allow for mixed interfaces
         :param bool info:         Print additional info
-        :param bool multiproc:    Parallel version (default: True. Switch off\
-                                  for debugging)
         :param bool centered:     Center the  :py:obj:`group`
         :param bool warnings:     Print warnings
         :param float mesh:        The grid spacing used for the testlines (default 0.4 Angstrom)
@@ -178,7 +176,7 @@ dtype=object)
                  molecular=True, max_layers=1, radii_dict=None,
                  cluster_cut=None, cluster_threshold_density=None,
                  extra_cluster_groups=None, info=False,
-                 multiproc=True, centered=False, warnings=False, mesh=0.4, **kargs):
+                 centered=False, warnings=False, mesh=0.4, **kargs):
 
         self.symmetry = 'planar'
         self.do_center = centered
@@ -206,7 +204,6 @@ dtype=object)
         self.grid = None
         self.use_threads = False
         self.use_kdtree = True
-        self.use_multiproc = multiproc
 
         pytim.PatchTrajectory(self.universe.trajectory, self)
 
@@ -309,6 +306,36 @@ dtype=object)
         else:
             queue.put(_layers)
 
+    def _prepare_layers_assignment(self):
+        self._assign_mesh()
+        up,low = 0,1
+        self.layers_ids = [[], []]  # upper, lower
+        size = (2, self.max_layers, self.mesh_nx * self.mesh_ny)
+        self.mask = np.zeros(size, dtype=int)
+
+        # this can be used later to shift back to the original shift
+        self.original_positions = np.copy(self.universe.atoms.positions[:])
+
+        self.universe.atoms.pack_into_box()
+
+    def _prelabel_groups(self):
+        self.label_group(self.universe.atoms, beta=0.0,
+                         layer=-1, cluster=-1, side=-1)
+        # first we label all atoms in group to be in the gas phase
+        self.label_group(self.itim_group.atoms, beta=0.5)
+        # then all atoms in the largest group are labelled as liquid-like
+        self.label_group(self.cluster_group.atoms, beta=0.0)
+    
+    def _postlabel_groups(self):
+        # Assign to all layers a label (tempfactor) that can be used in pdb files.
+        # Additionally, set the new layers and sides
+        for uplow in [0, 1]:
+            for nlayer, layer in enumerate(self._layers[uplow]):
+                self.label_group(layer, beta=nlayer + 1.0,
+                                 layer=nlayer + 1, side=uplow)
+
+
+
     def _assign_layers(self):
         """ Determine the ITIM layers.
 
@@ -324,20 +351,9 @@ dtype=object)
             True
 
         """
+        up,low = 0,1
 
-        self.label_group(self.universe.atoms, beta=0.0,
-                         layer=-1, cluster=-1, side=-1)
-        self._assign_mesh()
-        up = 0
-        low = 1
-        self.layers_ids = [[], []]  # upper, lower
-        size = (2, self.max_layers, self.mesh_nx * self.mesh_ny)
-        self.mask = np.zeros(size, dtype=int)
-
-        # this can be used later to shift back to the original shift
-        self.original_positions = np.copy(self.universe.atoms.positions[:])
-
-        self.universe.atoms.pack_into_box()
+        self._prepare_layers_assignment()
         # groups have been checked already in _sanity_checks()
 
         self._define_cluster_group()
@@ -345,55 +361,43 @@ dtype=object)
         # we always (internally) center in ITIM
         self.center(planar_to_origin=True)
 
-        # first we label all atoms in group to be in the gas phase
-        self.label_group(self.itim_group.atoms, beta=0.5)
-        # then all atoms in the largest group are labelled as liquid-like
-        self.label_group(self.cluster_group.atoms, beta=0.0)
+        self._prelabel_groups()
 
         _radius = self.cluster_group.radii
-        self._seen = [[], []]
         size = len(self.cluster_group.positions)
-        self._seen[up] = np.zeros(size, dtype=np.int8)
-        self._seen[low] = np.zeros(size, dtype=np.int8)
+        self._seen = [np.zeros(size, dtype=np.int8),
+                      np.zeros(size, dtype=np.int8)]
 
         _x = utilities.get_x(self.cluster_group, self.normal)
         _y = utilities.get_y(self.cluster_group, self.normal)
         _z = utilities.get_z(self.cluster_group, self.normal)
+
         sort = np.argsort(_z + _radius * np.sign(_z))
         # NOTE: np.argsort returns the sorted *indices*
 
-        if self.use_multiproc:
-            # so far, it justs exploit a simple scheme splitting
-            # the calculation between the two sides. Would it be
-            # possible to implement easily 2d domain decomposition?
-            proc = [None, None]
-            queue = [Queue(), Queue()]
-            proc[up] = Process(target=self._assign_one_side,
-                               args=(up, sort[::-1], _x, _y, _z,
-                                     _radius, queue[up]))
-            proc[low] = Process(target=self._assign_one_side,
-                                args=(low, sort[::], _x, _y, _z,
-                                      _radius, queue[low]))
+        # so far, it justs exploit a simple scheme splitting
+        # the calculation between the two sides. Would it be
+        # possible to implement easily 2d domain decomposition?
+        proc, queue  = [None, None], [Queue(), Queue()]
+        proc[up] = Process(target=self._assign_one_side,
+                           args=(up, sort[::-1], _x, _y, _z,
+                                 _radius, queue[up]))
+        proc[low] = Process(target=self._assign_one_side,
+                            args=(low, sort[::], _x, _y, _z,
+                                  _radius, queue[low]))
 
-            for p in proc:
-                p.start()
-            for uplow in [up, low]:
-                for index, group in enumerate(queue[uplow].get()):
-                    # cannot use self._layers[uplow][index] = group, otherwise
-                    # info about universe is lost (do not know why yet)
-                    # must use self._layers[uplow][index] =
-                    # self.universe.atoms[group.indices]
-                    self._layers[uplow][index] =\
-                        self.universe.atoms[group.indices]
-            for p in proc:
-                p.join()
-        else:
-            for index, group in enumerate(self._assign_one_side(
-                    up, sort[::-1], _x, _y, _z, _radius)):
-                self._layers[up][index] = group
-            for index, group in enumerate(self._assign_one_side(
-                    low, sort[::], _x, _y, _z, _radius)):
-                self._layers[low][index] = group
+        for p in proc:
+            p.start()
+        for uplow in [up, low]:
+            for index, group in enumerate(queue[uplow].get()):
+                # cannot use self._layers[uplow][index] = group, otherwise
+                # info about universe is lost (do not know why yet)
+                # must use self._layers[uplow][index] =
+                # self.universe.atoms[group.indices]
+                self._layers[uplow][index] =\
+                    self.universe.atoms[group.indices]
+        for p in proc:
+            p.join()
 
         # Assign to all layers a label (tempfactor) that can be used in pdb files.
         # Additionally, set the new layers and sides
