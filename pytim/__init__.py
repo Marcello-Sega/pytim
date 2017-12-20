@@ -12,7 +12,7 @@ from version import __version__
 from pytim.patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 from pytim.properties import _create_property
 from pytim.sanity_check import SanityCheck
-import pytim.messages
+from . import messages
 from pytim.pdb import _writepdb
 
 
@@ -87,6 +87,14 @@ class PYTIM(object):
     @property
     def method(self):
         return self.__class__.__name__
+
+    def label_planar_sides(self):
+        # Assign to all layers a label (tempfactor) that can be used in pdb files.
+        # Additionally, set the new layers and sides
+        for uplow in [0, 1]:
+            for nlayer, layer in enumerate(self._layers[uplow]):
+                self.label_group(layer, beta=nlayer + 1.0,
+                                 layer=nlayer + 1, side=uplow)
 
     def label_group(self, group, beta=None, layer=None, cluster=None, side=None):
         if group is None:

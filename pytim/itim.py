@@ -308,8 +308,6 @@ dtype=object)
 
     def _prepare_layers_assignment(self):
         self._assign_mesh()
-        up, low = 0, 1
-        self.layers_ids = [[], []]  # upper, lower
         size = (2, self.max_layers, self.mesh_nx * self.mesh_ny)
         self.mask = np.zeros(size, dtype=int)
 
@@ -325,14 +323,6 @@ dtype=object)
         self.label_group(self.itim_group.atoms, beta=0.5)
         # then all atoms in the largest group are labelled as liquid-like
         self.label_group(self.cluster_group.atoms, beta=0.0)
-
-    def _postlabel_groups(self):
-        # Assign to all layers a label (tempfactor) that can be used in pdb files.
-        # Additionally, set the new layers and sides
-        for uplow in [0, 1]:
-            for nlayer, layer in enumerate(self._layers[uplow]):
-                self.label_group(layer, beta=nlayer + 1.0,
-                                 layer=nlayer + 1, side=uplow)
 
     def _assign_layers(self):
         """ Determine the ITIM layers.
@@ -397,12 +387,7 @@ dtype=object)
         for p in proc:
             p.join()
 
-        # Assign to all layers a label (tempfactor) that can be used in pdb files.
-        # Additionally, set the new layers and sides
-        for uplow in [up, low]:
-            for nlayer, layer in enumerate(self._layers[uplow]):
-                self.label_group(layer, beta=nlayer + 1.0,
-                                 layer=nlayer + 1, side=uplow)
+        self.label_planar_sides()
 
         for nlayer, layer in enumerate(self._layers[0]):
             self._surfaces[nlayer] = Surface(self, options={'layer': nlayer})

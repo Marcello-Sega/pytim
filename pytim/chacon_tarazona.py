@@ -228,10 +228,8 @@ class ChaconTarazona(pytim.PYTIM):
         self.sorted_indices = np.argsort(pos[::, self.normal])
         for side in [0, 1]:
             self._layers[side][0] = self._assign_one_side(side)
-        for side in [0, 1]:
-            for _nlayer, _layer in enumerate(self._layers[side]):
-                self.label_group(_layer, beta=_nlayer + 1.0,
-                                 layer=_nlayer + 1, side=side)
+
+        self.label_planar_sides()
 
         if self.do_center == False:
             self.universe.atoms.positions = self.original_positions

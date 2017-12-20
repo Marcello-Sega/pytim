@@ -71,10 +71,12 @@ def _missing_attributes(interface, universe):
                              universe.atoms, 1)
     _check_missing_attribute(interface, 'elements', 'Elements',
                              universe.atoms, 1)
+    _extra_attributes(interface, universe)
+
+def _extra_attributes(interface, universe):
     # we add here the new layer, cluster and side information
     # they are not part of MDAnalysis.core.topologyattrs
     attr = {'layers': Layers, 'clusters': Clusters, 'sides': Sides}
-
     for key in attr.keys():
         if key not in dir(universe.atoms):
             vals = np.zeros(len(universe.atoms), dtype=np.int) - 1
@@ -199,29 +201,22 @@ def guess_radii(interface, group=None):
 
     group = group[np.isnan(group.radii)]
 
-    have_masses = ('masses' in dir(group))
-
-    have_types = False
-    if 'types' in dir(group):
-        have_types = True
-        try:
-            # When atom types are str(ints), e.g. lammps ,
-            # we cannot use them to guess radii
-
-            # trying to convert strings to integers:
-            group.types.astype(int)
-            have_types = False
-        except ValueError:
-            pass
-
     # We give precedence to atom names, then to types
-    if have_types:
+    try:
+        # this test failes wither if no 'type' property
+        # is available, or if it is, but the values are
+        # integers (like in lammps) and thus cannot be
+        # used to guess the type (in this code)
+        group.types.astype(int)
+    except AttributeError:  # no types at all
+        have_types = False
+    except ValueError:  # types are there, and are not integers
         _guess_radii_from_types(interface, group, guessed)
 
     # We fill in the remaining ones using masses information
-
     group = group[np.isnan(group.radii)]
 
-    if have_masses:
+    if ('masses' in dir(group)):
         _guess_radii_from_masses(interface, group, guessed)
+
     interface.guessed_radii.update(guessed)
