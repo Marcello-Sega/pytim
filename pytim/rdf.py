@@ -109,7 +109,7 @@ class RDF(object):
 
     def sample(self, g1=None, g2=None, kargs1=None, kargs2=None):
         kargs1 = kargs1 or {}
-        kargs2 = kargs2 or {} 
+        kargs2 = kargs2 or {}
         self.n_frames += 1
         self.g2 = g2
         if g1 is not None:

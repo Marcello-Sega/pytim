@@ -16,7 +16,7 @@ class TestObservables():
     >>> import MDAnalysis as mda
     >>> import pytim
     >>> from pytim import observables
-    >>> from pytim.datafiles import * 
+    >>> from pytim.datafiles import *
     >>> import numpy as np
     >>> u = mda.Universe(_TEST_ORIENTATION_GRO)
     >>> o = observables.Orientation(u,options='molecular')
@@ -48,7 +48,7 @@ class TestObservables():
     >>> ['{:.2f}'.format(i) for i in corr]
     ['1.00', '0.00', '0.67', '-0.00', '0.00']
 
-    >>> # PROFILE EXTENDED TEST: checks trajectory averaging 
+    >>> # PROFILE EXTENDED TEST: checks trajectory averaging
     >>> # and consistency in summing up layers  contributions
     >>> import numpy as np
     >>> import MDAnalysis as mda
@@ -58,9 +58,9 @@ class TestObservables():
     >>> u = mda.Universe(WATER_GRO,WATER_XTC)
     >>> g=u.select_atoms('name OW')
     >>> inter = pytim.ITIM(u,group=g,max_layers=4,centered=True, molecular=False)
-    >>> 
+    >>>
     >>> Layers=[]
-    >>> 
+    >>>
     >>> for n in np.arange(0,5):
     ...     Layers.append(Profile())
     >>> Val=[]
@@ -73,7 +73,7 @@ class TestObservables():
     ...         Layers[n].sample(group)
     >>> for L in Layers:
     ...     Val.append(L.get_values(binwidth=2.0)[2])
-    >>> 
+    >>>
 
     >>> print np.round(np.sum(np.array(Val[0]) * np.prod(u.dimensions[:3])) / len(Val[0]),decimals=0)
     4000.0
