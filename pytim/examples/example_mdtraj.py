@@ -1,7 +1,7 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 
-""" 
+"""
     This example shows how to use pytim classes on trajectories
     loaded with MDTraj (http://mdtraj.org/)
     (see also the openmm interoperability)

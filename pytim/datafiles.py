@@ -1,6 +1,7 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
+
 """
 Location of data files for Pytim examples and tests
 ====================================================
@@ -87,7 +88,6 @@ __all__ = [
 
 from pkg_resources import resource_filename
 import tempfile
-import os.path
 import re as re
 import urllib
 import hashlib

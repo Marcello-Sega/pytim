@@ -75,21 +75,21 @@ class TestBasics():
     4.00
 
 
-    >>> # mdtraj 
+    >>> # mdtraj
     >>> try:
     ...     import mdtraj
     ...     try:
-    ...         import numpy as np 
+    ...         import numpy as np
     ...         import MDAnalysis as mda
     ...         import pytim
     ...         from pytim.datafiles import WATER_GRO,WATER_XTC
     ...         from pytim.datafiles import pytim_data,G43A1_TOP
-    ...         # MDAnalysis 
+    ...         # MDAnalysis
     ...         u = mda.Universe(WATER_GRO,WATER_XTC)
     ...         ref = pytim.ITIM(u)
     ...         # mdtraj
     ...         t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO)
-    ...         # mdtraj manipulates the name of atoms, we need to set the 
+    ...         # mdtraj manipulates the name of atoms, we need to set the
     ...         # radii by hand
     ...         _dict = { 'O':pytim_data.vdwradii(G43A1_TOP)['OW'],'H':0.0}
     ...         inter = pytim.ITIM(t, radii_dict=_dict)
@@ -99,7 +99,7 @@ class TestBasics():
     ...             ids_mda.append(ref.atoms.ids)
     ...         for ts in t[0:2]:
     ...             ids_mdtraj.append(inter.atoms.ids)
-    ...         for fr in [0,1]:   
+    ...         for fr in [0,1]:
     ...             if not np.all(ids_mda[fr] == ids_mdtraj[fr]):
     ...                 print "MDAnalysis and mdtraj surface atoms do not coincide"
     ...         _a = u.trajectory[1] # we make sure we load the second frame

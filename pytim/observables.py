@@ -83,7 +83,8 @@ class Observable(object):
         return np.array(pos)
 
     @abstractmethod
-    def compute(self, inp, kargs={}):
+    def compute(self, inp=None, kargs=None):
+        kargs = kargs or {}
         pass
 
 
@@ -132,7 +133,7 @@ class LayerTriangulation(Observable):
         self.return_triangulation = return_triangulation
         self.return_statistics = return_statistics
 
-    def compute(self, inp=None):
+    def compute(self, inp=None, kargs=None):
         stats = []
         layer_stats = [None, None]
 
@@ -185,7 +186,7 @@ class IntrinsicDistance(Observable):
         self.interface = interface
         self.layer = layer
 
-    def compute(self, inp):
+    def compute(self, inp, kargs=None):
         """Compute the intrinsic distance of a set of points from the first
         layers.
 
@@ -205,7 +206,7 @@ class Number(Observable):
         """
         Observable.__init__(self, None)
 
-    def compute(self, inp):
+    def compute(self, inp, kargs=None):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
@@ -234,7 +235,7 @@ class Mass(Observable):
         """
         Observable.__init__(self, None)
 
-    def compute(self, inp):
+    def compute(self, inp, kargs=None):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
@@ -253,7 +254,7 @@ class Charge(Observable):
         """
         Observable.__init__(self, None)
 
-    def compute(self, inp):
+    def compute(self, inp, kargs=None):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
@@ -283,7 +284,7 @@ class NumberOfResidues(Observable):
         """
         Observable.__init__(self, None)
 
-    def compute(self, inp):
+    def compute(self, inp, kargs=None):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
@@ -309,7 +310,7 @@ class Position(Observable):
         """
         Observable.__init__(self, None)
 
-    def compute(self, inp):
+    def compute(self, inp, kargs=None):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
@@ -328,7 +329,7 @@ class Velocity(Observable):
         """
         Observable.__init__(self, None)
 
-    def compute(self, inp):
+    def compute(self, inp, kargs=None):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
@@ -347,7 +348,7 @@ class Force(Observable):
         """
         Observable.__init__(self, None)
 
-    def compute(self, inp):
+    def compute(self, inp, kargs=None):
         """Compute the observable.
 
         :param AtomGroup inp:  the input atom group
@@ -372,7 +373,7 @@ class Orientation(Observable):
         self.u = universe
         self.options = options
 
-    def compute(self, inp):
+    def compute(self, inp, kargs=None):
         """Compute the observable.
 
         :param ndarray inp:  the input atom group. The length be a multiple\
