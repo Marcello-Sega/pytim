@@ -71,19 +71,17 @@ def _missing_attributes(interface, universe):
                              universe.atoms, 1)
     _check_missing_attribute(interface, 'elements', 'Elements',
                              universe.atoms, 1)
+    _extra_attributes(interface, universe)
+
+
+def _extra_attributes(interface, universe):
     # we add here the new layer, cluster and side information
     # they are not part of MDAnalysis.core.topologyattrs
-    if 'layers' not in dir(universe.atoms):
-        layers = np.zeros(len(universe.atoms), dtype=np.int) - 1
-        universe.add_TopologyAttr(Layers(layers))
-
-    if 'clusters' not in dir(universe.atoms):
-        clusters = np.zeros(len(universe.atoms), dtype=np.int) - 1
-        universe.add_TopologyAttr(Clusters(clusters))
-
-    if 'sides' not in dir(universe.atoms):
-        sides = np.zeros(len(universe.atoms), dtype=np.int) - 1
-        universe.add_TopologyAttr(Sides(sides))
+    attr = {'layers': Layers, 'clusters': Clusters, 'sides': Sides}
+    for key in attr.keys():
+        if key not in dir(universe.atoms):
+            vals = np.zeros(len(universe.atoms), dtype=np.int) - 1
+            universe.add_TopologyAttr(attr[key](vals))
 
 
 def _check_missing_attribute(interface, name, classname, group, value):
@@ -170,13 +168,13 @@ def _guess_radii_from_types(interface, group, guessed):
             matching_type = weighted_close_match(aname, _dict)
             radii[group.names == aname] = _dict[matching_type]
             guessed.update({aname: _dict[matching_type]})
-        except (KeyError,IndexError) as e :
+        except (KeyError, IndexError) as e:
             try:
                 atype = group.types[group.names == aname][0]
                 matching_type = weighted_close_match(atype, _dict)
                 radii[group.types == atype] = _dict[matching_type]
                 guessed.update({atype: _dict[matching_type]})
-            except (KeyError,IndexError) as ee :
+            except (KeyError, IndexError) as ee:
                 pass
     group.radii = np.copy(radii)
 
@@ -201,33 +199,25 @@ def guess_radii(interface, group=None):
         return
     nones = np.equal(group.radii, None)
     group.radii[nones] = np.array([np.nan] * len(group.radii[nones]))
-    # group.radii = group.radii.astype(np.float32)
 
     group = group[np.isnan(group.radii)]
 
-    have_masses = ('masses' in dir(group))
-
-    have_types = False
-    if 'types' in dir(group):
-        have_types = True
-        try:
-            # When atom types are str(ints), e.g. lammps ,
-            # we cannot use them to guess radii
-
-            # trying to convert strings to integers:
-            group.types.astype(int)
-            have_types = False
-        except ValueError:
-            pass
-
     # We give precedence to atom names, then to types
-    if have_types:
+    try:
+        # this test failes wither if no 'type' property
+        # is available, or if it is, but the values are
+        # integers (like in lammps) and thus cannot be
+        # used to guess the type (in this code)
+        group.types.astype(int)
+    except AttributeError:  # no types at all
+        pass  # will try with masses
+    except ValueError:  # types are there, and are not integers
         _guess_radii_from_types(interface, group, guessed)
 
     # We fill in the remaining ones using masses information
-
     group = group[np.isnan(group.radii)]
 
-    if have_masses:
+    if ('masses' in dir(group)):
         _guess_radii_from_masses(interface, group, guessed)
+
     interface.guessed_radii.update(guessed)
