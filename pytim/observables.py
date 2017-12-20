@@ -201,9 +201,6 @@ class Number(Observable):
     """The number of atoms."""
 
     def __init__(self, *arg, **kwarg):
-        """ No need to pass a universe for this observable. We accept
-            extra arguments not to fail if they are passed anyway by mistake.
-        """
         Observable.__init__(self, None)
 
     def compute(self, inp, kargs=None):
@@ -220,9 +217,7 @@ class Mass(Observable):
     """Atomic masses"""
 
     def __init__(self, *arg, **kwarg):
-        """ No need to pass a universe for this observable. We accept
-            extra arguments not to fail if they are passed anyway by mistake.
-
+        """
             >>> import pytim
             >>> import MDAnalysis as mda
             >>> from pytim.datafiles import WATERSMALL_GRO
@@ -249,9 +244,6 @@ class Charge(Observable):
     """Atomic charges"""
 
     def __init__(self, *arg, **kwarg):
-        """ No need to pass a universe for this observable. We accept
-            extra arguments not to fail if they are passed anyway by mistake.
-        """
         Observable.__init__(self, None)
 
     def compute(self, inp, kargs=None):
@@ -279,9 +271,6 @@ class NumberOfResidues(Observable):
     """
 
     def __init__(self, *arg, **karg):
-        """ No need to pass a universe for this observable. We accept
-            extra arguments not to fail if they are passed anyway by mistake.
-        """
         Observable.__init__(self, None)
 
     def compute(self, inp, kargs=None):
@@ -305,9 +294,6 @@ class Position(Observable):
     """Atomic positions"""
 
     def __init__(self, *arg, **kwarg):
-        """ No need to pass a universe for this observable. We accept
-            extra arguments not to fail if they are passed anyway by mistake.
-        """
         Observable.__init__(self, None)
 
     def compute(self, inp, kargs=None):
@@ -324,9 +310,6 @@ class Velocity(Observable):
     """Atomic velocities"""
 
     def __init__(self, *arg, **kwarg):
-        """ No need to pass a universe for this observable. We accept
-            extra arguments not to fail if they are passed anyway by mistake.
-        """
         Observable.__init__(self, None)
 
     def compute(self, inp, kargs=None):
@@ -343,9 +326,6 @@ class Force(Observable):
     """Atomic forces"""
 
     def __init__(self, *arg, **kwarg):
-        """ No need to pass a universe for this observable. We accept
-            extra arguments not to fail if they are passed anyway by mistake.
-        """
         Observable.__init__(self, None)
 
     def compute(self, inp, kargs=None):
