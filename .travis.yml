@@ -6,14 +6,16 @@ branches:
   - extended_datafiles
 
 
+env:
+    global:
+        - CC_TEST_REPORTER_ID=bdc5010b5f2e62769ccd2d885f0d7eb59691844de9a2018e9e3da255a37282e2
+
 matrix:
     include:
         - os: linux
           sudo: required
           python: 2.7
           env: MDAv=0.16.2
-              global:
-                  - CC_TEST_REPORTER_ID=bdc5010b5f2e62769ccd2d885f0d7eb59691844de9a2018e9e3da255a37282e2
 
         - os: linux
           sudo: required
