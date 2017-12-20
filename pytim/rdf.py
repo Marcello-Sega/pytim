@@ -107,7 +107,9 @@ class RDF(object):
         self.g2 = None
         self._rdf = self.count
 
-    def sample(self, g1=None, g2=None, kargs1={}, kargs2={}):
+    def sample(self, g1=None, g2=None, kargs1=None, kargs2=None):
+        kargs1 = kargs1 or {}
+        kargs2 = kargs2 or {} 
         self.n_frames += 1
         self.g2 = g2
         if g1 is not None:
@@ -264,7 +266,7 @@ class RDF2D(RDF):
         RDF.__init__(self, universe, nbins=nbins, max_radius=max_radius,
                      start=start, stop=stop, step=step,
                      observable=observable, kargs1=kargs1, kargs2=kargs2)
-        _dir={'x': 0, 'y': 1, 'z': 2}
+        _dir = {'x': 0, 'y': 1, 'z': 2}
         self.true2D = true2D
         if excluded_dir == 'auto':
             try:
