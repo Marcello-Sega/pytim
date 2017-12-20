@@ -89,8 +89,8 @@ class PYTIM(object):
         return self.__class__.__name__
 
     def label_planar_sides(self):
-        # Assign to all layers a label (tempfactor) that can be used in pdb files.
-        # Additionally, set the new layers and sides
+        # Assign to all layers a label (tempfactor) that can be used
+        # in pdb files. Additionally, set the new layers and sides
         for uplow in [0, 1]:
             for nlayer, layer in enumerate(self._layers[uplow]):
                 self.label_group(layer, beta=nlayer + 1.0,
