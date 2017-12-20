@@ -230,5 +230,5 @@ class SanityCheck(object):
                     print("Warning: the option biggest_cluster_only", end=' ')
                     print("has no effect without setting cluster_cut,", end=' ')
                     print("ignoring it")
-        except:
+        except BaseException:
             pass

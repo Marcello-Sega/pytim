@@ -186,7 +186,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
                 # for those which are not None. The >= convention is needed
                 # for cKDTree
                 val = rebox(val, dim[index], shift[index])
-            except Exception:
+            except TypeError:
                 pass
     if stack:
         universe.coord.positions = np.column_stack((x, y, z))

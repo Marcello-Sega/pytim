@@ -195,8 +195,7 @@ class WillardChandler(pytim.PYTIM):
 
         pos = self.cluster_group.positions
         box = self.universe.dimensions[:3]
-        delta = 2. * self.alpha + 1e-6
-        #extrapoints, _ = utilities.generate_periodic_border_3d(pos, box, delta)
+
         ngrid, spacing = utilities.compute_compatible_mesh_params(
             self.mesh, box
         )
