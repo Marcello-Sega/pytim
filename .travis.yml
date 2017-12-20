@@ -12,6 +12,8 @@ matrix:
           sudo: required
           python: 2.7
           env: MDAv=0.16.2
+              global:
+                  - CC_TEST_REPORTER_ID=bdc5010b5f2e62769ccd2d885f0d7eb59691844de9a2018e9e3da255a37282e2
 
         - os: linux
           sudo: required
@@ -44,10 +46,17 @@ install:
 - pip install nose
 - pip install .
 # command to run tests
+
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
 script: python setup.py test
 
-after_success:
+
+after_script:
   if ([ "$TRAVIS_OS_NAME" == "linux" ] && [ "$MDAv" == "0.16" ]) ; then
-        pip install codecov; pip install pytest-cov ; py.test --cov=pytim pytim/*py --doctest-modules ;  codecov ; 
+        pip install codecov; pip install pytest-cov ; py.test --cov=pytim pytim/*py --doctest-modules --cov-report xml ;  codecov ; ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
   fi
 
