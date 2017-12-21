@@ -64,11 +64,12 @@ def write_file(filename, group, grid_size, spacing,
        Assumes that the header has been already written.
 
        :param string filename: the filename
-       :param array grid_size: number of points in the grid along each\
+       :param array grid_size: number of points in the grid along each
                                direction
-       :param array spacing: a (3,) array with the point spacing along the 3\
-                             directions
-       :param array scalars: a (grid_size,) array with the scalar field values
+       :param array spacing  : a (3,) array with the point spacing along the 3
+                               directions
+       :param array scalars  : a (grid_size,) array with the scalar field
+                               values
     """
     if normalize:
         maxval = np.max(scalars)

@@ -15,11 +15,12 @@ def write_scalar_grid(filename, grid_size, spacing, scalars):
     """write in a vtk file a scalar field on a rectangular grid
 
        :param string filename: the filename
-       :param array grid_size: number of points in the grid along each\
+       :param array grid_size: number of points in the grid along each
                                direction
-       :param array spacing: a (3,) array with the point spacing along the 3\
-                             directions
-       :param array scalars: a (grid_size,) array with the scalar field values
+       :param array spacing  : a (3,) array with the point spacing along the 3
+                               directions
+       :param array scalars  : a (grid_size,) array with the scalar field
+                               values
     """
     with open(filename, "w") as f:
         f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
@@ -41,9 +42,11 @@ def write_atomgroup(filename, group, color=None, radius=None):
     """ write in a vtk file the positions of particles
 
         :param string filename: the filename
-        :param AtomGroup group: the group, whose positions are to be written to the vtk file
-        :param ndarray color (N,3): optional: array with triplets of RGB values for each atom
-        :param ndarray raidus: optional: array with atomic radii
+        :param AtomGroup group: the group, whose positions are to be written to
+                                the vtk file
+        :param ndarray color (N,3): optional: array with triplets of RGB values
+                                for each atom
+        :param ndarray raidus : optional: array with atomic radii
     """
     pos = group.positions
     npos = len(pos)

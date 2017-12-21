@@ -94,16 +94,14 @@ class LayerTriangulation(Observable):
         in the box.
 
         :param Universe universe: the MDAnalysis universe
-        :param ITIM    interface: compute the triangulation with respect to it
-        :param int     layer: (default: 1) compute the triangulation with respect\
-                       to this layer of the interface
-        :param bool    return_triangulation: (default: True) return the Delaunay\
-                       triangulation used for the interpolation
-        :param bool    return_statistics: (default: True) return the Delaunay\
-                       triangulation used for the interpolation
-
+        :param ITIM interface   : compute the triangulation with respect to it
+        :param int  layer       : (default: 1) compute the triangulation with
+                                  respect to this layer of the interface
+        :param bool return_triangulation: (default: True) return the Delaunay
+                                  triangulation used for the interpolation
+        :param bool return_statistics: (default: True) return the Delaunay
+                                  triangulation used for the interpolation
         :returns Observable LayerTriangulation:
-
 
         Example:
 
@@ -137,7 +135,7 @@ class LayerTriangulation(Observable):
         stats = []
         layer_stats = [None, None]
 
-        if self.interface.do_center == False:
+        if self.interface.do_center is False:
             oldpos = np.copy(self.interface.universe.atoms.positions)
             self.interface.center()
 
@@ -154,7 +152,7 @@ class LayerTriangulation(Observable):
             stats.append(layer_stats[0][0] + layer_stats[1][0])
             # add here new stats other than total area
 
-        if self.interface.do_center == False:
+        if self.interface.do_center is False:
             self.interface.universe.positions = np.copy(oldpos)
 
         if self.return_triangulation is False:
@@ -172,10 +170,10 @@ class IntrinsicDistance(Observable):
     """Initialize the intrinsic distance calculation.
 
     :param Universe universe: the MDAnalysis universe
-    :param ITIM    interface: compute the intrinsic distance with respect\
+    :param ITIM    interface: compute the intrinsic distance with respect
                               to this interface
-    :param int     layer: (default: 1) compute the intrinsic distance\
-                          with respect to this layer of the interface
+    :param int     layer    : (default: 1) compute the intrinsic distance
+                              with respect to this layer of the interface
 
     Example: TODO
 
@@ -190,7 +188,7 @@ class IntrinsicDistance(Observable):
         """Compute the intrinsic distance of a set of points from the first
         layers.
 
-        :param ndarray positions: compute the intrinsic distance for this set\
+        :param ndarray positions: compute the intrinsic distance for this set
                                   of points
 
         """
@@ -341,10 +339,10 @@ class Force(Observable):
 class Orientation(Observable):
     """Orientation of a group of points.
 
-    :param str options: optional string. If `normal` is passed, the\
+    :param str options: optional string. If `normal` is passed, the
                         orientation of the normal vectors is computed
-                        If the option 'molecular' is passed at initialization, \
-                        coordinates of the second and third atoms are \
+                        If the option 'molecular' is passed at initialization
+                        the coordinates of the second and third atoms are
                         folded around those of the first.
 
     """
@@ -356,7 +354,7 @@ class Orientation(Observable):
     def compute(self, inp, kargs=None):
         """Compute the observable.
 
-        :param ndarray inp:  the input atom group. The length be a multiple\
+        :param ndarray inp:  the input atom group. The length be a multiple
                              of three
         :returns: the orientation vectors
 

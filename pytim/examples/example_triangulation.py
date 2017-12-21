@@ -28,7 +28,6 @@ if use_matplotlib == False:
 
 if use_matplotlib:
     # plot the triangulation using matplotlib
-    from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     import matplotlib.tri as mtplt_tri
 

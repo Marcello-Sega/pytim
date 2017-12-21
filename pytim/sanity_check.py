@@ -159,7 +159,7 @@ class SanityCheck(object):
             raise Exception(messages.WRONG_UNIVERSE)
 
         self.interface.all_atoms = self.interface.universe.select_atoms('all')
-        #self.interface.radii_dict = tables.vdwradii.copy()
+
         self.interface.radii_dict = datafiles.pytim_data.vdwradii(
             datafiles.G43A1_TOP).copy()
         self.patch_radii_dict()
@@ -179,7 +179,7 @@ class SanityCheck(object):
     def assign_alpha(self, alpha):
         try:
             box = self.interface.universe.dimensions[:3]
-        except:
+        except BaseException:
             raise Exception("Cannot set alpha before having a simulation box")
         if alpha < 0:
             raise ValueError(messages.ALPHA_NEGATIVE)
@@ -228,7 +228,7 @@ class SanityCheck(object):
                 if self.interface.cluster_cut is None:
                     self.interface.biggest_cluster_only = False
                     print("Warning: the option biggest_cluster_only", end=' ')
-                    print("has no effect without setting cluster_cut,", end=' ')
-                    print("ignoring it")
+                    print("has no effect without setting", end=' ')
+                    print("cluster_cut, ignoring it")
         except BaseException:
             pass

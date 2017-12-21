@@ -13,15 +13,20 @@ from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 class Correlator(object):
     """ Computes the (self) correlation of an observable (scalar or vector)
 
-    :param Observable observable: compute the autocorrelation of this observable
-    :param bool reduced: when the observable is a vector, average over all spatial direction if reduced==True (default)
-    :param bool normalize: normalize the correlation to 1 at t=0
-    :param AtomGroup reference: if the group passed to the sample() function changes its composition along the trajectory \
-                                (such as a layer group), a reference group that includes all atoms that could appear in the \
-                                variable group must be passed, in order to provide a proper normalization. This follows the \
-                                convention in J. Phys. Chem. B 2017, 121, 5582-5594, (DOI: 10.1021/acs.jpcb.7b02220). See\
-                                the example below.
-    :param double memory_warn: if not None, print a warning once this threshold of memory (in Mb) is passed.
+    :param Observable observable : compute the autocorrelation of this
+                                   observable
+    :param bool reduced          : when the observable is a vector, average
+                                   over all spatial direction if reduced is
+                                   True (default)
+    :param bool normalize        : normalize the correlation to 1 at t=0
+    :param AtomGroup reference   : if the group passed to the sample() function
+                                   changes its composition along the trajectory
+                                   (such as a layer group), a reference group
+                                   that includes all atoms that could appear in
+                                   the variable group must be passed, in order
+                                   to provide a proper normalization.
+    :param double memory_warn    : if not None, print a warning once this
+                                   threshold of memory (in Mb) is passed.
 
 
     Example:
@@ -89,7 +94,7 @@ class Correlator(object):
     """
 
     def __init__(self, universe=None, observable=None, reduced=True, normalize=True, reference=None, memory_warn=None):
-        pass  # wrong implementation
+        pass # wrong implementation
         name = self.__class__.__name__
         self.observable = observable
         self.reference = reference
@@ -109,6 +114,7 @@ class Correlator(object):
             if isinstance(reference, Atom):
                 # in case just a single atom has been passed,
                 # and not a group with one atom
+                u = reference.universe
                 self.reference = u.atoms[reference.index:reference.index + 1]
             if not isinstance(reference, AtomGroup):
                 raise RuntimeError(
@@ -130,12 +136,12 @@ class Correlator(object):
 
         self.timeseries.append(list(sampled.flatten()))
         self.mem_usage += sampled.nbytes / 1024.0 / 1024.0  # in Mb
-        if self.mem_usage > self.memory_warn and self.warned == False:
+        if self.mem_usage > self.memory_warn and self.warned is False:
             print("Warning: warning threshold of", end=' ')
             print(self.memory_warn, "Mb exceeded")
             self.warned = True
 
-        if self.shape == None:
+        if self.shape is None:
             self.shape = sampled.shape
 
     def correlation(self):
@@ -148,8 +154,8 @@ class Correlator(object):
                 for i in range(1, self.shape[1]):
                     mask = np.hstack((mask, tmp_mask))
             corr[mask > 0] = corr[mask > 0] / mask[mask > 0]
-        if self.reduced == True:
+        if self.reduced is True:
             corr = np.sum(corr, axis=1)
-        if self.normalize == True:
+        if self.normalize is True:
             corr = corr / corr[0]
         return corr
