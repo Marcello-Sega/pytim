@@ -41,69 +41,72 @@ def lap(show=False):
 
 
 def correlate(a1=np.ndarray(0), a2=None):
-    """ correlate data series using numpy fft. The function calculates correlation
-        or cross-correlation.
+    """
+      correlate data series using numpy fft. The function calculates \
+      correlation or cross-correlation.
 
-        :param ndarray a1:   first data set to correlate
-        :param ndarray a2:   (optional) second data set, to compute cross-correlation
+      :param ndarray a1: first data set to correlate
+      :param ndarray a2: (optional) second data set, to compute the
+                         cross-correlation
 
-        Example: time autocorrelation of the number of atoms in the outermost layer
+      Example: time autocorrelation of the number of atoms in the outermost
+               layer
 
-        >>> import MDAnalysis as mda
-        >>> import pytim
-        >>> import numpy as np
-        >>> from pytim.datafiles import *
-        >>>
-        >>> u = mda.Universe(WATER_GRO,WATER_XTC)
-        >>> inter = pytim.ITIM(u)
-        >>>
-        >>> size=[]
-        >>> time=[]
-        >>> # sample the size of the first layer on the upper
-        >>> # side
-        >>> for ts in u.trajectory[:50]:
-        ...     time.append(ts.time)
-        ...     size.append(len(inter.layers[0,0]))
-        >>>
-        >>> # we need to subtract the average value
-        >>> corr = pytim.utilities.correlate(size-np.mean(size))
-        >>> corr = corr/corr[0] # normalize to 1
-        >>> print (corr)
-        [ 1.          0.1420121   0.10364119  0.14718647  0.37093981  0.09908694
-          0.16514898  0.0946748   0.33824381  0.2187186  -0.02084513  0.08711942
-          0.24537069 -0.0102749  -0.1934566   0.10323017  0.02911581 -0.00939353
-         -0.11041383  0.01191062 -0.13293405  0.05622434 -0.2826456  -0.27631805
-          0.0351999  -0.01167737 -0.21058736 -0.42930886 -0.13241366 -0.26325648
-          0.07229366 -0.70028015 -0.23617053  0.13629839 -0.24335089 -0.87832556
-         -0.12957699 -0.32853026 -0.3863053  -0.65227527 -0.2672419  -0.18756502
-         -0.22565105 -0.78979698 -0.28407306 -0.02037816 -1.5120148  -1.31553408
-         -0.18836842  7.55135513]
+      >>> import MDAnalysis as mda
+      >>> import pytim
+      >>> import numpy as np
+      >>> from pytim.datafiles import *
+      >>>
+      >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+      >>> inter = pytim.ITIM(u)
+      >>>
+      >>> size=[]
+      >>> time=[]
+      >>> # sample the size of the first layer on the upper
+      >>> # side
+      >>> for ts in u.trajectory[:50]:
+      ...     time.append(ts.time)
+      ...     size.append(len(inter.layers[0,0]))
+      >>>
+      >>> # we need to subtract the average value
+      >>> corr = pytim.utilities.correlate(size-np.mean(size))
+      >>> corr = corr/corr[0] # normalize to 1
+      >>> print (corr)
+      [ 1.          0.1420121   0.10364119  0.14718647  0.37093981  0.09908694
+        0.16514898  0.0946748   0.33824381  0.2187186  -0.02084513  0.08711942
+        0.24537069 -0.0102749  -0.1934566   0.10323017  0.02911581 -0.00939353
+       -0.11041383  0.01191062 -0.13293405  0.05622434 -0.2826456  -0.27631805
+        0.0351999  -0.01167737 -0.21058736 -0.42930886 -0.13241366 -0.26325648
+        0.07229366 -0.70028015 -0.23617053  0.13629839 -0.24335089 -0.87832556
+       -0.12957699 -0.32853026 -0.3863053  -0.65227527 -0.2672419  -0.18756502
+       -0.22565105 -0.78979698 -0.28407306 -0.02037816 -1.5120148  -1.31553408
+       -0.18836842  7.55135513]
 
-        This will produce (sampling the whole trajectory), the following:
+      This will produce (sampling the whole trajectory), the following:
 
-        .. plot::
+      .. plot::
 
-            import numpy as np
-            import MDAnalysis as mda
-            import pytim
-            from   pytim.datafiles import *
-            from matplotlib import pyplot as plt
+          import numpy as np
+          import MDAnalysis as mda
+          import pytim
+          from   pytim.datafiles import *
+          from matplotlib import pyplot as plt
 
-            u = mda.Universe(WATER_GRO,WATER_XTC)
-            inter = pytim.ITIM(u)
+          u = mda.Universe(WATER_GRO,WATER_XTC)
+          inter = pytim.ITIM(u)
 
-            size=[]
-            time=[]
-            for ts in u.trajectory[:]:
-                time.append(ts.time)
-                size.append(len(inter.layers[0,0]))
+          size=[]
+          time=[]
+          for ts in u.trajectory[:]:
+              time.append(ts.time)
+              size.append(len(inter.layers[0,0]))
 
-            corr =  pytim.utilities.correlate(size-np.mean(size))
-            plt.plot(time,corr/corr[0])
-            plt.plot(time,[0]*len(time))
-            plt.gca().set_xlabel("time/ps")
+          corr =  pytim.utilities.correlate(size-np.mean(size))
+          plt.plot(time,corr/corr[0])
+          plt.plot(time,[0]*len(time))
+          plt.gca().set_xlabel("time/ps")
 
-            plt.show()
+          plt.show()
 
     """
 
@@ -167,7 +170,7 @@ def centerbox(universe, x=None, y=None, z=None, vector=None,
         raise ValueError("Wrong direction supplied to centerbox")
 
     shift = np.array([0., 0., 0.])
-    if halfbox_shift == True:
+    if halfbox_shift is True:
         shift[center_direction] = dim[center_direction] / 2.
     # we rebox the atoms in universe, and not a vector
     if x is None and y is None and z is None and vector is None:
@@ -204,7 +207,7 @@ def guess_normal(universe, group):
     for direction in range(0, 3):
         histo, _ = np.histogram(group.positions[:, direction], bins=5,
                                 range=(0, dim[direction]),
-                                density=True);
+                                density=True)
         max_val = np.amax(histo)
         min_val = np.amin(histo)
         delta.append(np.sqrt((max_val - min_val)**2))

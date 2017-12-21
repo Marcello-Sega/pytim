@@ -10,12 +10,13 @@ def _writepdb(interface, filename='layers.pdb', centered='no', group='all', mult
     """ Write the frame to a pdb file, marking the atoms belonging
         to the layers with different beta factor.
 
-        :param filename:   string  -- the output file name
-        :param centered:   string  -- 'origin', 'middle', or 'no'
-        :param group:      AtomGroup -- if 'all' is passed, the universe is used
-        :param multiframe: boolean -- append to pdb file if True
+        :param str       filename   : the output file name
+        :param str       centered   : 'origin', 'middle', or 'no'
+        :param AtomGroup group      : if 'all' is passed, the universe is used
+        :param bool      multiframe : append to pdb file if True
 
-        Example: save the positions (centering the interface in the cell) without appending
+        Example: save the positions (centering the interface in the cell)
+                 without appending
 
         >>> import pytim
         >>> import MDAnalysis as mda
@@ -25,9 +26,9 @@ def _writepdb(interface, filename='layers.pdb', centered='no', group='all', mult
         >>> interface.writepdb('layers.pdb',multiframe=False)
 
         Example: save the positions without centering the interface. This will
-                 not shift the atoms from the original position (still, they will
-                 be put into the basic cell).
-                 The :multiframe: option set to :False: will overwrite the file.
+                 not shift the atoms from the original position (still, they
+                 will be put into the basic cell).
+                 The :multiframe: option set to :False: will overwrite the file
 
         >>> interface.writepdb('layers.pdb',centered='no')
 

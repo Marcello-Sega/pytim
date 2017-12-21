@@ -9,7 +9,7 @@ import numpy as np
 from scipy.spatial import distance
 from pytim import utilities
 import pytim
-from . import messages
+from pytim.sanity_check import SanityCheck
 try:
     from pytetgen import Delaunay
 except ImportError:
@@ -19,40 +19,44 @@ except ImportError:
 class GITIM(pytim.PYTIM):
     """ Identifies interfacial molecules at curved interfaces.
 
-        *(Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M.  J. Chem. Phys. 138, 044110, 2013)*
+        *(Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M., \
+J. Chem. Phys. 138, 044110, 2013)*
 
-        :param Object universe:        The MDAnalysis Universe, MDTraj trajectory\
-                                       or OpenMM Simulation objects.
-        :param Object group:           An AtomGroup, or an array-like object with\
-                                       the indices of the atoms in the group.\
-                                       Will identify the interfacial molecules from\
-                                       this group
-        :param float alpha:            The probe sphere radius
-        :param str normal:             'x','y,'z' or 'guess'  (for planar interfaces only)
-        :param bool molecular:         Switches between search of interfacial\
-                                       molecules / atoms (default: True)
-        :param int max_layers:         The number of layers to be identified
-        :param dict radii_dict:        Dictionary with the atomic radii of\
-                                       the elements in the group.
-                                       If None is supplied, the default one\
-                                       (from GROMOS 43a1) will be used.
-        :param float cluster_cut:      Cutoff used for neighbors or density-based\
-                                       cluster search (default: None disables the\
-                                       cluster analysis)
-        :param float cluster_threshold_density: Number density threshold for\
-                                       the density-based cluster search. 'auto'\
-                                       determines the threshold automatically.\
-                                       Default: None uses simple neighbors cluster\
-                                       search, if cluster_cut is not None
-        :param Object extra_cluster_groups: Additional groups, to allow for mixed interfaces
-        :param bool biggest_cluster_only: Tag as surface atoms/molecules only those\
-                                       in the largest cluster. Need to specify also\
-                                       a :py:obj:`cluster_cut` value.
-        :param str symmetry:           Gives the code a hint about the topology of the\
-                                       interface: 'spherical' (default) or  'planar'
-        :param bool centered:          Center the  :py:obj:`group`
-        :param bool info:              Print additional info
-        :param bool warnings:          Print warnings
+        :param Object universe:     The MDAnalysis Universe, MDTraj trajectory
+                                    or OpenMM Simulation objects.
+        :param Object group:        An AtomGroup, or an array-like object with
+                                    the indices of the atoms in the group. Will
+                                    identify the interfacial molecules from
+                                    this group
+        :param float alpha:         The probe sphere radius
+        :param str normal:          'x','y,'z' or 'guess'
+                                    (for planar interfaces only)
+        :param bool molecular:      Switches between search of interfacial
+                                    molecules / atoms (default: True)
+        :param int max_layers:      The number of layers to be identified
+        :param dict radii_dict:     Dictionary with the atomic radii of the
+                                    elements in the group. If None is supplied,
+                                    the default one (from GROMOS 43a1) will be
+                                    used.
+        :param float cluster_cut:   Cutoff used for neighbors or density-based
+                                    cluster search (default: None disables the
+                                    cluster analysis)
+        :param float cluster_threshold_density: Number density threshold for
+                                    the density-based cluster search. 'auto'
+                                    determines the threshold automatically.
+                                    Default: None uses simple neighbors cluster
+                                    search, if cluster_cut is not None
+        :param Object extra_cluster_groups: Additional groups, to allow for
+                                    mixed interfaces
+        :param bool biggest_cluster_only: Tag as surface atoms/molecules only
+                                    those in the largest cluster. Need to
+                                    specify also a :py:obj:`cluster_cut` value.
+        :param str symmetry:        Gives the code a hint about the topology
+                                    of the interface: 'spherical' (default)
+                                    or  'planar'
+        :param bool centered:       Center the  :py:obj:`group`
+        :param bool info:           Print additional info
+        :param bool warnings:       Print warnings
 
         Example:
 
@@ -107,7 +111,7 @@ class GITIM(pytim.PYTIM):
         self.do_center = centered
 
         self.biggest_cluster_only = biggest_cluster_only
-        sanity = pytim.SanityCheck(self)
+        sanity = SanityCheck(self)
         sanity.assign_universe(
             universe, radii_dict=radii_dict, warnings=warnings)
         sanity.assign_alpha(alpha)
@@ -195,14 +199,13 @@ class GITIM(pytim.PYTIM):
         return np.min(R[R >= 0])
 
     def alpha_shape(self, alpha, group):
-        # print  utilities.lap()
         box = self.universe.dimensions[:3]
         delta = 2.1 * self.alpha + 1e-6
         points = group.positions[:]
         nrealpoints = len(points)
         np.random.seed(0)  # pseudo-random for reproducibility
         gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
-        if self._noextrapoints == False:
+        if self._noextrapoints is False:
             extrapoints, extraids = utilities.generate_periodic_border(
                 points, box, delta, method='3d'
             )
@@ -214,7 +217,7 @@ class GITIM(pytim.PYTIM):
                                   [0.0, 1.0, 0.0], [0.0, 1.0, 1.0],
                                   [1.0, 0.0, 0.0], [1.0, 0.0, 1.0],
                                   [1.0, 1.0, 0.0], [1.0, 1.0, 1.0]])
-        if self._noextrapoints == False:
+        if self._noextrapoints is False:
             for dim, vertex in enumerate(cube_vertices):
                 # added to prevent coplanar points
                 vertex = vertex * box + delta + gitter[dim]
@@ -222,19 +225,14 @@ class GITIM(pytim.PYTIM):
                 vertex = np.reshape(vertex, (1, 3))
                 extrapoints = np.append(extrapoints, vertex, axis=0)
                 extraids = np.append(extraids, -1)
-        # print utilities.lap()
         self.triangulation = Delaunay(extrapoints)
         self.triangulation.radii = np.append(
             group.radii[extraids[extraids >= 0]], np.zeros(8))
-        # print utilities.lap()
 
-        #prefiltered = self.alpha_prefilter(self.triangulation, alpha)
         prefiltered = self.triangulation.simplices  # == skip prefiltering
-        # print utilities.lap()
 
         a_shape = prefiltered[np.array([self.circumradius(
             simplex) >= self.alpha for simplex in prefiltered])]
-        # print utilities.lap()
         _ids = np.unique(a_shape.flatten())
         # remove the indices corresponding to the 8 additional points, which
         # have extraid==-1
@@ -266,6 +264,9 @@ class GITIM(pytim.PYTIM):
         # TODO the successive layers analysis should be done by removing points
         # from the triangulation and updating the circumradius of the neighbors
         # of the removed points  only.
+
+        dbs = utilities.do_cluster_analysis_DBSCAN
+
         for layer in range(0, self.max_layers):
 
             alpha_ids = self.alpha_shape(self.alpha, alpha_group)
@@ -274,10 +275,10 @@ class GITIM(pytim.PYTIM):
 
             if self.biggest_cluster_only is True:
                 # apply the same clustering algorith as set at init
-                l, c, _ = utilities.do_cluster_analysis_DBSCAN(group,
-                                                               self.cluster_cut[0], self.universe.dimensions[:],
-                                                               threshold_density=self.cluster_threshold_density,
-                                                               molecular=self.molecular)
+                l, c, _ = dbs(group, self.cluster_cut[0],
+                              self.universe.dimensions[:],
+                              threshold_density=self.cluster_threshold_density,
+                              molecular=self.molecular)
                 group = group[np.where(np.array(l) == np.argmax(c))[0]]
 
             alpha_group = alpha_group[:] - group[:]

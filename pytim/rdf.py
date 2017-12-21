@@ -22,12 +22,12 @@ class RDF(object):
             f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
 
 
-    :param double max_radius:  compute the rdf up to this distance. If 'full' is \
-                          supplied (default) computes it up to half of the  \
-                          smallest box side.
-    :param int nbins:     number of bins
-    :param Observable observable:  observable for first group
-    :param Observable observable2: observable for second group
+    :param double max_radius:  compute the rdf up to this distance. If 'full'
+                               is supplied (default) computes it up to half of
+                               the smallest box side.
+    :param int nbins        :  number of bins
+    :param Observable observable :  observable for the first group
+    :param Observable observable2:  observable for the second group
 
     Example:
 
@@ -137,11 +137,12 @@ class RDF(object):
 
             try:
                 error = (
-                    fg1.shape[0] != self.g1.n_atoms or fg2.shape[0] != self.g2.n_atoms)
+                    fg1.shape[0] != self.g1.n_atoms or fg2.shape[0] !=
+                    self.g2.n_atoms)
             except:
                 error = True
 
-            if error == True:
+            if error is True:
                 raise Exception(
                     "Error, the observable passed to RDF should output "
                     "an array (of scalar or vectors) the same size of "
@@ -204,10 +205,10 @@ class RDF2D(RDF):
     having the same size of the group. The scalar product between the
     two functions is used to weight the distriution function.
 
-    :param int nbins:         number of bins
-    :param char excluded_dir: project position vectors onto the plane\
+    :param int nbins        : number of bins
+    :param char excluded_dir: project position vectors onto the plane
                               orthogonal to 'z','y' or 'z'
-    :param Observable observable:   observable for group 1
+    :param Observable observable :  observable for group 1
     :param Observable observable2:  observable for group 2
 
     Example:
@@ -276,7 +277,7 @@ class RDF2D(RDF):
         else:
             self.excluded_dir = _dir[excluded_dir]
 
-    def sample(self, g1=None, g2=None):
+    def sample(self, g1=None, g2=None, kargs1=None, kargs2=None):
         # this uses RDF.sample(), only changes in normalization/distance
         # calculation are handled here
         _ts = self.universe.trajectory.ts

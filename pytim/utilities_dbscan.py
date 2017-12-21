@@ -11,9 +11,9 @@ def do_cluster_analysis_DBSCAN(
         group, cluster_cut, box, threshold_density=None, molecular=True):
     """ Performs a cluster analysis using DBSCAN
 
-        :returns [labels,counts]: lists of the id of the cluster to which\
-                                  every atom is belonging to, and of the\
-                                  number of elements in each cluster.
+        :returns [labels,counts]: lists of the id of the cluster to which every
+                                  atom is belonging to, and of the number of
+                                  elements in each cluster.
 
         Uses a slightly modified version of DBSCAN from sklearn.cluster
         that takes periodic boundary conditions into account (through
@@ -32,10 +32,7 @@ def do_cluster_analysis_DBSCAN(
     # NOTE: extra_cluster_groups are not yet implemented
     points = group.atoms.positions[:]
 
-    try:  # older scipy versions
-        tree = cKDTree(points, boxsize=box[:6])
-    except:
-        tree = cKDTree(points, boxsize=box[:3])
+    tree = cKDTree(points, boxsize=box[:3])
 
     neighborhoods = np.array([np.array(neighbors)
                               for neighbors in tree.query_ball_point(

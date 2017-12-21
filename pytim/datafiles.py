@@ -2,11 +2,10 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
 
-"""
-Location of data files for Pytim examples and tests
-====================================================
+""" Location of data files for Pytim examples and tests
+    ====================================================
 
-Real MD simulation data are stored in the ``data/`` subdirectory.
+    Real MD simulation data are stored in the ``data/`` subdirectory.
 
 
     Example: load an example trajectory
@@ -57,8 +56,7 @@ Real MD simulation data are stored in the ``data/`` subdirectory.
     ...      format      = pytim_data.format[label]
     ...      description = pytim_data.description[label]
 
-
-"""
+    """
 
 __all__ = [
     "CCL4_WATER_GRO",        # GROMACS single frame, carbon tetrachloride / water interface

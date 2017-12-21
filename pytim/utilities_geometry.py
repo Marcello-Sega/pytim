@@ -76,7 +76,7 @@ def polygonalArea(points):
         v1 = points[1] - points[0]
         v2 = points[2] - points[0]
         n = np.cross(v1, v2)
-    except:
+    except BaseException:
         raise RuntimeError("Not enough or collinear points in polygonalArea()")
     n2 = np.sum(n**2)
     count = 0

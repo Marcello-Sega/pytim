@@ -1,6 +1,7 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
+from abc import abstractproperty
 import MDAnalysis
 import importlib
 import numpy as np
@@ -52,7 +53,6 @@ def _missing_attributes(interface, universe):
     interface._topologyattrs = importlib.import_module(
         'MDAnalysis.core.topologyattrs'
     )
-    guessers = MDAnalysis.topology.guessers
     _check_missing_attribute(interface, 'names', 'Atomnames', universe.atoms,
                              universe.atoms.ids.astype(str))
     # NOTE _check_missing_attribute() relies on radii being set to np.nan
@@ -143,9 +143,8 @@ def _guess_radii_from_masses(interface, group, guessed):
     unique_masses = unique_masses[unique_masses > 0]
     d = atoms_maps
     for target_mass in unique_masses:
-        atype, mass = min(
-            d.items(), key=lambda __entry: abs(
-                __entry[1]['mass'] - target_mass))
+        atype, _ = min(d.items(), key=lambda __entry: abs(__entry[1]['mass'] -
+                                                          target_mass))
         try:
             match_type = get_close_matches(
                 atype, interface.radii_dict.keys(), n=1, cutoff=0.1
@@ -189,7 +188,6 @@ def guess_radii(interface, group=None):
     except AttributeError:
         interface.guessed_radii = {}
 
-    universe = interface.universe
     if group is None:
         group = interface.universe.atoms
 

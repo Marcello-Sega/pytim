@@ -1,6 +1,6 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-""" Module: profile 
+""" Module: profile
     ===============
 """
 from __future__ import print_function
@@ -14,20 +14,17 @@ class Profile(object):
     """Calculates the profile (normal, or intrinsic) of a given observable
     across the simulation box.
 
-    :param AtomGroup  group:        calculate the profile based on\
-                                    this group
-    :param str        direction:    'x','y', or 'z' : calculate the\
-                                    profile along this direction
-    :param Observable observable:   'Number', 'Mass', or 'Charge' : \
-                                    calculate the profile of this\
-                                    quantity. If None is supplied, it \
-                                    defaults to the number density
-    :param ITIM       interface:    if provided, calculate the intrinsic\
-                                    profile with respect to the first\
-                                    layers
-    :param AtomGroup  center_group: if `interface` is not provided, this\
-                                    optional group can be supplied to\
-                                    center the system
+    :param AtomGroup  group:        calculate the profile based on this group
+    :param str        direction:    'x','y', or 'z' : calculate the profile
+                                    along this direction
+    :param Observable observable:   'Number', 'Mass', or 'Charge': calculate
+                                    the profile of this quantity. If None is
+                                    supplied, it defaults to the number density
+    :param ITIM       interface:    if provided, calculate the intrinsic
+                                    profile with respect to the first layers
+    :param AtomGroup  center_group: if `interface` is not provided, this
+                                    optional group can be supplied to center
+                                    the system
 
     Example (non-intrinsic, total profile + first 4 layers ):
 

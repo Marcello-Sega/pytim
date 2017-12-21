@@ -15,9 +15,11 @@ class Surface(object):
 
         Any implementation must provide the following methods:
 
-        distance()      -> returns an array of relative positions with respect to the interface
+        distance()      -> returns an array of relative positions with respect
+                           to the interface
         triangulation() -> a triangulated surface, if available
-        regular_grid()  -> the surface elevation on a regular grid, if available
+        regular_grid()  -> the surface elevation on a regular grid, if
+                           available
         dump()          -> save to disk in format of choice
     """
     __metaclass__ = ABCMeta
@@ -30,7 +32,7 @@ class Surface(object):
         self.options = options
         try:
             self._layer = options['layer']
-        except (TypeError, KeyError) as err:
+        except (TypeError, KeyError):
             self._layer = 0
 
     # see the implemenation in each of the modules (itim.py, gitim.py,... )
@@ -38,7 +40,7 @@ class Surface(object):
     @abstractproperty
     def interpolation(self, inp):
         """ returns interpolated position on the surface """
-        positions = utilities.extract_positions(inp)
+        return utilities.extract_positions(inp)
 
     @abstractproperty
     def distance(self, inp):
@@ -71,7 +73,7 @@ class Surface(object):
         try:
             if np.any(box != self.box):
                 self._compute_q_vectors(box)
-        except:
+        except BaseException:
             self._compute_q_vectors(box)
 
     def _compute_q_vectors(self, box):
@@ -180,3 +182,40 @@ class Surface(object):
             self._interpolator[side] = LinearNDInterpolator(
                 self.surf_triang[layer],
                 self.triangulation_points[layer][:, 2])
+
+
+class SurfaceFlatInterface(Surface):
+
+    def distance(self, inp):
+        positions = utilities.extract_positions(inp)
+        return self._distance_flat(positions)
+
+    def interpolation(self, inp):
+        positions = utilities.extract_positions(inp)
+        upper_set = positions[positions[:, 2] >= 0]
+        lower_set = positions[positions[:, 2] < 0]
+
+        elevation = np.zeros(len(positions))
+
+        try:
+            self.options['from_modes']
+            upper_interp = self.surface_from_modes(upper_set, self.modes[0])
+            lower_interp = self.surface_from_modes(lower_set, self.modes[1])
+        except(TypeError, KeyError):
+            self._initialize_distance_interpolator_flat(layer=self._layer)
+            upper_interp = self._interpolator[0](upper_set[:, 0:2])
+            lower_interp = self._interpolator[1](lower_set[:, 0:2])
+
+        elevation[np.where(positions[:, 2] >= 0)] = upper_interp
+        elevation[np.where(positions[:, 2] < 0)] = lower_interp
+        return elevation
+
+    def dump(self):
+        pass
+
+    def regular_grid(self):
+        pass
+
+    def triangulation(self, layer=0):
+        return self.triangulate_layer_flat(layer)
+#

@@ -11,76 +11,50 @@ from multiprocessing import Process, Queue
 import numpy as np
 from __builtin__ import zip as builtin_zip
 from scipy.spatial import cKDTree
-from pytim import utilities, surface
+from pytim import utilities
+from pytim.surface import SurfaceFlatInterface as Surface
+from pytim.sanity_check import SanityCheck
 import pytim
 from . import messages
-
-
-class Surface(surface.Surface):
-
-    def distance(self, inp):
-        positions = utilities.extract_positions(inp)
-        return self._distance_flat(positions)
-
-    def interpolation(self, inp):
-        positions = utilities.extract_positions(inp)
-        upper_set = positions[positions[:, 2] >= 0]
-        lower_set = positions[positions[:, 2] < 0]
-
-        elevation = np.zeros(len(positions))
-
-        self._initialize_distance_interpolator_flat(layer=self._layer)
-        upper_interp = self._interpolator[0](upper_set[:, 0:2])
-        lower_interp = self._interpolator[1](lower_set[:, 0:2])
-
-        elevation[np.where(positions[:, 2] >= 0)] = upper_interp
-        elevation[np.where(positions[:, 2] < 0)] = lower_interp
-        return elevation
-
-    def dump(self):
-        pass
-
-    def regular_grid(self):
-        pass
-
-    def triangulation(self, layer=0):
-        return self.triangulate_layer_flat(layer)
 
 
 class ITIM(pytim.PYTIM):
     """ Identifies interfacial molecules at macroscopically flat interfaces.
 
-        *(Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G.  J. Comp. Chem. 29, 945, 2008)*
+        *(Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G., \
+J. Comp. Chem. 29, 945, 2008)*
 
-        :param Object universe:   The MDAnalysis Universe, MDTraj trajectory\
+        :param Object universe:   The MDAnalysis Universe, MDTraj trajectory
                                   or OpenMM Simulation objects.
-        :param Object group:      An AtomGroup, or an array-like object with\
-                                  the indices of the atoms in the group.\
-                                  Will identify the interfacial molecules from\
-                                  this group
+        :param Object group:      An AtomGroup, or an array-like object with
+                                  the indices of the atoms in the group.  Will
+                                  identify the interfacial molecules from this
+                                  group
         :param float alpha:       The probe sphere radius
-        :param str normal:        The macroscopic interface normal direction\
+        :param str normal:        The macroscopic interface normal direction
                                   'x','y', 'z' or 'guess' (default)
-        :param bool molecular:    Switches between search of interfacial\
+        :param bool molecular:    Switches between search of interfacial
                                   molecules / atoms (default: True)
         :param int max_layers:    The number of layers to be identified
-        :param dict radii_dict:   Dictionary with the atomic radii of\
-                                  the elements in the group.
-                                  If None is supplied, the default one\
-                                  (from GROMOS 43a1) will be used.
-        :param float cluster_cut: Cutoff used for neighbors or density-based\
-                                  cluster search (default: None disables the\
+        :param dict radii_dict:   Dictionary with the atomic radii of the
+                                  elements in the group. If None is supplied,
+                                  the default one (from GROMOS 43a1) will be
+                                  used.
+        :param float cluster_cut: Cutoff used for neighbors or density-based
+                                  cluster search (default: None disables the
                                   cluster analysis)
-        :param float cluster_threshold_density: Number density threshold for\
-                                  the density-based cluster search. 'auto'\
-                                  determines the threshold automatically.\
-                                  Default: None uses simple neighbors cluster\
+        :param float cluster_threshold_density: Number density threshold for
+                                  the density-based cluster search. 'auto'
+                                  determines the threshold automatically.
+                                  Default: None uses simple neighbors cluster
                                   search, if cluster_cut is not None
-        :param Object extra_cluster_groups: Additional groups, to allow for mixed interfaces
+        :param Object extra_cluster_groups: Additional groups, to allow for
+                                  mixed interfaces
         :param bool info:         Print additional info
         :param bool centered:     Center the  :py:obj:`group`
         :param bool warnings:     Print warnings
-        :param float mesh:        The grid spacing used for the testlines (default 0.4 Angstrom)
+        :param float mesh:        The grid spacing used for the testlines
+                                  (default 0.4 Angstrom)
 
         Example:
 
@@ -109,7 +83,7 @@ class ITIM(pytim.PYTIM):
         >>> interface.layers[1,2] # lower side, third layer
         <AtomGroup with 666 atoms>
 
-        >>> # or as a whole AtomGroup. This can include all atoms in all layers:
+        >>> # or as a whole AtomGroup. This can include all atoms in all layers
         >>> interface.atoms
         <AtomGroup with 5571 atoms>
 
@@ -126,9 +100,10 @@ class ITIM(pytim.PYTIM):
         >>> # using:
         >>> interface.writepdb('system.pdb',centered=True)
 
-        >>> # of course, the native interface of MDAnalysis can be used to write pdb files
-        >>> # but the centering options are not available. Writing to other formats that
-        >>> # do not support the beta factor will loose the information on the layers.
+        >>> # of course, the native interface of MDAnalysis can be used to
+        >>> # write pdb files, but the centering options are not available.
+        >>> # Writing to other formats that do not support the beta factor
+        >>> # will loose the information on the layers.
         >>> interface.atoms.write('only_layers.pdb')
 
     """
@@ -181,7 +156,7 @@ dtype=object)
         self.symmetry = 'planar'
         self.do_center = centered
 
-        sanity = pytim.SanityCheck(self)
+        sanity = SanityCheck(self)
         sanity.assign_universe(
             universe, radii_dict=radii_dict, warnings=warnings)
         sanity.assign_alpha(alpha)
@@ -223,7 +198,7 @@ dtype=object)
         self.mesh_ny = n[1]
         self.mesh_dx = d[0]
         self.mesh_dy = d[1]
-        if (self.use_kdtree == True):
+        if (self.use_kdtree is True):
             _x = np.linspace(0, box[0], num=self.mesh_nx, endpoint=False)
             _y = np.linspace(0, box[1], num=self.mesh_ny, endpoint=False)
             _X, _Y = np.meshgrid(_x, _y)
@@ -231,10 +206,7 @@ dtype=object)
             # cKDTree requires a box vetor with length double the dimension,
             _box = np.zeros(4)
             _box[:2] = box[:2]
-            try:  # older scipy versions
-                self.meshtree = cKDTree(self.meshpoints, boxsize=_box)
-            except:
-                self.meshtree = cKDTree(self.meshpoints, boxsize=_box[:2])
+            self.meshtree = cKDTree(self.meshpoints, boxsize=_box[:2])
 
     def _touched_lines(self, atom, _x, _y, _z, _radius):
         return self.meshtree.query_ball_point(
@@ -246,7 +218,6 @@ dtype=object)
         for layer in range(0, self.max_layers):
             # this mask tells which lines have been touched.
             mask = self.mask[uplow][layer]
-            _inlayer = []
             # atom here goes to 0 to #sorted_atoms, it is not a MDAnalysis
             # index/atom
             for atom in sorted_atoms:
@@ -276,7 +247,7 @@ dtype=object)
                         self._seen[uplow] == layer + 1)
                     _inlayer_group = self.cluster_group[_inlayer_indices]
 
-                    if self.molecular == True:
+                    if self.molecular is True:
                         # we first select the (unique) residues corresponding
                         # to _inlayer_group, and then we create  group of the
                         # atoms belonging to them, with
@@ -392,9 +363,10 @@ dtype=object)
         for nlayer, layer in enumerate(self._layers[0]):
             self._surfaces[nlayer] = Surface(self, options={'layer': nlayer})
 
-        if self.do_center == False:  # NOTE: do_center requires centering in the middle of the box
-                                    # ITIM always centers internally in the
-                                    # origin along the normal
+        if self.do_center is False:     # NOTE: do_center requires centering in
+                                        # the middle of the box.
+                                        # ITIM always centers internally in the
+                                        # origin along the normal.
             self.universe.atoms.positions = self.original_positions
         else:
             self._shift_positions_to_middle()

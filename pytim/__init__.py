@@ -1,17 +1,9 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 import numpy as np
-from scipy.interpolate import LinearNDInterpolator
-import MDAnalysis
-from MDAnalysis import Universe
-from MDAnalysis.topology import tables
-import __builtin__
-import importlib
-from version import __version__
-from pytim.patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 from pytim.properties import _create_property
-from pytim.sanity_check import SanityCheck
+from pytim.patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 from . import messages
 from pytim.pdb import _writepdb
 
@@ -99,8 +91,9 @@ class PYTIM(object):
     def label_group(self, group, beta=None, layer=None, cluster=None, side=None):
         if group is None:
             raise RuntimeError(
-                'one of the groups, possibly a layer one, is None. Something is wrong...')
-        if self.molecular == True:
+                'one of the groups, possibly a layer one, is None.' + 
+                ' Something is wrong...')
+        if self.molecular is True:
             _group = group.residues.atoms
         else:
             _group = group
@@ -202,7 +195,7 @@ class PYTIM(object):
         _z = utilities.get_z(group.universe.atoms)
 
         _range = (0., dim[direction])
-        if(halfbox_shift == True):
+        if(halfbox_shift is True):
             _range = (-dim[direction] / 2., dim[direction] / 2.)
 
         histo, _ = np.histogram(_pos_group, bins=10, range=_range,
@@ -234,7 +227,7 @@ class PYTIM(object):
                                     density=True)
 
         _center = np.average(_pos_group)
-        if(halfbox_shift == False):
+        if(halfbox_shift is False):
             box_half = dim[direction] / 2.
         else:
             box_half = 0.
@@ -256,7 +249,7 @@ class PYTIM(object):
             utilities.centerbox(self.universe, center_direction=self.normal)
             self._center(self.cluster_group, self.normal)
             utilities.centerbox(self.universe, center_direction=self.normal)
-            if planar_to_origin == False:
+            if planar_to_origin is False:
                 self._shift_positions_to_middle()
             self.centered_positions = np.copy(self.universe.atoms.positions[:])
 

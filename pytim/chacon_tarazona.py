@@ -7,38 +7,10 @@
 """
 from __future__ import print_function
 import numpy as np
-from pytim import utilities, surface
+from pytim import utilities
+from pytim.surface import SurfaceFlatInterface as Surface
+from pytim.sanity_check import SanityCheck
 import pytim
-
-
-class Surface(surface.Surface):
-
-    def dump(self):
-        pass
-
-    def regular_grid(self):
-        pass
-
-    def triangulation(self):
-        pass
-
-    def distance(self, inp):
-        positions = utilities.extract_positions(inp)
-        return self._distance_flat(positions)
-
-    def interpolation(self, inp):
-        positions = utilities.extract_positions(inp)
-        upper_set = positions[positions[:, 2] >= 0]
-        lower_set = positions[positions[:, 2] < 0]
-
-        elevation = np.zeros(len(positions))
-
-        upper_interp = self.surface_from_modes(upper_set, self.modes[0])
-        lower_interp = self.surface_from_modes(lower_set, self.modes[1])
-
-        elevation[np.where(positions[:, 2] >= 0)] = upper_interp
-        elevation[np.where(positions[:, 2] < 0)] = lower_interp
-        return elevation
 
 
 class ChaconTarazona(pytim.PYTIM):
@@ -49,16 +21,16 @@ class ChaconTarazona(pytim.PYTIM):
 
         :param Universe universe: The MDAnalysis universe
         :param float alpha:       Molecular scale cutoff
-        :param float tau:         Particles within this distance form the\
-                                  surface will be added during the\
+        :param float tau:         Particles within this distance form the
+                                  surface will be added during the
                                   self-consistent procedure.
-        :param bool molecular:    Switches between search of interfacial\
+        :param bool molecular:    Switches between search of interfacial
                                   molecules / atoms (default: True)
         :param AtomGroup group:   Compute the density using this group
-        :param dict radii_dict:   Dictionary with the atomic radii of the\
-                                  elements in the group. If None is\
-                                  supplied, the default one (from MDAnalysis)\
-                                  will be used.
+        :param dict radii_dict:   Dictionary with the atomic radii of the
+                                  elements in the group. If None is supplied,
+                                  the default one (from GROMOS43a1) will be
+                                  used.
 
         Example:
 
@@ -88,7 +60,7 @@ class ChaconTarazona(pytim.PYTIM):
         self.symmetry = 'planar'
         self.do_center = centered
 
-        sanity = pytim.SanityCheck(self)
+        sanity = SanityCheck(self)
         sanity.assign_universe(
             universe, radii_dict=radii_dict, warnings=warnings)
 
@@ -170,13 +142,13 @@ class ChaconTarazona(pytim.PYTIM):
         pivot = np.sort(self._initial_pivots(sorted_ind))
         modes = None
         while True:
-            surf = Surface(self, options={'layer': 0})
+            surf = Surface(self, options={'layer': 0, 'from_modes': True})
             surf._compute_q_vectors(box)
             modes = surf.surface_modes(self.cluster_group[pivot].positions)
             p = self.cluster_group[pivot].positions
             s = surf.surface_from_modes(p, modes.reshape(surf.modes_shape))
             d = p[::, 2] - s
-            if self.info == True:
+            if self.info is True:
                 print("side", side, "->", len(pivot), "pivots, msd=",
                       np.sqrt(np.sum(d * d) / len(d)))
             # TODO handle failure
@@ -187,7 +159,7 @@ class ChaconTarazona(pytim.PYTIM):
                 self.surf = surf
                 self.modes[side] = modes
                 _inlayer_group = self.cluster_group[pivot]
-                if self.molecular == True:
+                if self.molecular is True:
                     _tmp = _inlayer_group.residues.atoms
                     _inlayer_group = _tmp
                 return _inlayer_group
@@ -231,7 +203,7 @@ class ChaconTarazona(pytim.PYTIM):
 
         self.label_planar_sides()
 
-        if self.do_center == False:
+        if self.do_center is False:
             self.universe.atoms.positions = self.original_positions
         else:
             self._shift_positions_to_middle()
