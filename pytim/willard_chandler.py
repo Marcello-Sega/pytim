@@ -77,7 +77,8 @@ class WillardChandler(pytim.PYTIM):
 
     @property
     def layers(self):
-        """The method does not identify layers."""
+        """ The method does not identify layers.
+        """
         self.layers = None
         return None
 
@@ -126,9 +127,9 @@ class WillardChandler(pytim.PYTIM):
         """ Write to cube files (sequences) the volumentric density and the
             atomic positions.
 
-            :param str filename: the file name
+            :param str filename:  the file name
             :param bool sequence: if true writes a sequence of files adding
-            the frame to the filename
+                                  the frame to the filename
 
             >>> import MDAnalysis as mda
             >>> import pytim
@@ -149,9 +150,9 @@ class WillardChandler(pytim.PYTIM):
     def writeobj(self, filename="pytim.obj", sequence=False):
         """ Write to wavefront obj files (sequences) the triangulated surface
 
-            :param str filename: the file name
+            :param str filename:  the file name
             :param bool sequence: if true writes a sequence of files adding
-            the frame to the filename
+                                  the frame to the filename
 
             >>> import MDAnalysis as mda
             >>> import pytim
@@ -172,10 +173,10 @@ class WillardChandler(pytim.PYTIM):
         wavefront_obj.write_file(filename, vert, surf)
 
     def _assign_layers(self):
-        """There are no layers in the Willard-Chandler method.
+        """ There are no layers in the Willard-Chandler method.
 
-        This function identifies the dividing surface and stores the
-        triangulated isosurface, the density and the particles.
+            This function identifies the dividing surface and stores the
+            triangulated isosurface, the density and the particles.
 
         """
         self.label_group(self.universe.atoms, beta=0.0,
@@ -233,8 +234,9 @@ class Writevtk(object):
         self.interface = interface
 
     def _dump_group(self, group, filename):
-        """save the particles n a vtk file named consecutively using the frame
-        number."""
+        """ Save the particles n a vtk file named consecutively using the frame
+            number.
+        """
         radii = group.radii
         types = group.types
         color = [(utilities.atoms_maps[element])['color'] for element in types]
@@ -242,10 +244,11 @@ class Writevtk(object):
         vtk.write_atomgroup(filename, group, color=color, radius=radii)
 
     def density(self, filename='pytim_dens.vtk', sequence=False):
-        """ Write to vtk files the volumetric density:
-            :param str filename: the file name
+        """ Write to vtk files the volumetric density.
+
+            :param str filename:  the file name
             :param bool sequence: if true writes a sequence of files adding
-            the frame to the filename
+                                  the frame to the filename
 
             >>> import MDAnalysis as mda
             >>> import pytim
@@ -265,10 +268,11 @@ class Writevtk(object):
                               inter.spacing, inter.density_field)
 
     def particles(self, filename='pytim_part.vtk', group=None, sequence=False):
-        """ Write to vtk files the particles in a group:
-            :param str filename: the file name
-            :param bool sequence: if true writes a sequence of files adding
-            the frame to the filename
+        """ Write to vtk files the particles in a group.
+
+            :param str filename:    the file name
+            :param bool sequence:   if true writes a sequence of files adding
+                                    the frame to the filename
             :param AtomGroup group: if None, writes the whole universe
 
             >>> import MDAnalysis as mda
@@ -283,6 +287,7 @@ class Writevtk(object):
             >>> # writes on part.<frame>.vtk
             >>> inter.writevtk.particles('part.vtk',sequence=True)
         """
+
         inter = self.interface
         if sequence is True:
             filename = vtk.consecutive_filename(inter.universe, filename)
@@ -291,10 +296,11 @@ class Writevtk(object):
         self._dump_group(group, filename)
 
     def surface(self, filename='pytim_surf.vtk', sequence=False):
-        """ Write to vtk files the triangulated surface:
-            :param str filename: the file name
+        """ Write to vtk files the triangulated surface.
+
+            :param str filename:  the file name
             :param bool sequence: if true writes a sequence of files adding
-            the frame to the filename
+                                  the frame to the filename
 
             >>> import MDAnalysis as mda
             >>> import pytim
