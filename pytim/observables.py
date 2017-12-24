@@ -94,14 +94,15 @@ class LayerTriangulation(Observable):
         in the box.
 
         :param Universe universe: the MDAnalysis universe
-        :param ITIM interface   : compute the triangulation with respect to it
-        :param int  layer       : (default: 1) compute the triangulation with
+        :param ITIM interface:    compute the triangulation with respect to it
+        :param int  layer:        (default: 1) compute the triangulation with
                                   respect to this layer of the interface
         :param bool return_triangulation: (default: True) return the Delaunay
                                   triangulation used for the interpolation
         :param bool return_statistics: (default: True) return the Delaunay
                                   triangulation used for the interpolation
-        :returns Observable LayerTriangulation:
+
+        :return:                  Observable LayerTriangulation
 
         Example:
 
@@ -172,7 +173,7 @@ class IntrinsicDistance(Observable):
     :param Universe universe: the MDAnalysis universe
     :param ITIM    interface: compute the intrinsic distance with respect
                               to this interface
-    :param int     layer    : (default: 1) compute the intrinsic distance
+    :param int     layer:     (default: 1) compute the intrinsic distance
                               with respect to this layer of the interface
 
     Example: TODO
@@ -190,13 +191,13 @@ class IntrinsicDistance(Observable):
 
         :param ndarray positions: compute the intrinsic distance for this set
                                   of points
-
         """
         return self.interface._surfaces[0].distance(inp)
 
 
 class Number(Observable):
-    """The number of atoms."""
+    """The number of atoms.
+    """
 
     def __init__(self, *arg, **kwarg):
         Observable.__init__(self, None)

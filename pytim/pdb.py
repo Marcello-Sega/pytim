@@ -8,7 +8,7 @@ import MDAnalysis
 
 def _writepdb(interface, filename='layers.pdb', centered='no', group='all', multiframe=True):
     """ Write the frame to a pdb file, marking the atoms belonging
-        to the layers with different beta factor.
+        to the layers with different beta factors.
 
         :param str       filename   : the output file name
         :param str       centered   : 'origin', 'middle', or 'no'

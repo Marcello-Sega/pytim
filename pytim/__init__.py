@@ -31,13 +31,13 @@ class PYTIM(object):
     layers, _layers =\
         _create_property('layers', "AtomGroups of atoms in layers")
     itim_group, _itim_group =\
-        _create_property('itim_group', "(AtomGroup) the group,"
+        _create_property('itim_group', "(AtomGroup) the group, "
                          "the surface of which should be computed")
     cluster_cut, _cluster_cut =\
-        _create_property('cluster_cut', "(real) cutoff for phase"
+        _create_property('cluster_cut', "(real) cutoff for phase "
                          "identification")
     molecular, _molecular =\
-        _create_property('molecular', "(bool) wheter to compute"
+        _create_property('molecular', "(bool) whether to compute "
                          "surface atoms or surface molecules")
     surfaces, _surfaces =\
         _create_property('surfaces', "Surfaces associated to the interface",
@@ -91,7 +91,7 @@ class PYTIM(object):
     def label_group(self, group, beta=None, layer=None, cluster=None, side=None):
         if group is None:
             raise RuntimeError(
-                'one of the groups, possibly a layer one, is None.' + 
+                'one of the groups, possibly a layer one, is None.' +
                 ' Something is wrong...')
         if self.molecular is True:
             _group = group.residues.atoms
