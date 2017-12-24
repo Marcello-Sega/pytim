@@ -22,9 +22,9 @@ class RDF(object):
             f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
 
 
-    :param double max_radius:       compute the rdf up to this distance. If 'full'
-                                    is supplied (default) computes it up to half of
-                                    the smallest box side.
+    :param double max_radius:       compute the rdf up to this distance.
+                                    If 'full' is supplied (default) computes
+                                    it up to half of the smallest box side.
     :param int nbins:               number of bins
     :param Observable observable:   observable for the first group
     :param Observable observable2:  observable for the second group
