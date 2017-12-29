@@ -21,6 +21,7 @@ from __future__ import print_function
 
     >>> for config in sorted(pytim_data.config):
     ...     print("{:20s} {:s}".format(config,pytim_data.description[config]))
+    ARGON_GRO            Argon liquid/vapour interface
     CCL4_WATER_GRO       Carbon tetrachloride/TIP4p water interface
     FULLERENE_PDB        fullerene
     GLUCOSE_PDB          solvated beta-d-glucose
@@ -59,6 +60,7 @@ from __future__ import print_function
     """
 
 __all__ = [
+    "ARGON_GRO",             # GROMACS single frame Ar box
     "CCL4_WATER_GRO",        # GROMACS single frame, carbon tetrachloride / water interface
     "WATER_GRO",             # GROMACS single frame, water/vapour interface
     "WATER_LMP_DATA",        # LAMMPS topology for WATER_LAMMPS, water/vapour interface
@@ -227,6 +229,10 @@ pytim_data = Data()
 
 # NOTE: to add a new datafile, make sure it is listed in setup.py (in the root directory)
 # in the package_data option (a glob like 'data/*' is usually enough)
+ARGON_GRO = resource_filename('pytim', 'data/Ar.gro')
+pytim_data.add('ARGON_GRO', 'config', 'GRO',
+               'Argon liquid/vapour interface')
+
 CCL4_WATER_GRO = resource_filename('pytim', 'data/CCL4.H2O.GRO')
 pytim_data.add('CCL4_WATER_GRO', 'config', 'GRO',
                'Carbon tetrachloride/TIP4p water interface')
