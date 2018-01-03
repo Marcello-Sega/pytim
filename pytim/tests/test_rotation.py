@@ -6,7 +6,6 @@
 
 
 class TestRotation():
-
     """
     This is a collection of test to check
     that the algorithms are behaving properly if

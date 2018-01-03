@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-
 """ Module: itim
     ============
 """
@@ -147,11 +146,22 @@ dtype=object)
 
         return self._layers
 
-    def __init__(self, universe, group=None, alpha=1.5, normal='guess',
-                 molecular=True, max_layers=1, radii_dict=None,
-                 cluster_cut=None, cluster_threshold_density=None,
-                 extra_cluster_groups=None, info=False,
-                 centered=False, warnings=False, mesh=0.4, **kargs):
+    def __init__(self,
+                 universe,
+                 group=None,
+                 alpha=1.5,
+                 normal='guess',
+                 molecular=True,
+                 max_layers=1,
+                 radii_dict=None,
+                 cluster_cut=None,
+                 cluster_threshold_density=None,
+                 extra_cluster_groups=None,
+                 info=False,
+                 centered=False,
+                 warnings=False,
+                 mesh=0.4,
+                 **kargs):
 
         self.symmetry = 'planar'
         self.do_center = centered
@@ -209,11 +219,17 @@ dtype=object)
             self.meshtree = cKDTree(self.meshpoints, boxsize=_box[:2])
 
     def _touched_lines(self, atom, _x, _y, _z, _radius):
-        return self.meshtree.query_ball_point(
-            [_x[atom], _y[atom]], _radius[atom] + self.alpha)
+        return self.meshtree.query_ball_point([_x[atom], _y[atom]],
+                                              _radius[atom] + self.alpha)
 
-    def _assign_one_side(self, uplow, sorted_atoms, _x, _y, _z,
-                         _radius, queue=None):
+    def _assign_one_side(self,
+                         uplow,
+                         sorted_atoms,
+                         _x,
+                         _y,
+                         _z,
+                         _radius,
+                         queue=None):
         _layers = []
         for layer in range(0, self.max_layers):
             # this mask tells which lines have been touched.
@@ -227,7 +243,7 @@ dtype=object)
                 touched_lines = self._touched_lines(atom, _x, _y, _z, _radius)
                 _submask = mask[touched_lines]
 
-                if(len(_submask[_submask == 0]) == 0):
+                if (len(_submask[_submask == 0]) == 0):
                     # no new contact, let's move to the next atom
                     continue
 
@@ -260,9 +276,8 @@ dtype=object)
                         # NOTE that from MDAnalysis 0.16, .ids runs from 1->N
                         # (was 0->N-1 in 0.15), we use now .indices
                         _indices = np.flatnonzero(
-                            np.in1d(
-                                self.cluster_group.atoms.indices,
-                                _inlayer_group.atoms.indices))
+                            np.in1d(self.cluster_group.atoms.indices,
+                                    _inlayer_group.atoms.indices))
                         # and update the tagged, sorted atoms
                         self._seen[uplow][_indices] = layer + 1
 
@@ -272,7 +287,7 @@ dtype=object)
 
                     _layers.append(_inlayer_group)
                     break
-        if(queue is None):
+        if (queue is None):
             return _layers
         else:
             queue.put(_layers)
@@ -288,8 +303,8 @@ dtype=object)
         self.universe.atoms.pack_into_box()
 
     def _prelabel_groups(self):
-        self.label_group(self.universe.atoms, beta=0.0,
-                         layer=-1, cluster=-1, side=-1)
+        self.label_group(
+            self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
         # first we label all atoms in group to be in the gas phase
         self.label_group(self.itim_group.atoms, beta=0.5)
         # then all atoms in the largest group are labelled as liquid-like
@@ -324,8 +339,10 @@ dtype=object)
 
         _radius = self.cluster_group.radii
         size = len(self.cluster_group.positions)
-        self._seen = [np.zeros(size, dtype=np.int8),
-                      np.zeros(size, dtype=np.int8)]
+        self._seen = [
+            np.zeros(size, dtype=np.int8),
+            np.zeros(size, dtype=np.int8)
+        ]
 
         _x = utilities.get_x(self.cluster_group, self.normal)
         _y = utilities.get_y(self.cluster_group, self.normal)
@@ -338,12 +355,12 @@ dtype=object)
         # the calculation between the two sides. Would it be
         # possible to implement easily 2d domain decomposition?
         proc, queue = [None, None], [Queue(), Queue()]
-        proc[up] = Process(target=self._assign_one_side,
-                           args=(up, sort[::-1], _x, _y, _z,
-                                 _radius, queue[up]))
-        proc[low] = Process(target=self._assign_one_side,
-                            args=(low, sort[::], _x, _y, _z,
-                                  _radius, queue[low]))
+        proc[up] = Process(
+            target=self._assign_one_side,
+            args=(up, sort[::-1], _x, _y, _z, _radius, queue[up]))
+        proc[low] = Process(
+            target=self._assign_one_side,
+            args=(low, sort[::], _x, _y, _z, _radius, queue[low]))
 
         for p in proc:
             p.start()
@@ -363,12 +380,13 @@ dtype=object)
         for nlayer, layer in enumerate(self._layers[0]):
             self._surfaces[nlayer] = Surface(self, options={'layer': nlayer})
 
-        if self.do_center is False:     # NOTE: do_center requires centering in
-                                        # the middle of the box.
-                                        # ITIM always centers internally in the
-                                        # origin along the normal.
+        if self.do_center is False:  # NOTE: do_center requires centering in
+            # the middle of the box.
+            # ITIM always centers internally in the
+            # origin along the normal.
             self.universe.atoms.positions = self.original_positions
         else:
             self._shift_positions_to_middle()
+
 
 #

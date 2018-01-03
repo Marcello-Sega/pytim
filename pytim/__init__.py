@@ -13,12 +13,22 @@ class PYTIM(object):
     """
     __metaclass__ = ABCMeta
 
-    directions_dict = {0: 'x', 1: 'y', 2: 'z',
-                       'x': 'x', 'y': 'y', 'z': 'z',
-                       'X': 'x', 'Y': 'y', 'Z:': 'z'}
-    symmetry_dict = {'cylindrical': 'cylindrical',
-                     'spherical': 'spherical',
-                     'planar': 'planar'}
+    directions_dict = {
+        0: 'x',
+        1: 'y',
+        2: 'z',
+        'x': 'x',
+        'y': 'y',
+        'z': 'z',
+        'X': 'x',
+        'Y': 'y',
+        'Z:': 'z'
+    }
+    symmetry_dict = {
+        'cylindrical': 'cylindrical',
+        'spherical': 'spherical',
+        'planar': 'planar'
+    }
 
     # main properties shared by all implementations of the class
     # When required=True is passed, the implementation of the class *must*
@@ -85,10 +95,15 @@ class PYTIM(object):
         # in pdb files. Additionally, set the new layers and sides
         for uplow in [0, 1]:
             for nlayer, layer in enumerate(self._layers[uplow]):
-                self.label_group(layer, beta=nlayer + 1.0,
-                                 layer=nlayer + 1, side=uplow)
+                self.label_group(
+                    layer, beta=nlayer + 1.0, layer=nlayer + 1, side=uplow)
 
-    def label_group(self, group, beta=None, layer=None, cluster=None, side=None):
+    def label_group(self,
+                    group,
+                    beta=None,
+                    layer=None,
+                    cluster=None,
+                    side=None):
         if group is None:
             raise RuntimeError(
                 'one of the groups, possibly a layer one, is None.' +
@@ -118,12 +133,12 @@ class PYTIM(object):
             self.symmetry = symmetry
 
     def _define_cluster_group(self):
-        if(self.cluster_cut is not None):
+        if (self.cluster_cut is not None):
             # groups have been checked already in _sanity_checks()
             labels, counts, neighbors = utilities.do_cluster_analysis_DBSCAN(
                 self.itim_group, self.cluster_cut[0],
-                self.universe.dimensions[:6],
-                self.cluster_threshold_density, self.molecular)
+                self.universe.dimensions[:6], self.cluster_threshold_density,
+                self.molecular)
             labels = np.array(labels)
             # the label of atoms in the largest cluster
             label_max = np.argmax(counts)
@@ -135,8 +150,7 @@ class PYTIM(object):
                 extra = np.sum(self.extra_cluster_groups[:])
                 self.extra = extra
                 x_labels, x_counts, _ = utilities.do_cluster_analysis_DBSCAN(
-                    extra, self.cluster_cut[0],
-                    self.universe.dimensions[:6],
+                    extra, self.cluster_cut[0], self.universe.dimensions[:6],
                     self.cluster_threshold_density, self.molecular)
                 x_labels = np.array(x_labels)
                 x_label_max = np.argmax(x_counts)
@@ -180,9 +194,11 @@ class PYTIM(object):
         if not (direction in self.directions_dict):
             raise ValueError(messages.WRONG_DIRECTION)
         _dir = self.directions_dict[direction]
-        _xyz = {'x': (0, utilities.get_x),
-                'y': (1, utilities.get_y),
-                'z': (2, utilities.get_z)}
+        _xyz = {
+            'x': (0, utilities.get_x),
+            'y': (1, utilities.get_y),
+            'z': (2, utilities.get_z)
+        }
 
         if _dir in _xyz.keys():
             direction = _xyz[_dir][0]
@@ -195,39 +211,45 @@ class PYTIM(object):
         _z = utilities.get_z(group.universe.atoms)
 
         _range = (0., dim[direction])
-        if(halfbox_shift is True):
+        if (halfbox_shift is True):
             _range = (-dim[direction] / 2., dim[direction] / 2.)
 
-        histo, _ = np.histogram(_pos_group, bins=10, range=_range,
-                                density=True)
+        histo, _ = np.histogram(
+            _pos_group, bins=10, range=_range, density=True)
 
         max_val, min_val = np.amax(histo), np.amin(histo)
         # NOTE maybe allow user to set different values
         delta = min_val + (max_val - min_val) / 3.
 
         # let's first avoid crossing pbc with the liquid phase. This can fail:
-        while(histo[0] > delta or histo[-1] > delta):
+        while (histo[0] > delta or histo[-1] > delta):
             total_shift += shift
             if total_shift >= dim[direction]:
                 raise ValueError(messages.CENTERING_FAILURE)
             _pos_group += shift
             if _dir == 'x':
-                utilities.centerbox(group.universe, x=_pos_group,
-                                    center_direction=direction,
-                                    halfbox_shift=halfbox_shift)
+                utilities.centerbox(
+                    group.universe,
+                    x=_pos_group,
+                    center_direction=direction,
+                    halfbox_shift=halfbox_shift)
             if _dir == 'y':
-                utilities.centerbox(group.universe, y=_pos_group,
-                                    center_direction=direction,
-                                    halfbox_shift=halfbox_shift)
+                utilities.centerbox(
+                    group.universe,
+                    y=_pos_group,
+                    center_direction=direction,
+                    halfbox_shift=halfbox_shift)
             if _dir == 'z':
-                utilities.centerbox(group.universe, z=_pos_group,
-                                    center_direction=direction,
-                                    halfbox_shift=halfbox_shift)
-            histo, _ = np.histogram(_pos_group, bins=10, range=_range,
-                                    density=True)
+                utilities.centerbox(
+                    group.universe,
+                    z=_pos_group,
+                    center_direction=direction,
+                    halfbox_shift=halfbox_shift)
+            histo, _ = np.histogram(
+                _pos_group, bins=10, range=_range, density=True)
 
         _center = np.average(_pos_group)
-        if(halfbox_shift is False):
+        if (halfbox_shift is False):
             box_half = dim[direction] / 2.
         else:
             box_half = 0.
@@ -259,9 +281,17 @@ class PYTIM(object):
             self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
             self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
-    def writepdb(self, filename='layers.pdb', centered='no', group='all', multiframe=True):
-        _writepdb(self, filename=filename, centered=centered,
-                  group=group, multiframe=multiframe)
+    def writepdb(self,
+                 filename='layers.pdb',
+                 centered='no',
+                 group='all',
+                 multiframe=True):
+        _writepdb(
+            self,
+            filename=filename,
+            centered=centered,
+            group=group,
+            multiframe=multiframe)
 
 
 from pytim.itim import ITIM
