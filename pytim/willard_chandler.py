@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-
 """ Module: willard-chandler
     ========================
 """
@@ -91,11 +90,20 @@ class WillardChandler(pytim.PYTIM):
 
         """
 
-    def __init__(self, universe, group=None,
-                 alpha=2.0, radii_dict=None, mesh=2.0, symmetry='spherical',
-                 cluster_cut=None, cluster_threshold_density=None,
-                 extra_cluster_groups=None, centered=False, warnings=False,
-                 fast=True, **kargs):
+    def __init__(self,
+                 universe,
+                 group=None,
+                 alpha=2.0,
+                 radii_dict=None,
+                 mesh=2.0,
+                 symmetry='spherical',
+                 cluster_cut=None,
+                 cluster_threshold_density=None,
+                 extra_cluster_groups=None,
+                 centered=False,
+                 warnings=False,
+                 fast=True,
+                 **kargs):
 
         self.do_center = centered
         sanity = SanityCheck(self)
@@ -144,8 +152,13 @@ class WillardChandler(pytim.PYTIM):
         if sequence is True:
             filename = cube.consecutive_filename(self.universe, filename)
         # TODO handle optional atomic_numbers
-        cube.write_file(filename, group, self.ngrid,
-                        self.spacing, self.density_field, atomic_numbers=None)
+        cube.write_file(
+            filename,
+            group,
+            self.ngrid,
+            self.spacing,
+            self.density_field,
+            atomic_numbers=None)
 
     def writeobj(self, filename="pytim.obj", sequence=False):
         """ Write to wavefront obj files (sequences) the triangulated surface
@@ -179,8 +192,8 @@ class WillardChandler(pytim.PYTIM):
             triangulated isosurface, the density and the particles.
 
         """
-        self.label_group(self.universe.atoms, beta=0.0,
-                         layer=-1, cluster=-1, side=-1)
+        self.label_group(
+            self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
         # we assign an empty group for consistency
         self._layers = self.universe.atoms[:0]
 
@@ -200,8 +213,7 @@ class WillardChandler(pytim.PYTIM):
         box = self.universe.dimensions[:3]
 
         ngrid, spacing = utilities.compute_compatible_mesh_params(
-            self.mesh, box
-        )
+            self.mesh, box)
         self.spacing = spacing
         self.ngrid = ngrid
         grid = utilities.generate_grid_in_box(box, ngrid, order='zyx')
@@ -219,9 +231,7 @@ class WillardChandler(pytim.PYTIM):
         # (december 2003). DOI: 10.1080/10867651.2003.10487582
         volume = self.density_field.reshape(tuple(ngrid[::-1]))
         verts, faces, normals, values = measure.marching_cubes(
-            volume, None,
-            spacing=tuple(spacing)
-        )
+            volume, None, spacing=tuple(spacing))
         # note that len(normals) == len(verts): they are normals
         # at the vertices, and not normals of the faces
         self.triangulated_surface = [verts, faces, normals]
@@ -264,8 +274,8 @@ class Writevtk(object):
         inter = self.interface
         if sequence is True:
             filename = vtk.consecutive_filename(inter.universe, filename)
-        vtk.write_scalar_grid(filename, inter.ngrid,
-                              inter.spacing, inter.density_field)
+        vtk.write_scalar_grid(filename, inter.ngrid, inter.spacing,
+                              inter.density_field)
 
     def particles(self, filename='pytim_part.vtk', group=None, sequence=False):
         """ Write to vtk files the particles in a group.
@@ -317,8 +327,7 @@ class Writevtk(object):
         normals = inter.triangulated_surface[2]
         if sequence is True:
             filename = vtk.consecutive_filename(inter.universe, filename)
-        vtk.write_triangulation(
-            filename, vertices[::, ::-1], faces, normals)
+        vtk.write_triangulation(filename, vertices[::, ::-1], faces, normals)
 
 
 #

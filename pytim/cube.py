@@ -33,7 +33,8 @@ def _write_atomgroup(f, group, atomic_numbers):
         except AttributeError:
             n0 = {'number': 0}
             atomic_numbers = [
-                utilities.atoms_maps.get(t, n0)['number'] for t in types]
+                utilities.atoms_maps.get(t, n0)['number'] for t in types
+            ]
 
     for i, p in enumerate(group.positions):
         f.write(_format_atom(p / Bohr, atomic_numbers[i]))
@@ -58,8 +59,13 @@ def _write_scalar_grid(f, scalars):
         f.write('\n')
 
 
-def write_file(filename, group, grid_size, spacing,
-               scalars, atomic_numbers=None, normalize=True):
+def write_file(filename,
+               group,
+               grid_size,
+               spacing,
+               scalars,
+               atomic_numbers=None,
+               normalize=True):
     """write in a cube file a scalar field on a rectangular grid.
        Assumes that the header has been already written.
 
@@ -98,7 +104,10 @@ def write_file(filename, group, grid_size, spacing,
         if group is not None:
             _write_atomgroup(f, group, atomic_numbers)
         # NOTE the 6-fold roll has been determined empirically.
-        field = np.roll(np.swapaxes(scalars.reshape(
-            (grid_size[2], grid_size[1], grid_size[0])
-        ), 2, 0), 6, axis=-1).flatten()  # xyz <-> zyx
+        field = np.roll(
+            np.swapaxes(
+                scalars.reshape((grid_size[2], grid_size[1], grid_size[0])), 2,
+                0),
+            6,
+            axis=-1).flatten()  # xyz <-> zyx
         _write_scalar_grid(f, field / maxval)

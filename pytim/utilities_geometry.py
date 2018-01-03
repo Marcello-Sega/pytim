@@ -90,7 +90,8 @@ def polygonalArea(points):
     points2d = points[:, :2]
     nz2 = n[2]**2
     ratio = np.sqrt(n2 / nz2)
-    return np.abs(ratio * np.sum([0.5, -0.5] * points2d * np.roll(np.roll(points2d, 1, axis=0), 1, axis=1)))
+    return np.abs(ratio * np.sum([0.5, -0.5] * points2d * np.roll(
+        np.roll(points2d, 1, axis=0), 1, axis=1)))
 
 
 def fit_sphere(points):

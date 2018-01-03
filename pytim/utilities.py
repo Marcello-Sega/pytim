@@ -116,9 +116,11 @@ def correlate(a1=np.ndarray(0), a2=None):
 
     if not isinstance(a2, type(None)):  # do cross-corr
         fa2 = np.fft.fft(a2, axis=0, n=size * 2)
-        return ((np.fft.fft(fa2 * np.conj(fa1) + fa1 * np.conj(fa2), axis=0)[:size]).real.T / norm).T / len(fa1) / 2.
-    else:                               # do auto-corr
-        return ((np.fft.fft(fa1 * np.conj(fa1), axis=0)[:size]).real.T / norm).T / len(fa1)
+        return ((np.fft.fft(fa2 * np.conj(fa1) + fa1 * np.conj(fa2), axis=0
+                            )[:size]).real.T / norm).T / len(fa1) / 2.
+    else:  # do auto-corr
+        return ((np.fft.fft(fa1 * np.conj(fa1), axis=0)[:size]).real.T / norm
+                ).T / len(fa1)
 
 
 def extract_positions(inp):
@@ -156,8 +158,13 @@ def get_z(group, normal=2):
     return get_coord(2, group=group, normal=normal)
 
 
-def centerbox(universe, x=None, y=None, z=None, vector=None,
-              center_direction=2, halfbox_shift=True):
+def centerbox(universe,
+              x=None,
+              y=None,
+              z=None,
+              vector=None,
+              center_direction=2,
+              halfbox_shift=True):
     # in ITIM, the system is always centered at 0 along the normal direction (halfbox_shift==True)
     # To center to the middle of the box along all directions, set
     # halfbox_shift=False
@@ -205,9 +212,11 @@ def guess_normal(universe, group):
 
     delta = []
     for direction in range(0, 3):
-        histo, _ = np.histogram(group.positions[:, direction], bins=5,
-                                range=(0, dim[direction]),
-                                density=True)
+        histo, _ = np.histogram(
+            group.positions[:, direction],
+            bins=5,
+            range=(0, dim[direction]),
+            density=True)
         max_val = np.amax(histo)
         min_val = np.amin(histo)
         delta.append(np.sqrt((max_val - min_val)**2))
@@ -234,4 +243,6 @@ def consecutive_filename(universe, basename, extension):
     frame = universe.trajectory.frame
     filename = basename + '.' + str(frame) + '.' + extension
     return filename
+
+
 #

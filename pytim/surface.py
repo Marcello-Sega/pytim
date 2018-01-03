@@ -23,6 +23,7 @@ class Surface(object):
         dump()          -> save to disk in format of choice
     """
     __metaclass__ = ABCMeta
+
     # TODO: so far includes only methods for CT. Gather also other ones here
 
     def __init__(self, interface, options=None):
@@ -133,10 +134,10 @@ class Surface(object):
         upper = self.interface._layers[0][layer]
         lower = self.interface._layers[1][layer]
         delta = self.interface.alpha * 4.0 + 1e-6
-        upperpos = utilities.generate_periodic_border(upper.positions, box,
-                                                      delta, method='2d')[0]
-        lowerpos = utilities.generate_periodic_border(lower.positions, box,
-                                                      delta, method='2d')[0]
+        upperpos = utilities.generate_periodic_border(
+            upper.positions, box, delta, method='2d')[0]
+        lowerpos = utilities.generate_periodic_border(
+            lower.positions, box, delta, method='2d')[0]
 
         self.surf_triang = [None, None]
         self.trimmed_surf_triangs = [None, None]
@@ -146,11 +147,9 @@ class Surface(object):
         self.triangulation_points[0] = upperpos[:]
         self.triangulation_points[1] = lowerpos[:]
         self.trimmed_surf_triangs[0] = utilities.trim_triangulated_surface(
-            self.surf_triang[0], box
-        )
+            self.surf_triang[0], box)
         self.trimmed_surf_triangs[1] = utilities.trim_triangulated_surface(
-            self.surf_triang[1], box
-        )
+            self.surf_triang[1], box)
         return self.surf_triang
 
     def _distance_flat(self, positions):
@@ -185,7 +184,6 @@ class Surface(object):
 
 
 class SurfaceFlatInterface(Surface):
-
     def distance(self, inp):
         positions = utilities.extract_positions(inp)
         return self._distance_flat(positions)
@@ -201,7 +199,7 @@ class SurfaceFlatInterface(Surface):
             self.options['from_modes']
             upper_interp = self.surface_from_modes(upper_set, self.modes[0])
             lower_interp = self.surface_from_modes(lower_set, self.modes[1])
-        except(TypeError, KeyError):
+        except (TypeError, KeyError):
             self._initialize_distance_interpolator_flat(layer=self._layer)
             upper_interp = self._interpolator[0](upper_set[:, 0:2])
             lower_interp = self._interpolator[1](lower_set[:, 0:2])
@@ -218,4 +216,6 @@ class SurfaceFlatInterface(Surface):
 
     def triangulation(self, layer=0):
         return self.triangulate_layer_flat(layer)
+
+
 #

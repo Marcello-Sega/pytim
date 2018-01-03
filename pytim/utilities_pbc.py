@@ -14,14 +14,15 @@ def generate_periodic_border(points, box, delta, method='3d'):
     extrapoints = np.copy(points)
 
     if method is '2d':
-        shifts = np.array([el + (0,) for el in list(itertools.product([1, -1, 0],
-                                                                      repeat=2))])
+        shifts = np.array([
+            el + (0, ) for el in list(itertools.product([1, -1, 0], repeat=2))
+        ])
     else:
         shifts = np.array(list(itertools.product([1, -1, 0], repeat=3)))
 
     extraids = np.arange(len(points), dtype=np.int)
     for shift in shifts:
-        if(np.sum(shift * shift)):  # avoid [0,0,0]
+        if (np.sum(shift * shift)):  # avoid [0,0,0]
             # this needs some explanation:
             # if shift ==0  -> the condition is always true
             # if shift ==1  -> the condition is x > box - delta
@@ -29,9 +30,10 @@ def generate_periodic_border(points, box, delta, method='3d'):
             # Requiring np.all() to be true makes the logical and returns
             # (axis=1) True for all indices whose atoms satisfy the
             # condition
-            selection = np.all(shift * points >= shift * shift *
-                               ((box + shift * box) / 2. - delta),
-                               axis=1)
+            selection = np.all(
+                shift * points >= shift * shift *
+                ((box + shift * box) / 2. - delta),
+                axis=1)
             # add the new points at the border of the box
             extrapoints = np.append(
                 extrapoints, points[selection] - shift * box, axis=0)

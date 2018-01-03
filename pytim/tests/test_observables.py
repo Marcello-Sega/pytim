@@ -6,7 +6,6 @@
 
 
 class TestObservables():
-
     """
     This is a collection of basic tests to check
     that the observables are yelding the expected

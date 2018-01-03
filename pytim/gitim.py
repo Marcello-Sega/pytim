@@ -99,12 +99,24 @@ J. Chem. Phys. 138, 044110, 2013)*
 
     _surface = None
 
-    def __init__(
-            self, universe, group=None, alpha=2.0, normal='guess',
-            molecular=True, max_layers=1, radii_dict=None, cluster_cut=None,
-            cluster_threshold_density=None, extra_cluster_groups=None,
-            biggest_cluster_only=False, symmetry='spherical', centered=False,
-            info=False, warnings=False, _noextrapoints=False, **kargs):
+    def __init__(self,
+                 universe,
+                 group=None,
+                 alpha=2.0,
+                 normal='guess',
+                 molecular=True,
+                 max_layers=1,
+                 radii_dict=None,
+                 cluster_cut=None,
+                 cluster_threshold_density=None,
+                 extra_cluster_groups=None,
+                 biggest_cluster_only=False,
+                 symmetry='spherical',
+                 centered=False,
+                 info=False,
+                 warnings=False,
+                 _noextrapoints=False,
+                 **kargs):
 
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
@@ -129,7 +141,7 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         self._assign_symmetry(symmetry)
 
-        if(self.symmetry == 'planar'):
+        if (self.symmetry == 'planar'):
             sanity.assign_normal(normal)
 
         pytim.PatchTrajectory(self.universe.trajectory, self)
@@ -145,11 +157,13 @@ J. Chem. Phys. 138, 044110, 2013)*
     def alpha_prefilter(triangulation, alpha):
         t = triangulation
         threshold = 2.0 * alpha
-        return t.simplices[np.array([np.max(distance.cdist(t.points[simplex],
-                                                           t.points[simplex],
-                                                           'euclidean')) >=
-                                     threshold + 2. * np.min(t.radii[simplex])
-                                     for simplex in t.simplices])]
+        return t.simplices[np.array([
+            np.max(
+                distance.cdist(t.points[simplex], t.points[simplex],
+                               'euclidean'))
+            >= threshold + 2. * np.min(t.radii[simplex])
+            for simplex in t.simplices
+        ])]
 
     def circumradius(self, simplex):
 
@@ -207,16 +221,15 @@ J. Chem. Phys. 138, 044110, 2013)*
         gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
         if self._noextrapoints is False:
             extrapoints, extraids = utilities.generate_periodic_border(
-                points, box, delta, method='3d'
-            )
+                points, box, delta, method='3d')
         else:
             extrapoints = np.copy(points)
             extraids = np.arange(len(points), dtype=np.int)
         # add points at the vertices of the expanded (by 2 alpha) box
-        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0],
-                                  [0.0, 1.0, 0.0], [0.0, 1.0, 1.0],
-                                  [1.0, 0.0, 0.0], [1.0, 0.0, 1.0],
-                                  [1.0, 1.0, 0.0], [1.0, 1.0, 1.0]])
+        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [
+            0.0, 1.0, 0.0
+        ], [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], [1.0, 1.0, 0.0],
+                                  [1.0, 1.0, 1.0]])
         if self._noextrapoints is False:
             for dim, vertex in enumerate(cube_vertices):
                 # added to prevent coplanar points
@@ -231,8 +244,9 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         prefiltered = self.triangulation.simplices  # == skip prefiltering
 
-        a_shape = prefiltered[np.array([self.circumradius(
-            simplex) >= self.alpha for simplex in prefiltered])]
+        a_shape = prefiltered[np.array([
+            self.circumradius(simplex) >= self.alpha for simplex in prefiltered
+        ])]
         _ids = np.unique(a_shape.flatten())
         # remove the indices corresponding to the 8 additional points, which
         # have extraid==-1
@@ -243,8 +257,8 @@ J. Chem. Phys. 138, 044110, 2013)*
     def _assign_layers(self):
         """Determine the GITIM layers."""
         # this can be used later to shift back to the original shift
-        self.label_group(self.universe.atoms, beta=0.0,
-                         layer=-1, cluster=-1, side=-1)
+        self.label_group(
+            self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 
@@ -275,10 +289,12 @@ J. Chem. Phys. 138, 044110, 2013)*
 
             if self.biggest_cluster_only is True:
                 # apply the same clustering algorith as set at init
-                l, c, _ = dbs(group, self.cluster_cut[0],
-                              self.universe.dimensions[:],
-                              threshold_density=self.cluster_threshold_density,
-                              molecular=self.molecular)
+                l, c, _ = dbs(
+                    group,
+                    self.cluster_cut[0],
+                    self.universe.dimensions[:],
+                    threshold_density=self.cluster_threshold_density,
+                    molecular=self.molecular)
                 group = group[np.where(np.array(l) == np.argmax(c))[0]]
 
             alpha_group = alpha_group[:] - group[:]
@@ -316,5 +332,6 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         """
         return self._layers
+
 
 #
