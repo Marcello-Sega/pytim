@@ -46,8 +46,10 @@ class NoseTestCommand(TestCommand):
         nose.run_exit(argv=['nosetests'])
 
 
-pytim_dbscan = Extension("pytim_dbscan", ["pytim/_dbscan_inner.pyx"], language="c++",
-                         include_dirs=[numpy.get_include()])
+pytim_dbscan = Extension(
+    "pytim_dbscan", ["pytim/_dbscan_inner.pyx"],
+    language="c++",
+    include_dirs=[numpy.get_include()])
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -67,12 +69,12 @@ with open("pytim/version.py") as fp:
 setup(
     name='pytim',
     ext_modules=[pytim_dbscan],
-    cmdclass={'build_ext': build_ext, 'test': NoseTestCommand},
+    cmdclass={'build_ext': build_ext,
+              'test': NoseTestCommand},
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
     version=version['__version__'],
-
     description='Python Tool for Interfacial Molecules Analysis',
     long_description=long_description,
 
@@ -124,18 +126,17 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['MDAnalysis>=0.16', 'PyWavelets>=0.5.2', 'numpy>=1.12.0',
-                      'scipy>=1.0', 'scikit-image>=0.13.0', 'cython>=0.24.1',
-                      'sphinx>=1.4.3', 'matplotlib', 'pytest'],
+    install_requires=[
+        'MDAnalysis>=0.16', 'PyWavelets>=0.5.2', 'numpy>=1.12.0', 'scipy>=1.0',
+        'scikit-image>=0.13.0', 'cython>=0.24.1', 'sphinx>=1.4.3',
+        'matplotlib', 'pytest'
+    ],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
     # $ pip install -e .[dev,test]
-    tests_require=[
-        'nose',
-        'coverage'
-    ],
+    tests_require=['nose', 'coverage'],
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
@@ -147,15 +148,14 @@ setup(
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-  ##  data_files=[('my_data', ['data/data_file'])],
+    ##  data_files=[('my_data', ['data/data_file'])],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
     # pip to create the appropriate form of executable for the target platform.
-  # entry_points={
-  # 'console_scripts': [
-  # 'sample=sample:main',
-  # ],
-  # },
-
+    # entry_points={
+    # 'console_scripts': [
+    # 'sample=sample:main',
+    # ],
+    # },
 )

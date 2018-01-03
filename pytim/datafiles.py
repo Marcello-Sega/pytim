@@ -1,7 +1,6 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
-
 """ Location of data files for Pytim examples and tests
     ====================================================
 
@@ -59,30 +58,29 @@ from __future__ import print_function
     """
 
 __all__ = [
-    "CCL4_WATER_GRO",        # GROMACS single frame, carbon tetrachloride / water interface
-    "WATER_GRO",             # GROMACS single frame, water/vapour interface
-    "WATER_LMP_DATA",        # LAMMPS topology for WATER_LAMMPS, water/vapour interface
-    "WATER_LMP_XTC",         # LAMMPS trajectory, water/vapour interface
-    "WATER_PDB",             # PDB single frame, water/vapour interface, same as WATER_GRO
-    "WATER_XYZ",             # XYZ single frame, water/vapour interface, same as WATER_GRO
-    "WATERSMALL_GRO",        # GROMACS single frame, SPC water/vapour interface
-    "WATER_520K_GRO",        # GROMACS single frame, SPC/E water/vapour interface,520 K
-    "WATER_550K_GRO",        # GROMACS single frame, SPC/E water/vapour interface,550 K
-    "METHANOL_GRO",          # methanol/vapour interface with molecules in the  vapour phase
-    "ILBENZENE_GRO",         # Ionic liquid/benzene, partial miscibility
-    "MICELLE_PDB",           # PDB of dodecylphosphocholine micelle in water
-    "FULLERENE_PDB",         # PDB of C60
-    "GLUCOSE_PDB",           # PDB of solvated beta-d-glucose
-    "WATER_XTC",             # GROMACS trajectory, 100 frames, water/vapour interface
-    "G43A1_TOP",             # GROMOS 43a1 nonbonded parameters, from the gromacs distribution
-    "AMBER03_TOP",           # AMBER03 nonbonded parameters, from the gromacs distribution
-    "CHARMM27_TOP",          # CHARM27 nonbonded parameters, from the gromacs distribution
-    "pytim_data",            # class to access the data
-    "_TEST_BCC_GRO",         # test file
+    "CCL4_WATER_GRO",  # GROMACS single frame, carbon tetrachloride / water interface
+    "WATER_GRO",  # GROMACS single frame, water/vapour interface
+    "WATER_LMP_DATA",  # LAMMPS topology for WATER_LAMMPS, water/vapour interface
+    "WATER_LMP_XTC",  # LAMMPS trajectory, water/vapour interface
+    "WATER_PDB",  # PDB single frame, water/vapour interface, same as WATER_GRO
+    "WATER_XYZ",  # XYZ single frame, water/vapour interface, same as WATER_GRO
+    "WATERSMALL_GRO",  # GROMACS single frame, SPC water/vapour interface
+    "WATER_520K_GRO",  # GROMACS single frame, SPC/E water/vapour interface,520 K
+    "WATER_550K_GRO",  # GROMACS single frame, SPC/E water/vapour interface,550 K
+    "METHANOL_GRO",  # methanol/vapour interface with molecules in the  vapour phase
+    "ILBENZENE_GRO",  # Ionic liquid/benzene, partial miscibility
+    "MICELLE_PDB",  # PDB of dodecylphosphocholine micelle in water
+    "FULLERENE_PDB",  # PDB of C60
+    "GLUCOSE_PDB",  # PDB of solvated beta-d-glucose
+    "WATER_XTC",  # GROMACS trajectory, 100 frames, water/vapour interface
+    "G43A1_TOP",  # GROMOS 43a1 nonbonded parameters, from the gromacs distribution
+    "AMBER03_TOP",  # AMBER03 nonbonded parameters, from the gromacs distribution
+    "CHARMM27_TOP",  # CHARM27 nonbonded parameters, from the gromacs distribution
+    "pytim_data",  # class to access the data
+    "_TEST_BCC_GRO",  # test file
     "_TEST_ORIENTATION_GRO",  # test file
-    "_TEST_PROFILE_GRO",     # test file
+    "_TEST_PROFILE_GRO",  # test file
 ]
-
 
 from pkg_resources import resource_filename
 import tempfile
@@ -144,8 +142,8 @@ class Data(object):
         try:
             md5 = urllib.urlopen(urlbase_md5 + filename + '.MD5').readline()
             print("checking presence of a cached copy...", end=' ')
-            md5_local = hashlib.md5(
-                open(dirname + filename, 'rb').read()).hexdigest()
+            md5_local = hashlib.md5(open(dirname + filename,
+                                         'rb').read()).hexdigest()
             if md5_local in md5:
                 print("found")
                 return dirname + filename
@@ -235,8 +233,7 @@ WATER_GRO = resource_filename('pytim', 'data/water.gro')
 pytim_data.add('WATER_GRO', 'config', 'GRO', 'SPC water/vapour interface')
 
 WATER_LMP_XTC = resource_filename('pytim', 'data/water_lmp.xtc')
-pytim_data.add('WATER_LMP_XTC', 'traj', 'LAMMPS',
-               'SPC water/vapour interface')
+pytim_data.add('WATER_LMP_XTC', 'traj', 'LAMMPS', 'SPC water/vapour interface')
 
 WATER_PDB = resource_filename('pytim', 'data/water.pdb')
 pytim_data.add('WATER_PDB', 'config', 'PDB', 'SPC water/vapour interface')
@@ -275,12 +272,11 @@ WATER_XTC = resource_filename('pytim', 'data/water.xtc')
 pytim_data.add('WATER_XTC', 'traj', 'XTC',
                'SPC water/vapour interface trajectory')
 
-_TEST_BCC_GRO = resource_filename(
-    'pytim', 'data/_test_bcc.gro')
+_TEST_BCC_GRO = resource_filename('pytim', 'data/_test_bcc.gro')
 pytim_data.add('_TEST_BCC_GRO', 'config', 'GRO', 'test file')
 
-_TEST_ORIENTATION_GRO = resource_filename(
-    'pytim', 'data/_test_orientation.gro')
+_TEST_ORIENTATION_GRO = resource_filename('pytim',
+                                          'data/_test_orientation.gro')
 pytim_data.add('_TEST_ORIENTATION_GRO', 'config', 'GRO', 'test file')
 
 _TEST_PROFILE_GRO = resource_filename('pytim', 'data/_test_profile.gro')
@@ -299,7 +295,6 @@ pytim_data.add('AMBER03_TOP', 'topol', 'GMX', 'AMBER 03 topology for GROMACS')
 CHARMM27_TOP = resource_filename('pytim', 'data/ffcharmm27.nonbonded.itp')
 pytim_data.add('CHARMM27_TOP', 'topol', 'GMX',
                'CHARMM 27 topology for GROMACS')
-
 
 # This should be the last line: clean up namespace
 del resource_filename

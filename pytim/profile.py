@@ -148,12 +148,11 @@ class Profile(object):
 
     """
 
-    def __init__(
-            self,
-            direction='z',
-            observable=None,
-            interface=None,
-            center_group=None):
+    def __init__(self,
+                 direction='z',
+                 observable=None,
+                 interface=None,
+                 center_group=None):
         # TODO: the directions are handled differently, fix it in the code
 
         _dir = {'x': 0, 'y': 1, 'z': 2}
@@ -188,7 +187,7 @@ class Profile(object):
             # we need to make sure that the number of bins is odd, so that the
             # central one encompasses zero (to make the delta-function
             # contribution appear always in this bin)
-            if(nbins % 2 > 0):
+            if (nbins % 2 > 0):
                 nbins += 1
             self._nbins = nbins
             if self.interface is not None:
@@ -230,13 +229,14 @@ class Profile(object):
         if nbins is None:  # means also binwidth must be none
             nbins = max_bins
 
-        if(nbins % 2 > 0):
+        if (nbins % 2 > 0):
             nbins += 1
 
-        avg, bins, _ = stats.binned_statistic(self.sampled_bins,
-                                              self.sampled_values * 1. /
-                                              (self._counts * self._vol),
-                                              range=self._range,
-                                              statistic='mean', bins=nbins)
+        avg, bins, _ = stats.binned_statistic(
+            self.sampled_bins,
+            self.sampled_values * 1. / (self._counts * self._vol),
+            range=self._range,
+            statistic='mean',
+            bins=nbins)
         avg[np.isnan(avg)] = 0.0
         return [bins[0:-1], bins[1:], avg]

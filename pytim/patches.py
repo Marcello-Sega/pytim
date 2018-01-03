@@ -18,7 +18,6 @@ def PatchTrajectory(trajectory, interface):
         trajectory.original_read_frame_with_aux = trajectory._read_frame_with_aux
 
         class PatchedTrajectory(trajectory.__class__):
-
             def _read_next_timestep(self, ts=None):
                 tmp = self.original_read_next_timestep(ts=ts)
                 self.interface._assign_layers()
@@ -40,7 +39,7 @@ def PatchTrajectory(trajectory, interface):
 
 
 def PatchOpenMM(simulation, interface):
- #       return _openmm.CompoundIntegrator_step(self, steps)
+    #       return _openmm.CompoundIntegrator_step(self, steps)
     """ Patch the Openmm Simulation class
 
     """
@@ -52,7 +51,6 @@ def PatchOpenMM(simulation, interface):
         simulation.original_step = simulation.step
 
         class PatchedOpenMMSimulation(simulation.__class__):
-
             def step(self, steps):
                 tmp = self.original_step(steps)
                 pos = self.context.getState(getPositions=True).getPositions(
@@ -80,7 +78,6 @@ def PatchMDTRAJ(trajectory, universe):
         trajectory.universe = universe
 
         class PatchedMdtrajTrajectory(trajectory.__class__):
-
             def __getitem__(self, key):
                 slice_ = self.slice(key)
                 PatchMDTRAJ(slice_, universe)

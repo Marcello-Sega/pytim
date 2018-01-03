@@ -6,7 +6,6 @@
 
 
 class TestBasics():
-
     """
     This is a collection of basic tests to check
     that code is running -- no test on the correctness

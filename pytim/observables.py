@@ -119,12 +119,11 @@ class LayerTriangulation(Observable):
 
     """
 
-    def __init__(
-            self,
-            interface,
-            layer=1,
-            return_triangulation=True,
-            return_statistics=True):
+    def __init__(self,
+                 interface,
+                 layer=1,
+                 return_triangulation=True,
+                 return_statistics=True):
 
         Observable.__init__(self, interface.universe)
         self.interface = interface
@@ -160,9 +159,7 @@ class LayerTriangulation(Observable):
             return stats
         else:
             return [
-                stats,
-                surface.surf_triang,
-                surface.triangulation_points,
+                stats, surface.surf_triang, surface.triangulation_points,
                 surface.trimmed_surf_triangs
             ]
 

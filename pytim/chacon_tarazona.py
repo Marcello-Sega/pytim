@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-
 """ Module: chacon_tarazona
     =======================
 """
@@ -53,9 +52,20 @@ class ChaconTarazona(pytim.PYTIM):
     def layers(self):
         return self._layers
 
-    def __init__(self, universe, alpha=2.0, tau=1.5, group=None,
-                 radii_dict=None, max_layers=1, normal='guess', molecular=True,
-                 info=True, mesh=None, centered=False, warnings=False, **kargs):
+    def __init__(self,
+                 universe,
+                 alpha=2.0,
+                 tau=1.5,
+                 group=None,
+                 radii_dict=None,
+                 max_layers=1,
+                 normal='guess',
+                 molecular=True,
+                 info=True,
+                 mesh=None,
+                 centered=False,
+                 warnings=False,
+                 **kargs):
 
         self.symmetry = 'planar'
         self.do_center = centered
@@ -70,7 +80,7 @@ class ChaconTarazona(pytim.PYTIM):
         self.info = info
         self.alpha = alpha
         self.tau = tau
-        if(max_layers != 1):
+        if (max_layers != 1):
             raise Exception("max_layers !=1 not implemented yet!")
 
         self.max_layers = max_layers
@@ -132,7 +142,7 @@ class ChaconTarazona(pytim.PYTIM):
     def _assign_one_side(self, side):
         # TODO add successive layers
         box = self.universe.dimensions[:3]
-#        surf = self._surfaces[0]
+        #        surf = self._surfaces[0]
 
         if side == 0:
             sorted_ind = self.sorted_indices[::-1]
@@ -172,8 +182,8 @@ class ChaconTarazona(pytim.PYTIM):
         layers.
 
         """
-        self.label_group(self.universe.atoms, beta=0.0,
-                         layer=-1, cluster=-1, side=-1)
+        self.label_group(
+            self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
 
         # TODO parallelize
 
@@ -207,5 +217,6 @@ class ChaconTarazona(pytim.PYTIM):
             self.universe.atoms.positions = self.original_positions
         else:
             self._shift_positions_to_middle()
+
 
 #

@@ -66,7 +66,7 @@ class gaussian_kde_pbc(gaussian_kde):
                     d, self.d)
                 raise ValueError(msg)
 
-        result = np.zeros((m,), dtype=float)
+        result = np.zeros((m, ), dtype=float)
 
         if m >= self.n:
             # there are more points than data, so loop over data
