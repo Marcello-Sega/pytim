@@ -35,6 +35,7 @@ def write_scalar_grid(filename, grid_size, spacing, scalars):
         for val in scalars:
             f.write(str(val) + "\n")
 
+
 # TODO: should move  all AtomGroup references to a higher level
 
 
@@ -51,7 +52,8 @@ def write_atomgroup(filename, group, color=None, radius=None):
     pos = group.positions
     npos = len(pos)
     with open(filename, "w") as f:
-        f.write("# vtk DataFile Version 2.0\ntriangles\nASCII\nDATASET POLYDATA\n")
+        f.write(
+            "# vtk DataFile Version 2.0\ntriangles\nASCII\nDATASET POLYDATA\n")
         f.write("POINTS " + str(len(pos)) + " floats\n")
         for p in pos:
             f.write(str(p[0]) + " " + str(p[1]) + " " + str(p[2]) + "\n")
@@ -59,8 +61,8 @@ def write_atomgroup(filename, group, color=None, radius=None):
         for i in range(npos):
             f.write("1 " + str(i) + "\n")
         if radius is not None:
-            f.write("\nPOINT_DATA " + str(len(pos)) +
-                    "\nSCALARS radius float 1\n")
+            f.write(
+                "\nPOINT_DATA " + str(len(pos)) + "\nSCALARS radius float 1\n")
             f.write("LOOKUP_TABLE default\n")
             for rad in radius:
                 f.write(str(rad) + "\n")
@@ -85,8 +87,8 @@ def write_triangulation(filename, vertices, triangles, normals=None):
     for point in vertices:
         f.write(_format_vector(point) + "\n")
 
-    f.write("\nCELLS " + str(len(triangles)) +
-            " " + str(4 * len(triangles)) + "\n")
+    f.write("\nCELLS " + str(len(triangles)) + " " + str(4 * len(triangles)) +
+            "\n")
     for index in triangles:
         f.write("3 " + _format_vector(index, format_str="{:d}") + "\n")
 

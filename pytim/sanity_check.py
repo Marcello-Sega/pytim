@@ -12,7 +12,6 @@ from pytim.properties import guess_radii, _missing_attributes
 
 
 class SanityCheck(object):
-
     def __init__(self, interface):
 
         self.interface = interface
@@ -64,11 +63,9 @@ class SanityCheck(object):
         try:
             np.arange(int(self.interface.alpha / self.interface.target_mesh))
         except BaseException:
-            print((
-                "Error while initializing ITIM: alpha ({0:f}) too large or\
-                  mesh ({1:f}) too small".format(
-                    self.interface.alpha,
-                    self.interface.target_mesh)))
+            print(("Error while initializing ITIM: alpha ({0:f}) too large or\
+                  mesh ({1:f}) too small".format(self.interface.alpha,
+                                                 self.interface.target_mesh)))
             raise ValueError
 
     def assign_normal(self, normal):
@@ -95,7 +92,8 @@ class SanityCheck(object):
         if not isinstance(self.interface.extra_cluster_groups,
                           (list, tuple, np.ndarray, type(None))):
             self.interface.extra_cluster_groups = [
-                self.interface.extra_cluster_groups]
+                self.interface.extra_cluster_groups
+            ]
 
         # fallback for itim_group
         if self.interface.itim_group is None:
@@ -208,13 +206,13 @@ class SanityCheck(object):
             extra_cluster_groups)
 
         self._define_groups()
-        if(len(self.interface.itim_group) == 0):
+        if (len(self.interface.itim_group) == 0):
             raise StandardError(messages.UNDEFINED_ITIM_GROUP)
         interface = self.interface
 
-        if(interface.cluster_cut is not None):
+        if (interface.cluster_cut is not None):
             elements = len(interface.cluster_cut)
-        if(interface.extra_cluster_groups is not None):
+        if (interface.extra_cluster_groups is not None):
             extraelements = len(interface.extra_cluster_groups)
 
         if not (elements == 1 or elements == 1 + extraelements):

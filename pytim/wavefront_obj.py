@@ -21,5 +21,5 @@ def write_file(filename, vertices, faces):
         for v in vertices:
             f.write("v {:f} {:f} {:f}\n".format(v[2], v[1], v[0]))
         for face in faces:
-            f.write("f {:d} {:d} {:d}\n".format(
-                face[0] + 1, face[1] + 1, face[2] + 1))
+            f.write("f {:d} {:d} {:d}\n".format(face[0] + 1, face[1] + 1,
+                                                face[2] + 1))

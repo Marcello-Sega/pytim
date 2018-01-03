@@ -6,7 +6,11 @@ from distutils.version import LooseVersion
 import MDAnalysis
 
 
-def _writepdb(interface, filename='layers.pdb', centered='no', group='all', multiframe=True):
+def _writepdb(interface,
+              filename='layers.pdb',
+              centered='no',
+              group='all',
+              multiframe=True):
     """ Write the frame to a pdb file, marking the atoms belonging
         to the layers with different beta factors.
 
@@ -56,17 +60,18 @@ def _writepdb(interface, filename='layers.pdb', centered='no', group='all', mult
         # MDAnalysis forgets to do so for successive frames. A bugfix
         # should be on the way for the next version...
         interface.PDB[filename].CRYST1(
-            interface.PDB[filename].convert_dimensions_to_unitcell(interface.universe.trajectory.ts))
+            interface.PDB[filename].convert_dimensions_to_unitcell(
+                interface.universe.trajectory.ts))
     except:
         if LooseVersion(interface._MDAversion) >= LooseVersion('0.16'):
             bondvalue = None
         else:
             bondvalue = False
         interface.PDB[filename] = MDAnalysis.Writer(
-            filename, multiframe=multiframe,
+            filename,
+            multiframe=multiframe,
             n_atoms=interface.group.atoms.n_atoms,
-            bonds=bondvalue
-        )
+            bonds=bondvalue)
     interface.PDB[filename].write(interface.group.atoms)
     interface.PDB[filename].pdbfile.flush()
     interface.universe.atoms.positions = np.copy(temp_pos)

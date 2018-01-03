@@ -73,10 +73,17 @@ class RDF(object):
 
     """
 
-    def __init__(self, universe,
-                 nbins=75, max_radius='full',
-                 start=None, stop=None, step=None,
-                 observable=None, observable2=None, kargs1=None, kargs2=None):
+    def __init__(self,
+                 universe,
+                 nbins=75,
+                 max_radius='full',
+                 start=None,
+                 stop=None,
+                 step=None,
+                 observable=None,
+                 observable2=None,
+                 kargs1=None,
+                 kargs2=None):
 
         kargs1 = kargs1 or {}
         kargs2 = kargs2 or {}
@@ -84,8 +91,7 @@ class RDF(object):
             self.max_radius = np.min(universe.dimensions[:3])
         else:
             self.max_radius = max_radius
-        self.rdf_settings = {'bins': nbins,
-                             'range': (0., self.max_radius)}
+        self.rdf_settings = {'bins': nbins, 'range': (0., self.max_radius)}
         self.universe = universe
         self.nsamples = 0
         self.observable = observable
@@ -136,9 +142,8 @@ class RDF(object):
                     fg2 = self.observable2.compute(self.g2)
 
             try:
-                error = (
-                    fg1.shape[0] != self.g1.n_atoms or fg2.shape[0] !=
-                    self.g2.n_atoms)
+                error = (fg1.shape[0] != self.g1.n_atoms
+                         or fg2.shape[0] != self.g2.n_atoms)
             except:
                 error = True
 
@@ -187,7 +192,7 @@ class RDF(object):
         # Volume in each radial shell
         dr = (self.edges[1:] - self.edges[:-1])
         avr = (self.edges[1:] + self.edges[:-1]) / 2.
-        vol = 4. * np.pi * avr ** 2 * dr
+        vol = 4. * np.pi * avr**2 * dr
 
         # normalization
         density = self.n_squared / self.volume
@@ -259,14 +264,30 @@ class RDF2D(RDF):
 
     """
 
-    def __init__(self, universe,
-                 nbins=75, max_radius='full',
-                 start=None, stop=None, step=None, excluded_dir='auto',
-                 true2D=False, observable=None, kargs1=None, kargs2=None):
+    def __init__(self,
+                 universe,
+                 nbins=75,
+                 max_radius='full',
+                 start=None,
+                 stop=None,
+                 step=None,
+                 excluded_dir='auto',
+                 true2D=False,
+                 observable=None,
+                 kargs1=None,
+                 kargs2=None):
 
-        RDF.__init__(self, universe, nbins=nbins, max_radius=max_radius,
-                     start=start, stop=stop, step=step,
-                     observable=observable, kargs1=kargs1, kargs2=kargs2)
+        RDF.__init__(
+            self,
+            universe,
+            nbins=nbins,
+            max_radius=max_radius,
+            start=start,
+            stop=stop,
+            step=step,
+            observable=observable,
+            kargs1=kargs1,
+            kargs2=kargs2)
         _dir = {'x': 0, 'y': 1, 'z': 2}
         self.true2D = true2D
         if excluded_dir == 'auto':

@@ -68,11 +68,11 @@ class FreeVolume(object):
         _box = self.u.dimensions.copy()
         box = _box[:3]
         try:  # older scipy versions
-            tree = cKDTree(np.random.random((self.npoints, 3))
-                           * box, boxsize=_box[:6])
+            tree = cKDTree(
+                np.random.random((self.npoints, 3)) * box, boxsize=_box[:6])
         except:
-            tree = cKDTree(np.random.random((self.npoints, 3))
-                           * box, boxsize=_box[:3])
+            tree = cKDTree(
+                np.random.random((self.npoints, 3)) * box, boxsize=_box[:3])
         if inp is None:
             inp = self.u.atoms
         if not isinstance(inp, AtomGroup):
@@ -82,9 +82,12 @@ class FreeVolume(object):
         radii = np.unique(inp.radii)
 
         for radius in radii:
-            where = np.where(np.isclose(inp.radii,  radius))
-            lst = [e for l in tree.query_ball_point(
-                inp.positions[where], radius) for e in l]
+            where = np.where(np.isclose(inp.radii, radius))
+            lst = [
+                e
+                for l in tree.query_ball_point(inp.positions[where], radius)
+                for e in l
+            ]
             res = np.append(res, lst)
         return np.unique(res), tree.data
 
@@ -107,9 +110,8 @@ class FreeVolume(object):
         error = []
         res, data = self._compute(inp)
         for i in range(nbins):
-            condition = np.logical_and(
-                data[:, direction] >= bins[i],
-                data[:, direction] < bins[i + 1])
+            condition = np.logical_and(data[:, direction] >= bins[i],
+                                       data[:, direction] < bins[i + 1])
             in_slab = np.where(condition)[0]
             n_in_slab = np.sum(condition * 1.0)
             if n_in_slab == 0:

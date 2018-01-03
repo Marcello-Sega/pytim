@@ -30,9 +30,10 @@ class Sides(MDAnalysis.core.topologyattrs.AtomAttr):
     per_object = 'atom'
 
 
-def _create_property(property_name, docstring=None,
-                     readonly=False, required=False):
-
+def _create_property(property_name,
+                     docstring=None,
+                     readonly=False,
+                     required=False):
     def getter(self):
         return self.__getattribute__('_' + property_name)
 
@@ -51,8 +52,7 @@ def _create_property(property_name, docstring=None,
 
 def _missing_attributes(interface, universe):
     interface._topologyattrs = importlib.import_module(
-        'MDAnalysis.core.topologyattrs'
-    )
+        'MDAnalysis.core.topologyattrs')
     _check_missing_attribute(interface, 'names', 'Atomnames', universe.atoms,
                              universe.atoms.ids.astype(str))
     # NOTE _check_missing_attribute() relies on radii being set to np.nan
@@ -61,16 +61,16 @@ def _missing_attributes(interface, universe):
                              np.nan)
     _check_missing_attribute(interface, 'tempfactors', 'Tempfactors',
                              universe.atoms, 0.0)
-    _check_missing_attribute(interface, 'bfactors', 'Bfactors',
-                             universe.atoms, 0.0)
-    _check_missing_attribute(interface, 'altLocs', 'AltLocs',
-                             universe.atoms, ' ')
-    _check_missing_attribute(interface, 'icodes', 'ICodes',
-                             universe.residues, ' ')
+    _check_missing_attribute(interface, 'bfactors', 'Bfactors', universe.atoms,
+                             0.0)
+    _check_missing_attribute(interface, 'altLocs', 'AltLocs', universe.atoms,
+                             ' ')
+    _check_missing_attribute(interface, 'icodes', 'ICodes', universe.residues,
+                             ' ')
     _check_missing_attribute(interface, 'occupancies', 'Occupancies',
                              universe.atoms, 1)
-    _check_missing_attribute(interface, 'elements', 'Elements',
-                             universe.atoms, 1)
+    _check_missing_attribute(interface, 'elements', 'Elements', universe.atoms,
+                             1)
     _extra_attributes(interface, universe)
 
 
@@ -143,12 +143,12 @@ def _guess_radii_from_masses(interface, group, guessed):
     unique_masses = unique_masses[unique_masses > 0]
     d = atoms_maps
     for target_mass in unique_masses:
-        atype, _ = min(d.items(), key=lambda __entry: abs(__entry[1]['mass'] -
-                                                          target_mass))
+        atype, _ = min(
+            d.items(),
+            key=lambda __entry: abs(__entry[1]['mass'] - target_mass))
         try:
             match_type = get_close_matches(
-                atype, interface.radii_dict.keys(), n=1, cutoff=0.1
-            )
+                atype, interface.radii_dict.keys(), n=1, cutoff=0.1)
             rd = interface.radii_dict
             radii[masses == target_mass] = rd[match_type[0]]
             for t in types[masses == target_mass]:

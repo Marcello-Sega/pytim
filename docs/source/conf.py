@@ -23,7 +23,6 @@ import sys
 needs_sphinx = '1.4.3'
 dist_threads = 4
 
-
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('./pytim'))
@@ -33,7 +32,6 @@ sys.path.insert(0, os.path.abspath('./pytim'))
 # If your documentation needs a minimal Sphinx version, state it here.
 #
 # needs_sphinx = '1.0'
-
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -131,7 +129,6 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -150,9 +147,7 @@ html_theme_options = {
     'relbarlinkcolor': '#0063A6',
     'bgcolor': '#ffffff',
     'codebgcolor': '#e0e0e0',
-
 }
-
 
 #import sphinx_rtd_theme
 #html_theme = "sphinx_rtd_theme"
@@ -212,8 +207,10 @@ html_static_path = ['_static']
 # Custom sidebar templates, maps document names to template names.
 #
 
-html_sidebars = {'**': ['globaltoc.html',
-                        'relations.html', 'sourcelink.html', 'searchbox.html'], }
+html_sidebars = {
+    '**':
+    ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'],
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -298,8 +295,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Pytim.tex', u'Pytim Documentation',
-     u'Marcello Sega', 'manual'),
+    (master_doc, 'Pytim.tex', u'Pytim Documentation', u'Marcello Sega',
+     'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -334,20 +331,15 @@ latex_documents = [
 #
 # latex_domain_indices = True
 
-
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'pytim', u'Pytim Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, 'pytim', u'Pytim Documentation', [author], 1)]
 
 # If true, show URL addresses after external links.
 #
 # man_show_urls = False
-
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -355,9 +347,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Pytim', u'Pytim Documentation',
-     author, 'Pytim', 'One line description of project.',
-     'Miscellaneous'),
+    (master_doc, 'Pytim', u'Pytim Documentation', author, 'Pytim',
+     'One line description of project.', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -386,5 +377,6 @@ def dont_skip_any_doctests(app, what, name, obj, skip, options):
 
 
 if 'doctest' in sys.argv:
+
     def setup(app):
         app.connect('autodoc-skip-member', dont_skip_any_doctests)
