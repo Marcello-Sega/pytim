@@ -65,6 +65,7 @@ class Observable(object):
         pos[pos < -box / 2.] += box[pos < -box / 2.]
         return pos
 
+
     def fold_around_first_atom_in_residue(self, inp):
         """ same as fold_atom_around_first_atom_in_residue()
             but for groups of atoms.
@@ -81,6 +82,34 @@ class Observable(object):
             raise Exception(
                 "input not valid for fold_around_first_atom_in_residue()")
         return np.array(pos)
+
+    def select_direction(self, arg):
+
+        def _inarg(string, arg):
+            return np.any([string in e for e in arg])
+
+        directions = np.array([True, True, True])
+        if len(arg) > 0:
+            if not _inarg('x', arg) or not _inarg('y', arg) or not _inarg('z', arg):
+                RuntimeError(
+                    "this observable accepts as argument a string like 'xy', 'z', ... to select components")
+            directions = np.array([False, False, False])
+            if _inarg('x', arg):
+                directions[0] = True
+            if _inarg('y', arg):
+                directions[1] = True
+            if _inarg('z', arg):
+                directions[2] = True
+
+        self.dirmask = np.where(directions == True)[0]
+    
+    @staticmethod
+    def _to_atomgroup(inp):
+        if isinstance(inp,Atom):
+            ind = inp.index
+            inp = inp.universe.atoms[ind:ind+1]
+        return inp
+
 
     @abstractmethod
     def compute(self, inp=None, kargs=None):
@@ -291,6 +320,7 @@ class Position(Observable):
 
     def __init__(self, *arg, **kwarg):
         Observable.__init__(self, None)
+        self.select_direction(arg)
 
     def compute(self, inp, kargs=None):
         """Compute the observable.
@@ -299,7 +329,8 @@ class Position(Observable):
         :returns: atomic positions
 
         """
-        return inp.positions
+        inp = self._to_atomgroup(inp)
+        return inp.positions[:,self.dirmask]
 
 
 class Velocity(Observable):
@@ -307,6 +338,7 @@ class Velocity(Observable):
 
     def __init__(self, *arg, **kwarg):
         Observable.__init__(self, None)
+        self.select_direction(arg)
 
     def compute(self, inp, kargs=None):
         """Compute the observable.
@@ -315,7 +347,9 @@ class Velocity(Observable):
         :returns: atomic velocities
 
         """
-        return inp.velocities
+
+        inp = self._to_atomgroup(inp)
+        return inp.velocities[:,self.dirmask]
 
 
 class Force(Observable):
@@ -323,6 +357,7 @@ class Force(Observable):
 
     def __init__(self, *arg, **kwarg):
         Observable.__init__(self, None)
+        self.select_direction(arg)
 
     def compute(self, inp, kargs=None):
         """Compute the observable.
@@ -331,7 +366,8 @@ class Force(Observable):
         :returns: atomic forces
 
         """
-        return inp.forces
+        inp = self._to_atomgroup(inp)
+        return inp.forces[:,self.dirmask]
 
 
 class Orientation(Observable):

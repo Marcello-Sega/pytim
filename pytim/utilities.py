@@ -40,7 +40,7 @@ def lap(show=False):
         return dt
 
 
-def correlate(a1=np.ndarray(0), a2=None):
+def correlate(a1, a2=None, _normalize=True):
     """
       correlate data series using numpy fft. The function calculates \
       correlation or cross-correlation.
@@ -109,19 +109,30 @@ def correlate(a1=np.ndarray(0), a2=None):
           plt.show()
 
     """
+    reshaped = False
+    a1 = np.asarray(a1)
+    size = a1.shape[0]
+    if len(a1.shape) == 1:
+        reshaped = True
+        a1 = a1.reshape(a1.shape[0],1)
 
-    size = len(a1)
-    norm = np.arange(size)[::-1] + 1
+    if _normalize is True:
+        norm = (np.arange(size)[::-1] + 1.).reshape(size,1)
+    else:
+        norm = 1.0
+
     fa1 = np.fft.fft(a1, axis=0, n=size * 2)
 
-    if not isinstance(a2, type(None)):  # do cross-corr
+    if a2 is None:  # do auto-cross
+        corr = (np.fft.fft(fa1 * fa1.conj(), axis=0)[:size]).real / norm / len(fa1)
+    else:  # do cross-corr
         fa2 = np.fft.fft(a2, axis=0, n=size * 2)
-        return ((np.fft.fft(fa2 * np.conj(fa1) + fa1 * np.conj(fa2), axis=0
-                            )[:size]).real.T / norm).T / len(fa1) / 2.
-    else:  # do auto-corr
-        return ((np.fft.fft(fa1 * np.conj(fa1), axis=0)[:size]).real.T / norm
-                ).T / len(fa1)
+        corr = (np.fft.fft(fa2 * fa1,conj() + fa1 * fa2.conj(), axis=0)[:size]).real / norm / len(fa1)  / 2.
 
+    if reshaped is True:
+        corr = corr.reshape(corr.shape[0],)
+    
+    return corr
 
 def extract_positions(inp):
     if isinstance(inp, np.ndarray):
