@@ -380,4 +380,3 @@ class Correlator(object):
                 "Correlations of tensorial quantites not allowed in " +
                 self.name)
         return dim
-
