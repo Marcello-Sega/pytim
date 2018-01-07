@@ -115,7 +115,7 @@ def correlate(a1, a2=None, _normalize=True):
         reshaped = True
         a1 = a1.reshape(a1.shape[0], 1)
         if a2 is not None:
-            a2 = a2.reshape(a2.shape[0],1)
+            a2 = a2.reshape(a2.shape[0], 1)
 
     if _normalize is True:
         norm = (np.arange(size)[::-1] + 1.).reshape(size, 1)
