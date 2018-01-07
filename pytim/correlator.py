@@ -96,7 +96,11 @@ class Correlator(object):
 
     """
 
-    def __init__(self, universe=None, observable=None, reference=None, memory_warn=None):
+    def __init__(self,
+                 universe=None,
+                 observable=None,
+                 reference=None,
+                 memory_warn=None):
         self.name = self.__class__.__name__
         self.observable = observable
         self.reference = reference
@@ -128,7 +132,9 @@ class Correlator(object):
         else:
             if observable is None:
                 raise RuntimeError(
-                    self.name + ': at least the observable or the reference must be specified')
+                    self.name +
+                    ': at least the observable or the reference must be specified'
+                )
 
     def sample(self, group):
         """ Sample the timeseries for the autocorrelation function
@@ -138,8 +144,8 @@ class Correlator(object):
         """
         self.nsamples += 1
         if self.reference is not None:  # could be intermittent or continuous:
-                                        # we need to collect also the residence
-                                        # function
+            # we need to collect also the residence
+            # function
             # the residence function (1 if in the reference group, 0 otherwise)
             mask = np.isin(self.reference, group)
             # append the residence function to its timeseries
@@ -153,19 +159,20 @@ class Correlator(object):
             else:
                 self.timeseries = self.maskseries
                 if self.shape is None:
-                    self.shape = (1,)
+                    self.shape = (1, )
                 sampled = mask
         else:
             if self.observable is None:
                 RuntimeError(
-                    'Cannot compute the survival probability without a reference group')
+                    'Cannot compute the survival probability without a reference group'
+                )
             sampled = self.observable.compute(group)
             self.timeseries.append(list(sampled.flatten()))
 
         self.mem_usage += sampled.nbytes / 1024.0 / 1024.0  # in Mb
         if self.mem_usage > self.memory_warn and self.warned == False:
-            print ("Warning: warning threshold of",end='')
-            print (self.memory_warn+" Mb exceeded")
+            print("Warning: warning threshold of", end='')
+            print(self.memory_warn + " Mb exceeded")
             self.warned = True
 
         if self.shape is None:
@@ -291,7 +298,7 @@ class Correlator(object):
             corr = self._autocorrelation_continuous(ts, ms)
 
         if normalized == True:
-            corr = corr/corr[0]
+            corr = corr / corr[0]
 
         return corr
 
@@ -305,8 +312,8 @@ class Correlator(object):
 
     def _survival_intermittent(self, ms):
         norm = None
-        corr = np.sum(utilities.correlate(ms,_normalize=False),axis=1)
-        return corr/np.sum(np.cumsum(self.timeseries,axis=0),axis=1)[::-1]
+        corr = np.sum(utilities.correlate(ms, _normalize=False), axis=1)
+        return corr / np.sum(np.cumsum(self.timeseries, axis=0), axis=1)[::-1]
 
     def _survival_continuous(self, ms):
         norm = None
@@ -321,10 +328,10 @@ class Correlator(object):
             # for each of the disconnected segments:
             for n, dt in enumerate(deltat):
                 # no need to compute the correlation, we know what it is
-                corr[0:dt, part] +=  counting[:dt][::-1] 
+                corr[0:dt, part] += counting[:dt][::-1]
 
-        corr = np.sum(corr,axis=1)
-        return corr/np.sum(np.cumsum(self.timeseries,axis=0),axis=1)[::-1]
+        corr = np.sum(corr, axis=1)
+        return corr / np.sum(np.cumsum(self.timeseries, axis=0), axis=1)[::-1]
 
     def _autocorrelation_intermittent(self, ts, ms):
 
@@ -333,8 +340,11 @@ class Correlator(object):
         maskcorr = utilities.correlate(ms)
         corr = ts.copy()
         for xyz in range(dim):
-            corr[:, xyz::dim] = utilities.correlate(ts[:, xyz::dim] * ms,_normalize=False)
-        corr = np.sum(corr,axis=1)/np.sum(np.cumsum(ms,axis=0),axis=1)[::-1]
+            corr[:, xyz::dim] = utilities.correlate(
+                ts[:, xyz::dim] * ms, _normalize=False)
+        corr = np.sum(
+            corr, axis=1) / np.sum(
+                np.cumsum(ms, axis=0), axis=1)[::-1]
 
         return corr
 
@@ -343,19 +353,23 @@ class Correlator(object):
         dim = self.dim
         norm = None
         n_part = len(ms[0])
-        corr = np.zeros((ts.shape[0],ts.shape[1]/dim))
-        norm = np.zeros((ts.shape[0],ts.shape[1]/dim))
+        corr = np.zeros((ts.shape[0], ts.shape[1] / dim))
+        norm = np.zeros((ts.shape[0], ts.shape[1] / dim))
 
         for part in range(n_part):
             edges = np.where(ms[::, part][:-1] != ms[::, part][1:])[0]
             deltat = edges[1::2] - edges[0::2]
-            for n, dt in enumerate(deltat):  # for each of the disconnected segments
+            for n, dt in enumerate(
+                    deltat):  # for each of the disconnected segments
                 t1, t2 = edges[2 * n], edges[2 * n + 1]
-                i1, i2 = dim * part , dim * (part + 1)
-                corr[0:dt, part] += np.sum(utilities.correlate(ts[t1:t2, i1:i2],_normalize=False),axis=1)
+                i1, i2 = dim * part, dim * (part + 1)
+                corr[0:dt, part] += np.sum(
+                    utilities.correlate(ts[t1:t2, i1:i2], _normalize=False),
+                    axis=1)
 
-        return np.sum(corr,axis=1)  / np.sum(np.cumsum(self.maskseries,axis=0)[::-1],axis=1)
-
+        return np.sum(
+            corr, axis=1) / np.sum(
+                np.cumsum(self.maskseries, axis=0)[::-1], axis=1)
 
     def _determine_dimension(self):
         self.nseries = max(len(self.timeseries), len(self.maskseries))
@@ -368,8 +382,6 @@ class Correlator(object):
             dim = self.shape[1]
         else:
             raise RuntimeError(
-                "Correlations of tensorial quantites not allowed in " + self.name)
+                "Correlations of tensorial quantites not allowed in " +
+                self.name)
         return dim
-
-
-
