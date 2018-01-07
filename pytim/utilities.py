@@ -114,25 +114,28 @@ def correlate(a1, a2=None, _normalize=True):
     size = a1.shape[0]
     if len(a1.shape) == 1:
         reshaped = True
-        a1 = a1.reshape(a1.shape[0],1)
+        a1 = a1.reshape(a1.shape[0], 1)
 
     if _normalize is True:
-        norm = (np.arange(size)[::-1] + 1.).reshape(size,1)
+        norm = (np.arange(size)[::-1] + 1.).reshape(size, 1)
     else:
         norm = 1.0
 
     fa1 = np.fft.fft(a1, axis=0, n=size * 2)
 
     if a2 is None:  # do auto-cross
-        corr = (np.fft.fft(fa1 * fa1.conj(), axis=0)[:size]).real / norm / len(fa1)
+        corr = (
+            np.fft.fft(fa1 * fa1.conj(), axis=0)[:size]).real / norm / len(fa1)
     else:  # do cross-corr
         fa2 = np.fft.fft(a2, axis=0, n=size * 2)
-        corr = (np.fft.fft(fa2 * fa1,conj() + fa1 * fa2.conj(), axis=0)[:size]).real / norm / len(fa1)  / 2.
+        corr = (np.fft.fft(fa2 * fa1, conj() + fa1 * fa2.conj(),
+                           axis=0)[:size]).real / norm / len(fa1) / 2.
 
     if reshaped is True:
-        corr = corr.reshape(corr.shape[0],)
-    
+        corr = corr.reshape(corr.shape[0], )
+
     return corr
+
 
 def extract_positions(inp):
     if isinstance(inp, np.ndarray):
