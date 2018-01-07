@@ -128,7 +128,7 @@ def correlate(a1, a2=None, _normalize=True):
             np.fft.fft(fa1 * fa1.conj(), axis=0)[:size]).real / norm / len(fa1)
     else:  # do cross-corr
         fa2 = np.fft.fft(a2, axis=0, n=size * 2)
-        corr = (np.fft.fft(fa2 * fa1, conj() + fa1 * fa2.conj(),
+        corr = (np.fft.fft(fa2 * fa1.conj() + fa1 * fa2.conj(),
                            axis=0)[:size]).real / norm / len(fa1) / 2.
 
     if reshaped is True:

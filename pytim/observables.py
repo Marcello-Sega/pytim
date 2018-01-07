@@ -91,7 +91,8 @@ class Observable(object):
             if not _inarg('x', arg) or not _inarg('y', arg) or not _inarg(
                     'z', arg):
                 RuntimeError(
-                    "this observable accepts as argument a string like 'xy', 'z', ... to select components"
+                    "this observable accepts as argument a string like"+
+                    " 'xy', 'z', ... to select components"
                 )
             directions = np.array([False, False, False])
             if _inarg('x', arg):

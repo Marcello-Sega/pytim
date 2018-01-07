@@ -247,14 +247,18 @@ class Correlator(object):
 
             >>> # not normalizd, intermittent
             >>> corr = vv.correlation(normalized=False,continuous=False)
-            >>> print (np.allclose(corr, [ (1+1+1+0.25+1+1+0.25)/7, (1+1+0.5+1)/5, (1+0.5+0.5)/4, (0.5+0.5)/2]))
+            >>> c0 = (1+1+1+0.25+1+1+0.25)/7
+            >>> c1 = (1+1+0.5+1)/5 ; c2 = (1+0.5+0.5)/4 ; c3 = (0.5+0.5)/2
+            >>> print (np.allclose(corr, [ c0, c1, c2, c3]))
             True
             >>> # check normalization
             >>> np.all(vv.correlation(continuous=False) == corr/corr[0])
             True
             >>> # not normalizd, continuous
             >>> corr = vv.correlation(normalized=False,continuous=True)
-            >>> print (np.allclose(corr, [ (1+1+1+0.25+1+1+0.25)/7, (1+1+0.5+1)/5 , (1+0.5)/4, (0.5+0.)/2]))
+            >>> c0 = (1+1+1+0.25+1+1+0.25)/7
+            >>> c1 = (1+1+0.5+1)/5 ; c2 = (1+0.5)/4 ; c3 = (0.5+0.)/2
+            >>> print (np.allclose(corr, [ c0, c1, c2, c3]))
             True
             >>> # check normalization
             >>> np.all(vv.correlation(continuous=True) == corr/corr[0])
@@ -268,14 +272,13 @@ class Correlator(object):
         if self.reference is None:
             ts = np.asarray(self.timeseries)
             corr = utilities.correlate(ts)
-            norm = corr[:, 0]
             corr = np.average(corr, axis=1)
-            if normalized == True:
+            if normalized is True:
                 corr /= corr[0]
             return corr
 
         # prepare the mask for the intermittent/continuous cases
-        if intermittent == True:
+        if intermittent is True:
             ms = np.asarray(self.maskseries, dtype=np.double)
         else:  # we add Falses at the begining and at the end to ease the splitting in sub-trajectories
             falses = [[False] * len(self.maskseries[0])]
@@ -292,18 +295,18 @@ class Correlator(object):
 
     def _autocorrelation(self, ts, ms, normalized, intermittent):
 
-        if intermittent == True:
+        if intermittent is True:
             corr = self._autocorrelation_intermittent(ts, ms)
         else:
             corr = self._autocorrelation_continuous(ts, ms)
 
-        if normalized == True:
+        if normalized is True:
             corr = corr / corr[0]
 
         return corr
 
     def _survival_probability(self, ms, normalized, intermittent):
-        if intermittent == True:
+        if intermittent is True:
             corr = self._survival_intermittent(ms)
         else:
             corr = self._survival_continuous(ms)
@@ -311,15 +314,12 @@ class Correlator(object):
         return corr
 
     def _survival_intermittent(self, ms):
-        norm = None
         corr = np.sum(utilities.correlate(ms, _normalize=False), axis=1)
         return corr / np.sum(np.cumsum(self.timeseries, axis=0), axis=1)[::-1]
 
     def _survival_continuous(self, ms):
-        norm = None
         n_part = len(ms[0])
         corr = np.zeros((self.nseries, n_part))
-        norm = corr.copy()
         counting = (1. + np.arange(len(self.timeseries)))
 
         for part in range(n_part):
@@ -337,7 +337,6 @@ class Correlator(object):
 
         dim = self.dim
 
-        maskcorr = utilities.correlate(ms)
         corr = ts.copy()
         for xyz in range(dim):
             corr[:, xyz::dim] = utilities.correlate(
@@ -351,10 +350,8 @@ class Correlator(object):
     def _autocorrelation_continuous(self, ts, ms):
 
         dim = self.dim
-        norm = None
         n_part = len(ms[0])
         corr = np.zeros((ts.shape[0], ts.shape[1] / dim))
-        norm = np.zeros((ts.shape[0], ts.shape[1] / dim))
 
         for part in range(n_part):
             edges = np.where(ms[::, part][:-1] != ms[::, part][1:])[0]
@@ -375,13 +372,12 @@ class Correlator(object):
         self.nseries = max(len(self.timeseries), len(self.maskseries))
 
         if len(self.shape) == 1:
-            shape = (self.nseries, self.shape[0], 1)
             dim = 1
         elif len(self.shape) == 2:
-            shape = (self.nseries, self.shape[0], self.shape[1])
             dim = self.shape[1]
         else:
             raise RuntimeError(
                 "Correlations of tensorial quantites not allowed in " +
                 self.name)
         return dim
+
