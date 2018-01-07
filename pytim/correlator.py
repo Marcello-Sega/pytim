@@ -32,7 +32,7 @@ class Correlator(object):
     >>> from pytim.utilities import lap
     >>> #  tmpdir here is specified only for travis
     >>> WATERSMALL_TRR = pytim.datafiles.pytim_data.fetch('WATERSMALL_LONG_TRR',tmpdir='./') # doctest:+ELLIPSIS
-    checking presence of a cached copy ...
+    checking presence of a cached copy...
 
     >>> u = mda.Universe(WATERSMALL_GRO,WATERSMALL_TRR)
     >>> g = u.select_atoms('name OW')
