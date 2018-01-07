@@ -101,7 +101,7 @@ class Observable(object):
             if _inarg('z', arg):
                 directions[2] = True
 
-        self.dirmask = np.where(directions == True)[0]
+        self.dirmask = np.where(directions is True)[0]
 
     @staticmethod
     def _to_atomgroup(inp):
