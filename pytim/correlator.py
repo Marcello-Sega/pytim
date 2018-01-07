@@ -203,52 +203,51 @@ class Correlator(object):
             >>>
             >>> for c in [vv,nn]:
             ...     c.sample(g)     # t=0
-            ...     c.sample(g[:1]) # t=1, exclude the second particle
+            ...     c.sample(g)     # t=1
+            ...     c.sample(g[:1]) # t=2, exclude the second particle
             ...     g.velocities /= 2. # from now on v=0.5
-            ...     c.sample(g)     # t=2
+            ...     c.sample(g)     # t=3
             >>>
 
             The timeseries sampled can be accessed using:
 
             >>> print(vv.timeseries) # rows refer to time, columns to particle 
-            [[1.0, 1.0], [1.0, 0.0], [0.5, 0.5]]
+            [[1.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.5, 0.5]]
             >>>
             >>> print(nn.timeseries)
-            [[True, True], [True, False], [True, True]]
+            [[True, True], [True, True], [True, False], [True, True]]
             >>>
 
             Note that the average of  the characteristic function $h(t)$ is done over all
-            trajectories, including those that start with h=0. When normalizing, the correlation
+            trajectories, including those that start with h=0. The correlation
             $< h(t) h(0) >$ is divided by the average $<h>$ computed over all trajectores that
-            extend up to a time lag $t$. This behavior is different from the calculation of the 
-            autocorrelation function (see below).
+            extend up to a time lag $t$. The `normalize` switch has no effect.
 
             >>> # normalized, continuous
             >>> corr = nn.correlation()
-            >>> print (np.allclose(corr, [ 5./5   ,  2./3 ,  1./2 ]))
+            >>> print (np.allclose(corr, [ 7./7, 4./5, 2./4, 1./2]))
             True
             >>> # normalized, intermittent 
             >>> corr = nn.correlation(continuous=False)
-            >>> print (np.allclose(corr, [ 5./5   ,  2./3 ,  2./2 ]))
+            >>> print (np.allclose(corr, [ 7./7, 4./5, 3./4, 2./2 ]))
             True
 
             The autocorrelation functions are calculated by taking into account in the average
             only those trajectory that start with $h=1$ (i.e., which start within the reference
             group). The normalization is done by dividing the correlation at time lag $t$ by its 
             value at time lag 0 computed over all trajectories that extend up to time lag $t$ and 
-            do not start with $h=0$. Note that in this way the `reduce=True` option won't give the same 
-            result as plain averaging the `reduce=False` case.
+            do not start with $h=0$.
 
             >>> # not normalizd, intermittent
             >>> corr = vv.correlation(normalized=False,continuous=False)
-            >>> print (np.allclose(corr, [ (1+1+0.25+1+0.25)/5   ,  (1+0.5+0.)/3 ,  (0.5+0.5)/2]))
+            >>> print (np.allclose(corr, [ (1+1+1+0.25+1+1+0.25)/7, (1+1+0.5+1)/5, (1+0.5+0.5)/4, (0.5+0.5)/2]))
             True
             >>> # check normalization
             >>> np.all(vv.correlation(continuous=False) == corr/corr[0])
             True
             >>> # not normalizd, continuous
             >>> corr = vv.correlation(normalized=False,continuous=True)
-            >>> print (np.allclose(corr, [ (1+1+0.25+1+0.25)/5   ,  (1+0.5+0.)/3 ,  (0.5+0.)/2]))
+            >>> print (np.allclose(corr, [ (1+1+1+0.25+1+1+0.25)/7, (1+1+0.5+1)/5 , (1+0.5)/4, (0.5+0.)/2]))
             True
             >>> # check normalization
             >>> np.all(vv.correlation(continuous=True) == corr/corr[0])
