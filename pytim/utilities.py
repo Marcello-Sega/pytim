@@ -40,7 +40,7 @@ def lap(show=False):
         return dt
 
 
-def correlate(a1=np.ndarray(0), a2=None):
+def correlate(a1, a2=None, _normalize=True):
     """
       correlate data series using numpy fft. The function calculates \
       correlation or cross-correlation.
@@ -69,18 +69,17 @@ def correlate(a1=np.ndarray(0), a2=None):
       ...     size.append(len(inter.layers[0,0]))
       >>>
       >>> # we need to subtract the average value
+      >>> np.set_printoptions(precision=3)
       >>> corr = pytim.utilities.correlate(size-np.mean(size))
       >>> corr = corr/corr[0] # normalize to 1
       >>> print (corr)
-      [ 1.          0.1420121   0.10364119  0.14718647  0.37093981  0.09908694
-        0.16514898  0.0946748   0.33824381  0.2187186  -0.02084513  0.08711942
-        0.24537069 -0.0102749  -0.1934566   0.10323017  0.02911581 -0.00939353
-       -0.11041383  0.01191062 -0.13293405  0.05622434 -0.2826456  -0.27631805
-        0.0351999  -0.01167737 -0.21058736 -0.42930886 -0.13241366 -0.26325648
-        0.07229366 -0.70028015 -0.23617053  0.13629839 -0.24335089 -0.87832556
-       -0.12957699 -0.32853026 -0.3863053  -0.65227527 -0.2672419  -0.18756502
-       -0.22565105 -0.78979698 -0.28407306 -0.02037816 -1.5120148  -1.31553408
-       -0.18836842  7.55135513]
+      [ 1.     0.142  0.104  0.147  0.371  0.099  0.165  0.095  0.338  0.219
+       -0.021  0.087  0.245 -0.01  -0.193  0.103  0.029 -0.009 -0.11   0.012
+       -0.133  0.056 -0.283 -0.276  0.035 -0.012 -0.211 -0.429 -0.132 -0.263
+        0.072 -0.7   -0.236  0.136 -0.243 -0.878 -0.13  -0.329 -0.386 -0.652
+       -0.267 -0.188 -0.226 -0.79  -0.284 -0.02  -1.512 -1.316 -0.188  7.551]
+
+      >>> np.set_printoptions()
 
       This will produce (sampling the whole trajectory), the following:
 
@@ -109,18 +108,34 @@ def correlate(a1=np.ndarray(0), a2=None):
           plt.show()
 
     """
+    reshaped = False
+    a1 = np.asarray(a1)
+    size = a1.shape[0]
+    if len(a1.shape) == 1:
+        reshaped = True
+        a1 = a1.reshape(a1.shape[0], 1)
+        if a2 is not None:
+            a2 = a2.reshape(a2.shape[0], 1)
 
-    size = len(a1)
-    norm = np.arange(size)[::-1] + 1
+    if _normalize is True:
+        norm = (np.arange(size)[::-1] + 1.).reshape(size, 1)
+    else:
+        norm = 1.0
+
     fa1 = np.fft.fft(a1, axis=0, n=size * 2)
 
-    if not isinstance(a2, type(None)):  # do cross-corr
+    if a2 is None:  # do auto-cross
+        corr = (
+            np.fft.fft(fa1 * fa1.conj(), axis=0)[:size]).real / norm / len(fa1)
+    else:  # do cross-corr
         fa2 = np.fft.fft(a2, axis=0, n=size * 2)
-        return ((np.fft.fft(fa2 * np.conj(fa1) + fa1 * np.conj(fa2), axis=0
-                            )[:size]).real.T / norm).T / len(fa1) / 2.
-    else:  # do auto-corr
-        return ((np.fft.fft(fa1 * np.conj(fa1), axis=0)[:size]).real.T / norm
-                ).T / len(fa1)
+        corr = (np.fft.fft(fa2 * fa1.conj() + fa1 * fa2.conj(),
+                           axis=0)[:size]).real / norm / len(fa1) / 2.
+
+    if reshaped is True:
+        corr = corr.reshape(corr.shape[0], )
+
+    return corr
 
 
 def extract_positions(inp):
