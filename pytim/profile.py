@@ -200,19 +200,30 @@ class Profile(object):
         else:
             pos = IntrinsicDistance(self.interface).compute(group)
 
+
         values = self.observable.compute(group)
 
         accum, bins, _ = stats.binned_statistic(
             pos, values, range=self._range, statistic='sum', bins=self._nbins)
 
-        accum[np.isnan(accum)] = 0.0
+        rnd_accum = np.array(0)
+        if self.interface.symmetry == 'generic' or self.interface.symmetry == 'spherical':
+            factor = 10
+            rnd = np.random.random((factor*len(group),3)) * self.interface.universe.dimensions[:3]
+            rnd_pos = IntrinsicDistance(self.interface).compute(rnd)
+            rnd_accum, bins, _ = stats.binned_statistic(
+                rnd_pos, np.ones(len(rnd_pos))*(1./factor), range=self._range, statistic='sum', bins=self._nbins)
+
+        accum[~np.isfinite(accum)] = 0.0
 
         if self.sampled_values is None:
             self.sampled_values = accum.copy()
+            self.sampled_rnd_values = rnd_accum.copy()
             # stores the midpoints
             self.sampled_bins = bins[1:] - self.binsize / 2.
         else:
             self.sampled_values += accum
+            self.sampled_rnd_values += rnd_accum
         self._counts += 1
 
     def get_values(self, binwidth=None, nbins=None):
@@ -232,11 +243,22 @@ class Profile(object):
         if (nbins % 2 > 0):
             nbins += 1
 
+        _vol = np.ones(self.sampled_values.shape[0]) * self._vol
+
+        if self.interface.symmetry == 'generic' or self.interface.symmetry == 'spherical':
+            _vol = self.sampled_rnd_values
+        
+        vals = self.sampled_values.copy()
+        vals[_vol>0] /= _vol[_vol>0]
+        vals[_vol<=0] *= 0.0
+        vals/=self._counts
+        
         avg, bins, _ = stats.binned_statistic(
             self.sampled_bins,
-            self.sampled_values * 1. / (self._counts * self._vol),
+            vals,
             range=self._range,
             statistic='mean',
             bins=nbins)
-        avg[np.isnan(avg)] = 0.0
+        avg[~np.isfinite(avg)] = 0.0
         return [bins[0:-1], bins[1:], avg]
+

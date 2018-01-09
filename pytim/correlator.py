@@ -99,7 +99,7 @@ class Correlator(object):
                  observable=None,
                  reference=None):
         self.name = self.__class__.__name__
-        self.observable, self.reference = observable, reference 
+        self.observable, self.reference = observable, reference
         self.timeseries, self.maskseries  = [], []
         self.shape = None
 

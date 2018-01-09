@@ -4,7 +4,7 @@
 from __future__ import print_function
 from abc import ABCMeta, abstractproperty
 import numpy as np
-from scipy.spatial import Delaunay
+from scipy.spatial import Delaunay,cKDTree
 from scipy.interpolate import LinearNDInterpolator
 from pytim import utilities
 from . import messages
@@ -24,8 +24,6 @@ class Surface(object):
     """
     __metaclass__ = ABCMeta
 
-    # TODO: so far includes only methods for CT. Gather also other ones here
-
     def __init__(self, interface, options=None):
         self.interface = interface
         self.normal = interface.normal
@@ -36,15 +34,13 @@ class Surface(object):
         except (TypeError, KeyError):
             self._layer = 0
 
-    # see the implemenation in each of the modules (itim.py, gitim.py,... )
-    # for all @abstractproperties
     @abstractproperty
     def interpolation(self, inp):
         """ returns interpolated position on the surface """
         return utilities.extract_positions(inp)
 
     @abstractproperty
-    def distance(self, inp):
+    def distance(self, inp, *kargs):
         """ returns distance from the surface """
         positions = utilities.extract_positions(inp)
         distance_array = positions[::, 2]
@@ -152,6 +148,69 @@ class Surface(object):
             self.surf_triang[1], box)
         return self.surf_triang
 
+    @staticmethod
+    def local_env_com(positions,reference_pos,box,nneigh):
+        tree = cKDTree(positions,boxsize=box)
+        # local_env are the positions of the atoms next to pos
+        com = []
+        _, local_env_indices = tree.query(reference_pos,k=nneigh)
+        local_env = positions[local_env_indices].copy()
+        for k in range(nneigh):
+            local_env[:,k,:] = utilities.pbc_compact(local_env[:,k,:],
+                                            reference_pos,box)
+        return np.average(local_env,axis=1)
+
+    def _distance_generic(self, positions, symmetry):
+
+        intr = self.interface
+        pos = positions
+        cond = intr.atoms.layers==1
+        layer_1 = intr.atoms[cond]
+        distances = []
+        if len(pos)==0:
+            raise ValueError("empty group")
+        box = intr.universe.dimensions[:3]
+        tri = utilities.find_surface_triangulation(intr)
+        # positions of the points in the triangulated surface
+        l1pos = intr.triangulation.points[tri]
+        # their baricenters
+        l1centers = np.average(l1pos,axis=1)
+        l1centers = intr.atoms.positions
+        # tree of the surface triangles' centers
+        tree = cKDTree(l1centers,boxsize=box)
+    
+        # distances and indices of the surface triangles' centers to pos[]
+        dist,ind = tree.query(pos,k=1)
+        # we need now the position of the nearest triangle's centers 
+        # selected above. 
+        l1centers = l1centers[ind]
+        
+        if symmetry == 'generic':
+                return dist
+        if symmetry == 'spherical':
+                # tree of all the atoms in cluster_group
+                COM = self.local_env_com(intr.cluster_group.positions,l1centers,box,5)
+                P1 = utilities.pbc_compact(pos,l1centers,box) - l1centers
+                P2 = utilities.pbc_compact(COM,l1centers,box) - l1centers 
+                sign = -np.sign(np.sum(P1*P2,axis=1))
+                return sign * dist
+        raise ValueError("Incorrect symmetry used for distance calculation")
+    
+
+    def _distance_spherical(self, positions):
+        box = self.interface.universe.dimensions[:3]
+        cond = self.interface.atoms.layers == 1 
+        tree = cKDTree(self.interface.atoms.positions[cond], boxsize=box)
+        d , i = tree.query(positions,k=1)
+        dd, surf_neighs = tree.query(self.interface.atoms.positions[cond][i],5)
+        p = self.interface.atoms.positions[cond]
+        center = np.mean(p)
+
+        R = self.interface.atoms.positions[cond][surf_neighs]
+        
+        side =  (np.sum( (positions-center)**2,axis=1 ) >  np.sum( (p-center)**2,axis=1 ))*2-1
+        return d*side
+
     def _distance_flat(self, positions):
         box = self.interface.universe.dimensions[:3]
 
@@ -184,7 +243,7 @@ class Surface(object):
 
 
 class SurfaceFlatInterface(Surface):
-    def distance(self, inp):
+    def distance(self, inp, *args):
         positions = utilities.extract_positions(inp)
         return self._distance_flat(positions)
 
@@ -216,6 +275,25 @@ class SurfaceFlatInterface(Surface):
 
     def triangulation(self, layer=0):
         return self.triangulate_layer_flat(layer)
+
+
+class SurfaceGenericInterface(Surface):
+    def distance(self, inp, *args):
+        symmetry=args[0]
+        positions = utilities.extract_positions(inp)
+        return self._distance_generic(positions,symmetry)
+
+    def interpolation(self, inp):
+        pass
+
+    def dump(self):
+        pass
+
+    def regular_grid(self):
+        pass
+
+    def triangulation(self, layer=0):
+        pass
 
 
 #
