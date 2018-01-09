@@ -194,19 +194,26 @@ class LayerTriangulation(Observable):
 class IntrinsicDistance(Observable):
     """Initialize the intrinsic distance calculation.
 
-    :param Universe universe: the MDAnalysis universe
-    :param ITIM    interface: compute the intrinsic distance with respect
-                              to this interface
-    :param int     layer:     (default: 1) compute the intrinsic distance
-                              with respect to this layer of the interface
+    :param Universe universe : the MDAnalysis universe
+    :param PYTIM    interface: compute the intrinsic distance with respect
+                               to this interface
+    :param str      symmetry : force calculation using this symmetry, if 
+                               availabe (e.g. 'generic', 'planar', 'spherical')
+                               If 'default', uses the symmetry selected in 
+                               the PYTIM interface instance.
 
     Example: TODO
 
     """
 
-    def __init__(self, interface, layer=1):
+    def __init__(self, interface, layer=1, symmetry='default'):
+        # TODO implement different layers
         Observable.__init__(self, interface.universe)
         self.interface = interface
+        if symmetry == 'default':
+            self.symmetry = self.interface.symmetry
+        else:
+            self.symmetry = symmetry
         self.layer = layer
 
     def compute(self, inp, kargs=None):
@@ -216,7 +223,7 @@ class IntrinsicDistance(Observable):
         :param ndarray positions: compute the intrinsic distance for this set
                                   of points
         """
-        return self.interface._surfaces[0].distance(inp)
+        return self.interface._surfaces[0].distance(inp, self.symmetry)
 
 
 class Number(Observable):
