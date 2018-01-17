@@ -196,9 +196,9 @@ class IntrinsicDistance(Observable):
 
     :param PYTIM    interface: compute the intrinsic distance with respect
                                to this interface
-    :param str      symmetry : force calculation using this symmetry, if 
+    :param str      symmetry : force calculation using this symmetry, if
                                availabe (e.g. 'generic', 'planar', 'spherical')
-                               If 'default', uses the symmetry selected in 
+                               If 'default', uses the symmetry selected in
                                the PYTIM interface instance.
 
     Example: TODO

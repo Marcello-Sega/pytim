@@ -152,7 +152,6 @@ class Surface(object):
     def local_env_com(positions, reference_pos, box, nneigh):
         tree = cKDTree(positions, boxsize=box)
         # local_env are the positions of the atoms next to pos
-        com = []
         _, local_env_indices = tree.query(reference_pos, k=nneigh)
         local_env = positions[local_env_indices].copy()
         for k in range(nneigh):
@@ -165,8 +164,6 @@ class Surface(object):
         intr = self.interface
         pos = positions
         cond = intr.atoms.layers == 1
-        layer_1 = intr.atoms[cond]
-        distances = []
         if len(pos) == 0:
             raise ValueError("empty group")
         box = intr.universe.dimensions[:3]
@@ -206,8 +203,6 @@ class Surface(object):
                                      5)
         p = self.interface.atoms.positions[cond]
         center = np.mean(p)
-
-        R = self.interface.atoms.positions[cond][surf_neighs]
 
         side = (np.sum((positions - center)**2, axis=1) > np.sum(
             (p - center)**2, axis=1)) * 2 - 1
