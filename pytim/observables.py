@@ -194,7 +194,6 @@ class LayerTriangulation(Observable):
 class IntrinsicDistance(Observable):
     """Initialize the intrinsic distance calculation.
 
-    :param Universe universe : the MDAnalysis universe
     :param PYTIM    interface: compute the intrinsic distance with respect
                                to this interface
     :param str      symmetry : force calculation using this symmetry, if 
