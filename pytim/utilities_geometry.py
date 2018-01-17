@@ -123,12 +123,12 @@ def find_surface_triangulation(interface):
     tri = None
     for roll in [0, 1, 2, 3]:
         # slimplices[i] goes from 0 -> len(cluster_group) + periodic copies
-        # layer_1_ids links the atoms in the 1st layer to the indexing of 
+        # layer_1_ids links the atoms in the 1st layer to the indexing of
         # simplices's points
         layer_1_ids = np.argwhere(
             np.isin(intr.cluster_group.indices, layer_1.indices))
         rolled = np.roll(intr.triangulation.simplices, 0, axis=1)[:, :3]
-        # requires that triplets of points in the simplices belong to the 1st 
+        # requires that triplets of points in the simplices belong to the 1st
         # layer
         select = np.argwhere(np.all(np.isin(rolled, layer_1_ids),
                                     axis=1)).flatten()
