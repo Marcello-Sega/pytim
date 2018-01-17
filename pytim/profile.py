@@ -152,12 +152,17 @@ class Profile(object):
                  direction='z',
                  observable=None,
                  interface=None,
-                 center_group=None):
+                 center_group=None,
+                 symmetry='default'):
         # TODO: the directions are handled differently, fix it in the code
 
         _dir = {'x': 0, 'y': 1, 'z': 2}
         self._dir = _dir[direction]
         self.interface = interface
+        if symmetry=='default':
+            self.symmetry = self.interface.symmetry
+        else:
+            self.symmetry = symmetry
         self.center_group = center_group
 
         if observable is None:
@@ -198,7 +203,8 @@ class Profile(object):
         if self.interface is None:
             pos = group.positions[::, self._dir]
         else:
-            pos = IntrinsicDistance(self.interface).compute(group)
+            pos = IntrinsicDistance(self.interface,
+                    symmetry=self.symmetry).compute(group)
 
 
         values = self.observable.compute(group)
