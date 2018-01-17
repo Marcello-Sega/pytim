@@ -121,26 +121,24 @@ J. Comp. Chem. 29, 945, 2008)*
         >>> oxygens   = u.select_atoms("name OW")
         >>>
         >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4,molecular=True)
-        >>> interface.layers[0,:]  # upper side (0), all layers
-        array([<AtomGroup with 786 atoms>, <AtomGroup with 681 atoms>,
-               <AtomGroup with 663 atoms>, <AtomGroup with 651 atoms>], \
-dtype=object)
-
-        >>> interface.layers[1,0]  # lower side (1), first layer (0)
-        <AtomGroup with 786 atoms>
+        >>> print(interface.layers[0,:])  # upper side (0), all layers
+        [<AtomGroup with 786 atoms> <AtomGroup with 681 atoms>
+         <AtomGroup with 663 atoms> <AtomGroup with 651 atoms>]
 
 
-        >>> interface.layers[:,0:3] # 1st - 3rd layer (0:3), on both sides
-        array([[<AtomGroup with 786 atoms>, <AtomGroup with 681 atoms>,
-                <AtomGroup with 663 atoms>],
-               [<AtomGroup with 786 atoms>, <AtomGroup with 702 atoms>,
-                <AtomGroup with 666 atoms>]], dtype=object)
+        >>> repr(interface.layers[1,0])  # lower side (1), first layer (0)
+        '<AtomGroup with 786 atoms>'
 
 
-        >>> interface.layers[1,0:4:2] # side 1, layers 1-4 & stride 2 (0:4:2)
-        array([<AtomGroup with 786 atoms>, <AtomGroup with 666 atoms>], \
-dtype=object)
+        >>> print(interface.layers[:,0:3]) # 1st - 3rd layer (0:3), on both sides
+        [[<AtomGroup with 786 atoms> <AtomGroup with 681 atoms>
+          <AtomGroup with 663 atoms>]
+         [<AtomGroup with 786 atoms> <AtomGroup with 702 atoms>
+          <AtomGroup with 666 atoms>]]
 
+
+        >>> print(interface.layers[1,0:4:2]) # side 1, layers 1-4 & stride 2 (0:4:2)
+        [<AtomGroup with 786 atoms> <AtomGroup with 666 atoms>]
 
         """
 

@@ -40,10 +40,6 @@ class FreeVolume(object):
         >>> # strict test on bcc volume fraction
         >>> u = mda.Universe(_TEST_BCC_GRO)
         >>> inter = pytim.GITIM(u,radii_dict={'C':10.*np.sqrt(3.)/4.})
-        Warning, singular matrix for  [[ 10.   0.  10.]
-         [  0.   0.  10.]
-         [ 10.  10.  10.]
-         [  0.  10.  10.]]
         >>> nsamples = int(1e5)
         >>> FV = pytim.observables.FreeVolume(u,npoints = nsamples)
         >>> np.random.seed(1) # ensure reproducibility of test

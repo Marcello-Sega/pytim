@@ -159,7 +159,7 @@ class Profile(object):
         _dir = {'x': 0, 'y': 1, 'z': 2}
         self._dir = _dir[direction]
         self.interface = interface
-        if symmetry=='default':
+        if symmetry=='default' and interface is not None:
             self.symmetry = self.interface.symmetry
         else:
             self.symmetry = symmetry
@@ -213,7 +213,7 @@ class Profile(object):
             pos, values, range=self._range, statistic='sum', bins=self._nbins)
 
         rnd_accum = np.array(0)
-        if self.interface.symmetry == 'generic' or self.interface.symmetry == 'spherical':
+        if self.symmetry == 'generic' or self.symmetry == 'spherical':
             factor = 10
             rnd = np.random.random((factor*len(group),3)) * self.interface.universe.dimensions[:3]
             rnd_pos = IntrinsicDistance(self.interface).compute(rnd)
@@ -251,7 +251,7 @@ class Profile(object):
 
         _vol = np.ones(self.sampled_values.shape[0]) * self._vol
 
-        if self.interface.symmetry == 'generic' or self.interface.symmetry == 'spherical':
+        if self.symmetry == 'generic' or self.symmetry == 'spherical':
             _vol = self.sampled_rnd_values
         
         vals = self.sampled_values.copy()
