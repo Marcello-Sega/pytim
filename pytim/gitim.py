@@ -143,13 +143,21 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         if (self.symmetry == 'planar'):
             sanity.assign_normal(normal)
-            self._surfaces =  np.empty(max_layers, dtype=type(SurfaceFlatInterface))
-            for nlayer in range(max_layers): 
-                self._surfaces[nlayer] = SurfaceFlatInterface(self, options={'layer': nlayer})
-        else: # generic
-            self._surfaces =  np.empty(max_layers, dtype=type(SurfaceGenericInterface))
-            for nlayer in range(max_layers): 
-                self._surfaces[nlayer] = SurfaceGenericInterface(self, options={'layer': nlayer})
+            self._surfaces = np.empty(
+                max_layers, dtype=type(SurfaceFlatInterface))
+            for nlayer in range(max_layers):
+                self._surfaces[nlayer] = SurfaceFlatInterface(
+                    self, options={
+                        'layer': nlayer
+                    })
+        else:  # generic
+            self._surfaces = np.empty(
+                max_layers, dtype=type(SurfaceGenericInterface))
+            for nlayer in range(max_layers):
+                self._surfaces[nlayer] = SurfaceGenericInterface(
+                    self, options={
+                        'layer': nlayer
+                    })
 
         pytim.PatchTrajectory(self.universe.trajectory, self)
 
