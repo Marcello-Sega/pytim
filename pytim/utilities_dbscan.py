@@ -14,9 +14,10 @@ def do_cluster_analysis_DBSCAN(group,
                                molecular=True):
     """ Performs a cluster analysis using DBSCAN
 
-        :returns [labels,counts]: lists of the id of the cluster to which every
-                                  atom is belonging to, and of the number of
-                                  elements in each cluster.
+        :returns [labels,counts,n_neighbors]: lists of the id of the cluster to which every
+                                  atom is belonging to, of the number of
+                                  elements in each cluster, and of the number of neighbors 
+                                  for each atom according to the specified criterion.
 
         Uses a slightly modified version of DBSCAN from sklearn.cluster
         that takes periodic boundary conditions into account (through
