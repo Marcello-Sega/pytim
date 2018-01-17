@@ -177,6 +177,7 @@ class Profile(object):
         self.sampled_values = None
         self._range = None
         self._counts = 0
+        self._totvol = [] 
 
     def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
@@ -198,7 +199,8 @@ class Profile(object):
             if self.interface is not None:
                 _range -= box[self._dir] / 2.
             self._range = _range
-            self._vol = np.prod(box) / nbins
+        v = np.prod(box)
+        self._totvol.append(v)
 
         if self.interface is None:
             pos = group.positions[::, self._dir]
@@ -249,11 +251,15 @@ class Profile(object):
         if (nbins % 2 > 0):
             nbins += 1
 
-        _vol = np.ones(self.sampled_values.shape[0]) * self._vol
 
         if self.symmetry == 'generic' or self.symmetry == 'spherical':
-            _vol = self.sampled_rnd_values
-        
+            _vol = self.sampled_rnd_values * self._totvol
+            _vol /= np.sum(self.sampled_rnd_values)
+        else:
+            _vol = np.ones(self.sampled_values.shape[0]) 
+            _vol *= np.average(self._totvol) / self._nbins
+
+
         vals = self.sampled_values.copy()
         vals[_vol>0] /= _vol[_vol>0]
         vals[_vol<=0] *= 0.0
