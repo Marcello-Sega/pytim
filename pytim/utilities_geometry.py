@@ -93,7 +93,8 @@ def polygonalArea(points):
     return np.abs(ratio * np.sum([0.5, -0.5] * points2d * np.roll(
         np.roll(points2d, 1, axis=0), 1, axis=1)))
 
-def pbc_compact(pos1,pos2,box):
+
+def pbc_compact(pos1, pos2, box):
     """  wraps points so that satisfy the minimum image 
          convention with respect to a reference point
 
@@ -103,11 +104,12 @@ def pbc_compact(pos1,pos2,box):
             
     """
 
-    cond_pbc = np.where(pos1 - pos2 >= box/2)
+    cond_pbc = np.where(pos1 - pos2 >= box / 2)
     pos1[cond_pbc] -= box[cond_pbc[1]]
-    cond_pbc = np.where(pos1 - pos2 < -box/2)
+    cond_pbc = np.where(pos1 - pos2 < -box / 2)
     pos1[cond_pbc] += box[cond_pbc[1]]
     return pos1
+
 
 def find_surface_triangulation(interface):
     """ 
@@ -116,21 +118,24 @@ def find_surface_triangulation(interface):
         :returns ndarray: (N,3) indices of the triangles' vertices 
     """
     intr = interface
-    cond = intr.atoms.layers==1
+    cond = intr.atoms.layers == 1
     layer_1 = intr.atoms[cond]
-    tri=None
-    for roll in [0,1,2,3]:
+    tri = None
+    for roll in [0, 1, 2, 3]:
         # slimplices[i] goes from 0 -> len(cluster_group) + periodic copies
         # layer_1_ids links the atoms in the 1st layer to the indexing of simplices's points
-        layer_1_ids = np.argwhere(np.isin(intr.cluster_group.indices,layer_1.indices))
-        rolled = np.roll(intr.triangulation.simplices, 0,axis=1) [:,:3]
+        layer_1_ids = np.argwhere(
+            np.isin(intr.cluster_group.indices, layer_1.indices))
+        rolled = np.roll(intr.triangulation.simplices, 0, axis=1)[:, :3]
         # requires that triplets of points in the simplices belong to the 1st layer
-        select = np.argwhere(np.all(np.isin(rolled,layer_1_ids),axis=1)).flatten()
+        select = np.argwhere(np.all(np.isin(rolled, layer_1_ids),
+                                    axis=1)).flatten()
         if tri is None:
             tri = rolled[select]
         else:
-            tri = np.append(tri,rolled[select],axis=0)
+            tri = np.append(tri, rolled[select], axis=0)
     return tri
+
 
 def fit_sphere(points):
     """ least square fit of a sphere through a set of points.

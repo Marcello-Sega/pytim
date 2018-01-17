@@ -159,7 +159,7 @@ class Profile(object):
         _dir = {'x': 0, 'y': 1, 'z': 2}
         self._dir = _dir[direction]
         self.interface = interface
-        if symmetry=='default':
+        if symmetry == 'default':
             self.symmetry = self.interface.symmetry
         else:
             self.symmetry = symmetry
@@ -203,9 +203,8 @@ class Profile(object):
         if self.interface is None:
             pos = group.positions[::, self._dir]
         else:
-            pos = IntrinsicDistance(self.interface,
-                    symmetry=self.symmetry).compute(group)
-
+            pos = IntrinsicDistance(
+                self.interface, symmetry=self.symmetry).compute(group)
 
         values = self.observable.compute(group)
 
@@ -215,10 +214,16 @@ class Profile(object):
         rnd_accum = np.array(0)
         if self.interface.symmetry == 'generic' or self.interface.symmetry == 'spherical':
             factor = 10
-            rnd = np.random.random((factor*len(group),3)) * self.interface.universe.dimensions[:3]
+            rnd = np.random.random(
+                (factor * len(group),
+                 3)) * self.interface.universe.dimensions[:3]
             rnd_pos = IntrinsicDistance(self.interface).compute(rnd)
             rnd_accum, bins, _ = stats.binned_statistic(
-                rnd_pos, np.ones(len(rnd_pos))*(1./factor), range=self._range, statistic='sum', bins=self._nbins)
+                rnd_pos,
+                np.ones(len(rnd_pos)) * (1. / factor),
+                range=self._range,
+                statistic='sum',
+                bins=self._nbins)
 
         accum[~np.isfinite(accum)] = 0.0
 
@@ -253,12 +258,12 @@ class Profile(object):
 
         if self.interface.symmetry == 'generic' or self.interface.symmetry == 'spherical':
             _vol = self.sampled_rnd_values
-        
+
         vals = self.sampled_values.copy()
-        vals[_vol>0] /= _vol[_vol>0]
-        vals[_vol<=0] *= 0.0
-        vals/=self._counts
-        
+        vals[_vol > 0] /= _vol[_vol > 0]
+        vals[_vol <= 0] *= 0.0
+        vals /= self._counts
+
         avg, bins, _ = stats.binned_statistic(
             self.sampled_bins,
             vals,
@@ -267,4 +272,3 @@ class Profile(object):
             bins=nbins)
         avg[~np.isfinite(avg)] = 0.0
         return [bins[0:-1], bins[1:], avg]
-

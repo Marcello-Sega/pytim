@@ -377,7 +377,8 @@ dtype=object)
 
         self.label_planar_sides()
 
-        for nlayer, layer in enumerate(self._layers[0]):  # TODO should this be moved out of assign_layers?
+        for nlayer, layer in enumerate(self._layers[
+                0]):  # TODO should this be moved out of assign_layers?
             self._surfaces[nlayer] = Surface(self, options={'layer': nlayer})
 
         if self.do_center is False:  # NOTE: do_center requires centering in

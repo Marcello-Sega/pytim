@@ -94,13 +94,10 @@ class Correlator(object):
 
     """
 
-    def __init__(self,
-                 universe=None,
-                 observable=None,
-                 reference=None):
+    def __init__(self, universe=None, observable=None, reference=None):
         self.name = self.__class__.__name__
         self.observable, self.reference = observable, reference
-        self.timeseries, self.maskseries  = [], []
+        self.timeseries, self.maskseries = [], []
         self.shape = None
 
         self.masked = False
