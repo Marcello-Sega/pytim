@@ -10,6 +10,8 @@ from scipy.spatial import distance
 from pytim import utilities
 import pytim
 from pytim.sanity_check import SanityCheck
+from pytim.surface import SurfaceFlatInterface
+from pytim.surface import SurfaceGenericInterface
 try:
     from pytetgen import Delaunay
 except ImportError:
@@ -52,7 +54,7 @@ J. Chem. Phys. 138, 044110, 2013)*
                                     those in the largest cluster. Need to
                                     specify also a :py:obj:`cluster_cut` value.
         :param str symmetry:        Gives the code a hint about the topology
-                                    of the interface: 'spherical' (default)
+                                    of the interface: 'generic' (default)
                                     or  'planar'
         :param bool centered:       Center the  :py:obj:`group`
         :param bool info:           Print additional info
@@ -97,8 +99,6 @@ J. Chem. Phys. 138, 044110, 2013)*
 
     """
 
-    _surface = None
-
     def __init__(self,
                  universe,
                  group=None,
@@ -111,7 +111,7 @@ J. Chem. Phys. 138, 044110, 2013)*
                  cluster_threshold_density=None,
                  extra_cluster_groups=None,
                  biggest_cluster_only=False,
-                 symmetry='spherical',
+                 symmetry='generic',
                  centered=False,
                  info=False,
                  warnings=False,
@@ -143,6 +143,21 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         if (self.symmetry == 'planar'):
             sanity.assign_normal(normal)
+            self._surfaces = np.empty(
+                max_layers, dtype=type(SurfaceFlatInterface))
+            for nlayer in range(max_layers):
+                self._surfaces[nlayer] = SurfaceFlatInterface(
+                    self, options={
+                        'layer': nlayer
+                    })
+        else:  # generic
+            self._surfaces = np.empty(
+                max_layers, dtype=type(SurfaceGenericInterface))
+            for nlayer in range(max_layers):
+                self._surfaces[nlayer] = SurfaceGenericInterface(
+                    self, options={
+                        'layer': nlayer
+                    })
 
         pytim.PatchTrajectory(self.universe.trajectory, self)
 

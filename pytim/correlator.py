@@ -20,8 +20,6 @@ class Correlator(object):
                                 (such as a layer group), a reference group that includes all atoms that could appear in the \
                                 variable group must be passed, in order to provide a proper normalization. See\ the example \
                                 below.
-    :param double memory_warn: if not None, print a warning once this threshold of memory (in Mb) is passed.
-
 
     Example:
 
@@ -96,31 +94,16 @@ class Correlator(object):
 
     """
 
-    def __init__(self,
-                 universe=None,
-                 observable=None,
-                 reference=None,
-                 memory_warn=None):
+    def __init__(self, universe=None, observable=None, reference=None):
         self.name = self.__class__.__name__
-        self.observable = observable
-        self.reference = reference
-        self.timeseries = []
-        self.maskseries = []
+        self.observable, self.reference = observable, reference
+        self.timeseries, self.maskseries = [], []
         self.shape = None
-        self.mem_usage = 0.0
-        self.warned = False
-        self.nsamples = 0
 
+        self.masked = False
         if self.reference is not None and self.observable is not None:
             self.masked = True
-        else:
-            self.masked = False
 
-        if memory_warn is None:
-            self.warned = True
-            self.memory_warn = 0.0
-        else:
-            self.memory_warn = memory_warn
         if reference is not None:
             if observable is not None:
                 self.reference_obs = observable.compute(reference) * 0.0
@@ -142,7 +125,6 @@ class Correlator(object):
             :parameter AtomGroup group: compute the observable on the atoms of this group
 
         """
-        self.nsamples += 1
         if self.reference is not None:  # could be intermittent or continuous:
             # we need to collect also the residence
             # function
@@ -168,12 +150,6 @@ class Correlator(object):
                 )
             sampled = self.observable.compute(group)
             self.timeseries.append(list(sampled.flatten()))
-
-        self.mem_usage += sampled.nbytes / 1024.0 / 1024.0  # in Mb
-        if self.mem_usage > self.memory_warn and self.warned == False:
-            print("Warning: warning threshold of", end='')
-            print(self.memory_warn + " Mb exceeded")
-            self.warned = True
 
         if self.shape is None:
             self.shape = sampled.shape

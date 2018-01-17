@@ -152,12 +152,17 @@ class Profile(object):
                  direction='z',
                  observable=None,
                  interface=None,
-                 center_group=None):
+                 center_group=None,
+                 symmetry='default'):
         # TODO: the directions are handled differently, fix it in the code
 
         _dir = {'x': 0, 'y': 1, 'z': 2}
         self._dir = _dir[direction]
         self.interface = interface
+        if symmetry == 'default' and interface is not None:
+            self.symmetry = self.interface.symmetry
+        else:
+            self.symmetry = symmetry
         self.center_group = center_group
 
         if observable is None:
@@ -172,6 +177,7 @@ class Profile(object):
         self.sampled_values = None
         self._range = None
         self._counts = 0
+        self._totvol = []
 
     def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
@@ -193,26 +199,44 @@ class Profile(object):
             if self.interface is not None:
                 _range -= box[self._dir] / 2.
             self._range = _range
-            self._vol = np.prod(box) / nbins
+        v = np.prod(box)
+        self._totvol.append(v)
 
         if self.interface is None:
             pos = group.positions[::, self._dir]
         else:
-            pos = IntrinsicDistance(self.interface).compute(group)
+            pos = IntrinsicDistance(
+                self.interface, symmetry=self.symmetry).compute(group)
 
         values = self.observable.compute(group)
 
         accum, bins, _ = stats.binned_statistic(
             pos, values, range=self._range, statistic='sum', bins=self._nbins)
 
-        accum[np.isnan(accum)] = 0.0
+        rnd_accum = np.array(0)
+        if self.symmetry == 'generic' or self.symmetry == 'spherical':
+            factor = 10
+            rnd = np.random.random(
+                (factor * len(group),
+                 3)) * self.interface.universe.dimensions[:3]
+            rnd_pos = IntrinsicDistance(self.interface).compute(rnd)
+            rnd_accum, bins, _ = stats.binned_statistic(
+                rnd_pos,
+                np.ones(len(rnd_pos)) * (1. / factor),
+                range=self._range,
+                statistic='sum',
+                bins=self._nbins)
+
+        accum[~np.isfinite(accum)] = 0.0
 
         if self.sampled_values is None:
             self.sampled_values = accum.copy()
+            self.sampled_rnd_values = rnd_accum.copy()
             # stores the midpoints
             self.sampled_bins = bins[1:] - self.binsize / 2.
         else:
             self.sampled_values += accum
+            self.sampled_rnd_values += rnd_accum
         self._counts += 1
 
     def get_values(self, binwidth=None, nbins=None):
@@ -232,11 +256,23 @@ class Profile(object):
         if (nbins % 2 > 0):
             nbins += 1
 
+        if self.symmetry == 'generic' or self.symmetry == 'spherical':
+            _vol = self.sampled_rnd_values * self._totvol
+            _vol /= np.sum(self.sampled_rnd_values)
+        else:
+            _vol = np.ones(self.sampled_values.shape[0])
+            _vol *= np.average(self._totvol) / self._nbins
+
+        vals = self.sampled_values.copy()
+        vals[_vol > 0] /= _vol[_vol > 0]
+        vals[_vol <= 0] *= 0.0
+        vals /= self._counts
+
         avg, bins, _ = stats.binned_statistic(
             self.sampled_bins,
-            self.sampled_values * 1. / (self._counts * self._vol),
+            vals,
             range=self._range,
             statistic='mean',
             bins=nbins)
-        avg[np.isnan(avg)] = 0.0
+        avg[~np.isfinite(avg)] = 0.0
         return [bins[0:-1], bins[1:], avg]

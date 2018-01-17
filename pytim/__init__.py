@@ -25,6 +25,7 @@ class PYTIM(object):
         'Z:': 'z'
     }
     symmetry_dict = {
+        'generic': 'generic',
         'cylindrical': 'cylindrical',
         'spherical': 'spherical',
         'planar': 'planar'
@@ -248,14 +249,14 @@ class PYTIM(object):
             histo, _ = np.histogram(
                 _pos_group, bins=10, range=_range, density=True)
 
-        _center = np.average(_pos_group)
+        _center_ = np.average(_pos_group)
         if (halfbox_shift is False):
             box_half = dim[direction] / 2.
         else:
             box_half = 0.
         _pos = {'x': _x, 'y': _y, 'z': _z}
         if _dir in _pos.keys():
-            _pos[_dir] += total_shift - _center + box_half
+            _pos[_dir] += total_shift - _center_ + box_half
         # finally, we copy everything back
         group.universe.atoms.positions = np.column_stack((_x, _y, _z))
 

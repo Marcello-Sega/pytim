@@ -94,6 +94,51 @@ def polygonalArea(points):
         np.roll(points2d, 1, axis=0), 1, axis=1)))
 
 
+def pbc_compact(pos1, pos2, box):
+    """  wraps points so that satisfy the minimum image
+         convention with respect to a reference point
+
+         :param ndarray pos1: an (N,3) array of positions
+         :param ndarray pos2: either a point (3,) or an positions array (N,3)
+         :param ndarray box: (3,) array with the rectangular box edges' length
+
+    """
+
+    cond_pbc = np.where(pos1 - pos2 >= box / 2)
+    pos1[cond_pbc] -= box[cond_pbc[1]]
+    cond_pbc = np.where(pos1 - pos2 < -box / 2)
+    pos1[cond_pbc] += box[cond_pbc[1]]
+    return pos1
+
+
+def find_surface_triangulation(interface):
+    """
+        identifies all triangles which are part of the surface
+        :param GITIM interface: a GITIM interface instance
+        :returns ndarray: (N,3) indices of the triangles' vertices
+    """
+    intr = interface
+    cond = intr.atoms.layers == 1
+    layer_1 = intr.atoms[cond]
+    tri = None
+    for roll in [0, 1, 2, 3]:
+        # slimplices[i] goes from 0 -> len(cluster_group) + periodic copies
+        # layer_1_ids links the atoms in the 1st layer to the indexing of
+        # simplices's points
+        layer_1_ids = np.argwhere(
+            np.isin(intr.cluster_group.indices, layer_1.indices))
+        rolled = np.roll(intr.triangulation.simplices, 0, axis=1)[:, :3]
+        # requires that triplets of points in the simplices belong to the 1st
+        # layer
+        select = np.argwhere(np.all(np.isin(rolled, layer_1_ids),
+                                    axis=1)).flatten()
+        if tri is None:
+            tri = rolled[select]
+        else:
+            tri = np.append(tri, rolled[select], axis=0)
+    return tri
+
+
 def fit_sphere(points):
     """ least square fit of a sphere through a set of points.
 
