@@ -257,7 +257,7 @@ class Profile(object):
             nbins += 1
 
         if self.symmetry == 'generic' or self.symmetry == 'spherical':
-            _vol = self.sampled_rnd_values * self._totvol
+            _vol = self.sampled_rnd_values * np.average(self._totvol)
             _vol /= np.sum(self.sampled_rnd_values)
         else:
             _vol = np.ones(self.sampled_values.shape[0])
