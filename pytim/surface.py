@@ -163,7 +163,6 @@ class Surface(object):
 
         intr = self.interface
         pos = positions
-        cond = intr.atoms.layers == 1
         if len(pos) == 0:
             raise ValueError("empty group")
         box = intr.universe.dimensions[:3]
@@ -172,7 +171,6 @@ class Surface(object):
         l1pos = intr.triangulation.points[tri]
         # their baricenters
         l1centers = np.average(l1pos, axis=1)
-        l1centers = intr.atoms.positions
         # tree of the surface triangles' centers
         tree = cKDTree(l1centers, boxsize=box)
 
