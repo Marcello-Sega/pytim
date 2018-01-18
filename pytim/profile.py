@@ -25,6 +25,7 @@ class Profile(object):
     :param AtomGroup  center_group: if `interface` is not provided, this
                                     optional group can be supplied to center
                                     the system
+    :param bool       _MCnorm:
 
     Example (non-intrinsic, total profile + first 4 layers ):
 
@@ -153,12 +154,14 @@ class Profile(object):
                  observable=None,
                  interface=None,
                  center_group=None,
-                 symmetry='default'):
+                 symmetry='default',
+                 _MCnorm=True):
         # TODO: the directions are handled differently, fix it in the code
 
         _dir = {'x': 0, 'y': 1, 'z': 2}
         self._dir = _dir[direction]
         self.interface = interface
+        self._MCnorm = _MCnorm
         if symmetry == 'default' and interface is not None:
             self.symmetry = self.interface.symmetry
         else:
@@ -208,35 +211,42 @@ class Profile(object):
             pos = IntrinsicDistance(
                 self.interface, symmetry=self.symmetry).compute(group)
 
+            if self._MCnorm is False:
+                rnd_accum = np.ones(self._nbins)
+
+            else:
+                rnd_accum = np.array(0)
+                factor = 10
+                rnd = np.random.random(
+                    (factor * len(group),
+                     3)) * self.interface.universe.dimensions[:3]
+                rnd_pos = IntrinsicDistance(self.interface,
+                            symmetry=self.symmetry).compute(rnd)
+                rnd_accum, bins, _ = stats.binned_statistic(
+                    rnd_pos,
+                    np.ones(len(rnd_pos)),
+                    range=self._range,
+                    statistic='sum',
+                    bins=self._nbins)
+
+
         values = self.observable.compute(group)
 
         accum, bins, _ = stats.binned_statistic(
             pos, values, range=self._range, statistic='sum', bins=self._nbins)
 
-        rnd_accum = np.array(0)
-        if self.symmetry == 'generic' or self.symmetry == 'spherical':
-            factor = 10
-            rnd = np.random.random(
-                (factor * len(group),
-                 3)) * self.interface.universe.dimensions[:3]
-            rnd_pos = IntrinsicDistance(self.interface).compute(rnd)
-            rnd_accum, bins, _ = stats.binned_statistic(
-                rnd_pos,
-                np.ones(len(rnd_pos)) * (1. / factor),
-                range=self._range,
-                statistic='sum',
-                bins=self._nbins)
-
         accum[~np.isfinite(accum)] = 0.0
 
         if self.sampled_values is None:
             self.sampled_values = accum.copy()
-            self.sampled_rnd_values = rnd_accum.copy()
+            if self.interface is not None:
+                self.sampled_rnd_values = rnd_accum.copy()
             # stores the midpoints
             self.sampled_bins = bins[1:] - self.binsize / 2.
         else:
             self.sampled_values += accum
-            self.sampled_rnd_values += rnd_accum
+            if self.interface is not None:
+                self.sampled_rnd_values += rnd_accum
         self._counts += 1
 
     def get_values(self, binwidth=None, nbins=None):
@@ -256,16 +266,17 @@ class Profile(object):
         if (nbins % 2 > 0):
             nbins += 1
 
-        if self.symmetry == 'generic' or self.symmetry == 'spherical':
+        vals = self.sampled_values.copy()
+
+        if self.interface is not None:
             _vol = self.sampled_rnd_values * np.average(self._totvol)
             _vol /= np.sum(self.sampled_rnd_values)
-        else:
-            _vol = np.ones(self.sampled_values.shape[0])
-            _vol *= np.average(self._totvol) / self._nbins
 
-        vals = self.sampled_values.copy()
-        vals[_vol > 0] /= _vol[_vol > 0]
-        vals[_vol <= 0] *= 0.0
+            vals[_vol > 0] /= _vol[_vol > 0]
+            vals[_vol <= 0] *= 0.0
+        else:
+            vals /= np.average(self._totvol)
+
         vals /= self._counts
 
         avg, bins, _ = stats.binned_statistic(
