@@ -208,6 +208,7 @@ class Profile(object):
         if self.interface is None:
             pos = group.positions[::, self._dir]
         else:
+            deltabin = 1+(self._nbins-1)//2
             pos = IntrinsicDistance(
                 self.interface, symmetry=self.symmetry).compute(group)
 
@@ -229,13 +230,12 @@ class Profile(object):
                     statistic='sum',
                     bins=self._nbins)
 
-
         values = self.observable.compute(group)
-
         accum, bins, _ = stats.binned_statistic(
             pos, values, range=self._range, statistic='sum', bins=self._nbins)
-
         accum[~np.isfinite(accum)] = 0.0
+        if self.interface is not None:
+            accum[deltabin] = np.inf
 
         if self.sampled_values is None:
             self.sampled_values = accum.copy()
@@ -271,11 +271,13 @@ class Profile(object):
         if self.interface is not None:
             _vol = self.sampled_rnd_values * np.average(self._totvol)
             _vol /= np.sum(self.sampled_rnd_values)
-
+            deltabin  = np.where(~np.isfinite(vals))[0]
+            vals[deltabin] = 0.0
             vals[_vol > 0] /= _vol[_vol > 0]
             vals[_vol <= 0] *= 0.0
+            vals[deltabin] = np.inf
         else:
-            vals /= np.average(self._totvol)
+            vals /=  (np.average(self._totvol) / self._nbins)
 
         vals /= self._counts
 
@@ -285,5 +287,5 @@ class Profile(object):
             range=self._range,
             statistic='mean',
             bins=nbins)
-        avg[~np.isfinite(avg)] = 0.0
+        #avg[~np.isfinite(avg)] = 0.0
         return [bins[0:-1], bins[1:], avg]

@@ -12,10 +12,10 @@ import pytim
 from pytim.sanity_check import SanityCheck
 from pytim.surface import SurfaceFlatInterface
 from pytim.surface import SurfaceGenericInterface
-try:
-    from pytetgen import Delaunay
-except ImportError:
-    from scipy.spatial import Delaunay
+#try:
+#    from pytetgen import Delaunay
+#except ImportError:
+from scipy.spatial import Delaunay
 
 
 class GITIM(pytim.PYTIM):
@@ -180,11 +180,13 @@ J. Chem. Phys. 138, 044110, 2013)*
             for simplex in t.simplices
         ])]
 
-    def circumradius(self, simplex):
+    def circumradius(self, simplex,layer):
 
-        points = self.triangulation.points
-        radii = self.triangulation.radii
-
+        try:
+            points = self.triangulation[layer].points
+            radii = self.triangulation[layer].radii
+        except IndexError:
+            raise IndexError("alpha_shape called using a wrong layer")
         R = []
         r_i = points[simplex]
         rad_i = radii[simplex]
@@ -227,7 +229,7 @@ J. Chem. Phys. 138, 044110, 2013)*
             return 0.0
         return np.min(R[R >= 0])
 
-    def alpha_shape(self, alpha, group):
+    def alpha_shape(self, alpha, group, layer):
         box = self.universe.dimensions[:3]
         delta = 2.1 * self.alpha + 1e-6
         points = group.positions[:]
@@ -253,14 +255,20 @@ J. Chem. Phys. 138, 044110, 2013)*
                 vertex = np.reshape(vertex, (1, 3))
                 extrapoints = np.append(extrapoints, vertex, axis=0)
                 extraids = np.append(extraids, -1)
-        self.triangulation = Delaunay(extrapoints)
-        self.triangulation.radii = np.append(
+        if layer == 0 :
+            self.triangulation = []
+        self.triangulation.append(Delaunay(extrapoints))
+        try:
+            triangulation = self.triangulation[layer]
+        except IndexError:
+            raise IndexError("alpha_shape called using a wrong layer")
+        triangulation.radii = np.append(
             group.radii[extraids[extraids >= 0]], np.zeros(8))
 
-        prefiltered = self.triangulation.simplices  # == skip prefiltering
+        prefiltered = triangulation.simplices  # == skip prefiltering
 
         a_shape = prefiltered[np.array([
-            self.circumradius(simplex) >= self.alpha for simplex in prefiltered
+            self.circumradius(simplex,layer) >= self.alpha for simplex in prefiltered
         ])]
         _ids = np.unique(a_shape.flatten())
         # remove the indices corresponding to the 8 additional points, which
@@ -298,7 +306,7 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         for layer in range(0, self.max_layers):
 
-            alpha_ids = self.alpha_shape(self.alpha, alpha_group)
+            alpha_ids = self.alpha_shape(self.alpha, alpha_group, layer)
 
             group = alpha_group[alpha_ids]
 
