@@ -101,6 +101,7 @@ def pbc_compact(pos1, pos2, box):
          :param ndarray pos1: an (N,3) array of positions
          :param ndarray pos2: either a point (3,) or an positions array (N,3)
          :param ndarray box: (3,) array with the rectangular box edges' length
+         :return ndarray: the modified positions
 
     """
 
@@ -109,6 +110,21 @@ def pbc_compact(pos1, pos2, box):
     cond_pbc = np.where(pos1 - pos2 < -box / 2)
     pos1[cond_pbc] += box[cond_pbc[1]]
     return pos1
+
+def pbc_wrap(pos, box):
+    """  wraps points so they are always in the simulation box
+
+         :param ndarray pos: an (N,3) array of positions
+         :param ndarray box: (3,) array with the rectangular box edges' length
+         :return ndarray: the modified positions
+
+    """
+
+    cond_pbc = np.where(pos > box)
+    pos[cond_pbc] -= box[cond_pbc[1]]
+    cond_pbc = np.where(pos < 0.0)
+    pos[cond_pbc] += box[cond_pbc[1]]
+    return pos
 
 
 def find_surface_triangulation(interface):
@@ -127,7 +143,7 @@ def find_surface_triangulation(interface):
         # simplices's points
         layer_1_ids = np.argwhere(
             np.isin(intr.cluster_group.indices, layer_1.indices))
-        rolled = np.roll(intr.triangulation.simplices, 0, axis=1)[:, :3]
+        rolled = np.roll(intr.triangulation[0].simplices, 0, axis=1)[:, :3]
         # requires that triplets of points in the simplices belong to the 1st
         # layer
         select = np.argwhere(np.all(np.isin(rolled, layer_1_ids),
