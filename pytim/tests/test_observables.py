@@ -33,9 +33,9 @@ class TestObservables():
     >>> p.sample(u.atoms)
     >>> low,up,avg =  p.get_values(binwidth=1.0)
     >>> print(low[0:3])
-    [ 0.  1.  2.]
+    [0. 1. 2.]
     >>> print(avg[0:3])
-    [ 0.01  0.02  0.03]
+    [0.01 0.02 0.03]
 
     >>> # CORRELATOR TEST
     >>> from pytim.utilities import correlate
