@@ -186,17 +186,16 @@ class Surface(object):
                 cond0 = np.all(np.isclose(l1pos[ind, tr], pos), axis=1)
                 dist[cond0] = 0.0
         else:
-            # a group has been passed, we know exactly which atoms are 
+            # a group has been passed, we know exactly which atoms are
             # surface ones.
             try:
-                dist[ inp.atoms.layers == 1] = 0.0  
+                dist[inp.atoms.layers == 1] = 0.0
                 # Warning, the corresponding values of 'ind' will be wrong.
                 # If you change this code, check that it won't
                 # depend on 'ind'
             except AttributeError:
                 raise RuntimeError(
-                    "Wrong parameter passed to _distance_generic"
-                )
+                    "Wrong parameter passed to _distance_generic")
         l1centers = l1centers[ind]
 
         if symmetry == 'generic':
