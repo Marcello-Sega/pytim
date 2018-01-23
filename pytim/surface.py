@@ -74,6 +74,15 @@ class Surface(object):
             self._compute_q_vectors(box)
 
     def _compute_q_vectors(self, box):
+        """ Compute the q-vectors compatible with the current box dimensions.
+
+            Calculated quantities:
+            q_vectors : two 2D arrays forming the grid of q-values, similar
+                        to a meshgrid
+            Qxy       : array of the different q-vectors
+            Q         : squared module of Qxy with the first element missing
+                        (no Q = 0.0)
+        """
         self.box = np.roll(box, 2 - self.normal)
         nmax = map(int, np.ceil(self.box[0:2] / self.alpha))
         q_indices = np.mgrid[0:nmax[0], 0:nmax[1]]
