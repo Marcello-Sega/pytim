@@ -15,7 +15,7 @@ from pytim.surface import SurfaceGenericInterface
 try:
     from pytetgen import Delaunay
 except ImportError:
-from scipy.spatial import Delaunay
+    from scipy.spatial import Delaunay
 
 
 class GITIM(pytim.PYTIM):
