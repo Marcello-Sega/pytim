@@ -111,6 +111,7 @@ def pbc_compact(pos1, pos2, box):
     pos1[cond_pbc] += box[cond_pbc[1]]
     return pos1
 
+
 def pbc_wrap(pos, box):
     """  wraps points so they are always in the simulation box
 

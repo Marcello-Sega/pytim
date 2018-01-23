@@ -180,7 +180,7 @@ J. Chem. Phys. 138, 044110, 2013)*
             for simplex in t.simplices
         ])]
 
-    def circumradius(self, simplex,layer):
+    def circumradius(self, simplex, layer):
 
         try:
             points = self.triangulation[layer].points
@@ -255,20 +255,21 @@ J. Chem. Phys. 138, 044110, 2013)*
                 vertex = np.reshape(vertex, (1, 3))
                 extrapoints = np.append(extrapoints, vertex, axis=0)
                 extraids = np.append(extraids, -1)
-        if layer == 0 :
+        if layer == 0:
             self.triangulation = []
         self.triangulation.append(Delaunay(extrapoints))
         try:
             triangulation = self.triangulation[layer]
         except IndexError:
             raise IndexError("alpha_shape called using a wrong layer")
-        triangulation.radii = np.append(
-            group.radii[extraids[extraids >= 0]], np.zeros(8))
+        triangulation.radii = np.append(group.radii[extraids[extraids >= 0]],
+                                        np.zeros(8))
 
         prefiltered = triangulation.simplices  # == skip prefiltering
 
         a_shape = prefiltered[np.array([
-            self.circumradius(simplex,layer) >= self.alpha for simplex in prefiltered
+            self.circumradius(simplex, layer) >= self.alpha
+            for simplex in prefiltered
         ])]
         _ids = np.unique(a_shape.flatten())
         # remove the indices corresponding to the 8 additional points, which
