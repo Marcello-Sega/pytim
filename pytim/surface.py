@@ -84,13 +84,12 @@ class Surface(object):
                         (no Q = 0.0)
         """
         self.box = np.roll(box, 2 - self.normal)
-        nmax = map(int, np.ceil(self.box[0:2] / self.alpha))
-        q_indices = np.mgrid[0:nmax[0], 0:nmax[1]]
-        self.q_vectors = q_indices * 1.0
+        nmax     = map(int, np.ceil(self.box[0:2] / self.alpha))
+        self.q_vectors     = np.mgrid[0:nmax[0], 0:nmax[1]] * 1.0
         self.q_vectors[0] *= 2. * np.pi / box[0]
         self.q_vectors[1] *= 2. * np.pi / box[1]
         self.modes_shape = self.q_vectors[0].shape
-        qx = self.q_vectors[0][::, 0]
+        qx = self.q_vectors[0][:, 0]
         qy = self.q_vectors[1][0]
         Qx = np.repeat(qx, len(qy))
         Qy = np.tile(qy, len(qx))
@@ -110,12 +109,12 @@ class Surface(object):
         return self._surface_from_modes(points, self.q_vectors, modes)
 
     def surface_modes(self, points):
-        QR = np.dot(self.Qxy, points[::, 0:2].T).T
-        # ph[0] is are the phases associated to each of the ~ n^2 modes for
+        QR = np.dot(self.Qxy, points[:, 0:2].T).T
+        # ph[0] are the phases associated to each of the ~ n^2 modes for
         # particle 0.
         # We exclude the zero mode.
-        ph = (np.cos(QR) + 1.j * np.sin(QR)).T[1:].T
-        z = points[::, 2]
+        ph = (np.cos(QR) + 1.j * np.sin(QR))[:,1:]
+        z  = points[:, 2]
         az = np.mean(z)
         z = z - az
         A = (ph / self.Q)
