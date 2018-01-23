@@ -96,7 +96,6 @@ class ChaconTarazona(pytim.PYTIM):
         sanity.assign_normal(normal)
         sanity.assign_radii()
 
-        self.old_box = np.array([-1, -1, -1])
         self.sorted_indices = None
         self.surf = None
         self.modes = [None, None]
@@ -105,7 +104,7 @@ class ChaconTarazona(pytim.PYTIM):
         self._assign_layers()
 
     def _points_next_to_surface(self, surf, modes, pivot):
-        """ searches for points within a distance self.tau from the
+        """ Searches for points within a distance self.tau from the
             interface.
         """
         z_max = np.max(self.cluster_group[pivot].positions[::, 2])
@@ -122,10 +121,11 @@ class ChaconTarazona(pytim.PYTIM):
         return candidates[dists * dists < self.tau**2]
 
     def _initial_pivots(self, sorted_ind):
-        """ defines the initial pivots as the furthermost particles in 3x3
-            regions
+        """ Defines the initial pivots as a set of 9 particles, where
+            each particle is in a distinct sector formed by dividing
+            the macroscopic plane into 3x3 regions.
         """
-        sectors = (np.array([0] * 9)).reshape(3, 3)
+        sectors = np.zeros((3,3), dtype=int)
         pivot = []
         box = utilities.get_box(self.universe, normal=self.normal)
         pos = utilities.get_pos(self.cluster_group, normal=self.normal)
@@ -140,6 +140,8 @@ class ChaconTarazona(pytim.PYTIM):
         return pivot
 
     def _assign_one_side(self, side):
+        """ Calculate the interfacial molecules on one side of the box.
+        """
         # TODO add successive layers
         box = self.universe.dimensions[:3]
         #        surf = self._surfaces[0]
@@ -151,13 +153,13 @@ class ChaconTarazona(pytim.PYTIM):
 
         pivot = np.sort(self._initial_pivots(sorted_ind))
         modes = None
+        surf  = Surface(self, options={'layer': 0, 'from_modes': True})
+        surf._compute_q_vectors(box)
         while True:
-            surf = Surface(self, options={'layer': 0, 'from_modes': True})
-            surf._compute_q_vectors(box)
-            modes = surf.surface_modes(self.cluster_group[pivot].positions)
-            p = self.cluster_group[pivot].positions
-            s = surf.surface_from_modes(p, modes.reshape(surf.modes_shape))
-            d = p[::, 2] - s
+            p     = self.cluster_group[pivot].positions
+            modes = surf.surface_modes(p)
+            s     = surf.surface_from_modes(p, modes.reshape(surf.modes_shape))
+            d     = p[:, 2] - s
             if self.info is True:
                 print("side", side, "->", len(pivot), "pivots, msd=",
                       np.sqrt(np.sum(d * d) / len(d)))
@@ -165,6 +167,7 @@ class ChaconTarazona(pytim.PYTIM):
             modes = modes.reshape(surf.modes_shape)
             new_pivot = np.sort(
                 self._points_next_to_surface(surf, modes, pivot))
+            # If convergence reached...
             if np.all(new_pivot == pivot):
                 self.surf = surf
                 self.modes[side] = modes
@@ -179,7 +182,7 @@ class ChaconTarazona(pytim.PYTIM):
 
     def _assign_layers(self):
         """ This function identifies the dividing surface and the atoms in the
-        layers.
+            layers.
 
         """
         self.label_group(
@@ -190,8 +193,6 @@ class ChaconTarazona(pytim.PYTIM):
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
-
-        box = self.universe.dimensions[:3]
 
         # groups have been checked already in _sanity_checks()
 
@@ -205,9 +206,8 @@ class ChaconTarazona(pytim.PYTIM):
         # then all atoms in the largest group are labelled as liquid-like
         self.label_group(self.cluster_group.atoms, beta=0.0)
 
-        self.old_box = box
         pos = self.cluster_group.positions
-        self.sorted_indices = np.argsort(pos[::, self.normal])
+        self.sorted_indices = np.argsort(pos[:, self.normal])
         for side in [0, 1]:
             self._layers[side][0] = self._assign_one_side(side)
 
