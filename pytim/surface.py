@@ -167,25 +167,20 @@ class Surface(object):
         if len(pos) == 0:
             raise ValueError("empty group")
         box = intr.universe.dimensions[:3]
-        tri = utilities.find_surface_triangulation(intr)
+        # tri = utilities.find_surface_triangulation(intr)
         # positions of the points in the triangulated surface
-        l1pos = intr.triangulation[0].points[tri]
+        # l1pos = intr.triangulation[0].points[tri]
         # their baricenters
-        l1centers = utilities.pbc_wrap(np.average(l1pos, axis=1), box)
+        # l1centers = utilities.pbc_wrap(np.average(l1pos, axis=1), box)
+        # l1centers = np.average(l1pos, axis=1)
+        l1centers = intr.atoms.positions[intr.atoms.layers==1]
         # tree of the surface triangles' centers
         tree = cKDTree(l1centers, boxsize=box)
 
         # distances and indices of the surface triangles' centers to pos[]
         dist, ind = tree.query(pos, k=1)
 
-        if isinstance(inp, np.ndarray):
-            # An array of positions has been passed (e.g. for the Monte Carlo volume estimate)
-            # we need to check if they are close to any surface atom
-            # This is not necessarily exact.
-            for tr in [0, 1, 2]:
-                cond0 = np.all(np.isclose(l1pos[ind, tr], pos), axis=1)
-                dist[cond0] = 0.0
-        else:
+        if not isinstance(inp, np.ndarray):
             # a group has been passed, we know exactly which atoms are
             # surface ones.
             try:
@@ -203,7 +198,7 @@ class Surface(object):
         if symmetry == 'spherical':
             # tree of all the atoms in cluster_group
             COM = self.local_env_com(intr.cluster_group.positions, l1centers,
-                                     box, 5)
+                                     box, 6)
             P1 = utilities.pbc_compact(pos, l1centers, box) - l1centers
             P2 = utilities.pbc_compact(COM, l1centers, box) - l1centers
             sign = -np.sign(np.sum(P1 * P2, axis=1))
