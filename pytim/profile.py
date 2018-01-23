@@ -287,5 +287,4 @@ class Profile(object):
             range=self._range,
             statistic='mean',
             bins=nbins)
-        #avg[~np.isfinite(avg)] = 0.0
         return [bins[0:-1], bins[1:], avg]

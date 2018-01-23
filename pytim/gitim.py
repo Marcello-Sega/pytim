@@ -12,9 +12,9 @@ import pytim
 from pytim.sanity_check import SanityCheck
 from pytim.surface import SurfaceFlatInterface
 from pytim.surface import SurfaceGenericInterface
-#try:
-#    from pytetgen import Delaunay
-#except ImportError:
+try:
+    from pytetgen import Delaunay
+except ImportError:
 from scipy.spatial import Delaunay
 
 
