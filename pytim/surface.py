@@ -163,7 +163,7 @@ class Surface(object):
 
         intr = self.interface
         pos = utilities.extract_positions(inp)
-        
+
         if len(pos) == 0:
             raise ValueError("empty group")
         box = intr.universe.dimensions[:3]
@@ -171,28 +171,32 @@ class Surface(object):
         # positions of the points in the triangulated surface
         l1pos = intr.triangulation[0].points[tri]
         # their baricenters
-        l1centers = utilities.pbc_wrap(np.average(l1pos, axis=1),box)
+        l1centers = utilities.pbc_wrap(np.average(l1pos, axis=1), box)
         # tree of the surface triangles' centers
         tree = cKDTree(l1centers, boxsize=box)
 
         # distances and indices of the surface triangles' centers to pos[]
         dist, ind = tree.query(pos, k=1)
 
-        if isinstance(inp,np.ndarray):
+        if isinstance(inp, np.ndarray):
             # An array of positions has been passed (e.g. for the Monte Carlo volume estimate)
             # we need to check if they are close to any surface atom
             # This is not necessarily exact.
-            for tr in [0,1,2]:
-                cond0 = np.all(np.isclose(l1pos[ind,tr],pos),axis=1)
+            for tr in [0, 1, 2]:
+                cond0 = np.all(np.isclose(l1pos[ind, tr], pos), axis=1)
                 dist[cond0] = 0.0
         else:
             # a group has been passed, we know exactly which atoms are surface ones.
             try:
-                dist[inp.atoms.layers==1] = 0.0  # Warning, the corresponding values of 'ind' will be wrong.
-                                                 # If you change this code, check that it won't 
-                                                 # depend on 'ind'
+                dist[
+                    inp.atoms.layers ==
+                    1] = 0.0  # Warning, the corresponding values of 'ind' will be wrong.
+                # If you change this code, check that it won't
+                # depend on 'ind'
             except AttributeError:
-                raise RuntimeError("Internal error: wrong parameter passed to _distance_generic")
+                raise RuntimeError(
+                    "Internal error: wrong parameter passed to _distance_generic"
+                )
         l1centers = l1centers[ind]
 
         if symmetry == 'generic':
@@ -207,8 +211,6 @@ class Surface(object):
             return sign * dist
 
         raise ValueError("Incorrect symmetry used for distance calculation")
-
-
 
     def _distance_spherical(self, positions):
         box = self.interface.universe.dimensions[:3]

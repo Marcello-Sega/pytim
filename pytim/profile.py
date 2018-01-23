@@ -208,7 +208,7 @@ class Profile(object):
         if self.interface is None:
             pos = group.positions[::, self._dir]
         else:
-            deltabin = 1+(self._nbins-1)//2
+            deltabin = 1 + (self._nbins - 1) // 2
             pos = IntrinsicDistance(
                 self.interface, symmetry=self.symmetry).compute(group)
 
@@ -221,8 +221,8 @@ class Profile(object):
                 rnd = np.random.random(
                     (factor * len(group),
                      3)) * self.interface.universe.dimensions[:3]
-                rnd_pos = IntrinsicDistance(self.interface,
-                            symmetry=self.symmetry).compute(rnd)
+                rnd_pos = IntrinsicDistance(
+                    self.interface, symmetry=self.symmetry).compute(rnd)
                 rnd_accum, bins, _ = stats.binned_statistic(
                     rnd_pos,
                     np.ones(len(rnd_pos)),
@@ -271,13 +271,13 @@ class Profile(object):
         if self.interface is not None:
             _vol = self.sampled_rnd_values * np.average(self._totvol)
             _vol /= np.sum(self.sampled_rnd_values)
-            deltabin  = np.where(~np.isfinite(vals))[0]
+            deltabin = np.where(~np.isfinite(vals))[0]
             vals[deltabin] = 0.0
             vals[_vol > 0] /= _vol[_vol > 0]
             vals[_vol <= 0] *= 0.0
             vals[deltabin] = np.inf
         else:
-            vals /=  (np.average(self._totvol) / self._nbins)
+            vals /= (np.average(self._totvol) / self._nbins)
 
         vals /= self._counts
 
