@@ -171,7 +171,8 @@ class PYTIM(object):
         self.label_group(self.itim_group, cluster=1)
         self.label_group(self.cluster_group, cluster=0)
 
-    def _center(self, group, direction=None, halfbox_shift=True):
+    @staticmethod
+    def _center(group, direction, halfbox_shift=False):
         """
         Centers the liquid slab in the simulation box.
 
@@ -187,14 +188,13 @@ class PYTIM(object):
         of the box along all directions, set halfbox_shift=False
 
         """
-        if direction is None:
-            direction = self.normal
+
         dim = group.universe.coord.dimensions
         total_shift = 0
 
-        if not (direction in self.directions_dict):
+        if not (direction in PYTIM.directions_dict):
             raise ValueError(messages.WRONG_DIRECTION)
-        _dir = self.directions_dict[direction]
+        _dir = PYTIM.directions_dict[direction]
         _xyz = {
             'x': (0, utilities.get_x),
             'y': (1, utilities.get_y),
@@ -259,28 +259,35 @@ class PYTIM(object):
             _pos[_dir] += total_shift - _center_ + box_half
         # finally, we copy everything back
         group.universe.atoms.positions = np.column_stack((_x, _y, _z))
+    
+    @staticmethod
+    def shift_positions_to_middle(universe, normal):
+        box = universe.dimensions[normal]
+        translation = [0, 0, 0]
+        translation[normal] = box / 2.
+        universe.atoms.positions += np.array(translation)
+        universe.atoms.pack_into_box(universe.dimensions[:3])
 
     def _shift_positions_to_middle(self):
-        box = self.universe.dimensions[self.normal]
-        translation = [0, 0, 0]
-        translation[self.normal] = box / 2.
-        self.universe.atoms.positions += np.array(translation)
-        self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+        PYTIM.shift_positions_to_middle(self.universe, self.normal)
 
-    def center(self, planar_to_origin=False):
-        if self.symmetry == 'planar':
-            utilities.centerbox(self.universe, center_direction=self.normal)
-            self._center(self.cluster_group, self.normal)
-            utilities.centerbox(self.universe, center_direction=self.normal)
+    @staticmethod
+    def center_system(symmetry, group, direction,planar_to_origin=False):
+        if symmetry == 'planar':
+            utilities.centerbox(group.universe, center_direction=direction)
+            PYTIM._center(group, direction,halfbox_shift = True)
+            utilities.centerbox(group.universe, center_direction=direction)
             if planar_to_origin is False:
-                self._shift_positions_to_middle()
-            self.centered_positions = np.copy(self.universe.atoms.positions[:])
-
-        if self.symmetry == 'spherical':
+                PYTIM.shift_positions_to_middle(group.universe,direction)
+        if symmetry == 'spherical':
             for xyz in ['x', 'y', 'z']:
-                self._center(self.cluster_group, xyz, halfbox_shift=False)
-            self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
-            self.centered_positions = np.copy(self.universe.atoms.positions[:])
+                PYTIM._center(group, xyz, halfbox_shift=False)
+            group.universe.atoms.pack_into_box(group.universe.dimensions[:3])
+        
+        
+    def center(self, planar_to_origin=False):
+        center_system(self.symmetry, self.cluster_group, self.normal,planar_to_origin=planar_to_origin)
+        self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
     def writepdb(self,
                  filename='layers.pdb',
