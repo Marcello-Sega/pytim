@@ -191,18 +191,16 @@ class Surface(object):
             except AttributeError:
                 raise RuntimeError(
                     "Wrong parameter passed to _distance_generic")
-        l1centers = l1centers[ind]
+        l1centers_ = l1centers[ind]
 
-        if symmetry == 'generic':
-            return dist
-        if symmetry == 'spherical':
-            # tree of all the atoms in cluster_group
-            COM = self.local_env_com(intr.cluster_group.positions, l1centers,
-                                     box, 6)
-            P1 = utilities.pbc_compact(pos, l1centers, box) - l1centers
-            P2 = utilities.pbc_compact(COM, l1centers, box) - l1centers
-            sign = -np.sign(np.sum(P1 * P2, axis=1))
-            return sign * dist
+        nonsurface = intr.cluster_group - intr.atoms[intr.atoms.layers==1]
+        tree = cKDTree(nonsurface.positions, boxsize=box)
+        neighs = tree.query_ball_point(pos, intr.alpha)
+        condition = np.array([ len(el)!=0 for el in neighs])
+
+        sign = np.ones(dist.shape[0])
+        sign[np.where(condition)[0]] = -1.0
+        return sign * dist
 
         raise ValueError("Incorrect symmetry used for distance calculation")
 
