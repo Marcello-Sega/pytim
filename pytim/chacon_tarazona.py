@@ -158,13 +158,16 @@ class ChaconTarazona(pytim.PYTIM):
         while True:
             p     = self.cluster_group[pivot].positions
             modes = surf.surface_modes(p)
-            s     = surf.surface_from_modes(p, modes.reshape(surf.modes_shape))
+            s     = surf.surface_from_modes(p, modes)
             d     = p[:, 2] - s
             if self.info is True:
+                # d is too large means the decomposition failed
+                # NOTE: this is highly unlikely for everyday use
+                # as the row space of the matrix of phases
+                # is usually full rank
                 print("side", side, "->", len(pivot), "pivots, msd=",
                       np.sqrt(np.sum(d * d) / len(d)))
             # TODO handle failure
-            modes = modes.reshape(surf.modes_shape)
             new_pivot = np.sort(
                 self._points_next_to_surface(surf, modes, pivot))
             # If convergence reached...

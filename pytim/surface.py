@@ -120,7 +120,8 @@ class Surface(object):
         A = (ph / self.Q)
         z = z
         s = np.dot(np.linalg.pinv(A), z)
-        return np.append(az + 0.j, s / self.Q)
+        # return the surface modes reshaped into an array
+        return np.append(az + 0.j, s / self.Q).reshape(self.modes_shape)
 
     def triangulate_layer_flat(self, layer=0):
         """Triangulate a layer.
