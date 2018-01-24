@@ -108,10 +108,10 @@ class ChaconTarazona(pytim.PYTIM):
             interface.
         """
         pivot_pos = self.cluster_group[pivot].positions
-        z_max     = np.max(pivot_pos[:, 2])
-        z_min     = np.min(pivot_pos[:, 2])
-        z_max     += self.alpha * 2
-        z_min     -= self.alpha * 2
+        z_max = np.max(pivot_pos[:, 2])
+        z_min = np.min(pivot_pos[:, 2])
+        z_max += self.alpha * 2
+        z_min -= self.alpha * 2
         positions = self.cluster_group.positions[:]
         # TODO other directions
         z = positions[:, 2]
@@ -154,13 +154,13 @@ class ChaconTarazona(pytim.PYTIM):
 
         pivot = np.sort(self._initial_pivots(sorted_ind))
         modes = None
-        surf  = Surface(self, options={'layer': 0, 'from_modes': True})
+        surf = Surface(self, options={'layer': 0, 'from_modes': True})
         surf._compute_q_vectors(box)
         while True:
-            p     = self.cluster_group[pivot].positions
+            p = self.cluster_group[pivot].positions
             modes = surf.surface_modes(p)
-            s     = surf.surface_from_modes(p, modes)
-            d     = p[:, 2] - s
+            s = surf.surface_from_modes(p, modes)
+            d = p[:, 2] - s
             if self.info is True:
                 # d is too large means the decomposition failed
                 print("side", side, "->", len(pivot), "pivots, msd=",
