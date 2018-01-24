@@ -107,15 +107,16 @@ class ChaconTarazona(pytim.PYTIM):
         """ Searches for points within a distance self.tau from the
             interface.
         """
-        z_max = np.max(self.cluster_group[pivot].positions[::, 2])
-        z_min = np.min(self.cluster_group[pivot].positions[::, 2])
-        z_max += self.alpha * 2
-        z_min -= self.alpha * 2
-        positions = self.cluster_group.positions[::]
+        pivot_pos = self.cluster_group[pivot].positions
+        z_max     = np.max(pivot_pos[:, 2])
+        z_min     = np.min(pivot_pos[:, 2])
+        z_max     += self.alpha * 2
+        z_min     -= self.alpha * 2
+        positions = self.cluster_group.positions[:]
         # TODO other directions
-        z = positions[::, 2]
+        z = positions[:, 2]
         condition = np.logical_and(z > z_min, z < z_max)
-        candidates = np.argwhere(condition)[::, 0]
+        candidates = np.argwhere(condition)[:, 0]
         dists = surf.surface_from_modes(positions[candidates], modes)
         dists = dists - z[candidates]
         return candidates[dists * dists < self.tau**2]
@@ -162,9 +163,6 @@ class ChaconTarazona(pytim.PYTIM):
             d     = p[:, 2] - s
             if self.info is True:
                 # d is too large means the decomposition failed
-                # NOTE: this is highly unlikely for everyday use
-                # as the row space of the matrix of phases
-                # is usually full rank
                 print("side", side, "->", len(pivot), "pivots, msd=",
                       np.sqrt(np.sum(d * d) / len(d)))
             # TODO handle failure
