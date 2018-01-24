@@ -286,7 +286,7 @@ class PYTIM(object):
         
         
     def center(self, planar_to_origin=False):
-        center_system(self.symmetry, self.cluster_group, self.normal,planar_to_origin=planar_to_origin)
+        PYTIM.center_system(self.symmetry, self.cluster_group, self.normal,planar_to_origin=planar_to_origin)
         self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
     def writepdb(self,
