@@ -173,7 +173,7 @@ class Surface(object):
         # their baricenters
         # l1centers = utilities.pbc_wrap(np.average(l1pos, axis=1), box)
         # l1centers = np.average(l1pos, axis=1)
-        l1centers = intr.atoms.positions[intr.atoms.layers==1]
+        l1centers = intr.atoms.positions[intr.atoms.layers == 1]
         # tree of the surface triangles' centers
         tree = cKDTree(l1centers, boxsize=box)
 
