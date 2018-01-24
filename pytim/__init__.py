@@ -261,7 +261,7 @@ class PYTIM(object):
             _pos[_dir] += total_shift - _center_ + box_half
         # finally, we copy everything back
         group.universe.atoms.positions = np.column_stack((_x, _y, _z))
-    
+
     @staticmethod
     def shift_positions_to_middle(universe, normal):
         box = universe.dimensions[normal]
@@ -274,21 +274,25 @@ class PYTIM(object):
         PYTIM.shift_positions_to_middle(self.universe, self.normal)
 
     @staticmethod
-    def center_system(symmetry, group, direction,planar_to_origin=False):
+    def center_system(symmetry, group, direction, planar_to_origin=False):
         if symmetry == 'planar':
             utilities.centerbox(group.universe, center_direction=direction)
-            PYTIM._center(group, direction,halfbox_shift = True)
+            PYTIM._center(group, direction, halfbox_shift = True)
             utilities.centerbox(group.universe, center_direction=direction)
             if planar_to_origin is False:
-                PYTIM.shift_positions_to_middle(group.universe,direction)
+                PYTIM.shift_positions_to_middle(group.universe, direction)
         if symmetry == 'spherical':
             for xyz in ['x', 'y', 'z']:
                 PYTIM._center(group, xyz, halfbox_shift=False)
             group.universe.atoms.pack_into_box(group.universe.dimensions[:3])
-        
-        
+
     def center(self, planar_to_origin=False):
-        PYTIM.center_system(self.symmetry, self.cluster_group, self.normal,planar_to_origin=planar_to_origin)
+        PYTIM.center_system(
+            self.symmetry,
+            self.cluster_group,
+            self.normal,
+            planar_to_origin=planar_to_origin)
+
         self.centered_positions = np.copy(self.universe.atoms.positions[:])
 
     def writepdb(self,

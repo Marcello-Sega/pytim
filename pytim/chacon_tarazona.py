@@ -126,7 +126,7 @@ class ChaconTarazona(pytim.PYTIM):
             each particle is in a distinct sector formed by dividing
             the macroscopic plane into 3x3 regions.
         """
-        sectors = np.zeros((3,3), dtype=int)
+        sectors = np.zeros((3, 3), dtype=int)
         pivot = []
         box = utilities.get_box(self.universe, normal=self.normal)
         pos = utilities.get_pos(self.cluster_group, normal=self.normal)
