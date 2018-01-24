@@ -277,7 +277,7 @@ class PYTIM(object):
     def center_system(symmetry, group, direction, planar_to_origin=False):
         if symmetry == 'planar':
             utilities.centerbox(group.universe, center_direction=direction)
-            PYTIM._center(group, direction, halfbox_shift = True)
+            PYTIM._center(group, direction, halfbox_shift=True)
             utilities.centerbox(group.universe, center_direction=direction)
             if planar_to_origin is False:
                 PYTIM.shift_positions_to_middle(group.universe, direction)
