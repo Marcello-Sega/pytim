@@ -202,10 +202,10 @@ class Surface(object):
                     "Wrong parameter passed to _distance_generic")
         l1centers_ = l1centers[ind]
 
-        nonsurface = intr.cluster_group - intr.atoms[intr.atoms.layers==1]
+        nonsurface = intr.cluster_group - intr.atoms[intr.atoms.layers == 1]
         tree = cKDTree(nonsurface.positions, boxsize=box)
         neighs = tree.query_ball_point(pos, intr.alpha)
-        condition = np.array([ len(el)!=0 for el in neighs])
+        condition = np.array([len(el) != 0 for el in neighs])
 
         sign = np.ones(dist.shape[0])
         sign[np.where(condition)[0]] = -1.0
