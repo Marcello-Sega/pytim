@@ -1,0 +1,256 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Surface of a micelle &#8212; Pytim 0.6.3 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.6.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/pytim.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="To center or not to center?" href="center.html" />
+    <link rel="prev" title="How to Install Pytim" href="install.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="center.html" title="To center or not to center?"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="How to Install Pytim"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="surface-of-a-micelle">
+<h1>Surface of a micelle<a class="headerlink" href="#surface-of-a-micelle" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
+<p>We use the <a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code></a> class to investigate the surface composition of a DPC micelle</p>
+<p>This tutorial shows how to do some basic statistical analysis and how to visualize
+surface atoms / pockets for water.</p>
+</div>
+<div class="section" id="the-dpc-micelle">
+<h2>The DPC micelle<a class="headerlink" href="#the-dpc-micelle" title="Permalink to this headline">¶</a></h2>
+<p>The micelle example file <code class="file docutils literal"><span class="pre">MICELLE_PDB</span></code> consists of 65 DPC and 6305 water molecules,
+for a total of about 20,000 atoms (D. P. Tieleman, D. van der Spoel, H.J.C.
+Berendsen, J. Phys. Chem. B 104, pp. 6380-6388, 2000)</p>
+<a class="reference internal image-reference" href="_images/micelle1.png"><img alt="_images/micelle1.png" class="align-center" src="_images/micelle1.png" style="width: 35%;" /></a>
+<p>As this is not a planar interface, we will use the GITIM class to identify the atoms at the
+surface of the micelle. Our reference group for the surface analysis includes therefore
+all DPC molecules</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">#</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># this is a DPC micelle in water</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">#</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># select all lipid molecues</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In order to calculate the surface atoms, we invoke <a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code></a>, passing
+the group <cite>g</cite> as the <cite>group</cite> option, and set <cite>molecular=False</cite> in order to mark
+only the atoms at the surface, and not the whole residues to which these atoms belong.
+We override the standard radii (from the gromos 43a1 forcefield) with a simple set that
+will match the atom types.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># define radii for atom types</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rdict</span>  <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;C&#39;</span><span class="p">:</span><span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span><span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;P&#39;</span><span class="p">:</span><span class="mf">1.6</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">:</span><span class="mf">1.8</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># calculate the atoms at the interface ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">radii_dict</span><span class="o">=</span><span class="n">rdict</span> <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">#</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... and write a pdb file (default:&#39;layers.pdb&#39;) with layer information in the beta field</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writepdb</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The micelle with its surface atoms highlighted in purple looks like this (left: from outside; right: section through the middle)</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="first last reference internal image-reference" href="_images/micelle3.png"><img alt="_images/micelle3.png" class="align-right" src="_images/micelle3.png" style="width: 70%;" /></a>
+</td>
+<td><a class="first last reference internal image-reference" href="_images/micelle2.png"><img alt="_images/micelle2.png" class="align-left" src="_images/micelle2.png" style="width: 70%;" /></a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="some-statistics">
+<h2>Some statistics<a class="headerlink" href="#some-statistics" title="Permalink to this headline">¶</a></h2>
+<p>It’s easy to calculate some simple statistical properties. For example, the percentage of atoms of DPC at the surface is</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="s2">&quot;percentage of atoms at the surface: </span><span class="si">{:.1f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="mf">100.</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
+<span class="go">percentage of atoms at the surface: 47.2</span>
+</pre></div>
+</div>
+<p>This is a rather high percentage, but is due to the small size of the micelle (large surface/volume ratio)</p>
+<p>We can also easily find out which atom is more likely to be found at the surface:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># we cycle over the names of atoms in the first residue</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">residues</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">names</span> <span class="p">:</span>
+<span class="gp">... </span>    <span class="n">total</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">names</span><span class="o">==</span><span class="n">name</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">surface</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">names</span> <span class="o">==</span> <span class="n">name</span> <span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:&gt;4s}</span><span class="s1"> ---&gt; </span><span class="si">{:&gt;2.0f}</span><span class="s1">%&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">surface</span><span class="o">*</span><span class="mf">100.</span><span class="o">/</span><span class="n">total</span><span class="p">))</span>
+<span class="go">  C1 ---&gt; 97%</span>
+<span class="go">  C2 ---&gt; 95%</span>
+<span class="go">  C3 ---&gt; 100%</span>
+<span class="go">  N4 ---&gt; 98%</span>
+<span class="go">  C5 ---&gt; 98%</span>
+<span class="go">  C6 ---&gt; 92%</span>
+<span class="go">  O7 ---&gt; 75%</span>
+<span class="go">  P8 ---&gt;  3%</span>
+<span class="go">  O9 ---&gt; 72%</span>
+<span class="go"> O10 ---&gt; 83%</span>
+<span class="go"> O11 ---&gt; 48%</span>
+<span class="go"> C12 ---&gt; 31%</span>
+<span class="go"> C13 ---&gt; 29%</span>
+<span class="go"> C14 ---&gt; 14%</span>
+<span class="go"> C15 ---&gt; 17%</span>
+<span class="go"> C16 ---&gt; 15%</span>
+<span class="go"> C17 ---&gt; 18%</span>
+<span class="go"> C18 ---&gt; 12%</span>
+<span class="go"> C19 ---&gt; 18%</span>
+<span class="go"> C20 ---&gt; 12%</span>
+<span class="go"> C21 ---&gt; 17%</span>
+<span class="go"> C22 ---&gt; 17%</span>
+<span class="go"> C23 ---&gt; 22%</span>
+</pre></div>
+</div>
+<p>One immediately notices that with this choice of radii, P atoms are rarely at the surface: this is because they are always buried wihin their bonded neighbors in the headgroup.  Also, a non negligible part of the fatty tails are also found from time to time at the surface.</p>
+<hr class="docutils" />
+<div class="toctree-wrapper compound">
+</div>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-92682414-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+<h3><a href="index.html">Table Of Contents</a></h3>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quick.html">Pytim: Quick Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">How to Install Pytim</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Surface of a micelle</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-dpc-micelle">The DPC micelle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#some-statistics">Some statistics</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ITIM.html">ITIM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GITIM.html">GITIM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WillardChandler.html">WillardChandler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ChaconTarazona.html">ChaconTarazona</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observables.html">Observables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datafiles.html">Datafiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="previous chapter">How to Install Pytim</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="center.html"
+                        title="next chapter">To center or not to center?</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/micelle.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="center.html" title="To center or not to center?"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="How to Install Pytim"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Marcello Sega.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+    </div>
+  </body>
+</html>

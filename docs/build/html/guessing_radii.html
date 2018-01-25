@@ -1,0 +1,247 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Choosing the atomic radii &#8212; Pytim 0.6.3 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.6.3',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/pytim.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ITIM" href="ITIM.html" />
+    <link rel="prev" title="To center or not to center?" href="center.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ITIM.html" title="ITIM"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="center.html" title="To center or not to center?"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="choosing-the-atomic-radii">
+<h1>Choosing the atomic radii<a class="headerlink" href="#choosing-the-atomic-radii" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
+<p>The result of interfacial atoms identification can depend markedly on the choice of atomic radii, especially with methods like <a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code></a>.
+We review how <cite>pytim</cite> chooses which values to use, and how this can be overridden by the user.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p><strong>The problem</strong></p>
+<p>Configuration file formats such as the gromos one do not bear
+information neither about the atom types nor about the atomic radii.
+In this case <code class="xref py py-obj docutils literal"><span class="pre">Pytim</span></code> (starting from v 0.6.1) chooses the corresponding radius using the
+closest lexycographic match (with higher weight on the first letter)
+to the Gromos 43A1 forcefield types. Alternatively, it is possible
+to choose parameters from other forcefields provided with <code class="xref py py-obj docutils literal"><span class="pre">Pytim</span></code>
+(Amber 03 and Charmm 27, as of v 0.6.1), or to provide a custom one.
+We make here several examples using a methanol box:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">METHANOL_GRO</span><span class="p">)</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+<p>You can safely ignore any warning about missing atomtypes / masses in
+<code class="xref py py-obj docutils literal"><span class="pre">MDAnalysis</span></code>, and deal with atomtypes only through the <code class="xref py py-obj docutils literal"><span class="pre">Pytim</span></code> interface.</p>
+<p><strong>Case 1: built-in forcefields</strong></p>
+<p>As there is no specific information in the gromos input file regarding atomic types,  these are
+assigned by <code class="xref py py-obj docutils literal"><span class="pre">MDAnalysis</span></code> using the first letter of the atom name.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">u</span><span class="o">.</span><span class="n">residues</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">types</span>
+<span class="go">[&#39;M&#39; &#39;O&#39; &#39;H&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">u</span><span class="o">.</span><span class="n">residues</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">names</span>
+<span class="go">[&#39;Me1&#39; &#39;O2&#39; &#39;H3&#39;]</span>
+</pre></div>
+</div>
+<p>When the interface is initialized, <code class="xref py py-obj docutils literal"><span class="pre">Pytim</span></code> searches by default for the best
+match from the gromos 43A1 forcefield. It is possible to see explicitly the
+choices by passing the option <cite>warnings=True</cite></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">guessed radii:  {&#39;H3&#39;: 0.0, &#39;Me1&#39;: 1.8230510193786977, &#39;O2&#39;: 1.312927017714457} You can override this by using, e.g.: pytim.ITIM (u,radii_dict={ &#39;H3&#39;:1.2 , ... } )</span>
+</pre></div>
+</div>
+<p>The Gromos 43A1, Amber 03 and Charmm 27 forcefields are accessible throught labels provided in  the <a class="reference internal" href="datafiles.html#module-pytim.datafiles" title="pytim.datafiles"><code class="xref py py-mod docutils literal"><span class="pre">datafiles</span></code></a> module. The radii can be extracted
+using the <code class="xref py py-func docutils literal"><span class="pre">pytim_data.vdwradii()</span></code>  function</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gromos</span>  <span class="o">=</span> <span class="n">pytim_data</span><span class="o">.</span><span class="n">vdwradii</span><span class="p">(</span><span class="n">G43A1_TOP</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">amber</span>   <span class="o">=</span> <span class="n">pytim_data</span><span class="o">.</span><span class="n">vdwradii</span><span class="p">(</span><span class="n">AMBER03_TOP</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">charmmm</span> <span class="o">=</span> <span class="n">pytim_data</span><span class="o">.</span><span class="n">vdwradii</span><span class="p">(</span><span class="n">CHARMM27_TOP</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and can be passed to <code class="xref py py-obj docutils literal"><span class="pre">Pytim</span></code> through the <cite>radii_dict</cite> option, for example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">radii_dict</span> <span class="o">=</span> <span class="n">amber</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Case 2: custom dictionary of radii</strong></p>
+<p>The custom dictionary should provide the atomtypes as keys
+and the radii as values. This database will override the standard one (new behavior in 0.6.1):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">METHANOL_GRO</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mydict</span>    <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Me&#39;</span><span class="p">:</span><span class="mf">1.6</span><span class="p">,</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span><span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">radii_dict</span><span class="o">=</span><span class="n">mydict</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">u</span><span class="o">.</span><span class="n">residues</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">radii</span>
+<span class="go">[1.6 1.5 0. ]</span>
+</pre></div>
+</div>
+<p><strong>Case 3: overriding the default match</strong></p>
+<p>The values of the van der Waals radii present in a topology can be read
+using the <cite>pytim_data.vdwradii()</cite>  function:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">METHANOL_GRO</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Load the radii database from the G43A1 forcefield</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gromos</span> <span class="o">=</span> <span class="n">pytim_data</span><span class="o">.</span><span class="n">vdwradii</span><span class="p">(</span><span class="n">G43A1_TOP</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># check which types are available</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">gromos</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="go">[&#39;CU1+&#39;, &#39;CDmso&#39;, &#39;OWT3&#39;, &#39;CA2+&#39;, &#39;FE&#39;, &#39;BR&#39;, &#39;MG2+&#39;, &#39;HC&#39;, &#39;OWT4&#39;, &#39;CL-&#39;, &#39;NL&#39;, &#39;CCl4&#39;, &#39;CLCl4&#39;, &#39;CL&#39;, &#39;NE&#39;, &#39;SDmso&#39;, &#39;CH1&#39;, &#39;NZ&#39;, &#39;CH3&#39;, &#39;CH4&#39;, &#39;ODmso&#39;, &#39;NR&#39;, &#39;NT&#39;, &#39;C&#39;, &#39;HChl&#39;, &#39;DUM&#39;, &#39;F&#39;, &#39;H&#39;, &#39;CChl&#39;, &#39;CMet&#39;, &#39;CLChl&#39;, &#39;O&#39;, &#39;N&#39;, &#39;MW&#39;, &#39;P&#39;, &#39;S&#39;, &#39;AR&#39;, &#39;IW&#39;, &#39;CU2+&#39;, &#39;OM&#39;, &#39;CR1&#39;, &#39;MNH3&#39;, &#39;NA+&#39;, &#39;OA&#39;, &#39;SI&#39;, &#39;CH2&#39;, &#39;OW&#39;, &#39;ZN2+&#39;, &#39;OMet&#39;]</span>
+</pre></div>
+</div>
+<p>In some cases, the automated procedure does not yield the expected
+(or wanted) match.  To fix this one can just update the database
+by specify exacly the <em>atom names</em> (not the types, as it was in
+versions before 0.6.1)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gromos</span><span class="p">[</span><span class="s1">&#39;Me1&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">gromos</span><span class="p">[</span><span class="s1">&#39;CMet&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gromos</span><span class="p">[</span><span class="s1">&#39;O2&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">gromos</span><span class="p">[</span><span class="s1">&#39;OMet&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">radii_dict</span><span class="o">=</span><span class="n">gromos</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-92682414-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+<h3><a href="index.html">Table Of Contents</a></h3>
+<p class="caption"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="quick.html">Pytim: Quick Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">How to Install Pytim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
+<li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Choosing the atomic radii</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a><ul class="simple">
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Modules</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ITIM.html">ITIM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GITIM.html">GITIM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="WillardChandler.html">WillardChandler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ChaconTarazona.html">ChaconTarazona</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observables.html">Observables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datafiles.html">Datafiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="center.html"
+                        title="previous chapter">To center or not to center?</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ITIM.html"
+                        title="next chapter">ITIM</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/guessing_radii.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ITIM.html" title="ITIM"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="center.html" title="To center or not to center?"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Marcello Sega.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+    </div>
+  </body>
+</html>
