@@ -14,18 +14,15 @@ class Profile(object):
     """Calculates the profile (normal, or intrinsic) of a given observable
     across the simulation box.
 
-    :param AtomGroup  group:        calculate the profile based on this group
-    :param str        direction:    'x','y', or 'z' : calculate the profile
-                                    along this direction
     :param Observable observable:   'Number', 'Mass', or 'Charge': calculate
                                     the profile of this quantity. If None is
                                     supplied, it defaults to the number density
     :param ITIM       interface:    if provided, calculate the intrinsic
                                     profile with respect to the first layers
-    :param AtomGroup  center_group: if `interface` is not provided, this
-                                    optional group can be supplied to center
-                                    the system
-    :param bool       _MCnorm:
+    :param str        direction:    'x','y', or 'z' : calculate the profile
+                                    along this direction
+    :param bool       MCnorm:       if True (default) use a simple Monte Carlo
+                                    estimate the effective volumes of the bins.
 
     Example (non-intrinsic, total profile + first 4 layers ):
 
@@ -153,20 +150,18 @@ class Profile(object):
                  direction='z',
                  observable=None,
                  interface=None,
-                 center_group=None,
                  symmetry='default',
-                 _MCnorm=True):
+                 MCnorm=True):
         # TODO: the directions are handled differently, fix it in the code
 
         _dir = {'x': 0, 'y': 1, 'z': 2}
         self._dir = _dir[direction]
         self.interface = interface
-        self._MCnorm = _MCnorm
+        self._MCnorm = MCnorm
         if symmetry == 'default' and interface is not None:
             self.symmetry = self.interface.symmetry
         else:
             self.symmetry = symmetry
-        self.center_group = center_group
 
         if observable is None:
             self.observable = Number()
