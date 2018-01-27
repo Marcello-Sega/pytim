@@ -20,13 +20,15 @@ def PatchTrajectory(trajectory, interface):
         class PatchedTrajectory(trajectory.__class__):
             def _read_next_timestep(self, ts=None):
                 tmp = self.original_read_next_timestep(ts=ts)
-                self.interface._assign_layers()
+                if self.interface.autoassign is True:
+                    self.interface._assign_layers()
                 return tmp
 
             def _read_frame_with_aux(self, frame):
                 if frame != self.frame:
                     tmp = self.original_read_frame_with_aux(frame)
-                    self.interface._assign_layers()
+                    if self.interface.autoassign is True:
+                        self.interface._assign_layers()
                     return tmp
                 return self.ts
 
@@ -56,7 +58,8 @@ def PatchOpenMM(simulation, interface):
                 pos = self.context.getState(getPositions=True).getPositions(
                     asNumpy=True).value_in_unit(openmm_AA)
                 self.interface.universe.atoms.positions = pos
-                self.interface._assign_layers()
+                if self.interface.autoassign is True:
+                    self.interface._assign_layers()
                 return tmp
 
         oldname = simulation.__class__.__name__
@@ -88,7 +91,8 @@ def PatchMDTRAJ(trajectory, universe):
                     dimensions = slice_.universe.dimensions[:]
                     dimensions[0:3] = slice_.unitcell_lengths[0:3] * 10.0
                     slice_.universe.dimensions = dimensions
-                    slice_.universe.trajectory.interface._assign_layers()
+                    if slice_.universe.trajectory.interface.autoassign is True:
+                        slice_.universe.trajectory.interface._assign_layers()
                 return slice_
 
         oldname = trajectory.__class__.__name__

@@ -65,8 +65,10 @@ class ChaconTarazona(pytim.PYTIM):
                  mesh=None,
                  centered=False,
                  warnings=False,
+                 autoassign=True,
                  **kargs):
 
+        self.autoassign = autoassign
         self.symmetry = 'planar'
         self.do_center = centered
 

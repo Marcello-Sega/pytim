@@ -159,7 +159,10 @@ J. Comp. Chem. 29, 945, 2008)*
                  centered=False,
                  warnings=False,
                  mesh=0.4,
+                 autoassign = True,
                  **kargs):
+
+        self.autoassign = autoassign
 
         self.symmetry = 'planar'
         self.do_center = centered

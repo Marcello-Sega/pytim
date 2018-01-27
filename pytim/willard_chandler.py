@@ -102,9 +102,11 @@ class WillardChandler(pytim.PYTIM):
                  extra_cluster_groups=None,
                  centered=False,
                  warnings=False,
+                 autoassign=True,
                  fast=True,
                  **kargs):
 
+        self.autoassign = autoassign
         self.do_center = centered
         sanity = SanityCheck(self)
         sanity.assign_universe(
