@@ -115,11 +115,15 @@ J. Chem. Phys. 138, 044110, 2013)*
                  centered=False,
                  info=False,
                  warnings=False,
+                 autoassign = True,
                  _noextrapoints=False,
                  **kargs):
 
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
+        self.autoassign = autoassign
+
+
         self.do_center = centered
 
         self.biggest_cluster_only = biggest_cluster_only

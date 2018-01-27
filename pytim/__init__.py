@@ -68,6 +68,9 @@ class PYTIM(object):
     max_layers, _max_layers =\
         _create_property('max_layers',
                          "(int) maximum number of layers to be identified")
+    autoassign , _autoassign=\
+        _create_property('autoassign',
+                         "(bool) assign layers every time a frame changes")
     cluster_threshold_density, _cluster_threshold_density =\
         _create_property('cluster_threshold_density',
                          "(float) threshold for the density-based filtering")
