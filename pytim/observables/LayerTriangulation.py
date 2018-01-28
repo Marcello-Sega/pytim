@@ -85,4 +85,3 @@ class LayerTriangulation(Observable):
             self.interface.universe.positions = np.copy(oldpos)
 
         return self._return_stats(stats, surface)
-

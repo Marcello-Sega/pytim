@@ -16,6 +16,7 @@ from sanity_check import SanityCheck
 from Interface import Interface
 from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
+
 class Writevtk(object):
     def __init__(self, interface):
         self.interface = interface
@@ -108,6 +109,7 @@ class Writevtk(object):
 
 
 #
+
 
 class WillardChandler(Interface):
     """ Identifies the dividing surface using the Willard-Chandler method
@@ -334,6 +336,3 @@ class WillardChandler(Interface):
         self.triangulated_surface = [verts, faces, normals]
         self.surface_area = measure.mesh_surface_area(verts, faces)
         verts += spacing[::-1] / 2.
-
-
-

@@ -8,7 +8,8 @@ import numpy as np
 from scipy import stats
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
-from Observable import Observable 
+from Observable import Observable
+
 
 class Number(Observable):
     """The number of atoms.
@@ -72,12 +73,12 @@ class Charge(Observable):
         except AttributeError:
             print("Error, the passed Atomgroup has no charges attribute")
 
-class Vector(Observable):
 
+class Vector(Observable):
     def __init__(self, *arg, **kwarg):
         Observable.__init__(self, None)
         self.select_direction(arg)
-    
+
 
 class Position(Vector):
     """Atomic positions"""
@@ -129,6 +130,7 @@ class Force(Vector):
         """
         inp = self._to_atomgroup(inp)
         return inp.forces[:, self.dirmask]
+
 
 class NumberOfResidues(Observable):
     """The number of residues.
