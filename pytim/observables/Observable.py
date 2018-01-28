@@ -4,6 +4,7 @@ from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
+
 class Observable(object):
     """ Instantiate an observable.
 
@@ -65,7 +66,8 @@ class Observable(object):
         return np.array(pos)
 
     def select_direction(self, arg):
-        _dirs = {'x':0,'y':1,'z':2}
+        _dirs = {'x': 0, 'y': 1, 'z': 2}
+
         def _inarg(string, inp):
             return np.any([string in e for e in inp])
 
@@ -94,5 +96,3 @@ class Observable(object):
     def compute(self, inp=None, kargs=None):
         kargs = kargs or {}
         pass
-
-
