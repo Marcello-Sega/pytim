@@ -6,14 +6,14 @@
 from pytim import utilities
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
-from Observable import Observable
+from observable import Observable
 from basic_observables import Position, Velocity, Force
 from basic_observables import Number, Mass, Charge, NumberOfResidues
 
-from IntrinsicDistance import IntrinsicDistance
-from Profile import Profile
-from RDF import RDF, RDF2D
-from FreeVolume import FreeVolume
-from Correlator import Correlator
-from Orientation import Orientation
-from LayerTriangulation import LayerTriangulation
+from intrinsic_distance import IntrinsicDistance
+from profile import Profile
+from rdf import RDF, RDF2D
+from free_volume import FreeVolume
+from correlator import Correlator
+from orientation import Orientation
+from layer_triangulation import LayerTriangulation

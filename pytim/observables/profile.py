@@ -5,7 +5,7 @@
 """
 from __future__ import print_function
 from basic_observables import Number
-from IntrinsicDistance import IntrinsicDistance
+from intrinsic_distance import IntrinsicDistance
 import numpy as np
 from scipy import stats
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
