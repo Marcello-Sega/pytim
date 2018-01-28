@@ -8,13 +8,108 @@
 from __future__ import print_function
 import numpy as np
 from skimage import measure
-from pytim import utilities, vtk, cube, wavefront_obj
-import pytim
-from . import messages
-from pytim.sanity_check import SanityCheck
+
+import messages
+import utilities, vtk, cube, wavefront_obj
+from sanity_check import SanityCheck
+
+from Interface import Interface
+from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+
+class Writevtk(object):
+    def __init__(self, interface):
+        self.interface = interface
+
+    def _dump_group(self, group, filename):
+        """ Save the particles n a vtk file named consecutively using the frame
+            number.
+        """
+        radii = group.radii
+        types = group.types
+        color = [(utilities.atoms_maps[element])['color'] for element in types]
+        color = (np.array(color) / 256.).tolist()
+        vtk.write_atomgroup(filename, group, color=color, radius=radii)
+
+    def density(self, filename='pytim_dens.vtk', sequence=False):
+        """ Write to vtk files the volumetric density.
+
+            :param str filename:  the file name
+            :param bool sequence: if true writes a sequence of files adding
+                                  the frame to the filename
+
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> from pytim.datafiles import MICELLE_PDB
+            >>> u = mda.Universe(MICELLE_PDB)
+            >>> g = u.select_atoms('resname DPC')
+            >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
+
+            >>> inter.writevtk.density('dens.vtk') # writes on dens.vtk
+            >>> inter.writevtk.density('dens.vtk',sequence=True) # dens.<n>.vtk
+
+        """
+        inter = self.interface
+        if sequence is True:
+            filename = vtk.consecutive_filename(inter.universe, filename)
+        vtk.write_scalar_grid(filename, inter.ngrid, inter.spacing,
+                              inter.density_field)
+
+    def particles(self, filename='pytim_part.vtk', group=None, sequence=False):
+        """ Write to vtk files the particles in a group.
+
+            :param str filename:    the file name
+            :param bool sequence:   if true writes a sequence of files adding
+                                    the frame to the filename
+            :param AtomGroup group: if None, writes the whole universe
+
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> from pytim.datafiles import MICELLE_PDB
+            >>> u = mda.Universe(MICELLE_PDB)
+            >>> g = u.select_atoms('resname DPC')
+            >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
+
+            >>> # writes on part.vtk
+            >>> inter.writevtk.particles('part.vtk')
+            >>> # writes on part.<frame>.vtk
+            >>> inter.writevtk.particles('part.vtk',sequence=True)
+        """
+
+        inter = self.interface
+        if sequence is True:
+            filename = vtk.consecutive_filename(inter.universe, filename)
+        if group is None:
+            group = inter.universe.atoms
+        self._dump_group(group, filename)
+
+    def surface(self, filename='pytim_surf.vtk', sequence=False):
+        """ Write to vtk files the triangulated surface.
+
+            :param str filename:  the file name
+            :param bool sequence: if true writes a sequence of files adding
+                                  the frame to the filename
+
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> from pytim.datafiles import MICELLE_PDB
+            >>> u = mda.Universe(MICELLE_PDB)
+            >>> g = u.select_atoms('resname DPC')
+            >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
+            >>> inter.writevtk.surface('surf.vtk') # writes on surf.vtk
+            >>> inter.writevtk.surface('surf.vtk',sequence=True) # surf.<n>.vtk
+        """
+        inter = self.interface
+        vertices = inter.triangulated_surface[0]
+        faces = inter.triangulated_surface[1]
+        normals = inter.triangulated_surface[2]
+        if sequence is True:
+            filename = vtk.consecutive_filename(inter.universe, filename)
+        vtk.write_triangulation(filename, vertices[::, ::-1], faces, normals)
 
 
-class WillardChandler(pytim.PYTIM):
+#
+
+class WillardChandler(Interface):
     """ Identifies the dividing surface using the Willard-Chandler method
 
         *(Willard, A. P.; Chandler, D. J. Phys. Chem. B 2010, 114, 1954–1958)*
@@ -128,10 +223,10 @@ class WillardChandler(pytim.PYTIM):
 
         self.fast = fast
 
-        pytim.PatchTrajectory(self.universe.trajectory, self)
+        PatchTrajectory(self.universe.trajectory, self)
         self._assign_layers()
         self._atoms = self._layers[:]  # this is an empty AtomGroup
-        self.writevtk = pytim.willard_chandler.Writevtk(self)
+        self.writevtk = Writevtk(self)
 
     def writecube(self, filename="pytim.cube", group=None, sequence=False):
         """ Write to cube files (sequences) the volumentric density and the
@@ -241,95 +336,4 @@ class WillardChandler(pytim.PYTIM):
         verts += spacing[::-1] / 2.
 
 
-class Writevtk(object):
-    def __init__(self, interface):
-        self.interface = interface
 
-    def _dump_group(self, group, filename):
-        """ Save the particles n a vtk file named consecutively using the frame
-            number.
-        """
-        radii = group.radii
-        types = group.types
-        color = [(utilities.atoms_maps[element])['color'] for element in types]
-        color = (np.array(color) / 256.).tolist()
-        vtk.write_atomgroup(filename, group, color=color, radius=radii)
-
-    def density(self, filename='pytim_dens.vtk', sequence=False):
-        """ Write to vtk files the volumetric density.
-
-            :param str filename:  the file name
-            :param bool sequence: if true writes a sequence of files adding
-                                  the frame to the filename
-
-            >>> import MDAnalysis as mda
-            >>> import pytim
-            >>> from pytim.datafiles import MICELLE_PDB
-            >>> u = mda.Universe(MICELLE_PDB)
-            >>> g = u.select_atoms('resname DPC')
-            >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
-
-            >>> inter.writevtk.density('dens.vtk') # writes on dens.vtk
-            >>> inter.writevtk.density('dens.vtk',sequence=True) # dens.<n>.vtk
-
-        """
-        inter = self.interface
-        if sequence is True:
-            filename = vtk.consecutive_filename(inter.universe, filename)
-        vtk.write_scalar_grid(filename, inter.ngrid, inter.spacing,
-                              inter.density_field)
-
-    def particles(self, filename='pytim_part.vtk', group=None, sequence=False):
-        """ Write to vtk files the particles in a group.
-
-            :param str filename:    the file name
-            :param bool sequence:   if true writes a sequence of files adding
-                                    the frame to the filename
-            :param AtomGroup group: if None, writes the whole universe
-
-            >>> import MDAnalysis as mda
-            >>> import pytim
-            >>> from pytim.datafiles import MICELLE_PDB
-            >>> u = mda.Universe(MICELLE_PDB)
-            >>> g = u.select_atoms('resname DPC')
-            >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
-
-            >>> # writes on part.vtk
-            >>> inter.writevtk.particles('part.vtk')
-            >>> # writes on part.<frame>.vtk
-            >>> inter.writevtk.particles('part.vtk',sequence=True)
-        """
-
-        inter = self.interface
-        if sequence is True:
-            filename = vtk.consecutive_filename(inter.universe, filename)
-        if group is None:
-            group = inter.universe.atoms
-        self._dump_group(group, filename)
-
-    def surface(self, filename='pytim_surf.vtk', sequence=False):
-        """ Write to vtk files the triangulated surface.
-
-            :param str filename:  the file name
-            :param bool sequence: if true writes a sequence of files adding
-                                  the frame to the filename
-
-            >>> import MDAnalysis as mda
-            >>> import pytim
-            >>> from pytim.datafiles import MICELLE_PDB
-            >>> u = mda.Universe(MICELLE_PDB)
-            >>> g = u.select_atoms('resname DPC')
-            >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
-            >>> inter.writevtk.surface('surf.vtk') # writes on surf.vtk
-            >>> inter.writevtk.surface('surf.vtk',sequence=True) # surf.<n>.vtk
-        """
-        inter = self.interface
-        vertices = inter.triangulated_surface[0]
-        faces = inter.triangulated_surface[1]
-        normals = inter.triangulated_surface[2]
-        if sequence is True:
-            filename = vtk.consecutive_filename(inter.universe, filename)
-        vtk.write_triangulation(filename, vertices[::, ::-1], faces, normals)
-
-
-#

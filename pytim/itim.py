@@ -10,14 +10,16 @@ from multiprocessing import Process, Queue
 import numpy as np
 from __builtin__ import zip as builtin_zip
 from scipy.spatial import cKDTree
-from pytim import utilities
-from pytim.surface import SurfaceFlatInterface as Surface
-from pytim.sanity_check import SanityCheck
-import pytim
+
 from . import messages
+import utilities
+from surface import SurfaceFlatInterface as Surface
+from sanity_check import SanityCheck
 
+from Interface import Interface
+from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
-class ITIM(pytim.PYTIM):
+class ITIM(Interface):
     """ Identifies interfacial molecules at macroscopically flat interfaces.
 
         *(Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G., \
@@ -191,7 +193,7 @@ J. Comp. Chem. 29, 945, 2008)*
         self.use_threads = False
         self.use_kdtree = True
 
-        pytim.PatchTrajectory(self.universe.trajectory, self)
+        PatchTrajectory(self.universe.trajectory, self)
 
         self._assign_layers()
 

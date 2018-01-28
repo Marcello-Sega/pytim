@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractproperty
 import numpy as np
 from scipy.spatial import Delaunay, cKDTree
 from scipy.interpolate import LinearNDInterpolator
-from pytim import utilities
+import utilities
 from . import messages
 
 

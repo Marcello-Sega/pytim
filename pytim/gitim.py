@@ -7,18 +7,20 @@
 from __future__ import print_function
 import numpy as np
 from scipy.spatial import distance
-from pytim import utilities
-import pytim
-from pytim.sanity_check import SanityCheck
-from pytim.surface import SurfaceFlatInterface
-from pytim.surface import SurfaceGenericInterface
+
+import utilities
+from sanity_check import SanityCheck
+from surface import SurfaceFlatInterface
+from surface import SurfaceGenericInterface
 try:
     from pytetgen import Delaunay
 except ImportError:
     from scipy.spatial import Delaunay
 
+from Interface import Interface
+from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
-class GITIM(pytim.PYTIM):
+class GITIM(Interface):
     """ Identifies interfacial molecules at curved interfaces.
 
         *(Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M., \
@@ -162,7 +164,7 @@ J. Chem. Phys. 138, 044110, 2013)*
                         'layer': nlayer
                     })
 
-        pytim.PatchTrajectory(self.universe.trajectory, self)
+        PatchTrajectory(self.universe.trajectory, self)
 
         self._assign_layers()
 

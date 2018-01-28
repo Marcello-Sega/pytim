@@ -6,13 +6,14 @@
 """
 from __future__ import print_function
 import numpy as np
-from pytim import utilities
-from pytim.surface import SurfaceFlatInterface as Surface
-from pytim.sanity_check import SanityCheck
-import pytim
+import utilities
+from surface import SurfaceFlatInterface as Surface
+from sanity_check import SanityCheck
 
+from Interface import Interface
+from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
-class ChaconTarazona(pytim.PYTIM):
+class ChaconTarazona(Interface):
     """ Identifies the dividing surface using the Chacon-Tarazona method
 
         *(Chacón, E.; Tarazona, P. Phys. Rev. Lett. 91, 166103, 2003)*
@@ -102,7 +103,7 @@ class ChaconTarazona(pytim.PYTIM):
         self.surf = None
         self.modes = [None, None]
 
-        pytim.PatchTrajectory(self.universe.trajectory, self)
+        PatchTrajectory(self.universe.trajectory, self)
         self._assign_layers()
 
     def _points_next_to_surface(self, surf, modes, pivot):

@@ -2,9 +2,7 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
 import numpy as np
-from distutils.version import LooseVersion
 import MDAnalysis
-
 
 def _writepdb(interface,
               filename='layers.pdb',
@@ -23,6 +21,7 @@ def _writepdb(interface,
                  without appending
 
         >>> import pytim
+        >>> import pytim.datafiles
         >>> import MDAnalysis as mda
         >>> from pytim.datafiles import WATER_GRO
         >>> u = mda.Universe(WATER_GRO)
@@ -63,10 +62,7 @@ def _writepdb(interface,
             interface.PDB[filename].convert_dimensions_to_unitcell(
                 interface.universe.trajectory.ts))
     except:
-        if LooseVersion(interface._MDAversion) >= LooseVersion('0.16'):
-            bondvalue = None
-        else:
-            bondvalue = False
+        bondvalue = None
         interface.PDB[filename] = MDAnalysis.Writer(
             filename,
             multiframe=multiframe,
