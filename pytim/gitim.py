@@ -20,6 +20,7 @@ except ImportError:
 from Interface import Interface
 from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
+
 class GITIM(Interface):
     """ Identifies interfacial molecules at curved interfaces.
 

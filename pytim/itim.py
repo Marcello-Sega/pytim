@@ -19,6 +19,7 @@ from sanity_check import SanityCheck
 from Interface import Interface
 from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
+
 class ITIM(Interface):
     """ Identifies interfacial molecules at macroscopically flat interfaces.
 

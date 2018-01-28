@@ -10,6 +10,7 @@ import numpy as np
 from scipy import stats
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
+
 class Profile(object):
     """Calculates the profile (normal, or intrinsic) of a given observable
     across the simulation box.

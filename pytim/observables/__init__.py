@@ -17,4 +17,3 @@ from FreeVolume import FreeVolume
 from Correlator import Correlator
 from Orientation import Orientation
 from LayerTriangulation import LayerTriangulation
-

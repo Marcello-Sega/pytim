@@ -13,6 +13,7 @@ from sanity_check import SanityCheck
 from Interface import Interface
 from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
+
 class ChaconTarazona(Interface):
     """ Identifies the dividing surface using the Chacon-Tarazona method
 

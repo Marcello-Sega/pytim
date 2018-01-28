@@ -6,6 +6,7 @@ from scipy.cluster import vq
 from scipy.spatial import cKDTree
 from pytim_dbscan import dbscan_inner
 
+
 def do_cluster_analysis_DBSCAN(group,
                                cluster_cut,
                                box,

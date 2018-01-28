@@ -7,6 +7,7 @@ from pdb import _writepdb
 import messages
 import utilities
 
+
 class Interface(object):
     """ The Interface metaclass. Classes for interfacial determination 
 	(ITIM, GITIM,...) are derived from this one
@@ -309,5 +310,3 @@ class Interface(object):
             centered=centered,
             group=group,
             multiframe=multiframe)
-
-

@@ -4,6 +4,7 @@ from __future__ import print_function
 import numpy as np
 import MDAnalysis
 
+
 def _writepdb(interface,
               filename='layers.pdb',
               centered='no',

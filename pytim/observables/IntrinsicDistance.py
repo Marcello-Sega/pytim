@@ -6,6 +6,7 @@
 from __future__ import print_function
 from . import Observable
 
+
 class IntrinsicDistance(Observable):
     """Initialize the intrinsic distance calculation.
 
@@ -49,5 +50,3 @@ class IntrinsicDistance(Observable):
                                   of points
         """
         return self.interface._surfaces[0].distance(inp, self.symmetry)
-
-

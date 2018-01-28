@@ -9,6 +9,7 @@ from . import Observable
 import numpy as np
 from MDAnalysis.core.groups import Atom, AtomGroup
 
+
 class Orientation(Observable):
     """Orientation of a group of points.
 
@@ -56,4 +57,3 @@ class Orientation(Observable):
             v = np.array(a + b)
         v = np.array([el / np.sqrt(np.dot(el, el)) for el in v])
         return v
-
