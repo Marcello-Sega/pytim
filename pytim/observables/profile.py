@@ -1,13 +1,14 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-""" Module: profile
+""" Module: Profile
     ===============
 """
 from __future__ import print_function
+from basic_observables import Number
+from intrinsic_distance import IntrinsicDistance
 import numpy as np
 from scipy import stats
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
-from pytim.observables import Number, IntrinsicDistance
 
 
 class Profile(object):

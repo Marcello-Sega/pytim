@@ -6,9 +6,9 @@ import numpy as np
 import MDAnalysis
 from . import datafiles
 from . import utilities
-from pytim.properties import Layers, Clusters, Sides, _create_property
 from . import messages
-from pytim.properties import guess_radii, _missing_attributes
+from properties import Layers, Clusters, Sides, _create_property
+from properties import guess_radii, _missing_attributes
 
 
 class SanityCheck(object):

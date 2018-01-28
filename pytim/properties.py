@@ -5,7 +5,7 @@ from abc import abstractproperty
 import MDAnalysis
 import importlib
 import numpy as np
-from pytim.utilities import atoms_maps
+from atoms_maps import atoms_maps
 from difflib import get_close_matches
 
 

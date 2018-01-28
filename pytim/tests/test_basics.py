@@ -11,11 +11,12 @@ class TestBasics():
     that code is running -- no test on the correctness
     of the output is performed here.
 
+    >>> # TEST:0 loading the module
+    >>> import pytim
 
     >>> # TEST:1 basic functionality
     >>> import MDAnalysis as mda
     >>> import pytim
-    >>> from pytim import  *
     >>> from pytim.datafiles import *
     >>> u         = mda.Universe(WATER_GRO)
     >>> oxygens   = u.select_atoms("name OW")
