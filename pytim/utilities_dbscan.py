@@ -7,17 +7,38 @@ from scipy.spatial import cKDTree
 from pytim_dbscan import dbscan_inner
 
 
-def do_cluster_analysis_DBSCAN(group,
+def determine_samples(threshold_density,cluster_cut, n_neighbors):
+
+    if isinstance(threshold_density, type(None)):
+        return 2
+
+    if isinstance(threshold_density, (float, int)):
+        min_samples = threshold_density * 4. / 3. * np.pi * cluster_cut**3
+
+    elif (threshold_density == 'auto'):
+        modes = 2
+        centroid, _ = vq.kmeans2(
+            n_neighbors * 1.0, modes, iter=10, check_finite=False)
+        min_samples = np.max(centroid)
+
+    else:
+       raise ValueError("Wrong value of 'threshold_density' passed\
+                              to do_cluster_analysis_DBSCAN() ")
+
+    return np.max([min_samples,2])
+
+
+def do_cluster_analysis_dbscan(group,
                                cluster_cut,
-                               box,
                                threshold_density=None,
                                molecular=True):
     """ Performs a cluster analysis using DBSCAN
 
-        :returns [labels,counts,n_neighbors]: lists of the id of the cluster to which every
-                                  atom is belonging to, of the number of
-                                  elements in each cluster, and of the number of neighbors 
-                                  for each atom according to the specified criterion.
+        :returns [labels,counts,neighbors]: lists of the id of the cluster to 
+                                  which every atom is belonging to, of the 
+                                  number of elements in each cluster, and of 
+                                  the number of neighbors for each atom 
+                                  according to the specified criterion.
 
         Uses a slightly modified version of DBSCAN from sklearn.cluster
         that takes periodic boundary conditions into account (through
@@ -26,12 +47,7 @@ def do_cluster_analysis_DBSCAN(group,
         scaling of the kdtree.
 
     """
-    if isinstance(threshold_density, type(None)):
-        min_samples = 2
-    if isinstance(threshold_density, (float, int)):
-        min_samples = threshold_density * 4. / 3. * np.pi * cluster_cut**3
-        if min_samples < 2:
-            min_samples = 2
+    box = group.universe.dimensions[:3]
 
     # NOTE: extra_cluster_groups are not yet implemented
     points = group.atoms.positions[:]
@@ -53,15 +69,7 @@ def do_cluster_analysis_DBSCAN(group,
             for neighbors in neighborhoods
         ])
 
-    if isinstance(threshold_density, str):
-        if not (threshold_density == 'auto'):
-            raise ValueError("Wrong value of 'threshold_density' passed\
-                              to do_cluster_analysis_DBSCAN() ")
-        modes = 2
-        centroid, _ = vq.kmeans2(
-            n_neighbors * 1.0, modes, iter=10, check_finite=False)
-        # min_samples   = np.mean(centroid)
-        min_samples = np.max(centroid)
+    min_samples = determine_samples(threshold_density,cluster_cut,n_neighbors)
 
     labels = -np.ones(points.shape[0], dtype=np.intp)
     counts = np.zeros(points.shape[0], dtype=np.intp)

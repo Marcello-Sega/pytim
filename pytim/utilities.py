@@ -18,7 +18,7 @@ from utilities_geometry import find_surface_triangulation
 from utilities_geometry import pbc_compact, pbc_wrap
 from utilities_pbc import generate_periodic_border, rebox
 from gaussian_kde_pbc import gaussian_kde_pbc
-from utilities_dbscan import do_cluster_analysis_DBSCAN
+from utilities_dbscan import do_cluster_analysis_dbscan
 
 from atoms_maps import atoms_maps
 from utilities_mesh import compute_compatible_mesh_params
