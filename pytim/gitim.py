@@ -309,7 +309,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         # from the triangulation and updating the circumradius of the neighbors
         # of the removed points  only.
 
-        dbs = utilities.do_cluster_analysis_DBSCAN
+        dbs = utilities.do_cluster_analysis_dbscan
 
         for layer in range(0, self.max_layers):
 
@@ -322,7 +322,6 @@ J. Chem. Phys. 138, 044110, 2013)*
                 l, c, _ = dbs(
                     group,
                     self.cluster_cut[0],
-                    self.universe.dimensions[:],
                     threshold_density=self.cluster_threshold_density,
                     molecular=self.molecular)
                 group = group[np.where(np.array(l) == np.argmax(c))[0]]
