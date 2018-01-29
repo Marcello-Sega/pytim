@@ -144,8 +144,7 @@ class Interface(object):
             # groups have been checked already in _sanity_checks()
             labels, counts, neighbors = utilities.do_cluster_analysis_dbscan(
                 self.itim_group, self.cluster_cut[0],
-                self.cluster_threshold_density,
-                self.molecular)
+                self.cluster_threshold_density, self.molecular)
             labels = np.array(labels)
             # the label of atoms in the largest cluster
             label_max = np.argmax(counts)
@@ -157,7 +156,7 @@ class Interface(object):
                 extra = np.sum(self.extra_cluster_groups[:])
                 self.extra = extra
                 x_labels, x_counts, _ = utilities.do_cluster_analysis_dbscan(
-                    extra, self.cluster_cut[0], self.cluster_threshold_density, 
+                    extra, self.cluster_cut[0], self.cluster_threshold_density,
                     self.molecular)
                 x_labels = np.array(x_labels)
                 x_label_max = np.argmax(x_counts)
