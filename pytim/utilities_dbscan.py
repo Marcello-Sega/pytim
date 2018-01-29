@@ -7,7 +7,7 @@ from scipy.spatial import cKDTree
 from pytim_dbscan import dbscan_inner
 
 
-def determine_samples(threshold_density,cluster_cut, n_neighbors):
+def determine_samples(threshold_density, cluster_cut, n_neighbors):
 
     if isinstance(threshold_density, type(None)):
         return 2
@@ -22,10 +22,10 @@ def determine_samples(threshold_density,cluster_cut, n_neighbors):
         min_samples = np.max(centroid)
 
     else:
-       raise ValueError("Wrong value of 'threshold_density' passed\
+        raise ValueError("Wrong value of 'threshold_density' passed\
                               to do_cluster_analysis_DBSCAN() ")
 
-    return np.max([min_samples,2])
+    return np.max([min_samples, 2])
 
 
 def do_cluster_analysis_dbscan(group,
@@ -69,7 +69,8 @@ def do_cluster_analysis_dbscan(group,
             for neighbors in neighborhoods
         ])
 
-    min_samples = determine_samples(threshold_density,cluster_cut,n_neighbors)
+    min_samples = determine_samples(threshold_density, cluster_cut,
+                                    n_neighbors)
 
     labels = -np.ones(points.shape[0], dtype=np.intp)
     counts = np.zeros(points.shape[0], dtype=np.intp)
