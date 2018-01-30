@@ -9,7 +9,7 @@ import utilities
 
 
 class Interface(object):
-    """ The Interface metaclass. Classes for interfacial determination 
+    """ The Interface metaclass. Classes for interfacial determination
 	(ITIM, GITIM,...) are derived from this one
     """
     __metaclass__ = ABCMeta
@@ -75,7 +75,6 @@ class Interface(object):
     cluster_threshold_density, _cluster_threshold_density =\
         _create_property('cluster_threshold_density',
                          "(float) threshold for the density-based filtering")
-    # TODO: does this belong here ?
     _interpolator, __interpolator =\
         _create_property('_interpolator', "(dict) custom atomic radii")
 
@@ -153,20 +152,19 @@ class Interface(object):
 
             # atoms belonging to the largest cluster
             if (self.extra_cluster_groups is not None):
-                extra = np.sum(self.extra_cluster_groups[:])
-                self.extra = extra
+                self.extra = np.sum(self.extra_cluster_groups[:])
                 x_labels, x_counts, _ = utilities.do_cluster_analysis_dbscan(
-                    extra, self.cluster_cut[0], self.cluster_threshold_density,
-                    self.molecular)
+                    self.extra, self.cluster_cut[0],
+                    self.cluster_threshold_density, self.molecular)
                 x_labels = np.array(x_labels)
                 x_label_max = np.argmax(x_counts)
                 x_ids_other = np.where(x_labels != x_label_max)[0]
 
                 # we mark them initially as non-main-cluster, some will be
                 # overwritten
-                self.label_group(extra, cluster=1)
+                self.label_group(self.extra, cluster=1)
                 self.cluster_group = np.sum(
-                    [self.itim_group[ids_max], extra[x_ids_other]])
+                    [self.itim_group[ids_max], self.extra[x_ids_other]])
             else:
                 self.cluster_group = self.itim_group[ids_max]
                 self.n_neighbors = neighbors
@@ -175,6 +173,44 @@ class Interface(object):
 
         self.label_group(self.itim_group, cluster=1)
         self.label_group(self.cluster_group, cluster=0)
+
+    @staticmethod
+    def _tentative_shift(dim, direction, _pos_group, _range):
+        histo, _ = np.histogram(
+            _pos_group, bins=10, range=_range, density=True)
+
+        max_val, min_val = np.amax(histo), np.amin(histo)
+        # NOTE maybe allow user to set different values
+        delta = min_val + (max_val - min_val) / 3.
+
+        shift = dim[direction] / 100.
+        # let's first avoid crossing pbc with the liquid phase. This can fail:
+        while (histo[0] > delta or histo[-1] > delta):
+            total_shift += shift
+            if total_shift >= dim[direction]:
+                raise ValueError(messages.CENTERING_FAILURE)
+            _pos_group += shift
+            if _dir == 'x':
+                utilities.centerbox(
+                    group.universe,
+                    x=_pos_group,
+                    center_direction=direction,
+                    halfbox_shift=halfbox_shift)
+            if _dir == 'y':
+                utilities.centerbox(
+                    group.universe,
+                    y=_pos_group,
+                    center_direction=direction,
+                    halfbox_shift=halfbox_shift)
+            if _dir == 'z':
+                utilities.centerbox(
+                    group.universe,
+                    z=_pos_group,
+                    center_direction=direction,
+                    halfbox_shift=halfbox_shift)
+            histo, _ = np.histogram(
+                _pos_group, bins=10, range=_range, density=True)
+        return _pos_group
 
     @staticmethod
     def _center(group, direction, halfbox_shift=False):
@@ -210,8 +246,6 @@ class Interface(object):
             direction = _xyz[_dir][0]
             _pos_group = (_xyz[_dir][1])(group)
 
-        shift = dim[direction] / 100.
-
         _x = utilities.get_x(group.universe.atoms)
         _y = utilities.get_y(group.universe.atoms)
         _z = utilities.get_z(group.universe.atoms)
@@ -220,45 +254,12 @@ class Interface(object):
         if (halfbox_shift is True):
             _range = (-dim[direction] / 2., dim[direction] / 2.)
 
-        histo, _ = np.histogram(
-            _pos_group, bins=10, range=_range, density=True)
-
-        max_val, min_val = np.amax(histo), np.amin(histo)
-        # NOTE maybe allow user to set different values
-        delta = min_val + (max_val - min_val) / 3.
-
-        # let's first avoid crossing pbc with the liquid phase. This can fail:
-        while (histo[0] > delta or histo[-1] > delta):
-            total_shift += shift
-            if total_shift >= dim[direction]:
-                raise ValueError(messages.CENTERING_FAILURE)
-            _pos_group += shift
-            if _dir == 'x':
-                utilities.centerbox(
-                    group.universe,
-                    x=_pos_group,
-                    center_direction=direction,
-                    halfbox_shift=halfbox_shift)
-            if _dir == 'y':
-                utilities.centerbox(
-                    group.universe,
-                    y=_pos_group,
-                    center_direction=direction,
-                    halfbox_shift=halfbox_shift)
-            if _dir == 'z':
-                utilities.centerbox(
-                    group.universe,
-                    z=_pos_group,
-                    center_direction=direction,
-                    halfbox_shift=halfbox_shift)
-            histo, _ = np.histogram(
-                _pos_group, bins=10, range=_range, density=True)
-
+        _pos_group = Interface._tentative_shift(dim, direction, _pos_group,
+                                                _range)
         _center_ = np.average(_pos_group)
+        box_half = 0.
         if (halfbox_shift is False):
             box_half = dim[direction] / 2.
-        else:
-            box_half = 0.
         _pos = {'x': _x, 'y': _y, 'z': _z}
         if _dir in _pos.keys():
             _pos[_dir] += total_shift - _center_ + box_half
