@@ -113,7 +113,7 @@ class RDF(object):
         self.g2 = None
         self._rdf = self.count
 
-    def _compute_observable(self,ka1,ka2):
+    def _compute_observable(self, ka1, ka2):
         try:
             fg1 = self.observable.compute(self.g1, ka1)
         except:
@@ -132,9 +132,9 @@ class RDF(object):
                      or fg2.shape[0] != self.g2.n_atoms)
         except:
             error = True
-        return fg1,fg2,error
+        return fg1, fg2, error
 
-    def _determine_weights(self,fg1,fg2):
+    def _determine_weights(self, fg1, fg2):
         # both are (arrays of) scalars
         if len(fg1.shape) == 1 and len(fg2.shape) == 1:
             weights = np.outer(fg1, fg2)
@@ -143,12 +143,10 @@ class RDF(object):
             # TODO: tests on the second dimension...
             weights = np.dot(fg1, fg2.T)
         else:
-            raise Exception(
-                "Error, shape of the observable output not handled"
-                "in RDF")
+            raise Exception("Error, shape of the observable output not handled"
+                            "in RDF")
         return weights
 
-         
     def sample(self, g1=None, g2=None, kargs1=None, kargs2=None):
         kargs1 = kargs1 or {}
         kargs2 = kargs2 or {}
@@ -164,16 +162,16 @@ class RDF(object):
         ka2.update(kargs2)
         if self.observable is not None:
             # determine weights, otherwise assumes number of atoms (default)
-            fg1,fg2,error = self._compute_observable(ka1,ka2)
+            fg1, fg2, error = self._compute_observable(ka1, ka2)
 
             if error is True:
                 raise Exception(
                     "Error, the observable passed to RDF should output "
                     "an array (of scalar or vectors) the same size of "
                     "the group")
-    
+
             # numpy.histogram accepts negative weights
-            self.rdf_settings['weights'] = self._determine_weights(fg1,fg2)
+            self.rdf_settings['weights'] = self._determine_weights(fg1, fg2)
 
         # This still uses MDA's distance_array. Pro: works also in triclinic
         # boxes. Con: could be faster (?)
@@ -188,7 +186,7 @@ class RDF(object):
         self.count += count
 
         box = self.universe.dimensions
-        self.volume +=  np.product(box[:3])
+        self.volume += np.product(box[:3])
         self.nsamples += 1
         self.n_squared += len(self.g1) * len(self.g2)
 
@@ -205,6 +203,3 @@ class RDF(object):
         self._rdf = self.count / (density * vol * self.n_frames)
 
         return self._rdf
-
-
-
