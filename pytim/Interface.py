@@ -154,8 +154,8 @@ class Interface(object):
             if (self.extra_cluster_groups is not None):
                 self.extra = np.sum(self.extra_cluster_groups[:])
                 x_labels, x_counts, _ = utilities.do_cluster_analysis_dbscan(
-                    self.extra, self.cluster_cut[0], self.cluster_threshold_density,
-                    self.molecular)
+                    self.extra, self.cluster_cut[0],
+                    self.cluster_threshold_density, self.molecular)
                 x_labels = np.array(x_labels)
                 x_label_max = np.argmax(x_counts)
                 x_ids_other = np.where(x_labels != x_label_max)[0]
@@ -175,7 +175,7 @@ class Interface(object):
         self.label_group(self.cluster_group, cluster=0)
 
     @staticmethod
-    def _tentative_shift(dim,direction,_pos_group,_range):
+    def _tentative_shift(dim, direction, _pos_group, _range):
         histo, _ = np.histogram(
             _pos_group, bins=10, range=_range, density=True)
 
@@ -211,8 +211,6 @@ class Interface(object):
             histo, _ = np.histogram(
                 _pos_group, bins=10, range=_range, density=True)
         return _pos_group
-
-
 
     @staticmethod
     def _center(group, direction, halfbox_shift=False):
@@ -256,7 +254,8 @@ class Interface(object):
         if (halfbox_shift is True):
             _range = (-dim[direction] / 2., dim[direction] / 2.)
 
-        _pos_group = Interface._tentative_shift(dim,direction,_pos_group,_range)
+        _pos_group = Interface._tentative_shift(dim, direction, _pos_group,
+                                                _range)
         _center_ = np.average(_pos_group)
         box_half = 0.
         if (halfbox_shift is False):
