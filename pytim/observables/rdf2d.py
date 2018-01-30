@@ -8,6 +8,7 @@ import numpy as np
 from MDAnalysis.lib import distances
 from . import RDF
 
+
 class RDF2D(RDF):
     """Calculates a radial distribution function of some observable from two
     groups, projected on a plane.
