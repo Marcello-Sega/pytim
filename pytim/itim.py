@@ -378,6 +378,8 @@ J. Comp. Chem. 29, 945, 2008)*
                     self.universe.atoms[group.indices]
         for p in proc:
             p.join()
+        for q in queue:
+            q.close()
 
         self.label_planar_sides()
 
