@@ -208,8 +208,9 @@ J. Chem. Phys. 138, 044110, 2013)*
             u = np.dot(invM, d)
             v = r_i[0] - np.dot(invM, s)
         except np.linalg.linalg.LinAlgError as err:
-            if 'Singular matrix' in err.message and self.warnings is True:
-                print("Warning, singular matrix for ", r_i)
+            if 'Singular matrix' in err.message:
+                if self.warnings is True:
+                    print("Warning, singular matrix for ", r_i)
                 # TODO is this correct? The singular matrix most likely comes
                 # out of points alinged in the plane
                 return 0
