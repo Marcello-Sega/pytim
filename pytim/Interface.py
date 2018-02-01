@@ -115,6 +115,8 @@ class Interface(object):
             raise RuntimeError(
                 'one of the groups, possibly a layer one, is None.' +
                 ' Something is wrong...')
+        if len(group) == 0:
+            return
         if self.molecular is True:
             _group = group.residues.atoms
         else:

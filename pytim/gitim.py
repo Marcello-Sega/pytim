@@ -209,7 +209,8 @@ J. Chem. Phys. 138, 044110, 2013)*
             v = r_i[0] - np.dot(invM, s)
         except np.linalg.linalg.LinAlgError as err:
             if 'Singular matrix' in err.message:
-                print("Warning, singular matrix for ", r_i)
+                if self.warnings is True:
+                    print("Warning, singular matrix for ", r_i)
                 # TODO is this correct? The singular matrix most likely comes
                 # out of points alinged in the plane
                 return 0
@@ -327,11 +328,13 @@ J. Chem. Phys. 138, 044110, 2013)*
                 group = group[np.where(np.array(l) == np.argmax(c))[0]]
 
             alpha_group = alpha_group[:] - group[:]
-
-            if self.molecular:
-                self._layers[layer] = group.residues.atoms
+            if len(group) > 0:
+                if self.molecular:
+                    self._layers[layer] = group.residues.atoms
+                else:
+                    self._layers[layer] = group
             else:
-                self._layers[layer] = group
+                self._layers[layer] = group.universe.atoms[:0]
 
             self.label_group(
                 self._layers[layer], beta=1. * (layer + 1), layer=(layer + 1))
