@@ -49,6 +49,13 @@ class TestBasics():
         ...
     ValueError: parameter alpha must be smaller than the smaller box side
 
+    >>> # TEST:3b no surface atoms
+    >>> u         = mda.Universe(GLUCOSE_PDB)
+    >>> g         = u.select_atoms('type C or name OW')
+    >>> interface = pytim.GITIM(u,group=g, alpha=4.0)
+    >>> print(interface.atoms)
+    <AtomGroup []>
+
     >>> # TEST:4 interchangeability of Universe/AtomGroup
     >>> u         = mda.Universe(WATER_GRO)
     >>> oxygens   = u.select_atoms("name OW")
