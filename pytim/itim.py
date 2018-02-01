@@ -57,6 +57,8 @@ J. Comp. Chem. 29, 945, 2008)*
         :param bool warnings:     Print warnings
         :param float mesh:        The grid spacing used for the testlines
                                   (default 0.4 Angstrom)
+        :param bool autoassign:   If true (default) detect the interface
+                                  every time a new frame is selected.
 
         Example:
 

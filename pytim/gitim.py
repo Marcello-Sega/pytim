@@ -62,6 +62,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         :param bool centered:       Center the  :py:obj:`group`
         :param bool info:           Print additional info
         :param bool warnings:       Print warnings
+        :param bool autoassign:     If true (default) detect the interface
+                                    every time a new frame is selected.
 
         Example:
 
