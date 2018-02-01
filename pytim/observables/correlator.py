@@ -13,12 +13,16 @@ from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 class Correlator(object):
     """ Computes the (self) correlation of an observable (scalar or vector)
 
-    :param Observable observable: compute the autocorrelation of this observable. If observable is None and reference is \
-                                  not, the survival probability in the  
+    :param Observable observable: compute the autocorrelation of this observable. 
+                                  If the observable is None and the reference 
+                                  is not, the survival probability is computed.
     :param bool normalize: normalize the correlation to 1 at t=0
-    :param AtomGroup reference: if the group passed to the sample() function changes its composition along the trajectory \
-                                (such as a layer group), a reference group that includes all atoms that could appear in the \
-                                variable group must be passed, in order to provide a proper normalization. See\ the example \
+    :param AtomGroup reference: if the group passed to the sample() function 
+                                changes its composition along the trajectory 
+                                (such as a layer group), a reference group that 
+                                includes all atoms that could appear in the
+                                variable group must be passed, in order to 
+                                provide a proper normalization. See the example 
                                 below.
 
     Example:
@@ -82,8 +86,8 @@ class Correlator(object):
     >>> layer_vacf = corr.correlation()
 
 
-    In order to compute the survival probability of some atoms in a layer, it is possible
-    to pass observable=None together with the reference group:
+    In order to compute the survival probability of some atoms in a layer, it 
+    is possible to pass observable=None together with the reference group:
 
     >>> corr = pytim.observables.Correlator(observable=None, reference = g)
     >>> inter = pytim.ITIM(u,group=g,alpha=2.0, molecular=False)
@@ -105,48 +109,35 @@ class Correlator(object):
             self.masked = True
 
         if reference is not None:
-            if observable is not None:
-                self.reference_obs = observable.compute(reference) * 0.0
-            else:
-                self.reference_obs = np.zeros(len(reference), dtype=np.double)
-            if len(self.reference_obs.shape) > 2:
-                raise RuntimeError(
-                    self.name + ' works only with scalar and vectors')
-        else:
-            if observable is None:
-                raise RuntimeError(
+            self._init_intermittent()
+
+        elif observable is None:
+            raise RuntimeError(
                     self.name +
-                    ': at least the observable or the reference must be specified'
-                )
+                    ': specity at least an observable or the reference'
+            )
+
+    def _init_intermittent(self):
+       if self.observable is not None:
+           self.reference_obs = self.observable.compute(reference) * 0.0
+       else:
+           self.reference_obs = np.zeros(len(self.reference), dtype=np.double)
+       if len(self.reference_obs.shape) > 2:
+           raise RuntimeError(
+               self.name + ' works only with scalar and vectors')
 
     def sample(self, group):
         """ Sample the timeseries for the autocorrelation function
 
-            :parameter AtomGroup group: compute the observable on the atoms of this group
-
+            :parameter AtomGroup group: compute the observable using this group
         """
-        if self.reference is not None:  # could be intermittent or continuous:
-            # we need to collect also the residence
-            # function
-            # the residence function (1 if in the reference group, 0 otherwise)
-            mask = np.isin(self.reference, group)
-            # append the residence function to its timeseries
-            self.maskseries.append(list(mask))
-            if self.observable is not None:
-                # this copies a vector of zeros with the correct shape
-                sampled = self.reference_obs.copy()
-                obs = self.observable.compute(group)
-                sampled[np.where(mask)] = obs
-                self.timeseries.append(list(sampled.flatten()))
-            else:
-                self.timeseries = self.maskseries
-                if self.shape is None:
-                    self.shape = (1, )
-                sampled = mask
+        # can be intermittent or continuous:
+        if self.reference is not None:  
+            self._sample_intermittent(group)
         else:
             if self.observable is None:
                 RuntimeError(
-                    'Cannot compute the survival probability without a reference group'
+                    'Cannot compute survival probability without a reference'
                 )
             sampled = self.observable.compute(group)
             self.timeseries.append(list(sampled.flatten()))
@@ -154,17 +145,42 @@ class Correlator(object):
         if self.shape is None:
             self.shape = sampled.shape
 
+    def _sample_intermittent(self,group):
+        # we need to collect also the residence
+        # function
+        # the residence function (1 if in the reference group, 0 otherwise)
+        mask = np.isin(self.reference, group)
+        # append the residence function to its timeseries
+        self.maskseries.append(list(mask))
+        if self.observable is not None:
+            # this copies a vector of zeros with the correct shape
+            sampled = self.reference_obs.copy()
+            obs = self.observable.compute(group)
+            sampled[np.where(mask)] = obs
+            self.timeseries.append(list(sampled.flatten()))
+        else:
+            self.timeseries = self.maskseries
+            if self.shape is None:
+                self.shape = (1, )
+
+
     def correlation(self, normalized=True, continuous=True):
         """ Calculate the autocorrelation from the sampled data
 
-            :parameter bool normalized: normalize the correlation function to: its zero-time value for
-                                        regular correlations; to the average of the characteristic function
-                                        for the survival probability.
-            :parameter bool continuous: applies only when a reference group has been specified: if True 
-                                        (default) the contribution of a particle at time lag $\\tau=t_1-t_0$
-                                        is considered only if the particle did not leave the reference group
-                                        between $t_0$ and $t_1$. If False, the intermittent correlation is
-                                        calculated, and the above restriction is released.
+            :parameter bool normalized: normalize the correlation function to: 
+                                        its zero-time value for regular 
+                                        correlations; to the average of the 
+                                        characteristic function for the 
+                                        survival probability.
+            :parameter bool continuous: applies only when a reference group has 
+                                        been specified: if True (default) the 
+                                        contribution of a particle at time lag 
+                                        $\\tau=t_1-t_0$ is considered only if 
+                                        the particle did not leave the 
+                                        reference group between $t_0$ and 
+                                        $t_1$. If False, the intermittent 
+                                        correlation is calculated, and the 
+                                        above restriction is released.
 
             Example:
 
@@ -181,7 +197,8 @@ class Correlator(object):
             >>> g.velocities*=0.0
             >>> g.velocities+=1.0
             >>>
-            >>> vv = Correlator(observable=Velocity('x'), reference=g) # velocity autocorrelation along x, variable group
+            >>> # velocity autocorrelation along x, variable group
+            >>> vv = Correlator(observable=Velocity('x'), reference=g) 
             >>> nn = Correlator(reference=g) # survival probability in group g
             >>>
             >>> for c in [vv,nn]:
@@ -201,10 +218,12 @@ class Correlator(object):
             [[True, True], [True, True], [True, False], [True, True]]
             >>>
 
-            Note that the average of  the characteristic function $h(t)$ is done over all
-            trajectories, including those that start with h=0. The correlation
-            $< h(t) h(0) >$ is divided by the average $<h>$ computed over all trajectores that
-            extend up to a time lag $t$. The `normalize` switch has no effect.
+	        Note that the average of  the characteristic function
+	        $h(t)$ is done over all trajectories, including those
+	        that start with h=0. The correlation $< h(t) h(0) >$
+	        is divided by the average $<h>$ computed over all
+	        trajectores that extend up to a time lag $t$. The
+	        `normalize` switch has no effect.
 
             >>> # normalized, continuous
             >>> corr = nn.correlation()
@@ -215,11 +234,13 @@ class Correlator(object):
             >>> print (np.allclose(corr, [ 7./7, 4./5, 3./4, 2./2 ]))
             True
 
-            The autocorrelation functions are calculated by taking into account in the average
-            only those trajectory that start with $h=1$ (i.e., which start within the reference
-            group). The normalization is done by dividing the correlation at time lag $t$ by its 
-            value at time lag 0 computed over all trajectories that extend up to time lag $t$ and 
-            do not start with $h=0$.
+	        The autocorrelation functions are calculated by taking
+	        into account in the average only those trajectory that
+	        start with $h=1$ (i.e., which start within the reference
+	        group). The normalization is done by dividing the
+	        correlation at time lag $t$ by its value at time lag 0
+	        computed over all trajectories that extend up to time
+	        lag $t$ and do not start with $h=0$.
 
             >>> # not normalizd, intermittent
             >>> corr = vv.correlation(normalized=False,continuous=False)
@@ -256,7 +277,8 @@ class Correlator(object):
         # prepare the mask for the intermittent/continuous cases
         if intermittent is True:
             ms = np.asarray(self.maskseries, dtype=np.double)
-        else:  # we add Falses at the begining and at the end to ease the splitting in sub-trajectories
+        else:  # we add Falses at the begining and at the end to ease the 
+               # splitting in sub-trajectories
             falses = [[False] * len(self.maskseries[0])]
             ms = np.asarray(falses + self.maskseries + falses)
 
@@ -289,9 +311,14 @@ class Correlator(object):
 
         return corr
 
+
     def _survival_intermittent(self, ms):
         corr = np.sum(utilities.correlate(ms, _normalize=False), axis=1)
         return corr / np.sum(np.cumsum(self.timeseries, axis=0), axis=1)[::-1]
+
+    @staticmethod
+    def _find_edges(mask):
+        return  np.where(mask[:-1] != mask[1:])[0]
 
     def _survival_continuous(self, ms):
         n_part = len(ms[0])
@@ -299,7 +326,7 @@ class Correlator(object):
         counting = (1. + np.arange(len(self.timeseries)))
 
         for part in range(n_part):
-            edges = np.where(ms[::, part][:-1] != ms[::, part][1:])[0]
+            edges = find_edges(ms[::, part])
             deltat = edges[1::2] - edges[0::2]
             # for each of the disconnected segments:
             for n, dt in enumerate(deltat):
@@ -330,7 +357,7 @@ class Correlator(object):
         corr = np.zeros((ts.shape[0], ts.shape[1] / dim))
 
         for part in range(n_part):
-            edges = np.where(ms[::, part][:-1] != ms[::, part][1:])[0]
+            edges = find_edges(ms[::, part])
             deltat = edges[1::2] - edges[0::2]
             for n, dt in enumerate(
                     deltat):  # for each of the disconnected segments
