@@ -327,11 +327,13 @@ J. Chem. Phys. 138, 044110, 2013)*
                 group = group[np.where(np.array(l) == np.argmax(c))[0]]
 
             alpha_group = alpha_group[:] - group[:]
-
-            if self.molecular:
-                self._layers[layer] = group.residues.atoms
+            if len(group)>0:
+                if self.molecular:
+                    self._layers[layer] = group.residues.atoms
+                else:
+                    self._layers[layer] = group
             else:
-                self._layers[layer] = group
+                self._layers[layer] = group.universe.atoms[:0]
 
             self.label_group(
                 self._layers[layer], beta=1. * (layer + 1), layer=(layer + 1))
