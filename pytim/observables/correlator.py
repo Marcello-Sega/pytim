@@ -113,18 +113,17 @@ class Correlator(object):
 
         elif observable is None:
             raise RuntimeError(
-                    self.name +
-                    ': specity at least an observable or the reference'
+                self.name + ': specity at least an observable or the reference'
             )
 
     def _init_intermittent(self):
-       if self.observable is not None:
-           self.reference_obs = self.observable.compute(reference) * 0.0
-       else:
-           self.reference_obs = np.zeros(len(self.reference), dtype=np.double)
-       if len(self.reference_obs.shape) > 2:
-           raise RuntimeError(
-               self.name + ' works only with scalar and vectors')
+        if self.observable is not None:
+            self.reference_obs = self.observable.compute(reference) * 0.0
+        else:
+            self.reference_obs = np.zeros(len(self.reference), dtype=np.double)
+        if len(self.reference_obs.shape) > 2:
+            raise RuntimeError(
+                self.name + ' works only with scalar and vectors')
 
     def sample(self, group):
         """ Sample the timeseries for the autocorrelation function
@@ -132,20 +131,19 @@ class Correlator(object):
             :parameter AtomGroup group: compute the observable using this group
         """
         # can be intermittent or continuous:
-        if self.reference is not None:  
+        if self.reference is not None:
             self._sample_intermittent(group)
         else:
             if self.observable is None:
                 RuntimeError(
-                    'Cannot compute survival probability without a reference'
-                )
+                    'Cannot compute survival probability without a reference')
             sampled = self.observable.compute(group)
             self.timeseries.append(list(sampled.flatten()))
 
         if self.shape is None:
             self.shape = sampled.shape
 
-    def _sample_intermittent(self,group):
+    def _sample_intermittent(self, group):
         # we need to collect also the residence
         # function
         # the residence function (1 if in the reference group, 0 otherwise)
@@ -162,7 +160,6 @@ class Correlator(object):
             self.timeseries = self.maskseries
             if self.shape is None:
                 self.shape = (1, )
-
 
     def correlation(self, normalized=True, continuous=True):
         """ Calculate the autocorrelation from the sampled data
@@ -277,8 +274,8 @@ class Correlator(object):
         # prepare the mask for the intermittent/continuous cases
         if intermittent is True:
             ms = np.asarray(self.maskseries, dtype=np.double)
-        else:  # we add Falses at the begining and at the end to ease the 
-               # splitting in sub-trajectories
+        else:  # we add Falses at the begining and at the end to ease the
+            # splitting in sub-trajectories
             falses = [[False] * len(self.maskseries[0])]
             ms = np.asarray(falses + self.maskseries + falses)
 
@@ -311,14 +308,13 @@ class Correlator(object):
 
         return corr
 
-
     def _survival_intermittent(self, ms):
         corr = np.sum(utilities.correlate(ms, _normalize=False), axis=1)
         return corr / np.sum(np.cumsum(self.timeseries, axis=0), axis=1)[::-1]
 
     @staticmethod
     def _find_edges(mask):
-        return  np.where(mask[:-1] != mask[1:])[0]
+        return np.where(mask[:-1] != mask[1:])[0]
 
     def _survival_continuous(self, ms):
         n_part = len(ms[0])
