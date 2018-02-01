@@ -327,7 +327,7 @@ J. Chem. Phys. 138, 044110, 2013)*
                 group = group[np.where(np.array(l) == np.argmax(c))[0]]
 
             alpha_group = alpha_group[:] - group[:]
-            if len(group)>0:
+            if len(group) > 0:
                 if self.molecular:
                     self._layers[layer] = group.residues.atoms
                 else:
