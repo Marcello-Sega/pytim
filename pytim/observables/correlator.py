@@ -118,7 +118,7 @@ class Correlator(object):
 
     def _init_intermittent(self):
         if self.observable is not None:
-            self.reference_obs = self.observable.compute(reference) * 0.0
+            self.reference_obs = self.observable.compute(self.reference) * 0.0
         else:
             self.reference_obs = np.zeros(len(self.reference), dtype=np.double)
         if len(self.reference_obs.shape) > 2:
@@ -132,7 +132,7 @@ class Correlator(object):
         """
         # can be intermittent or continuous:
         if self.reference is not None:
-            self._sample_intermittent(group)
+            sampled = self._sample_intermittent(group)
         else:
             if self.observable is None:
                 RuntimeError(
@@ -160,6 +160,8 @@ class Correlator(object):
             self.timeseries = self.maskseries
             if self.shape is None:
                 self.shape = (1, )
+            sampled = mask
+        return sampled
 
     def correlation(self, normalized=True, continuous=True):
         """ Calculate the autocorrelation from the sampled data
@@ -322,7 +324,7 @@ class Correlator(object):
         counting = (1. + np.arange(len(self.timeseries)))
 
         for part in range(n_part):
-            edges = find_edges(ms[::, part])
+            edges = self._find_edges(ms[::, part])
             deltat = edges[1::2] - edges[0::2]
             # for each of the disconnected segments:
             for n, dt in enumerate(deltat):
@@ -353,7 +355,7 @@ class Correlator(object):
         corr = np.zeros((ts.shape[0], ts.shape[1] / dim))
 
         for part in range(n_part):
-            edges = find_edges(ms[::, part])
+            edges = self._find_edges(ms[::, part])
             deltat = edges[1::2] - edges[0::2]
             for n, dt in enumerate(
                     deltat):  # for each of the disconnected segments
