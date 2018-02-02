@@ -13,16 +13,16 @@ from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 class Correlator(object):
     """ Computes the (self) correlation of an observable (scalar or vector)
 
-    :param Observable observable: compute the autocorrelation of this observable. 
-                                  If the observable is None and the reference 
+    :param Observable observable: compute the autocorrelation of this observable.
+                                  If the observable is None and the reference
                                   is not, the survival probability is computed.
     :param bool normalize: normalize the correlation to 1 at t=0
-    :param AtomGroup reference: if the group passed to the sample() function 
-                                changes its composition along the trajectory 
-                                (such as a layer group), a reference group that 
+    :param AtomGroup reference: if the group passed to the sample() function
+                                changes its composition along the trajectory
+                                (such as a layer group), a reference group that
                                 includes all atoms that could appear in the
-                                variable group must be passed, in order to 
-                                provide a proper normalization. See the example 
+                                variable group must be passed, in order to
+                                provide a proper normalization. See the example
                                 below.
 
     Example:
@@ -81,12 +81,12 @@ class Correlator(object):
     >>> # the reference group
     >>> inter = pytim.ITIM(u,group=g,alpha=2.0,molecular=False)
     >>> # example only: sample longer for smooth results
-    >>> for t in u.trajectory[1:10]: 
+    >>> for t in u.trajectory[1:10]:
     ...     corr.sample(inter.atoms)
     >>> layer_vacf = corr.correlation()
 
 
-    In order to compute the survival probability of some atoms in a layer, it 
+    In order to compute the survival probability of some atoms in a layer, it
     is possible to pass observable=None together with the reference group:
 
     >>> corr = pytim.observables.Correlator(observable=None, reference = g)
@@ -166,19 +166,19 @@ class Correlator(object):
     def correlation(self, normalized=True, continuous=True):
         """ Calculate the autocorrelation from the sampled data
 
-            :parameter bool normalized: normalize the correlation function to: 
-                                        its zero-time value for regular 
-                                        correlations; to the average of the 
-                                        characteristic function for the 
+            :parameter bool normalized: normalize the correlation function to:
+                                        its zero-time value for regular
+                                        correlations; to the average of the
+                                        characteristic function for the
                                         survival probability.
-            :parameter bool continuous: applies only when a reference group has 
-                                        been specified: if True (default) the 
-                                        contribution of a particle at time lag 
-                                        $\\tau=t_1-t_0$ is considered only if 
-                                        the particle did not leave the 
-                                        reference group between $t_0$ and 
-                                        $t_1$. If False, the intermittent 
-                                        correlation is calculated, and the 
+            :parameter bool continuous: applies only when a reference group has
+                                        been specified: if True (default) the
+                                        contribution of a particle at time lag
+                                        $\\tau=t_1-t_0$ is considered only if
+                                        the particle did not leave the
+                                        reference group between $t_0$ and
+                                        $t_1$. If False, the intermittent
+                                        correlation is calculated, and the
                                         above restriction is released.
 
             Example:
@@ -190,14 +190,14 @@ class Correlator(object):
             >>> from pytim.datafiles import WATER_GRO
             >>> from pytim.observables import Correlator, Velocity
             >>> np.set_printoptions(suppress=True,precision=3)
-            >>> 
+            >>>
             >>> u = mda.Universe(WATER_GRO)
             >>> g = u.atoms[0:2]
             >>> g.velocities*=0.0
             >>> g.velocities+=1.0
             >>>
             >>> # velocity autocorrelation along x, variable group
-            >>> vv = Correlator(observable=Velocity('x'), reference=g) 
+            >>> vv = Correlator(observable=Velocity('x'), reference=g)
             >>> nn = Correlator(reference=g) # survival probability in group g
             >>>
             >>> for c in [vv,nn]:
@@ -210,7 +210,7 @@ class Correlator(object):
 
             The timeseries sampled can be accessed using:
 
-            >>> print(vv.timeseries) # rows refer to time, columns to particle 
+            >>> print(vv.timeseries) # rows refer to time, columns to particle
             [[1.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.5, 0.5]]
             >>>
             >>> print(nn.timeseries)
@@ -228,7 +228,7 @@ class Correlator(object):
             >>> corr = nn.correlation()
             >>> print (np.allclose(corr, [ 7./7, 4./5, 2./4, 1./2]))
             True
-            >>> # normalized, intermittent 
+            >>> # normalized, intermittent
             >>> corr = nn.correlation(continuous=False)
             >>> print (np.allclose(corr, [ 7./7, 4./5, 3./4, 2./2 ]))
             True
