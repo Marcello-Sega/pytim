@@ -312,9 +312,8 @@ J. Comp. Chem. 29, 945, 2008)*
         p = self.universe.atoms.positions.copy()
         cond = np.logical_and(self.universe.atoms.positions < 0.0,
                               self.universe.atoms.positions > -1e-5)
-        p[cond]*=0.0
+        p[cond] *= 0.0
         self.universe.atoms.positions = p
-
 
     def _prelabel_groups(self):
         self.label_group(
