@@ -217,12 +217,12 @@ class Correlator(object):
             [[True, True], [True, True], [True, False], [True, True]]
             >>>
 
-	        Note that the average of  the characteristic function
-	        $h(t)$ is done over all trajectories, including those
-	        that start with h=0. The correlation $< h(t) h(0) >$
-	        is divided by the average $<h>$ computed over all
-	        trajectores that extend up to a time lag $t$. The
-	        `normalize` switch has no effect.
+            Note that the average of  the characteristic function
+            $h(t)$ is done over all trajectories, including those
+            that start with h=0. The correlation $< h(t) h(0) >$
+            is divided by the average $<h>$ computed over all
+            trajectores that extend up to a time lag $t$. The
+            `normalize` switch has no effect.
 
             >>> # normalized, continuous
             >>> corr = nn.correlation()
@@ -233,13 +233,13 @@ class Correlator(object):
             >>> print (np.allclose(corr, [ 7./7, 4./5, 3./4, 2./2 ]))
             True
 
-	        The autocorrelation functions are calculated by taking
-	        into account in the average only those trajectory that
-	        start with $h=1$ (i.e., which start within the reference
-	        group). The normalization is done by dividing the
-	        correlation at time lag $t$ by its value at time lag 0
-	        computed over all trajectories that extend up to time
-	        lag $t$ and do not start with $h=0$.
+            The autocorrelation functions are calculated by taking
+            into account in the average only those trajectory that
+            start with $h=1$ (i.e., which start within the reference
+            group). The normalization is done by dividing the
+            correlation at time lag $t$ by its value at time lag 0
+            computed over all trajectories that extend up to time
+            lag $t$ and do not start with $h=0$.
 
             >>> # not normalizd, intermittent
             >>> corr = vv.correlation(normalized=False,continuous=False)
