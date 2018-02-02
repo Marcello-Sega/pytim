@@ -307,6 +307,14 @@ J. Comp. Chem. 29, 945, 2008)*
         self.original_positions = np.copy(self.universe.atoms.positions[:])
 
         self.universe.atoms.pack_into_box()
+        # in some rare cases, pack_into_box() returns some points which are
+        # at slightly negative position. We set this by hand to zero.
+        p = self.universe.atoms.positions.copy()
+        cond = np.logical_and(self.universe.atoms.positions < 0.0,
+                              self.universe.atoms.positions > -1e-5)
+        p[cond]*=0.0
+        self.universe.atoms.positions = p
+
 
     def _prelabel_groups(self):
         self.label_group(
