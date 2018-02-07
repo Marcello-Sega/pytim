@@ -213,10 +213,9 @@ class Profile(object):
 
             else:
                 rnd_accum = np.array(0)
-                factor = 10
-                rnd = np.random.random(
-                    (factor * len(group),
-                     3)) * self.interface.universe.dimensions[:3]
+                size = 5 * len(group.universe.atoms)
+                rnd = np.random.random((size, 3))
+                rnd *= self.interface.universe.dimensions[:3]
                 rnd_pos = IntrinsicDistance(
                     self.interface, symmetry=self.symmetry).compute(rnd)
                 rnd_accum, bins, _ = stats.binned_statistic(
