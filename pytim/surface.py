@@ -197,7 +197,8 @@ class Surface(object):
         l1centers_ = l1centers[ind]
 
         nonsurface = intr.cluster_group - intr.atoms[intr.atoms.layers == 1]
-        if len(nonsurface) == 0 : # there are no inner atoms, distance is always > 0
+        # there are no inner atoms, distance is always > 0
+        if len(nonsurface) == 0:
             return dist
         tree = cKDTree(nonsurface.positions, boxsize=box)
         neighs = tree.query_ball_point(pos, intr.alpha)

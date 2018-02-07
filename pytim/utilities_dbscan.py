@@ -20,7 +20,6 @@ def determine_samples(threshold_density, cluster_cut, n_neighbors):
         centroid, _ = vq.kmeans2(
             n_neighbors * 1.0, modes, iter=10, check_finite=False)
         min_samples = np.max(centroid)
-        print ("centroids: "+repr(centroid))
 
     else:
         raise ValueError("Wrong value of 'threshold_density' passed\
