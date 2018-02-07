@@ -176,12 +176,6 @@ class Surface(object):
         if len(pos) == 0:
             raise ValueError("empty group")
         box = intr.universe.dimensions[:3]
-        # tri = utilities.find_surface_triangulation(intr)
-        # positions of the points in the triangulated surface
-        # l1pos = intr.triangulation[0].points[tri]
-        # their baricenters
-        # l1centers = utilities.pbc_wrap(np.average(l1pos, axis=1), box)
-        # l1centers = np.average(l1pos, axis=1)
         l1centers = intr.atoms.positions[intr.atoms.layers == 1]
         # tree of the surface triangles' centers
         tree = cKDTree(l1centers, boxsize=box)
@@ -203,6 +197,8 @@ class Surface(object):
         l1centers_ = l1centers[ind]
 
         nonsurface = intr.cluster_group - intr.atoms[intr.atoms.layers == 1]
+        if len(nonsurface) == 0 : # there are no inner atoms, distance is always > 0
+            return dist
         tree = cKDTree(nonsurface.positions, boxsize=box)
         neighs = tree.query_ball_point(pos, intr.alpha)
         condition = np.array([len(el) != 0 for el in neighs])
