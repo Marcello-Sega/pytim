@@ -102,8 +102,11 @@ class Interface(object):
         """
         for uplow in [0, 1]:
             for nlayer, layer in enumerate(self._layers[uplow]):
-                self.label_group(
-                    layer, beta=nlayer + 1.0, layer=nlayer + 1, side=uplow)
+                if layer is None:
+                    self._layers[uplow][nlayer] = self.universe.atoms[:0]
+                else:
+                    self.label_group(
+                        layer, beta=nlayer + 1.0, layer=nlayer + 1, side=uplow)
 
     def label_group(self,
                     group,
@@ -142,36 +145,41 @@ class Interface(object):
             self.symmetry = symmetry
 
     def _define_cluster_group(self):
+        self.cluster_group = self.universe.atoms[:0]  # empty
         if (self.cluster_cut is not None):
+            # we start by adding the atoms in the smaller clusters
+            # of the opposit phase, if extra_cluster_groups are provided
+            if (self.extra_cluster_groups is not None):
+                for extra in self.extra_cluster_groups:
+                    x_labels, x_counts, _ = utilities.do_cluster_analysis_dbscan(
+                        extra, self.cluster_cut[0],
+                        self.cluster_threshold_density, self.molecular)
+                    x_labels = np.array(x_labels)
+                    x_label_max = np.argmax(x_counts)
+                    x_ids_other = np.where(x_labels != x_label_max)[0]
+
+                    # we mark them initially as non-main-cluster, some will be
+                    # overwritten
+                    self.label_group(extra, cluster=1)
+                    self.cluster_group += extra[x_ids_other]
+
+            # next, we add the atoms belonging to the main phase
+            self.cluster_group += self.itim_group
+
             # groups have been checked already in _sanity_checks()
+            # self.cluster_group at this stage is composed of itim_group +
+            # the smaller clusters of the other phase
             labels, counts, neighbors = utilities.do_cluster_analysis_dbscan(
-                self.itim_group, self.cluster_cut[0],
+                self.cluster_group, self.cluster_cut[0],
                 self.cluster_threshold_density, self.molecular)
             labels = np.array(labels)
             # the label of atoms in the largest cluster
             label_max = np.argmax(counts)
-            # the indices (within the group) of the
+            # the indices (within the group) of the largest cluster
             ids_max = np.where(labels == label_max)[0]
+            self.cluster_group = self.cluster_group[ids_max]
+            self.n_neighbors = neighbors
 
-            # atoms belonging to the largest cluster
-            if (self.extra_cluster_groups is not None):
-                extra = np.sum(self.extra_cluster_groups[:])
-                self.extra = extra
-                x_labels, x_counts, _ = utilities.do_cluster_analysis_dbscan(
-                    extra, self.cluster_cut[0], self.cluster_threshold_density,
-                    self.molecular)
-                x_labels = np.array(x_labels)
-                x_label_max = np.argmax(x_counts)
-                x_ids_other = np.where(x_labels != x_label_max)[0]
-
-                # we mark them initially as non-main-cluster, some will be
-                # overwritten
-                self.label_group(extra, cluster=1)
-                self.cluster_group = np.sum(
-                    [self.itim_group[ids_max], extra[x_ids_other]])
-            else:
-                self.cluster_group = self.itim_group[ids_max]
-                self.n_neighbors = neighbors
         else:
             self.cluster_group = self.itim_group
 

@@ -50,4 +50,3 @@ class IntrinsicDistance(Observable):
                                   of points
         """
         return self.interface._surfaces[0].distance(inp, self.symmetry)
-
