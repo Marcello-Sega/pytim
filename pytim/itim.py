@@ -316,8 +316,6 @@ J. Comp. Chem. 29, 945, 2008)*
         self.universe.atoms.positions = p
 
     def _prelabel_groups(self):
-        self.label_group(
-            self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
         # first we label all atoms in group to be in the gas phase
         self.label_group(self.itim_group.atoms, beta=0.5)
         # then all atoms in the largest group are labelled as liquid-like
@@ -339,6 +337,8 @@ J. Comp. Chem. 29, 945, 2008)*
 
         """
         up, low = 0, 1
+
+        self.reset_labels()
 
         self._prepare_layers_assignment()
         # groups have been checked already in _sanity_checks()

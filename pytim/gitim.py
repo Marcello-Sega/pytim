@@ -289,9 +289,8 @@ J. Chem. Phys. 138, 044110, 2013)*
 
     def _assign_layers(self):
         """Determine the GITIM layers."""
+        self.reset_labels()
         # this can be used later to shift back to the original shift
-        self.label_group(
-            self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 

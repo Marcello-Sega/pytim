@@ -178,6 +178,10 @@ class Interface(object):
         self.label_group(self.itim_group, cluster=1)
         self.label_group(self.cluster_group, cluster=0)
 
+    def reset_labels(self):
+        self.label_group(
+            self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
+
     @staticmethod
     def _center(group, direction, halfbox_shift=False):
         """
