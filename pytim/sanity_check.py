@@ -202,8 +202,8 @@ class SanityCheck(object):
             self.interface.itim_group = self.wrap_group(itim_group)
 
         self.interface.cluster_cut = self.wrap_group(cluster_cut)
-        self.interface.extra_cluster_groups = self.wrap_group(
-            extra_cluster_groups)
+
+        self.interface.extra_cluster_groups = extra_cluster_groups
 
         self._define_groups()
         if (len(self.interface.itim_group) == 0):
