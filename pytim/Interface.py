@@ -145,15 +145,15 @@ class Interface(object):
             self.symmetry = symmetry
 
     def _define_cluster_group(self):
-        self.cluster_group = self.universe.atoms[:0] # empty
+        self.cluster_group = self.universe.atoms[:0]  # empty
         if (self.cluster_cut is not None):
             # we start by adding the atoms in the smaller clusters
             # of the opposit phase, if extra_cluster_groups are provided
             if (self.extra_cluster_groups is not None):
                 for extra in self.extra_cluster_groups:
                     x_labels, x_counts, _ = utilities.do_cluster_analysis_dbscan(
-                        extra, self.cluster_cut[0], self.cluster_threshold_density,
-                        self.molecular)
+                        extra, self.cluster_cut[0],
+                        self.cluster_threshold_density, self.molecular)
                     x_labels = np.array(x_labels)
                     x_label_max = np.argmax(x_counts)
                     x_ids_other = np.where(x_labels != x_label_max)[0]
@@ -179,7 +179,6 @@ class Interface(object):
             ids_max = np.where(labels == label_max)[0]
             self.cluster_group = self.cluster_group[ids_max]
             self.n_neighbors = neighbors
-
 
         else:
             self.cluster_group = self.itim_group
