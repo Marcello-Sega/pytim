@@ -10,21 +10,21 @@ from . import Observable
 class IntrinsicDistance(Observable):
     """Initialize the intrinsic distance calculation.
 
-    :param PYTIM    interface: compute the intrinsic distance with respect
-                               to this interface
-    :param str      symmetry : force calculation using this symmetry, if
-                               availabe (e.g. 'generic', 'planar', 'spherical')
-                               If 'default', uses the symmetry selected in
-                               the PYTIM interface instance.
+    :param PYTIM interface: compute the intrinsic distance with respect
+                            to this interface
+    :param str symmetry: force calculation using this symmetry, if
+                            availabe (e.g. 'generic', 'planar', 'spherical')
+                            If 'default', uses the symmetry selected in
+                            the PYTIM interface instance.
 
-    Example: 
+    Example:
 
     >>> import MDAnalysis as mda
-    >>> import pytim 
+    >>> import pytim
     >>> from pytim import observables
     >>> from pytim.datafiles import MICELLE_PDB
     >>> u = mda.Universe(MICELLE_PDB)
-    >>> micelle = u.select_atoms('resname DPC') 
+    >>> micelle = u.select_atoms('resname DPC')
     >>> waterox = u.select_atoms('type O and resname SOL')
     >>> inter = pytim.GITIM(u,group=micelle, molecular=False, alpha=2.0)
     >>> dist  = observables.IntrinsicDistance(interface=inter)
@@ -50,3 +50,4 @@ class IntrinsicDistance(Observable):
                                   of points
         """
         return self.interface._surfaces[0].distance(inp, self.symmetry)
+
