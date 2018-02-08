@@ -383,8 +383,7 @@ J. Comp. Chem. 29, 945, 2008)*
                 # info about universe is lost (do not know why yet)
                 # must use self._layers[uplow][index] =
                 # self.universe.atoms[group.indices]
-                self._layers[uplow][index] =\
-                    self.universe.atoms[group.indices]
+                self._layers[uplow][index] = self.universe.atoms[group.indices]
         for p in proc:
             p.join()
         for q in queue:

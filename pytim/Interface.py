@@ -102,8 +102,11 @@ class Interface(object):
         """
         for uplow in [0, 1]:
             for nlayer, layer in enumerate(self._layers[uplow]):
-                self.label_group(
-                    layer, beta=nlayer + 1.0, layer=nlayer + 1, side=uplow)
+                if layer is None:
+                    self._layers[uplow][nlayer] = self.universe.atoms[:0]
+                else:
+                    self.label_group(
+                        layer, beta=nlayer + 1.0, layer=nlayer + 1, side=uplow)
 
     def label_group(self,
                     group,
@@ -159,10 +162,6 @@ class Interface(object):
                     # overwritten
                     self.label_group(extra, cluster=1)
                     self.cluster_group += extra[x_ids_other]
-                    # TODO (bug) self.n_neighbors in this branching will be wrong
-                    # TODO implement different cutoff radii for different extra groups
-            else:
-                self.n_neighbors = neighbors
 
             # next, we add the atoms belonging to the main phase
             self.cluster_group += self.itim_group
@@ -179,6 +178,7 @@ class Interface(object):
             # the indices (within the group) of the largest cluster
             ids_max = np.where(labels == label_max)[0]
             self.cluster_group = self.cluster_group[ids_max]
+            self.n_neighbors = neighbors
 
 
         else:
