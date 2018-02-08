@@ -182,7 +182,6 @@ class Interface(object):
         self.label_group(
             self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
 
-
     @staticmethod
     def _center(group, direction, halfbox_shift=False):
         """
