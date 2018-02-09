@@ -110,6 +110,19 @@ J. Comp. Chem. 29, 945, 2008)*
         >>> # will loose the information on the layers.
         >>> interface.atoms.write('only_layers.pdb')
 
+        >>> # In some cases it might be necessary to compute two interfaces.
+        >>> # This could be done in the following way:
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import WATER_GRO, WATER_XTC
+        >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+        >>> u2 = mda.Universe(WATER_GRO,WATER_XTC)
+        >>> inter = pytim.ITIM(u,group=u.select_atoms('resname SOL'))
+        >>> inter2 = pytim.ITIM(u2,group=u2.select_atoms('resname SOL'))
+        >>> for ts in u.trajectory[::50]:
+        ... 	ts2 = u2.trajectory[ts.frame]
+
+
     """
 
     @property
