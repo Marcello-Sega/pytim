@@ -44,7 +44,13 @@ def _writepdb(interface,
 
     temp_pos = np.copy(interface.universe.atoms.positions)
     move_to_origin = False
-    options = {'no': False, False: False, 'middle': True, 'origin': True, True: True}
+    options = {
+        'no': False,
+        False: False,
+        'middle': True,
+        'origin': True,
+        True: True
+    }
     if centered == 'origin':
         move_to_origin = True
 
