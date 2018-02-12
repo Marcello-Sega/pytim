@@ -40,7 +40,8 @@ This is like the initial case, however with information on the surface molecules
 
 .. code-block:: python
 
-    interface.writepdb('centering3.pdb',centered='no')
+    interface = pytim.ITIM(u)
+    interface.writepdb('centering2.pdb',centered='no')
 
 
 
@@ -56,7 +57,7 @@ This comes handy to quickly discriminate between upper and lower surface atoms, 
 .. code-block:: python
 
     interface = pytim.ITIM(u)
-    interface.writepdb('centering2.pdb',centered='origin')
+    interface.writepdb('centering3.pdb',centered='origin')
 
 
 .. image:: centering2.png

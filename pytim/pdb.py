@@ -43,12 +43,21 @@ def _writepdb(interface,
         interface.group = interface.universe.atoms
 
     temp_pos = np.copy(interface.universe.atoms.positions)
-    options = {'no': False, False: False, 'middle': True, True: True}
+    move_to_origin = False
+    options = {
+        'no': False,
+        False: False,
+        'middle': True,
+        'origin': True,
+        True: True
+    }
+    if centered == 'origin':
+        move_to_origin = True
 
     if options[centered] != interface.do_center:
         # i.e. we don't have already what we want ...
         if interface.do_center == False:  # we need to center
-            interface.center(planar_to_origin=True)
+            interface.center(planar_to_origin=move_to_origin)
         else:  # we need to put back the original positions
             try:
                 # original_positions are (must) always be defined
