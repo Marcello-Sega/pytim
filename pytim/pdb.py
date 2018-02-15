@@ -133,4 +133,3 @@ def _writepdb(interface,
     # we copy back the original tempfactors
     if tempfactors is not None:
         interface.group.tempfactors = _tf[:]
-
