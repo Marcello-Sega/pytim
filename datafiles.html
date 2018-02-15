@@ -54,53 +54,6 @@
             
   <div class="section" id="module-pytim.datafiles">
 <span id="datafiles"></span><h1>Datafiles<a class="headerlink" href="#module-pytim.datafiles" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="location-of-data-files-for-pytim-examples-and-tests">
-<h2>Location of data files for Pytim examples and tests<a class="headerlink" href="#location-of-data-files-for-pytim-examples-and-tests" title="Permalink to this headline">¶</a></h2>
-<p>Real MD simulation data are stored in the <code class="docutils literal"><span class="pre">data/</span></code> subdirectory.</p>
-<blockquote>
-<div><p>Example: load an example trajectory</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span>         <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">u</span>
-<span class="go">&lt;Universe with 12000 atoms&gt;</span>
-</pre></div>
-</div>
-<p>Example: list all configurations</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">config</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pytim_data</span><span class="o">.</span><span class="n">config</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{:20s}</span><span class="s2"> </span><span class="si">{:s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">config</span><span class="p">,</span><span class="n">pytim_data</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">config</span><span class="p">]))</span>
-<span class="go">CCL4_WATER_GRO       Carbon tetrachloride/TIP4p water interface</span>
-<span class="go">FULLERENE_PDB        fullerene</span>
-<span class="go">GLUCOSE_PDB          solvated beta-d-glucose</span>
-<span class="go">MICELLE_PDB          DPC micelle</span>
-<span class="go">WATERSMALL_GRO       small SPC water/vapour interface</span>
-<span class="go">WATER_520K_GRO       SPC/E water/vapour interface, 520K</span>
-<span class="go">WATER_550K_GRO       SPC/E water/vapour interface, 550K</span>
-<span class="go">WATER_GRO            SPC water/vapour interface</span>
-<span class="go">WATER_PDB            SPC water/vapour interface</span>
-<span class="go">WATER_XYZ            SPC water/vapour interface</span>
-</pre></div>
-</div>
-<p>Example: list all topologies</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">pytim_data</span><span class="o">.</span><span class="n">topol</span>
-<span class="go">[&#39;WATER_LMP_DATA&#39;, &#39;AMBER03_TOP&#39;, &#39;G43A1_TOP&#39;, &#39;CHARMM27_TOP&#39;]</span>
-</pre></div>
-</div>
-<p>Example: list all trajectories</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">pytim_data</span><span class="o">.</span><span class="n">traj</span>
-<span class="go">[&#39;WATER_LMP_XTC&#39;, &#39;WATER_XTC&#39;]</span>
-</pre></div>
-</div>
-<p>Example: list all files, file type, file format and description</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">label</span> <span class="ow">in</span>  <span class="n">pytim_data</span><span class="o">.</span><span class="n">label</span><span class="p">:</span>
-<span class="gp">... </span>     <span class="nb">type</span>        <span class="o">=</span> <span class="n">pytim_data</span><span class="o">.</span><span class="n">type</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
-<span class="gp">... </span>     <span class="nb">format</span>      <span class="o">=</span> <span class="n">pytim_data</span><span class="o">.</span><span class="n">format</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
-<span class="gp">... </span>     <span class="n">description</span> <span class="o">=</span> <span class="n">pytim_data</span><span class="o">.</span><span class="n">description</span><span class="p">[</span><span class="n">label</span><span class="p">]</span>
-</pre></div>
-</div>
-</div></blockquote>
-</div>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -131,6 +84,7 @@
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="newproperties.html">New properties of Atoms</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul class="current">
@@ -139,10 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="WillardChandler.html">WillardChandler</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ChaconTarazona.html">ChaconTarazona</a></li>
 <li class="toctree-l1"><a class="reference internal" href="observables.html">Observables</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Datafiles</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#location-of-data-files-for-pytim-examples-and-tests">Location of data files for Pytim examples and tests</a></li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Datafiles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 </ul>
 

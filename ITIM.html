@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="GITIM" href="GITIM.html" />
-    <link rel="prev" title="Choosing the atomic radii" href="guessing_radii.html" /> 
+    <link rel="prev" title="New properties of Atoms" href="newproperties.html" /> 
   </head>
   <body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -41,7 +41,7 @@
           <a href="GITIM.html" title="GITIM"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="guessing_radii.html" title="Choosing the atomic radii"
+          <a href="newproperties.html" title="New properties of Atoms"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
       </ul>
@@ -58,59 +58,49 @@
 <h2>Module: itim<a class="headerlink" href="#module-itim" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytim.itim.ITIM">
-<em class="property">class </em><code class="descclassname">pytim.itim.</code><code class="descname">ITIM</code><span class="sig-paren">(</span><em>universe</em>, <em>group=None</em>, <em>alpha=1.5</em>, <em>normal='guess'</em>, <em>molecular=True</em>, <em>max_layers=1</em>, <em>radii_dict=None</em>, <em>cluster_cut=None</em>, <em>cluster_threshold_density=None</em>, <em>extra_cluster_groups=None</em>, <em>info=False</em>, <em>multiproc=True</em>, <em>centered=False</em>, <em>warnings=False</em>, <em>mesh=0.4</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.itim.ITIM" title="Permalink to this definition">¶</a></dt>
-<dd><p>Identifies interfacial molecules at macroscopically flat interfaces.
-(Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G.  J. Comp. Chem. 29, 945, 2008)</p>
-<blockquote>
-<div><table class="docutils field-list" frame="void" rules="none">
+<em class="property">class </em><code class="descclassname">pytim.itim.</code><code class="descname">ITIM</code><span class="sig-paren">(</span><em>universe</em>, <em>group=None</em>, <em>alpha=1.5</em>, <em>normal='guess'</em>, <em>molecular=True</em>, <em>max_layers=1</em>, <em>radii_dict=None</em>, <em>cluster_cut=None</em>, <em>cluster_threshold_density=None</em>, <em>extra_cluster_groups=None</em>, <em>info=False</em>, <em>centered=False</em>, <em>warnings=False</em>, <em>mesh=0.4</em>, <em>autoassign=True</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.itim.ITIM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identifies interfacial molecules at macroscopically flat interfaces.</p>
+<p><em>(Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G., J. Comp. Chem. 29, 945, 2008)</em></p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name" colspan="2">param Object universe:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">the MDAnalysis Universe, MDTraj trajectory                                  or OpenMM Simulation objects.</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param Object group:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">An AtomGroup, or an array-like object with                                  the indices of the atoms in the group.                                  Will dentify the interfacial molecules from                                  this group</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param float alpha:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">the probe sphere radius</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param str normal:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">the macroscopic interface normal direction                                  ‘x’,’y’, ‘z’ or ‘guess’ (default)</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param bool molecular:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">Switches between search of interfacial                                  molecules / atoms (default: True)</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param int max_layers:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">the number of layers to be identified</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param dict radii_dict:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">dictionary with the atomic radii of                                  the elements in the group.
-If None is supplied, the default one                                  (from GROMOS 43a1) will be used.</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param float cluster_cut:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">cutoff used for neighbors or density-based                                  cluster search (default: None disables the                                  cluster analysis)</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param float cluster_threshold_density:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">Number density threshold for                                  the density-based cluster search. ‘auto’                                  determines the threshold automatically.                                  Default: None uses simple neighbors cluster                                  search, if cluster_cut is not None</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param Object extra_cluster_groups:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">Additional groups, to allow for mixed interfaces</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param bool info:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">print additional info</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param bool multiproc:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">parallel version (default: True. Switch off                                  for debugging)</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param bool centered:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">center the  <code class="xref py py-obj docutils literal"><span class="pre">group</span></code></td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param bool warnings:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">print warnings</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param float mesh:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">the grid spacing used for the testlines (default 0.4 Angstrom)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>universe</strong> (<em>Object</em>) – The MDAnalysis Universe, MDTraj trajectory
+or OpenMM Simulation objects.</li>
+<li><strong>group</strong> (<em>Object</em>) – An AtomGroup, or an array-like object with
+the indices of the atoms in the group.  Will
+identify the interfacial molecules from this
+group</li>
+<li><strong>alpha</strong> (<em>float</em>) – The probe sphere radius</li>
+<li><strong>normal</strong> (<em>str</em>) – The macroscopic interface normal direction
+‘x’,’y’, ‘z’ or ‘guess’ (default)</li>
+<li><strong>molecular</strong> (<em>bool</em>) – Switches between search of interfacial
+molecules / atoms (default: True)</li>
+<li><strong>max_layers</strong> (<em>int</em>) – The number of layers to be identified</li>
+<li><strong>radii_dict</strong> (<em>dict</em>) – Dictionary with the atomic radii of the
+elements in the group. If None is supplied,
+the default one (from GROMOS 43a1) will be
+used.</li>
+<li><strong>cluster_cut</strong> (<em>float</em>) – Cutoff used for neighbors or density-based
+cluster search (default: None disables the
+cluster analysis)</li>
+<li><strong>cluster_threshold_density</strong> (<em>float</em>) – Number density threshold for
+the density-based cluster search. ‘auto’
+determines the threshold automatically.
+Default: None uses simple neighbors cluster
+search, if cluster_cut is not None</li>
+<li><strong>extra_cluster_groups</strong> (<em>Object</em>) – Additional groups, to allow for
+mixed interfaces</li>
+<li><strong>info</strong> (<em>bool</em>) – Print additional info</li>
+<li><strong>centered</strong> (<em>bool</em>) – Center the  <code class="xref py py-obj docutils literal"><span class="pre">group</span></code></li>
+<li><strong>warnings</strong> (<em>bool</em>) – Print warnings</li>
+<li><strong>mesh</strong> (<em>float</em>) – The grid spacing used for the testlines
+(default 0.4 Angstrom)</li>
+<li><strong>autoassign</strong> (<em>bool</em>) – If true (default) detect the interface
+every time a new frame is selected.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -128,7 +118,7 @@ If None is supplied, the default one                                  (from GROM
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># atoms in the layers can be accesses either through</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># the layers array:</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">interface</span><span class="o">.</span><span class="n">layers</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
 <span class="go">[[&lt;AtomGroup with 786 atoms&gt; &lt;AtomGroup with 681 atoms&gt;</span>
 <span class="go">  &lt;AtomGroup with 663 atoms&gt; &lt;AtomGroup with 651 atoms&gt;]</span>
 <span class="go"> [&lt;AtomGroup with 786 atoms&gt; &lt;AtomGroup with 702 atoms&gt;</span>
@@ -143,7 +133,7 @@ If None is supplied, the default one                                  (from GROM
 <span class="go">&lt;AtomGroup with 666 atoms&gt;</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># or as a whole AtomGroup. This can include all atoms in all layers:</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># or as a whole AtomGroup. This can include all atoms in all layers</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">atoms</span>
 <span class="go">&lt;AtomGroup with 5571 atoms&gt;</span>
 </pre></div>
@@ -162,13 +152,40 @@ If None is supplied, the default one                                  (from GROM
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;system.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># of course, the native interface of MDAnalysis can be used to write pdb files</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but the centering options are not available. Writing to other formats that</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># do not support the beta factor will loose the information on the layers.</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># of course, the native interface of MDAnalysis can be used to</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># write pdb files, but the centering options are not available.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Writing to other formats that do not support the beta factor</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># will loose the information on the layers.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;only_layers.pdb&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div></blockquote>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># In some cases it might be necessary to compute two interfaces.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># This could be done in the following way:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span><span class="p">,</span> <span class="n">WATER_XTC</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u2</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname SOL&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter2</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u2</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">u2</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname SOL&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[::</span><span class="mi">50</span><span class="p">]:</span>
+<span class="gp">... </span>    <span class="n">ts2</span> <span class="o">=</span> <span class="n">u2</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">frame</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="attribute">
+<dt id="pytim.itim.ITIM.autoassign">
+<code class="descname">autoassign</code><a class="headerlink" href="#pytim.itim.ITIM.autoassign" title="Permalink to this definition">¶</a></dt>
+<dd><p>(bool) assign layers every time a frame changes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytim.itim.ITIM.label_planar_sides">
+<code class="descname">label_planar_sides</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytim.itim.ITIM.label_planar_sides" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign to all layers a label (the beta tempfactor)
+that can be used in pdb files. Additionally, set
+the new layers and sides.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="pytim.itim.ITIM.layers">
 <code class="descname">layers</code><a class="headerlink" href="#pytim.itim.ITIM.layers" title="Permalink to this definition">¶</a></dt>
@@ -182,55 +199,44 @@ If None is supplied, the default one                                  (from GROM
 <span class="gp">&gt;&gt;&gt; </span><span class="n">oxygens</span>   <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s2">&quot;name OW&quot;</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">max_layers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">molecular</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span>  <span class="c1"># upper side (0), all layers</span>
-<span class="go">array([&lt;AtomGroup with 786 atoms&gt;, &lt;AtomGroup with 681 atoms&gt;,</span>
-<span class="go">       &lt;AtomGroup with 663 atoms&gt;, &lt;AtomGroup with 651 atoms&gt;], dtype=object)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">,:])</span>  <span class="c1"># upper side (0), all layers</span>
+<span class="go">[&lt;AtomGroup with 786 atoms&gt; &lt;AtomGroup with 681 atoms&gt;</span>
+<span class="go"> &lt;AtomGroup with 663 atoms&gt; &lt;AtomGroup with 651 atoms&gt;]</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># lower side (1), first layer (0)</span>
-<span class="go">&lt;AtomGroup with 786 atoms&gt;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">repr</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># lower side (1), first layer (0)</span>
+<span class="go">&#39;&lt;AtomGroup with 786 atoms&gt;&#39;</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="c1"># 1st - 3rd layer (0:3), on both sides</span>
-<span class="go">array([[&lt;AtomGroup with 786 atoms&gt;, &lt;AtomGroup with 681 atoms&gt;,</span>
-<span class="go">        &lt;AtomGroup with 663 atoms&gt;],</span>
-<span class="go">       [&lt;AtomGroup with 786 atoms&gt;, &lt;AtomGroup with 702 atoms&gt;,</span>
-<span class="go">        &lt;AtomGroup with 666 atoms&gt;]], dtype=object)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> <span class="c1"># 1st - 3rd layer (0:3), on both sides</span>
+<span class="go">[[&lt;AtomGroup with 786 atoms&gt; &lt;AtomGroup with 681 atoms&gt;</span>
+<span class="go">  &lt;AtomGroup with 663 atoms&gt;]</span>
+<span class="go"> [&lt;AtomGroup with 786 atoms&gt; &lt;AtomGroup with 702 atoms&gt;</span>
+<span class="go">  &lt;AtomGroup with 666 atoms&gt;]]</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="c1"># side 1, layers 1-4 &amp; stride 2 (0:4:2)</span>
-<span class="go">array([&lt;AtomGroup with 786 atoms&gt;, &lt;AtomGroup with 666 atoms&gt;], dtype=object)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="c1"># side 1, layers 1-4 &amp; stride 2 (0:4:2)</span>
+<span class="go">[&lt;AtomGroup with 786 atoms&gt; &lt;AtomGroup with 666 atoms&gt;]</span>
 </pre></div>
 </div>
-</dd></dl>
-
-<dl class="method">
-<dt id="pytim.itim.ITIM.savepdb">
-<code class="descname">savepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>multiframe=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.itim.ITIM.savepdb" title="Permalink to this definition">¶</a></dt>
-<dd><p>An alias to <a class="reference internal" href="#pytim.itim.ITIM.writepdb" title="pytim.itim.ITIM.writepdb"><code class="xref py py-func docutils literal"><span class="pre">writepdb()</span></code></a></p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytim.itim.ITIM.writepdb">
-<code class="descname">writepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>group='all'</em>, <em>multiframe=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.itim.ITIM.writepdb" title="Permalink to this definition">¶</a></dt>
+<code class="descname">writepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>group='all'</em>, <em>multiframe=True</em>, <em>tempfactors=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.itim.ITIM.writepdb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the frame to a pdb file, marking the atoms belonging
-to the layers with different beta factor.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> – string  – the output file name</li>
-<li><strong>centered</strong> – string  – ‘origin’, ‘middle’, or ‘no’</li>
-<li><strong>group</strong> – AtomGroup – if ‘all’ is passed, the universe is used</li>
-<li><strong>multiframe</strong> – boolean – append to pdb file if True</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Example: save the positions (centering the interface in the cell) without appending</p>
+to the layers with different beta factors.</p>
+<p>:param str       filename   : the output file name
+:param str       centered   : ‘origin’, ‘middle’, or ‘no’
+:param AtomGroup group      : if ‘all’ is passed, use universe
+:param bool      multiframe : append to pdb file if True
+:param ndarray   tempfactors: use this array as temp (beta) factors</p>
+<dl class="docutils">
+<dt>Example: save the positions (centering the interface in the cell)</dt>
+<dd>without appending</dd>
+</dl>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim.datafiles</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
@@ -239,14 +245,18 @@ to the layers with different beta factor.</p>
 </pre></div>
 </div>
 <dl class="docutils">
-<dt>Example: save the positions without centering the interface. This will</dt>
-<dd>not shift the atoms from the original position (still, they will
-be put into the basic cell).
-The :multiframe: option set to :False: will overwrite the file.</dd>
+<dt>Example: save the positions without centering the interface. This</dt>
+<dd>will not shift the atoms from the original position
+(still, they will be put into the basic cell).
+The <a href="#id1"><span class="problematic" id="id2">:param:`multiframe`</span></a> option set to :False: will
+overwrite the file</dd>
 </dl>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Note that if GITIM is used, and the <a href="#id3"><span class="problematic" id="id4">:param:`symmetry`</span></a> option is
+different from ‘planar’, the <a href="#id5"><span class="problematic" id="id6">:param:`centered='origin'`</span></a> option is
+equivalent to <a href="#id7"><span class="problematic" id="id8">:param:`centered='middle'`</span></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -287,6 +297,7 @@ The :multiframe: option set to :False: will overwrite the file.</dd>
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="newproperties.html">New properties of Atoms</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul class="current">
@@ -303,8 +314,8 @@ The :multiframe: option set to :False: will overwrite the file.</dd>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="guessing_radii.html"
-                        title="previous chapter">Choosing the atomic radii</a></p>
+  <p class="topless"><a href="newproperties.html"
+                        title="previous chapter">New properties of Atoms</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="GITIM.html"
                         title="next chapter">GITIM</a></p>
@@ -342,7 +353,7 @@ The :multiframe: option set to :False: will overwrite the file.</dd>
           <a href="GITIM.html" title="GITIM"
              >next</a> |</li>
         <li class="right" >
-          <a href="guessing_radii.html" title="Choosing the atomic radii"
+          <a href="newproperties.html" title="New properties of Atoms"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
       </ul>

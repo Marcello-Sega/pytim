@@ -50,18 +50,18 @@
             
   <div class="section" id="module-pytim.tests.test_basics">
 <span id="testsuite"></span><h1>Testsuite<a class="headerlink" href="#module-pytim.tests.test_basics" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-test-basics">
-<h2>Module: test_basics<a class="headerlink" href="#module-test-basics" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pytim.tests.test_basics.TestBasics">
-<em class="property">class </em><code class="descclassname">pytim.tests.test_basics.</code><code class="descname">TestBasics</code><a class="headerlink" href="#pytim.tests.test_basics.TestBasics" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is a collection of basic tests to check
+<dl class="docutils">
+<dt>Module: test_basics</dt>
+<dd><p class="first">This is a collection of basic tests to check
 that code is running – no test on the correctness
 of the output is performed here.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># TEST:0 loading the module</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+</pre></div>
+</div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># TEST:1 basic functionality</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim</span> <span class="k">import</span>  <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span>         <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">oxygens</span>   <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s2">&quot;name OW&quot;</span><span class="p">)</span>
@@ -97,6 +97,14 @@ of the output is performed here.</p>
 <span class="gr">ValueError</span>: <span class="n">parameter alpha must be smaller than the smaller box side</span>
 </pre></div>
 </div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># TEST:3b no surface atoms</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span>         <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">GLUCOSE_PDB</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span>         <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;type C or name OW&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">4.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
+<span class="go">&lt;AtomGroup []&gt;</span>
+</pre></div>
+</div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># TEST:4 interchangeability of Universe/AtomGroup</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span>         <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">oxygens</span>   <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s2">&quot;name OW&quot;</span><span class="p">)</span>
@@ -123,21 +131,21 @@ of the output is performed here.</p>
 <span class="go">4.00</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># mdtraj </span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># mdtraj</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="kn">import</span> <span class="nn">mdtraj</span>
 <span class="gp">... </span>    <span class="k">try</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> 
+<span class="gp">... </span>        <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">... </span>        <span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">... </span>        <span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">... </span>        <span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span>
 <span class="gp">... </span>        <span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">pytim_data</span><span class="p">,</span><span class="n">G43A1_TOP</span>
-<span class="gp">... </span>        <span class="c1"># MDAnalysis </span>
+<span class="gp">... </span>        <span class="c1"># MDAnalysis</span>
 <span class="gp">... </span>        <span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="n">ref</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="c1"># mdtraj</span>
 <span class="gp">... </span>        <span class="n">t</span> <span class="o">=</span> <span class="n">mdtraj</span><span class="o">.</span><span class="n">load_xtc</span><span class="p">(</span><span class="n">WATER_XTC</span><span class="p">,</span><span class="n">top</span><span class="o">=</span><span class="n">WATER_GRO</span><span class="p">)</span>
-<span class="gp">... </span>        <span class="c1"># mdtraj manipulates the name of atoms, we need to set the </span>
+<span class="gp">... </span>        <span class="c1"># mdtraj manipulates the name of atoms, we need to set the</span>
 <span class="gp">... </span>        <span class="c1"># radii by hand</span>
 <span class="gp">... </span>        <span class="n">_dict</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span><span class="n">pytim_data</span><span class="o">.</span><span class="n">vdwradii</span><span class="p">(</span><span class="n">G43A1_TOP</span><span class="p">)[</span><span class="s1">&#39;OW&#39;</span><span class="p">],</span><span class="s1">&#39;H&#39;</span><span class="p">:</span><span class="mf">0.0</span><span class="p">}</span>
 <span class="gp">... </span>        <span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">radii_dict</span><span class="o">=</span><span class="n">_dict</span><span class="p">)</span>
@@ -147,7 +155,7 @@ of the output is performed here.</p>
 <span class="gp">... </span>            <span class="n">ids_mda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">ids</span><span class="p">)</span>
 <span class="gp">... </span>        <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]:</span>
 <span class="gp">... </span>            <span class="n">ids_mdtraj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">ids</span><span class="p">)</span>
-<span class="gp">... </span>        <span class="k">for</span> <span class="n">fr</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]:</span>   
+<span class="gp">... </span>        <span class="k">for</span> <span class="n">fr</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]:</span>
 <span class="gp">... </span>            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">ids_mda</span><span class="p">[</span><span class="n">fr</span><span class="p">]</span> <span class="o">==</span> <span class="n">ids_mdtraj</span><span class="p">[</span><span class="n">fr</span><span class="p">]):</span>
 <span class="gp">... </span>                <span class="nb">print</span> <span class="s2">&quot;MDAnalysis and mdtraj surface atoms do not coincide&quot;</span>
 <span class="gp">... </span>        <span class="n">_a</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># we make sure we load the second frame</span>
@@ -176,28 +184,60 @@ of the output is performed here.</p>
 <span class="go">False</span>
 </pre></div>
 </div>
-</dd></dl>
-
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytest</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">pytim</span><span class="o">.</span><span class="n">datafiles</span><span class="o">.</span><span class="n">WATER_GRO</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">alpha</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">mesh</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">parameter mesh must be positive</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># check that it is possible to use two trajectories</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span><span class="p">,</span> <span class="n">WATER_XTC</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u2</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname SOL&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter2</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u2</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">u2</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname SOL&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[::</span><span class="mi">50</span><span class="p">]:</span>
+<span class="gp">... </span>    <span class="n">ts2</span> <span class="o">=</span> <span class="n">u2</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">frame</span><span class="p">]</span>
+</pre></div>
 </div>
 <span class="target" id="module-pytim.tests.test_observables"></span><div class="section" id="module-test-observables">
 <h2>Module: test_observables<a class="headerlink" href="#module-test-observables" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pytim.tests.test_observables.TestObservables">
-<em class="property">class </em><code class="descclassname">pytim.tests.test_observables.</code><code class="descname">TestObservables</code><a class="headerlink" href="#pytim.tests.test_observables.TestObservables" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is a collection of basic tests to check
+<p>This is a collection of basic tests to check
 that the observables are yelding the expected
 result.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># OBSERVABLES TEST: 1</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim</span> <span class="k">import</span> <span class="n">observables</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">_TEST_ORIENTATION_GRO</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">o</span> <span class="o">=</span> <span class="n">observables</span><span class="o">.</span><span class="n">Orientation</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">options</span><span class="o">=</span><span class="s1">&#39;molecular&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
-<span class="go">[ 1.          0.          0.          0.          1.          0.          0.</span>
-<span class="go"> -0.70710677 -0.70710677]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+<span class="go">[ 1.     0.     0.     0.     1.     0.     0.    -0.707 -0.707]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># OBSERVABLES TEST: 2</span>
@@ -207,9 +247,9 @@ result.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">low</span><span class="p">,</span><span class="n">up</span><span class="p">,</span><span class="n">avg</span> <span class="o">=</span>  <span class="n">p</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">binwidth</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">low</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
-<span class="go">[ 0.  1.  2.]</span>
+<span class="go">[0. 1. 2.]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">avg</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span>
-<span class="go">[ 0.01  0.02  0.03]</span>
+<span class="go">[0.01 0.02 0.03]</span>
 </pre></div>
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># CORRELATOR TEST</span>
@@ -226,7 +266,7 @@ result.</p>
 <span class="go">[&#39;1.00&#39;, &#39;0.00&#39;, &#39;0.67&#39;, &#39;-0.00&#39;, &#39;0.00&#39;]</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># PROFILE EXTENDED TEST: checks trajectory averaging </span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># PROFILE EXTENDED TEST: checks trajectory averaging</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># and consistency in summing up layers  contributions</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
@@ -236,9 +276,9 @@ result.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;name OW&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">max_layers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>
+<span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Layers</span><span class="o">=</span><span class="p">[]</span>
-<span class="gp">&gt;&gt;&gt; </span>
+<span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="n">Layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Profile</span><span class="p">())</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Val</span><span class="o">=</span><span class="p">[]</span>
@@ -251,7 +291,7 @@ result.</p>
 <span class="gp">... </span>        <span class="n">Layers</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">L</span> <span class="ow">in</span> <span class="n">Layers</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">Val</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">binwidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)[</span><span class="mi">2</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span>
+<span class="go">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Val</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[:</span><span class="mi">3</span><span class="p">]))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">Val</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="n">decimals</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -264,15 +304,10 @@ result.</p>
 <span class="go">True</span>
 </pre></div>
 </div>
-</dd></dl>
-
 </div>
 <span class="target" id="module-pytim.tests.test_rotation"></span><div class="section" id="module-test-rotation">
 <h2>Module: test_rotation<a class="headerlink" href="#module-test-rotation" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pytim.tests.test_rotation.TestRotation">
-<em class="property">class </em><code class="descclassname">pytim.tests.test_rotation.</code><code class="descname">TestRotation</code><a class="headerlink" href="#pytim.tests.test_rotation.TestRotation" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is a collection of test to check
+<p>This is a collection of test to check
 that the algorithms are behaving properly if
 the interface is rotated in space.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># TEST:1, ITIM+GITIM, flat interface</span>
@@ -352,8 +387,6 @@ the interface is rotated in space.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">u</span>
 </pre></div>
 </div>
-</dd></dl>
-
 </div>
 <ul class="simple">
 <li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
@@ -379,6 +412,7 @@ the interface is rotated in space.</p>
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="newproperties.html">New properties of Atoms</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul>

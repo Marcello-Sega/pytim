@@ -54,65 +54,29 @@
             
   <div class="section" id="module-pytim.utilities">
 <span id="utilities"></span><h1>Utilities<a class="headerlink" href="#module-pytim.utilities" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="pytim.utilities.EulerRotation">
-<code class="descclassname">pytim.utilities.</code><code class="descname">EulerRotation</code><span class="sig-paren">(</span><em>phi</em>, <em>theta</em>, <em>psi</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.EulerRotation" title="Permalink to this definition">¶</a></dt>
-<dd><p>The Euler (3,1,3) rotation matrix</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>phi</strong> – rotation around the z axis</li>
-<li><strong>theta</strong> – rotation around the new x axis</li>
-<li><strong>psi</strong> – rotation around the new z axis</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns double:</th><td class="field-body"><p class="first last">area</p>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.utilities</span> <span class="k">import</span> <span class="o">*</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">EulerRotation</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-<span class="go">[[ 0.  1.  0.]</span>
-<span class="go"> [-1.  0.  0.]</span>
-<span class="go"> [ 0. -0.  1.]]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">suppress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytim.utilities.compute_compatible_mesh_params">
-<code class="descclassname">pytim.utilities.</code><code class="descname">compute_compatible_mesh_params</code><span class="sig-paren">(</span><em>mesh</em>, <em>box</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.compute_compatible_mesh_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>given a target mesh size and a box, return the number of grid elements
-and spacing in each direction, which are commensurate with the box</p>
-</dd></dl>
-
+<div class="section" id="module-utilities">
+<h2>Module: utilities<a class="headerlink" href="#module-utilities" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="pytim.utilities.correlate">
-<code class="descclassname">pytim.utilities.</code><code class="descname">correlate</code><span class="sig-paren">(</span><em>a1=array([]</em>, <em>dtype=float64)</em>, <em>a2=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.correlate" title="Permalink to this definition">¶</a></dt>
-<dd><p>correlate data series using numpy fft. The function calculates correlation
-or cross-correlation.</p>
+<code class="descclassname">pytim.utilities.</code><code class="descname">correlate</code><span class="sig-paren">(</span><em>a1</em>, <em>a2=None</em>, <em>_normalize=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.correlate" title="Permalink to this definition">¶</a></dt>
+<dd><p>correlate data series using numpy fft. The function calculates       correlation or cross-correlation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>a1</strong> (<em>ndarray</em>) – first data set to correlate</li>
-<li><strong>a2</strong> (<em>ndarray</em>) – (optional) second data set, to compute cross-correlation</li>
+<li><strong>a2</strong> (<em>ndarray</em>) – (optional) second data set, to compute the
+cross-correlation</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Example: time autocorrelation of the number of atoms in the outermost layer</p>
+<dl class="docutils">
+<dt>Example: time autocorrelation of the number of atoms in the outermost</dt>
+<dd>layer</dd>
+</dl>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -130,18 +94,18 @@ or cross-correlation.</p>
 <span class="gp">... </span>    <span class="n">size</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]))</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># we need to subtract the average value</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span><span class="n">size</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">size</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">corr</span><span class="o">/</span><span class="n">corr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># normalize to 1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">corr</span>
-<span class="go">[ 1.          0.1420121   0.10364119  0.14718647  0.37093981  0.09908694</span>
-<span class="go">  0.16514898  0.0946748   0.33824381  0.2187186  -0.02084513  0.08711942</span>
-<span class="go">  0.24537069 -0.0102749  -0.1934566   0.10323017  0.02911581 -0.00939353</span>
-<span class="go"> -0.11041383  0.01191062 -0.13293405  0.05622434 -0.2826456  -0.27631805</span>
-<span class="go">  0.0351999  -0.01167737 -0.21058736 -0.42930886 -0.13241366 -0.26325648</span>
-<span class="go">  0.07229366 -0.70028015 -0.23617053  0.13629839 -0.24335089 -0.87832556</span>
-<span class="go"> -0.12957699 -0.32853026 -0.3863053  -0.65227527 -0.2672419  -0.18756502</span>
-<span class="go"> -0.22565105 -0.78979698 -0.28407306 -0.02037816 -1.5120148  -1.31553408</span>
-<span class="go"> -0.18836842  7.55135513]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">corr</span><span class="p">)</span>
+<span class="go">[ 1.     0.142  0.104  0.147  0.371  0.099  0.165  0.095  0.338  0.219</span>
+<span class="go"> -0.021  0.087  0.245 -0.01  -0.193  0.103  0.029 -0.009 -0.11   0.012</span>
+<span class="go"> -0.133  0.056 -0.283 -0.276  0.035 -0.012 -0.211 -0.429 -0.132 -0.263</span>
+<span class="go">  0.072 -0.7   -0.236  0.136 -0.243 -0.878 -0.13  -0.329 -0.386 -0.652</span>
+<span class="go"> -0.267 -0.188 -0.226 -0.79  -0.284 -0.02  -1.512 -1.316 -0.188  7.551]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>This will produce (sampling the whole trajectory), the following:</p>
@@ -149,70 +113,6 @@ or cross-correlation.</p>
 <div class="figure">
 <img alt="_images/utilities-1.png" src="_images/utilities-1.png" />
 </div>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytim.utilities.do_cluster_analysis_DBSCAN">
-<code class="descclassname">pytim.utilities.</code><code class="descname">do_cluster_analysis_DBSCAN</code><span class="sig-paren">(</span><em>group</em>, <em>cluster_cut</em>, <em>box</em>, <em>threshold_density=None</em>, <em>molecular=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.do_cluster_analysis_DBSCAN" title="Permalink to this definition">¶</a></dt>
-<dd><p>Performs a cluster analysis using DBSCAN</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name" colspan="2">Returns [labels,counts]:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">lists of the id of the cluster to which                                  every atom is belonging to, and of the                                  number of elements in each cluster.</td>
-</tr>
-</tbody>
-</table>
-<p>Uses a slightly modified version of DBSCAN from sklearn.cluster
-that takes periodic boundary conditions into account (through
-cKDTree’s boxsize option) and collects also the sizes of all
-clusters. This is on average O(N log N) thanks to the O(log N)
-scaling of the kdtree.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytim.utilities.fit_sphere">
-<code class="descclassname">pytim.utilities.</code><code class="descname">fit_sphere</code><span class="sig-paren">(</span><em>points</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.fit_sphere" title="Permalink to this definition">¶</a></dt>
-<dd><p>least square fit of a sphere through a set of points.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>points</strong> (<em>ndarray</em>) – a (N,3) array</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns list:</th><td class="field-body">radius, center_x, center_y, center_z</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytim.utilities.generate_grid_in_box">
-<code class="descclassname">pytim.utilities.</code><code class="descname">generate_grid_in_box</code><span class="sig-paren">(</span><em>box</em>, <em>npoints</em>, <em>order='zxy'</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.generate_grid_in_box" title="Permalink to this definition">¶</a></dt>
-<dd><p>generate an homogenous grid of npoints^3 points that spans the
-complete box.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>box</strong> (<em>ndarray</em>) – the simulation box edges</li>
-<li><strong>npoints</strong> (<em>ndarray</em>) – the number of points along each direction</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytim.utilities.generate_periodic_border">
-<code class="descclassname">pytim.utilities.</code><code class="descname">generate_periodic_border</code><span class="sig-paren">(</span><em>points</em>, <em>box</em>, <em>delta</em>, <em>method='3d'</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.generate_periodic_border" title="Permalink to this definition">¶</a></dt>
-<dd><p>Selects the pparticles within a skin depth delta from the
-simulation box, and replicates them to mimic periodic
-boundary conditions. Returns all points (original +
-periodic copies) and the indices of the original particles</p>
 </dd></dl>
 
 <dl class="function">
@@ -235,84 +135,7 @@ periodic copies) and the indices of the original particles</p>
 </table>
 </dd></dl>
 
-<dl class="function">
-<dt id="pytim.utilities.polygonalArea">
-<code class="descclassname">pytim.utilities.</code><code class="descname">polygonalArea</code><span class="sig-paren">(</span><em>points</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.polygonalArea" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the area of a polygon from ordered points in 3D space.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>points</strong> (<em>ndarray</em>) – a (N,3) array</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns double:</th><td class="field-body">area</td>
-</tr>
-</tbody>
-</table>
-<p>Example:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.utilities</span> <span class="k">import</span> <span class="o">*</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Vertices of a pentagon and its area</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">5.</span><span class="p">)</span> <span class="p">;</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">5.</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">5.</span><span class="p">)</span> <span class="p">;</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">5.</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pentagon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="n">c1</span><span class="p">,</span><span class="n">s1</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="o">-</span><span class="n">c2</span><span class="p">,</span><span class="n">s2</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="o">-</span><span class="n">c2</span><span class="p">,</span><span class="o">-</span><span class="n">s2</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="n">c1</span><span class="p">,</span><span class="o">-</span><span class="n">s1</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">A</span> <span class="o">=</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">25</span><span class="o">+</span><span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span> <span class="o">*</span> <span class="mf">100.</span><span class="o">/</span> <span class="p">(</span><span class="mi">50</span><span class="o">+</span><span class="mi">10</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">pytim</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">polygonalArea</span><span class="p">(</span><span class="n">pentagon</span><span class="p">),</span><span class="n">A</span><span class="p">)</span>
-<span class="go">True</span>
-</pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># now let&#39;s rotate it:</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">rotated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">EulerRotation</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="n">pentagon</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">pytim</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">polygonalArea</span><span class="p">(</span><span class="n">rotated</span><span class="p">),</span><span class="n">A</span><span class="p">)</span>
-<span class="go">True</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytim.utilities.rebox">
-<code class="descclassname">pytim.utilities.</code><code class="descname">rebox</code><span class="sig-paren">(</span><em>pos</em>, <em>edge</em>, <em>shift</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.rebox" title="Permalink to this definition">¶</a></dt>
-<dd><p>rebox a vector along one dimension
-:param ndarray pos: the array of components to be reboxed
-:param float edge: the simulation box edge
-:param float shift: additional shift</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytim.utilities.triangulated_surface_stats">
-<code class="descclassname">pytim.utilities.</code><code class="descname">triangulated_surface_stats</code><span class="sig-paren">(</span><em>tri2d</em>, <em>points3d</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.triangulated_surface_stats" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return basic statistics about a surface triangulation</p>
-<p>Implemented statistics are: surface area</p>
-<p>:param ndarray tri2d : indices of triangles vertices
-:param ndarray points3d : the heigth of each vertex along the third                                  dimension
-:returns list stats : the statistics :  [surface_area]</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pytim.utilities.trim_triangulated_surface">
-<code class="descclassname">pytim.utilities.</code><code class="descname">trim_triangulated_surface</code><span class="sig-paren">(</span><em>tri</em>, <em>box</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.utilities.trim_triangulated_surface" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reduce a surface triangulation that has been extended to        allow for periodic boundary conditions            to the primary cell.</p>
-<blockquote>
-<div>The simplices within the primary cell are those with at            least two vertices within the cell boundaries.</div></blockquote>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>tri</strong> (<em>Delaunay</em>) – a 2D triangulation</li>
-<li><strong>box</strong> (<em>ndarray</em>) – box cell parameters</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Returns ndarray simplices:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body"><p class="first last">the simplices within the primary cell.</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -343,6 +166,7 @@ periodic copies) and the indices of the original particles</p>
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="newproperties.html">New properties of Atoms</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul class="current">
@@ -352,7 +176,10 @@ periodic copies) and the indices of the original particles</p>
 <li class="toctree-l1"><a class="reference internal" href="ChaconTarazona.html">ChaconTarazona</a></li>
 <li class="toctree-l1"><a class="reference internal" href="observables.html">Observables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datafiles.html">Datafiles</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Utilities</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-utilities">Module: utilities</a></li>
+</ul>
+</li>
 </ul>
 
   <h4>Previous topic</h4>

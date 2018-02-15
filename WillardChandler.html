@@ -58,29 +58,41 @@
 <h2>Module: willard-chandler<a class="headerlink" href="#module-willard-chandler" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytim.willard_chandler.WillardChandler">
-<em class="property">class </em><code class="descclassname">pytim.willard_chandler.</code><code class="descname">WillardChandler</code><span class="sig-paren">(</span><em>universe</em>, <em>group=None</em>, <em>alpha=2.0</em>, <em>radii_dict=None</em>, <em>mesh=2.0</em>, <em>symmetry='spherical'</em>, <em>cluster_cut=None</em>, <em>cluster_threshold_density=None</em>, <em>extra_cluster_groups=None</em>, <em>centered=False</em>, <em>warnings=False</em>, <em>fast=True</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.willard_chandler.WillardChandler" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Identifies the dividing surface using the Willard-Chandler method</dt>
-<dd>(Willard, A. P.; Chandler, D. J. Phys. Chem. B 2010, 114, 1954–1958)</dd>
-</dl>
+<em class="property">class </em><code class="descclassname">pytim.willard_chandler.</code><code class="descname">WillardChandler</code><span class="sig-paren">(</span><em>universe</em>, <em>group=None</em>, <em>alpha=2.0</em>, <em>radii_dict=None</em>, <em>mesh=2.0</em>, <em>symmetry='spherical'</em>, <em>cluster_cut=None</em>, <em>cluster_threshold_density=None</em>, <em>extra_cluster_groups=None</em>, <em>centered=False</em>, <em>warnings=False</em>, <em>autoassign=True</em>, <em>fast=True</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.willard_chandler.WillardChandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identifies the dividing surface using the Willard-Chandler method</p>
+<p><em>(Willard, A. P.; Chandler, D. J. Phys. Chem. B 2010, 114, 1954–1958)</em></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>universe</strong> (<em>Object</em>) – the MDAnalysis Universe, MDTraj trajectory                              or OpenMM Simulation objects.</li>
-<li><strong>group</strong> (<em>AtomGroup</em>) – An AtomGroup, or an array-like object with                              the indices of the atoms in the group.                              Will dentify the interfacial molecules from                              this group</li>
-<li><strong>alpha</strong> (<em>float</em>) – the width of the Gaussian kernel</li>
-<li><strong>mesh</strong> (<em>float</em>) – the grid spacing for the density calculation</li>
-<li><strong>group</strong> – compute the density using this group</li>
-<li><strong>radii_dict</strong> (<em>dict</em>) – dictionary with the atomic radii of                              the elements in the group.
-If None is supplied, the default one                              (from GROMOS 43a1) will be used.</li>
-<li><strong>cluster_cut</strong> (<em>float</em>) – cutoff used for neighbors or density-based                              cluster search (default: None disables the                              cluster analysis)</li>
-<li><strong>cluster_threshold_density</strong> (<em>float</em>) – Number density threshold for                              the density-based cluster search. ‘auto’                              determines the threshold automatically.                              Default: None uses simple neighbors cluster                              search, if cluster_cut is not None</li>
-<li><strong>extra_cluster_groups</strong> (<em>Object</em>) – Additional groups, to allow for mixed interfaces</li>
-<li><strong>centered</strong> (<em>bool</em>) – center the  <code class="xref py py-obj docutils literal"><span class="pre">group</span></code></li>
-<li><strong>warnings</strong> (<em>bool</em>) – print warnings</li>
-<li><strong>fast</strong> (<em>bool</em>) – use a faster version with truncated Gaussians (default: True)</li>
+<li><strong>universe</strong> (<em>Object</em>) – The MDAnalysis Universe, MDTraj trajectory
+or OpenMM Simulation objects.</li>
+<li><strong>group</strong> (<em>AtomGroup</em>) – An AtomGroup, or an array-like object with
+the indices of the atoms in the group.
+Will identify the interfacial molecules from
+this group</li>
+<li><strong>alpha</strong> (<em>float</em>) – The width of the Gaussian kernel</li>
+<li><strong>mesh</strong> (<em>float</em>) – The grid spacing for the density calculation</li>
+<li><strong>group</strong> – Compute the density using this group</li>
+<li><strong>radii_dict</strong> (<em>dict</em>) – Dictionary with the atomic radii of
+the elements in the group.
+If None is supplied, the default one
+(from GROMOS 43a1) will be used.</li>
+<li><strong>cluster_cut</strong> (<em>float</em>) – Cutoff used for neighbors or density-based
+cluster search (default: None disables the
+cluster analysis)</li>
+<li><strong>cluster_threshold_density</strong> (<em>float</em>) – Number density threshold for
+the density-based cluster search. ‘auto’
+determines the threshold automatically.
+Default: None uses simple neighbors cluster
+search, if cluster_cut is not None</li>
+<li><strong>extra_cluster_groups</strong> (<em>Object</em>) – Additional groups, to allow for
+mixed interfaces</li>
+<li><strong>centered</strong> (<em>bool</em>) – Center the  <code class="xref py py-obj docutils literal"><span class="pre">group</span></code></li>
+<li><strong>warnings</strong> (<em>bool</em>) – Print warnings</li>
+<li><strong>fast</strong> (<em>bool</em>) – Use a faster version with truncated
+Gaussians (default: True)</li>
 </ul>
 </td>
 </tr>
@@ -96,19 +108,33 @@ If None is supplied, the default one                              (from GROMOS 4
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">radii</span> <span class="o">=</span> <span class="n">pytim_data</span><span class="o">.</span><span class="n">vdwradii</span><span class="p">(</span><span class="n">G43A1_TOP</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">fast</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">R</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">fit_sphere</span><span class="p">(</span>                       <span class="n">interface</span><span class="o">.</span><span class="n">triangulated_surface</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="s2">&quot;Radius=</span><span class="si">{:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">fast</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">R</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">fit_sphere</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">triangulated_surface</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Radius=</span><span class="si">{:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">R</span><span class="p">))</span>
 <span class="go">Radius=19.325</span>
 </pre></div>
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># the fast kernel gives a slightly (&lt;0.1 Angstrom) different result</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">fast</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">R</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">fit_sphere</span><span class="p">(</span>                       <span class="n">interface</span><span class="o">.</span><span class="n">triangulated_surface</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="s2">&quot;Radius=</span><span class="si">{:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">fast</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">R</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">utilities</span><span class="o">.</span><span class="n">fit_sphere</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">triangulated_surface</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Radius=</span><span class="si">{:.3f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">R</span><span class="p">))</span>
 <span class="go">Radius=19.383</span>
 </pre></div>
 </div>
+<dl class="attribute">
+<dt id="pytim.willard_chandler.WillardChandler.autoassign">
+<code class="descname">autoassign</code><a class="headerlink" href="#pytim.willard_chandler.WillardChandler.autoassign" title="Permalink to this definition">¶</a></dt>
+<dd><p>(bool) assign layers every time a frame changes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytim.willard_chandler.WillardChandler.label_planar_sides">
+<code class="descname">label_planar_sides</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytim.willard_chandler.WillardChandler.label_planar_sides" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign to all layers a label (the beta tempfactor)
+that can be used in pdb files. Additionally, set
+the new layers and sides.</p>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="pytim.willard_chandler.WillardChandler.layers">
 <code class="descname">layers</code><a class="headerlink" href="#pytim.willard_chandler.WillardChandler.layers" title="Permalink to this definition">¶</a></dt>
@@ -116,22 +142,18 @@ If None is supplied, the default one                              (from GROMOS 4
 </dd></dl>
 
 <dl class="method">
-<dt id="pytim.willard_chandler.WillardChandler.savepdb">
-<code class="descname">savepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>multiframe=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.willard_chandler.WillardChandler.savepdb" title="Permalink to this definition">¶</a></dt>
-<dd><p>An alias to <a class="reference internal" href="#pytim.willard_chandler.WillardChandler.writepdb" title="pytim.willard_chandler.WillardChandler.writepdb"><code class="xref py py-func docutils literal"><span class="pre">writepdb()</span></code></a></p>
-</dd></dl>
-
-<dl class="method">
 <dt id="pytim.willard_chandler.WillardChandler.writecube">
 <code class="descname">writecube</code><span class="sig-paren">(</span><em>filename='pytim.cube'</em>, <em>group=None</em>, <em>sequence=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.willard_chandler.WillardChandler.writecube" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write to cube files (sequences) the volumentric density and the atomic positions.</p>
+<dd><p>Write to cube files (sequences) the volumentric density and the
+atomic positions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>filename</strong> (<em>str</em>) – the file name</li>
-<li><strong>sequence</strong> (<em>bool</em>) – if true writes a sequence of files adding the frame to the filename</li>
+<li><strong>sequence</strong> (<em>bool</em>) – if true writes a sequence of files adding
+the frame to the filename</li>
 </ul>
 </td>
 </tr>
@@ -142,10 +164,10 @@ If None is supplied, the default one                              (from GROMOS 4
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">MICELLE_PDB</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writecube</span><span class="p">(</span><span class="s1">&#39;dens.cube&#39;</span><span class="p">)</span> <span class="c1"># writes on dens.cube</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writecube</span><span class="p">(</span><span class="s1">&#39;dens.cube&#39;</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">)</span> <span class="c1"># writes on dens.cube, including particles</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writecube</span><span class="p">(</span><span class="s1">&#39;dens.cube&#39;</span><span class="p">,</span><span class="n">sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># writes on dens.&lt;frame&gt;.cube</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writecube</span><span class="p">(</span><span class="s1">&#39;dens.cube&#39;</span><span class="p">)</span> <span class="c1"># writes on dens.cube</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writecube</span><span class="p">(</span><span class="s1">&#39;dens.cube&#39;</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">)</span> <span class="c1"># writes also  particles</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writecube</span><span class="p">(</span><span class="s1">&#39;dens.cube&#39;</span><span class="p">,</span><span class="n">sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># dens.&lt;frame&gt;.cube</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -160,7 +182,8 @@ If None is supplied, the default one                              (from GROMOS 4
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>filename</strong> (<em>str</em>) – the file name</li>
-<li><strong>sequence</strong> (<em>bool</em>) – if true writes a sequence of files adding the frame to the filename</li>
+<li><strong>sequence</strong> (<em>bool</em>) – if true writes a sequence of files adding
+the frame to the filename</li>
 </ul>
 </td>
 </tr>
@@ -171,34 +194,29 @@ If None is supplied, the default one                              (from GROMOS 4
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">MICELLE_PDB</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writeobj</span><span class="p">(</span><span class="s1">&#39;surf.obj&#39;</span><span class="p">)</span> <span class="c1"># writes on surf.obj</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writeobj</span><span class="p">(</span><span class="s1">&#39;surf.obj&#39;</span><span class="p">,</span><span class="n">sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># writes on surf.&lt;frame&gt;.obj</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writeobj</span><span class="p">(</span><span class="s1">&#39;surf.obj&#39;</span><span class="p">)</span> <span class="c1"># writes on surf.obj</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writeobj</span><span class="p">(</span><span class="s1">&#39;surf.obj&#39;</span><span class="p">,</span><span class="n">sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># surf.&lt;frame&gt;.obj</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="method">
 <dt id="pytim.willard_chandler.WillardChandler.writepdb">
-<code class="descname">writepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>group='all'</em>, <em>multiframe=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.willard_chandler.WillardChandler.writepdb" title="Permalink to this definition">¶</a></dt>
+<code class="descname">writepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>group='all'</em>, <em>multiframe=True</em>, <em>tempfactors=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.willard_chandler.WillardChandler.writepdb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the frame to a pdb file, marking the atoms belonging
-to the layers with different beta factor.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> – string  – the output file name</li>
-<li><strong>centered</strong> – string  – ‘origin’, ‘middle’, or ‘no’</li>
-<li><strong>group</strong> – AtomGroup – if ‘all’ is passed, the universe is used</li>
-<li><strong>multiframe</strong> – boolean – append to pdb file if True</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Example: save the positions (centering the interface in the cell) without appending</p>
+to the layers with different beta factors.</p>
+<p>:param str       filename   : the output file name
+:param str       centered   : ‘origin’, ‘middle’, or ‘no’
+:param AtomGroup group      : if ‘all’ is passed, use universe
+:param bool      multiframe : append to pdb file if True
+:param ndarray   tempfactors: use this array as temp (beta) factors</p>
+<dl class="docutils">
+<dt>Example: save the positions (centering the interface in the cell)</dt>
+<dd>without appending</dd>
+</dl>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim.datafiles</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
@@ -207,14 +225,18 @@ to the layers with different beta factor.</p>
 </pre></div>
 </div>
 <dl class="docutils">
-<dt>Example: save the positions without centering the interface. This will</dt>
-<dd>not shift the atoms from the original position (still, they will
-be put into the basic cell).
-The :multiframe: option set to :False: will overwrite the file.</dd>
+<dt>Example: save the positions without centering the interface. This</dt>
+<dd>will not shift the atoms from the original position
+(still, they will be put into the basic cell).
+The <a href="#id1"><span class="problematic" id="id2">:param:`multiframe`</span></a> option set to :False: will
+overwrite the file</dd>
 </dl>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Note that if GITIM is used, and the <a href="#id3"><span class="problematic" id="id4">:param:`symmetry`</span></a> option is
+different from ‘planar’, the <a href="#id5"><span class="problematic" id="id6">:param:`centered='origin'`</span></a> option is
+equivalent to <a href="#id7"><span class="problematic" id="id8">:param:`centered='middle'`</span></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -226,19 +248,30 @@ The :multiframe: option set to :False: will overwrite the file.</dd>
 <dd><dl class="method">
 <dt id="pytim.willard_chandler.Writevtk.density">
 <code class="descname">density</code><span class="sig-paren">(</span><em>filename='pytim_dens.vtk'</em>, <em>sequence=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.willard_chandler.Writevtk.density" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write to vtk files the volumetric density:
-:param str filename: the file name
-:param bool sequence: if true writes a sequence of files adding the frame to the filename</p>
+<dd><p>Write to vtk files the volumetric density.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>str</em>) – the file name</li>
+<li><strong>sequence</strong> (<em>bool</em>) – if true writes a sequence of files adding
+the frame to the filename</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">MICELLE_PDB</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">density</span><span class="p">(</span><span class="s1">&#39;dens.vtk&#39;</span><span class="p">)</span> <span class="c1"># writes on dens.vtk</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">density</span><span class="p">(</span><span class="s1">&#39;dens.vtk&#39;</span><span class="p">,</span><span class="n">sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># writes on dens.&lt;frame&gt;.vtk</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">density</span><span class="p">(</span><span class="s1">&#39;dens.vtk&#39;</span><span class="p">)</span> <span class="c1"># writes on dens.vtk</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">density</span><span class="p">(</span><span class="s1">&#39;dens.vtk&#39;</span><span class="p">,</span><span class="n">sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># dens.&lt;n&gt;.vtk</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -246,20 +279,33 @@ The :multiframe: option set to :False: will overwrite the file.</dd>
 <dl class="method">
 <dt id="pytim.willard_chandler.Writevtk.particles">
 <code class="descname">particles</code><span class="sig-paren">(</span><em>filename='pytim_part.vtk'</em>, <em>group=None</em>, <em>sequence=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.willard_chandler.Writevtk.particles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write to vtk files the particles in a group:
-:param str filename: the file name
-:param bool sequence: if true writes a sequence of files adding the frame to the filename
-:param AtomGroup group: if None, writes the whole universe</p>
+<dd><p>Write to vtk files the particles in a group.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>str</em>) – the file name</li>
+<li><strong>sequence</strong> (<em>bool</em>) – if true writes a sequence of files adding
+the frame to the filename</li>
+<li><strong>group</strong> (<em>AtomGroup</em>) – if None, writes the whole universe</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">MICELLE_PDB</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">particles</span><span class="p">(</span><span class="s1">&#39;part.vtk&#39;</span><span class="p">)</span> <span class="c1"># writes on part.vtk</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">particles</span><span class="p">(</span><span class="s1">&#39;part.vtk&#39;</span><span class="p">,</span><span class="n">sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># writes on part.&lt;frame&gt;.vtk</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># writes on part.vtk</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">particles</span><span class="p">(</span><span class="s1">&#39;part.vtk&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># writes on part.&lt;frame&gt;.vtk</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">particles</span><span class="p">(</span><span class="s1">&#39;part.vtk&#39;</span><span class="p">,</span><span class="n">sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -267,17 +313,28 @@ The :multiframe: option set to :False: will overwrite the file.</dd>
 <dl class="method">
 <dt id="pytim.willard_chandler.Writevtk.surface">
 <code class="descname">surface</code><span class="sig-paren">(</span><em>filename='pytim_surf.vtk'</em>, <em>sequence=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.willard_chandler.Writevtk.surface" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write to vtk files the triangulated surface:
-:param str filename: the file name
-:param bool sequence: if true writes a sequence of files adding the frame to the filename</p>
+<dd><p>Write to vtk files the triangulated surface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>str</em>) – the file name</li>
+<li><strong>sequence</strong> (<em>bool</em>) – if true writes a sequence of files adding
+the frame to the filename</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">MICELLE_PDB</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="s1">&#39;surf.vtk&#39;</span><span class="p">)</span> <span class="c1"># writes on surf.vtk</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="s1">&#39;surf.vtk&#39;</span><span class="p">,</span><span class="n">sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># writes on surf.&lt;frame&gt;.vtk</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">WillardChandler</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="s1">&#39;surf.vtk&#39;</span><span class="p">)</span> <span class="c1"># writes on surf.vtk</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writevtk</span><span class="o">.</span><span class="n">surface</span><span class="p">(</span><span class="s1">&#39;surf.vtk&#39;</span><span class="p">,</span><span class="n">sequence</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># surf.&lt;n&gt;.vtk</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -319,6 +376,7 @@ The :multiframe: option set to :False: will overwrite the file.</dd>
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="newproperties.html">New properties of Atoms</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul class="current">

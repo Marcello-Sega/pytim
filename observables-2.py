@@ -1,32 +1,21 @@
-from matplotlib import pyplot as plt
-
-import numpy as np
-import MDAnalysis as mda
 import pytim
-from   pytim.datafiles import *
-from   pytim.observables import Profile
+import MDAnalysis as mda
+import numpy as np
+from pytim.datafiles import WATERSMALL_GRO
+from pytim.utilities import lap
+WATERSMALL_TRR=pytim.datafiles.pytim_data.fetch('WATERSMALL_LONG_TRR')
 
-u = mda.Universe(WATER_GRO,WATER_XTC)
-g=u.select_atoms('name OW')
-# here we calculate the profiles of oxygens only (note molecular=False)
-inter = pytim.ITIM(u,group=g,max_layers=4,centered=True, molecular=False)
+u = mda.Universe(WATERSMALL_GRO,WATERSMALL_TRR)
+g = u.select_atoms('name OW')
 
-Layers=[]
-# by default Profile() uses the number of atoms as an observable
-for n in np.arange(0,5):
-    Layers.append(Profile())
+velocity = pytim.observables.Velocity()
+corr = pytim.observables.Correlator(observable=velocity)
+for t in u.trajectory[1:]:
+    corr.sample(g)
 
-for ts in u.trajectory[::50]:
-    for n in range(len(Layers)):
-        if n>0:
-            group = u.atoms[u.atoms.layers == n ]
-        else:
-            group = g
-        Layers[n].sample(group)
+vacf = corr.correlation()
 
-for L in Layers:
-    low,up,avg = L.get_values(binwidth=0.5)
-    plt.plot(low,avg)
-
-plt.gca().set_xlim([80,120])
+from matplotlib import pyplot as plt
+plt.plot(vacf[:1000])
+plt.plot([0]*1000)
 plt.show()

@@ -12,10 +12,10 @@ Example
 **The problem**
 
 Configuration file formats such as the gromos one do not bear
-information neither about the atom types nor about the atomic radii. 
+information neither about the atom types nor about the atomic radii.
 In this case :py:obj:`~Pytim` (starting from v 0.6.1) chooses the corresponding radius using the
 closest lexycographic match (with higher weight on the first letter)
-to the Gromos 43A1 forcefield types. Alternatively, it is possible 
+to the Gromos 43A1 forcefield types. Alternatively, it is possible
 to choose parameters from other forcefields provided with :py:obj:`Pytim`
 (Amber 03 and Charmm 27, as of v 0.6.1), or to provide a custom one.
 We make here several examples using a methanol box:
@@ -34,7 +34,7 @@ You can safely ignore any warning about missing atomtypes / masses in
 
 **Case 1: built-in forcefields**
 
-As there is no specific information in the gromos input file regarding atomic types,  these are 
+As there is no specific information in the gromos input file regarding atomic types,  these are
 assigned by :py:obj:`MDAnalysis` using the first letter of the atom name.
 
 >>> print u.residues[0].atoms.types
@@ -43,7 +43,7 @@ assigned by :py:obj:`MDAnalysis` using the first letter of the atom name.
 >>> print u.residues[0].atoms.names
 ['Me1' 'O2' 'H3']
 
-When the interface is initialized, :py:obj:`Pytim` searches by default for the best 
+When the interface is initialized, :py:obj:`Pytim` searches by default for the best
 match from the gromos 43A1 forcefield. It is possible to see explicitly the
 choices by passing the option `warnings=True`
 
@@ -51,7 +51,7 @@ choices by passing the option `warnings=True`
 guessed radii:  {'H3': 0.0, 'Me1': 1.8230510193786977, 'O2': 1.312927017714457} You can override this by using, e.g.: pytim.ITIM (u,radii_dict={ 'H3':1.2 , ... } )
 
 The Gromos 43A1, Amber 03 and Charmm 27 forcefields are accessible throught labels provided in  the :py:mod:`~pytim.datafiles` module. The radii can be extracted
-using the :py:func:`pytim_data.vdwradii()`  function 
+using the :py:func:`pytim_data.vdwradii()`  function
 
 >>> gromos  = pytim_data.vdwradii(G43A1_TOP)
 
@@ -66,14 +66,14 @@ and can be passed to :py:obj:`Pytim` through the `radii_dict` option, for exampl
 
 **Case 2: custom dictionary of radii**
 
-The custom dictionary should provide the atomtypes as keys 
+The custom dictionary should provide the atomtypes as keys
 and the radii as values. This database will override the standard one (new behavior in 0.6.1):
 
 >>> u = mda.Universe(METHANOL_GRO)
 >>> mydict    = {'Me':1.6, 'O':1.5, 'H':0.0}
 >>> interface = pytim.ITIM(u,radii_dict=mydict)
 >>> print u.residues[0].atoms.radii
-[ 1.6  1.5  0. ]
+[1.6 1.5 0. ]
 
 **Case 3: overriding the default match**
 

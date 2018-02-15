@@ -58,23 +58,27 @@
 <h2>Module: chacon_tarazona<a class="headerlink" href="#module-chacon-tarazona" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytim.chacon_tarazona.ChaconTarazona">
-<em class="property">class </em><code class="descclassname">pytim.chacon_tarazona.</code><code class="descname">ChaconTarazona</code><span class="sig-paren">(</span><em>universe</em>, <em>alpha=2.0</em>, <em>tau=1.5</em>, <em>group=None</em>, <em>radii_dict=None</em>, <em>max_layers=1</em>, <em>normal='guess'</em>, <em>molecular=True</em>, <em>info=True</em>, <em>mesh=None</em>, <em>centered=False</em>, <em>warnings=False</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="docutils">
-<dt>Identifies the dividing surface using the Chacon-Tarazona method</dt>
-<dd>(Chacón, E.; Tarazona, P. Phys. Rev. Lett. 91, 166103,2003)
-(Tarazona, P.; Chacón, E. Phys. Rev. B 70, 235407,2004)</dd>
-</dl>
+<em class="property">class </em><code class="descclassname">pytim.chacon_tarazona.</code><code class="descname">ChaconTarazona</code><span class="sig-paren">(</span><em>universe</em>, <em>alpha=2.0</em>, <em>tau=1.5</em>, <em>group=None</em>, <em>radii_dict=None</em>, <em>max_layers=1</em>, <em>normal='guess'</em>, <em>molecular=True</em>, <em>info=True</em>, <em>mesh=None</em>, <em>centered=False</em>, <em>warnings=False</em>, <em>autoassign=True</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identifies the dividing surface using the Chacon-Tarazona method</p>
+<p><em>(Chacón, E.; Tarazona, P. Phys. Rev. Lett. 91, 166103, 2003)</em>
+<em>(Tarazona, P.; Chacón, E. Phys. Rev. B 70, 235407, 2004)</em></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>universe</strong> (<em>Universe</em>) – the MDAnalysis universe</li>
-<li><strong>alpha</strong> (<em>float</em>) – molecular scale cutoff</li>
-<li><strong>tau</strong> (<em>float</em>) – particles within this distance form the                              surface will be added durin the                              self-consistent procedure.</li>
-<li><strong>molecular</strong> (<em>bool</em>) – Switches between search of interfacial                              molecules / atoms (default: True)</li>
-<li><strong>group</strong> (<em>AtomGroup</em>) – compute the density using this group</li>
-<li><strong>radii_dict</strong> (<em>dict</em>) – dictionary with the atomic radii of the                              elements in the group. If None is                              supplied, the default one (from MDAnalysis)                              will be used.</li>
+<li><strong>universe</strong> (<em>Universe</em>) – The MDAnalysis universe</li>
+<li><strong>alpha</strong> (<em>float</em>) – Molecular scale cutoff</li>
+<li><strong>tau</strong> (<em>float</em>) – Particles within this distance form the
+surface will be added during the
+self-consistent procedure.</li>
+<li><strong>molecular</strong> (<em>bool</em>) – Switches between search of interfacial
+molecules / atoms (default: True)</li>
+<li><strong>group</strong> (<em>AtomGroup</em>) – Compute the density using this group</li>
+<li><strong>radii_dict</strong> (<em>dict</em>) – Dictionary with the atomic radii of the
+elements in the group. If None is supplied,
+the default one (from GROMOS43a1) will be
+used.</li>
 </ul>
 </td>
 </tr>
@@ -89,7 +93,7 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;name OW&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ChaconTarazona</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">2.</span><span class="p">,</span><span class="n">tau</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">info</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;CT.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="nb">repr</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">))</span>
 <span class="go">array([[&lt;AtomGroup with 175 atoms&gt;],</span>
 <span class="go">       [&lt;AtomGroup with 159 atoms&gt;]], dtype=object)</span>
 </pre></div>
@@ -101,9 +105,15 @@
 </dd></dl>
 
 <dl class="attribute">
+<dt id="pytim.chacon_tarazona.ChaconTarazona.autoassign">
+<code class="descname">autoassign</code><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona.autoassign" title="Permalink to this definition">¶</a></dt>
+<dd><p>(bool) assign layers every time a frame changes</p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="pytim.chacon_tarazona.ChaconTarazona.cluster_cut">
 <code class="descname">cluster_cut</code><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona.cluster_cut" title="Permalink to this definition">¶</a></dt>
-<dd><p>(real) cutoff for phaseidentification</p>
+<dd><p>(real) cutoff for phase identification</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -127,7 +137,15 @@
 <dl class="attribute">
 <dt id="pytim.chacon_tarazona.ChaconTarazona.itim_group">
 <code class="descname">itim_group</code><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona.itim_group" title="Permalink to this definition">¶</a></dt>
-<dd><p>(AtomGroup) the group,the surface of which should be computed</p>
+<dd><p>(AtomGroup) the group, the surface of which should be computed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytim.chacon_tarazona.ChaconTarazona.label_planar_sides">
+<code class="descname">label_planar_sides</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona.label_planar_sides" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign to all layers a label (the beta tempfactor)
+that can be used in pdb files. Additionally, set
+the new layers and sides.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -139,7 +157,7 @@
 <dl class="attribute">
 <dt id="pytim.chacon_tarazona.ChaconTarazona.molecular">
 <code class="descname">molecular</code><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona.molecular" title="Permalink to this definition">¶</a></dt>
-<dd><p>(bool) wheter to computesurface atoms or surface molecules</p>
+<dd><p>(bool) whether to compute surface atoms or surface molecules</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -154,12 +172,6 @@
 <dd><p>(dict) custom atomic radii</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pytim.chacon_tarazona.ChaconTarazona.savepdb">
-<code class="descname">savepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>multiframe=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona.savepdb" title="Permalink to this definition">¶</a></dt>
-<dd><p>An alias to <a class="reference internal" href="#pytim.chacon_tarazona.ChaconTarazona.writepdb" title="pytim.chacon_tarazona.ChaconTarazona.writepdb"><code class="xref py py-func docutils literal"><span class="pre">writepdb()</span></code></a></p>
-</dd></dl>
-
 <dl class="attribute">
 <dt id="pytim.chacon_tarazona.ChaconTarazona.surfaces">
 <code class="descname">surfaces</code><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona.surfaces" title="Permalink to this definition">¶</a></dt>
@@ -168,25 +180,20 @@
 
 <dl class="method">
 <dt id="pytim.chacon_tarazona.ChaconTarazona.writepdb">
-<code class="descname">writepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>group='all'</em>, <em>multiframe=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona.writepdb" title="Permalink to this definition">¶</a></dt>
+<code class="descname">writepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>group='all'</em>, <em>multiframe=True</em>, <em>tempfactors=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.chacon_tarazona.ChaconTarazona.writepdb" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the frame to a pdb file, marking the atoms belonging
-to the layers with different beta factor.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> – string  – the output file name</li>
-<li><strong>centered</strong> – string  – ‘origin’, ‘middle’, or ‘no’</li>
-<li><strong>group</strong> – AtomGroup – if ‘all’ is passed, the universe is used</li>
-<li><strong>multiframe</strong> – boolean – append to pdb file if True</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Example: save the positions (centering the interface in the cell) without appending</p>
+to the layers with different beta factors.</p>
+<p>:param str       filename   : the output file name
+:param str       centered   : ‘origin’, ‘middle’, or ‘no’
+:param AtomGroup group      : if ‘all’ is passed, use universe
+:param bool      multiframe : append to pdb file if True
+:param ndarray   tempfactors: use this array as temp (beta) factors</p>
+<dl class="docutils">
+<dt>Example: save the positions (centering the interface in the cell)</dt>
+<dd>without appending</dd>
+</dl>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim.datafiles</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
@@ -195,14 +202,18 @@ to the layers with different beta factor.</p>
 </pre></div>
 </div>
 <dl class="docutils">
-<dt>Example: save the positions without centering the interface. This will</dt>
-<dd>not shift the atoms from the original position (still, they will
-be put into the basic cell).
-The :multiframe: option set to :False: will overwrite the file.</dd>
+<dt>Example: save the positions without centering the interface. This</dt>
+<dd>will not shift the atoms from the original position
+(still, they will be put into the basic cell).
+The <a href="#id1"><span class="problematic" id="id2">:param:`multiframe`</span></a> option set to :False: will
+overwrite the file</dd>
 </dl>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Note that if GITIM is used, and the <a href="#id3"><span class="problematic" id="id4">:param:`symmetry`</span></a> option is
+different from ‘planar’, the <a href="#id5"><span class="problematic" id="id6">:param:`centered='origin'`</span></a> option is
+equivalent to <a href="#id7"><span class="problematic" id="id8">:param:`centered='middle'`</span></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -243,6 +254,7 @@ The :multiframe: option set to :False: will overwrite the file.</dd>
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="newproperties.html">New properties of Atoms</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul class="current">
