@@ -160,7 +160,7 @@ class Interface(object):
 
                     # we mark them initially as non-main-cluster, some will be
                     # overwritten
-                    self.label_group(extra, cluster=1)
+                    #self.label_group(extra, cluster=1)
                     self.cluster_group += extra[x_ids_other]
 
             # next, we add the atoms belonging to the main phase
@@ -173,18 +173,50 @@ class Interface(object):
                 self.cluster_group, self.cluster_cut[0],
                 self.cluster_threshold_density, self.molecular)
             labels = np.array(labels)
-            # the label of atoms in the largest cluster
+
+            # counts is not necessarily ordered by size of cluster.
+            sorting = np.argsort(counts)[::-1]
+            # labels for atoms in each cluster starting from the largest
+            unique_labels = np.sort(np.unique(labels[labels > -1]))
+            # by default, all elements of the cluster_group are in
+            # single-molecule/atom clusters. We will update them right after.
+            self.label_group(self.cluster_group,cluster=-1)
+            # we go in reverse order to let smaller labels (bigger clusters)
+            # overwrite larger labels (smaller cluster) when the molecular
+            # option is used.
+            for el in unique_labels[::-1]:
+                # select a label
+                cond = np.where(labels == el)
+                if self.molecular is True:
+                    g_ = self.cluster_group[cond].residues.atoms
+                else:
+                    g_ = self.cluster_group[cond]
+                # probably we need an example here, say:
+                # counts = [ 61, 1230, 34, 0, ...  0 ,0 ]
+                # labels = [ 0, 1, 2, 1, -1  ....  -1 ]
+                # we have three clusters, of 61, 1230 and 34 atoms.
+                # There are 61 labels '0'
+                #         1230 labels '1'
+                #           34 labels '2'
+                #         the remaining are '-1'
+                #
+                # sorting = [1,0,2,3,....] i.e. the largest element is in
+                #     (1230) position 1, the next (61) is in position 0, ...
+                # Say, g_ is now the group with label '1' (the biggest cluster)
+                # Using argwhere(sorting==1) returns exactly 0 -> the right
+                # ordered label for the largest cluster.
+                self.label_group(g_ ,cluster =  np.argwhere(sorting==el)[0,0])
+            # now that labels are assigned for each of the clusters,
+            # we can restric the cluster group to the largest cluster.
+
             label_max = np.argmax(counts)
-            # the indices (within the group) of the largest cluster
             ids_max = np.where(labels == label_max)[0]
             self.cluster_group = self.cluster_group[ids_max]
             self.n_neighbors = neighbors
-
         else:
             self.cluster_group = self.itim_group
-
-        self.label_group(self.itim_group, cluster=1)
-        self.label_group(self.cluster_group, cluster=0)
+            self.label_group(self.itim_group, cluster=1)
+            self.label_group(self.cluster_group, cluster=0)
 
     def reset_labels(self):
         self.label_group(
@@ -319,7 +351,8 @@ class Interface(object):
                  filename='layers.pdb',
                  centered='no',
                  group='all',
-                 multiframe=True):
+                 multiframe=True,
+                 tempfactors=None):
         """ Write the frame to a pdb file, marking the atoms belonging
             to the layers with different beta factors.
 
@@ -327,6 +360,7 @@ class Interface(object):
             :param str       centered   : 'origin', 'middle', or 'no'
             :param AtomGroup group      : if 'all' is passed, use universe
             :param bool      multiframe : append to pdb file if True
+            :param ndarray   tempfactors: use this array as temp (beta) factors
 
             Example: save the positions (centering the interface in the cell)
                      without appending
@@ -357,7 +391,8 @@ class Interface(object):
             filename=filename,
             centered=centered,
             group=group,
-            multiframe=multiframe)
+            multiframe=multiframe,
+            tempfactors=tempfactors)
 
 
 #

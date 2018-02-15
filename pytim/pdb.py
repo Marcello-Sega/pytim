@@ -9,7 +9,8 @@ def _writepdb(interface,
               filename='layers.pdb',
               centered='no',
               group='all',
-              multiframe=True):
+              multiframe=True,
+              tempfactors=None):
     """
 
     Write the frame to a pdb file: please use :func:`Interface.writepdb`.
@@ -84,6 +85,11 @@ def _writepdb(interface,
     else:
         interface.group = interface.universe.atoms
 
+    # we back up the original tempfactors and assign the new ones
+    if tempfactors is not None:
+        _tf = interface.group.atoms.tempfactors.copy()
+        interface.group.tempfactors = tempfactors[:]
+
     temp_pos = np.copy(interface.universe.atoms.positions)
     move_to_origin = False
     options = {
@@ -123,3 +129,8 @@ def _writepdb(interface,
     interface.PDB[filename].write(interface.group.atoms)
     interface.PDB[filename].pdbfile.flush()
     interface.universe.atoms.positions = np.copy(temp_pos)
+
+    # we copy back the original tempfactors
+    if tempfactors is not None:
+        interface.group.tempfactors = _tf[:]
+
