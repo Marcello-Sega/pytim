@@ -9,7 +9,7 @@ import utilities
 
 
 class Interface(object):
-    """ The Interface metaclass. Classes for interfacial determination 
+    """ The Interface metaclass. Classes for interfacial determination
 	(ITIM, GITIM,...) are derived from this one
     """
     __metaclass__ = ABCMeta
@@ -320,6 +320,38 @@ class Interface(object):
                  centered='no',
                  group='all',
                  multiframe=True):
+        """ Write the frame to a pdb file, marking the atoms belonging
+            to the layers with different beta factors.
+
+            :param str       filename   : the output file name
+            :param str       centered   : 'origin', 'middle', or 'no'
+            :param AtomGroup group      : if 'all' is passed, use universe
+            :param bool      multiframe : append to pdb file if True
+
+            Example: save the positions (centering the interface in the cell)
+                     without appending
+
+            >>> import pytim
+            >>> import pytim.datafiles
+            >>> import MDAnalysis as mda
+            >>> from pytim.datafiles import WATER_GRO
+            >>> u = mda.Universe(WATER_GRO)
+            >>> interface = pytim.ITIM(u)
+            >>> interface.writepdb('layers.pdb',multiframe=False)
+
+            Example: save the positions without centering the interface. This
+                     will not shift the atoms from the original position
+                     (still, they will be put into the basic cell).
+                     The :param:`multiframe` option set to :False: will
+                     overwrite the file
+
+            >>> interface.writepdb('layers.pdb',centered='no')
+
+            Note that if GITIM is used, and the :param:`symmetry` option is
+            different from 'planar', the :param:`centered='origin'` option is
+            equivalent to :param:`centered='middle'`.
+        """
+
         _writepdb(
             self,
             filename=filename,

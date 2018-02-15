@@ -10,33 +10,75 @@ def _writepdb(interface,
               centered='no',
               group='all',
               multiframe=True):
-    """ Write the frame to a pdb file, marking the atoms belonging
-        to the layers with different beta factors.
-
-        :param str       filename   : the output file name
-        :param str       centered   : 'origin', 'middle', or 'no'
-        :param AtomGroup group      : if 'all' is passed, the universe is used
-        :param bool      multiframe : append to pdb file if True
-
-        Example: save the positions (centering the interface in the cell)
-                 without appending
-
-        >>> import pytim
-        >>> import pytim.datafiles
-        >>> import MDAnalysis as mda
-        >>> from pytim.datafiles import WATER_GRO
-        >>> u = mda.Universe(WATER_GRO)
-        >>> interface = pytim.ITIM(u)
-        >>> interface.writepdb('layers.pdb',multiframe=False)
-
-        Example: save the positions without centering the interface. This will
-                 not shift the atoms from the original position (still, they
-                 will be put into the basic cell).
-                 The :multiframe: option set to :False: will overwrite the file
-
-        >>> interface.writepdb('layers.pdb',centered='no')
-
     """
+
+    Write the frame to a pdb file: please use :func:`Interface.writepdb`.
+
+    Tests:
+
+    >>> import pytim
+    >>> import MDAnalysis as mda
+    >>> import numpy as np
+    >>> np.set_printoptions(precision=2)
+    >>> print('micelle')
+    micelle
+    >>> u = mda.Universe(pytim.datafiles.MICELLE_PDB)
+    >>> print(u.atoms[0].position)
+    [22.39 33.74 44.23]
+    >>> g = u.select_atoms('resname DPC')
+    >>> inter = pytim.GITIM(u,group=g,symmetry='generic')
+    >>> for centering in ['no', 'middle', 'origin']:
+    ... 	name='gitim.micelle.'+centering+'.pdb'
+    ... 	inter.writepdb(name,centered=centering,multiframe=False)
+    ... 	u2 = mda.Universe(name)
+    ... 	print(u2.atoms[0].position)
+    [22.39 33.74 44.23]
+    [17.78 25.22 46.84]
+    [17.78 25.22 46.84]
+    >>>
+    >>> print('water gitim generic')
+    water gitim generic
+    >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
+    >>> print(u.atoms[0].position)
+    [28.62  2.01 11.37]
+    >>> g = u.select_atoms('name OW')
+    >>> inter = pytim.GITIM(u,group=g,symmetry='generic')
+    >>> for centering in ['no', 'middle', 'origin']:
+    ... 	name='gitim.water.generic.'+centering+'.pdb'
+    ... 	inter.writepdb(name,centered=centering,multiframe=False)
+    ... 	u2 = mda.Universe(name)
+    ... 	print(u2.atoms[0].position)
+    [28.62  2.01 11.37]
+    [30.92 41.04 62.88]
+    [30.92 41.04 62.88]
+    >>>
+    >>> print('water gitim planar')
+    water gitim planar
+    >>> g = u.select_atoms('name OW')
+    >>> inter = pytim.GITIM(u,group=g,symmetry='planar')
+    >>> for centering in ['no', 'middle', 'origin']:
+    ... 	name='gitim.water.planar.'+centering+'.pdb'
+    ... 	inter.writepdb(name,centered=centering,multiframe=False)
+    ... 	u2 = mda.Universe(name)
+    ... 	print(u2.atoms[0].position)
+    [28.62  2.01 11.37]
+    [28.62  2.01 62.88]
+    [ 28.62   2.01 -12.12]
+    >>>
+    >>> print ('water itim')
+    water itim
+    >>> g = u.select_atoms('name OW')
+    >>> inter = pytim.ITIM(u,group=g)
+    >>> for centering in ['no', 'middle', 'origin']:
+    ... 	name='itim.water.'+centering+'.pdb'
+    ... 	inter.writepdb(name,centered=centering,multiframe=False)
+    ... 	u2 = mda.Universe(name)
+    ... 	print(u2.atoms[0].position)
+    [28.62  2.01 11.37]
+    [28.62  2.01 62.88]
+    [ 28.62   2.01 -12.12]
+    """
+
     if isinstance(group, interface.universe.atoms.__class__):
         interface.group = group
     else:
