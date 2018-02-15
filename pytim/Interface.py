@@ -325,7 +325,7 @@ class Interface(object):
 
             :param str       filename   : the output file name
             :param str       centered   : 'origin', 'middle', or 'no'
-            :param AtomGroup group      : if 'all' is passed, use universe 
+            :param AtomGroup group      : if 'all' is passed, use universe
             :param bool      multiframe : append to pdb file if True
 
             Example: save the positions (centering the interface in the cell)
@@ -339,16 +339,16 @@ class Interface(object):
             >>> interface = pytim.ITIM(u)
             >>> interface.writepdb('layers.pdb',multiframe=False)
 
-            Example: save the positions without centering the interface. This 
-                     will not shift the atoms from the original position 
+            Example: save the positions without centering the interface. This
+                     will not shift the atoms from the original position
                      (still, they will be put into the basic cell).
-                     The :param:`multiframe` option set to :False: will 
+                     The :param:`multiframe` option set to :False: will
                      overwrite the file
 
             >>> interface.writepdb('layers.pdb',centered='no')
 
-            Note that if GITIM is used, and the :param:`symmetry` option is 
-            different from 'planar', the :param:`centered='origin'` option is 
+            Note that if GITIM is used, and the :param:`symmetry` option is
+            different from 'planar', the :param:`centered='origin'` option is
             equivalent to :param:`centered='middle'`.
         """
 
