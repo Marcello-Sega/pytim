@@ -158,9 +158,6 @@ class Interface(object):
                     x_label_max = np.argmax(x_counts)
                     x_ids_other = np.where(x_labels != x_label_max)[0]
 
-                    # we mark them initially as non-main-cluster, some will be
-                    # overwritten
-                    #self.label_group(extra, cluster=1)
                     self.cluster_group += extra[x_ids_other]
 
             # next, we add the atoms belonging to the main phase
