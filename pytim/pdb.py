@@ -10,7 +10,6 @@ def _writepdb(interface,
               centered='no',
               group='all',
               multiframe=True):
-
     """
 
     Write the frame to a pdb file: please use :func:`Interface.writepdb`.
