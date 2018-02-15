@@ -298,9 +298,12 @@ class Interface(object):
             utilities.centerbox(group.universe, center_direction=direction)
             if planar_to_origin is False:
                 Interface.shift_positions_to_middle(group.universe, direction)
-        if symmetry == 'spherical':
-            for xyz in ['x', 'y', 'z']:
-                Interface._center(group, xyz, halfbox_shift=False)
+        else:
+            for xyz in [0,1,2]:
+                try:
+                    Interface._center(group, xyz, halfbox_shift=False)
+                except ValueError:
+                    pass
             group.universe.atoms.pack_into_box(group.universe.dimensions[:3])
 
     def center(self, planar_to_origin=False):
@@ -323,3 +326,4 @@ class Interface(object):
             centered=centered,
             group=group,
             multiframe=multiframe)
+#
