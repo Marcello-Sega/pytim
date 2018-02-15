@@ -180,7 +180,7 @@ class Interface(object):
             unique_labels = np.sort(np.unique(labels[labels > -1]))
             # by default, all elements of the cluster_group are in
             # single-molecule/atom clusters. We will update them right after.
-            self.label_group(self.cluster_group,cluster=-1)
+            self.label_group(self.cluster_group, cluster=-1)
             # we go in reverse order to let smaller labels (bigger clusters)
             # overwrite larger labels (smaller cluster) when the molecular
             # option is used.
@@ -205,7 +205,7 @@ class Interface(object):
                 # Say, g_ is now the group with label '1' (the biggest cluster)
                 # Using argwhere(sorting==1) returns exactly 0 -> the right
                 # ordered label for the largest cluster.
-                self.label_group(g_ ,cluster =  np.argwhere(sorting==el)[0,0])
+                self.label_group(g_, cluster=np.argwhere(sorting == el)[0, 0])
             # now that labels are assigned for each of the clusters,
             # we can restric the cluster group to the largest cluster.
 
