@@ -15,7 +15,7 @@
     micelle
     center
     guessing_radii
-
+    newproperties
 
 .. toctree::
     :caption: Modules
