@@ -14,7 +14,7 @@ Profiles
 
 Time Correlation Functions
 ##########################
-.. autoclass:: pytim.correlator
+.. autoclass:: pytim.observables.Correlator
     :members:
 
 Misc

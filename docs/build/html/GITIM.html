@@ -58,7 +58,7 @@
 <h2>Module: gitim<a class="headerlink" href="#module-gitim" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytim.gitim.GITIM">
-<em class="property">class </em><code class="descclassname">pytim.gitim.</code><code class="descname">GITIM</code><span class="sig-paren">(</span><em>universe</em>, <em>group=None</em>, <em>alpha=2.0</em>, <em>normal='guess'</em>, <em>molecular=True</em>, <em>max_layers=1</em>, <em>radii_dict=None</em>, <em>cluster_cut=None</em>, <em>cluster_threshold_density=None</em>, <em>extra_cluster_groups=None</em>, <em>biggest_cluster_only=False</em>, <em>symmetry='generic'</em>, <em>centered=False</em>, <em>info=False</em>, <em>warnings=False</em>, <em>_noextrapoints=False</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.gitim.GITIM" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pytim.gitim.</code><code class="descname">GITIM</code><span class="sig-paren">(</span><em>universe</em>, <em>group=None</em>, <em>alpha=2.0</em>, <em>normal='guess'</em>, <em>molecular=True</em>, <em>max_layers=1</em>, <em>radii_dict=None</em>, <em>cluster_cut=None</em>, <em>cluster_threshold_density=None</em>, <em>extra_cluster_groups=None</em>, <em>biggest_cluster_only=False</em>, <em>symmetry='generic'</em>, <em>centered=False</em>, <em>info=False</em>, <em>warnings=False</em>, <em>autoassign=True</em>, <em>_noextrapoints=False</em>, <em>**kargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.gitim.GITIM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Identifies interfacial molecules at curved interfaces.</p>
 <p><em>(Sega, M.;&nbsp;Kantorovich, S.;&nbsp;Jedlovszky, P.; Jorge, M., J. Chem. Phys. 138, 044110, 2013)</em></p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -101,6 +101,8 @@ or  ‘planar’</li>
 <li><strong>centered</strong> (<em>bool</em>) – Center the  <code class="xref py py-obj docutils literal"><span class="pre">group</span></code></li>
 <li><strong>info</strong> (<em>bool</em>) – Print additional info</li>
 <li><strong>warnings</strong> (<em>bool</em>) – Print warnings</li>
+<li><strong>autoassign</strong> (<em>bool</em>) – If true (default) detect the interface
+every time a new frame is selected.</li>
 </ul>
 </td>
 </tr>
@@ -141,6 +143,12 @@ In this example we identify two solvation shells of glucose:</p>
 <span class="go">&lt;AtomGroup with 117 atoms&gt;</span>
 </pre></div>
 </div>
+<dl class="attribute">
+<dt id="pytim.gitim.GITIM.autoassign">
+<code class="descname">autoassign</code><a class="headerlink" href="#pytim.gitim.GITIM.autoassign" title="Permalink to this definition">¶</a></dt>
+<dd><p>(bool) assign layers every time a frame changes</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="pytim.gitim.GITIM.label_planar_sides">
 <code class="descname">label_planar_sides</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytim.gitim.GITIM.label_planar_sides" title="Permalink to this definition">¶</a></dt>
@@ -169,6 +177,44 @@ Differently from ITIM, there are no sides. Example:</p>
 <span class="go">&lt;AtomGroup with 909 atoms&gt;</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="method">
+<dt id="pytim.gitim.GITIM.writepdb">
+<code class="descname">writepdb</code><span class="sig-paren">(</span><em>filename='layers.pdb'</em>, <em>centered='no'</em>, <em>group='all'</em>, <em>multiframe=True</em>, <em>tempfactors=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.gitim.GITIM.writepdb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the frame to a pdb file, marking the atoms belonging
+to the layers with different beta factors.</p>
+<p>:param str       filename   : the output file name
+:param str       centered   : ‘origin’, ‘middle’, or ‘no’
+:param AtomGroup group      : if ‘all’ is passed, use universe
+:param bool      multiframe : append to pdb file if True
+:param ndarray   tempfactors: use this array as temp (beta) factors</p>
+<dl class="docutils">
+<dt>Example: save the positions (centering the interface in the cell)</dt>
+<dd>without appending</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim.datafiles</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">multiframe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Example: save the positions without centering the interface. This</dt>
+<dd>will not shift the atoms from the original position
+(still, they will be put into the basic cell).
+The <a href="#id1"><span class="problematic" id="id2">:param:`multiframe`</span></a> option set to :False: will
+overwrite the file</dd>
+</dl>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that if GITIM is used, and the <a href="#id3"><span class="problematic" id="id4">:param:`symmetry`</span></a> option is
+different from ‘planar’, the <a href="#id5"><span class="problematic" id="id6">:param:`centered='origin'`</span></a> option is
+equivalent to <a href="#id7"><span class="problematic" id="id8">:param:`centered='middle'`</span></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -209,6 +255,7 @@ Differently from ITIM, there are no sides. Example:</p>
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="newproperties.html">New properties of Atoms</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul class="current">

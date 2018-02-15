@@ -176,108 +176,209 @@ orthogonal to ‘z’,’y’ or ‘z’</li>
 
 </div>
 </div>
-<div class="section" id="module-pytim.profile">
-<span id="profiles"></span><h2>Profiles<a class="headerlink" href="#module-pytim.profile" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="module-profile">
-<h3>Module: profile<a class="headerlink" href="#module-profile" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="profiles">
+<h2>Profiles<a class="headerlink" href="#profiles" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="time-correlation-functions">
+<h2>Time Correlation Functions<a class="headerlink" href="#time-correlation-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="pytim.profile.Profile">
-<em class="property">class </em><code class="descclassname">pytim.profile.</code><code class="descname">Profile</code><span class="sig-paren">(</span><em>direction='z'</em>, <em>observable=None</em>, <em>interface=None</em>, <em>symmetry='default'</em>, <em>_MCnorm=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.profile.Profile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the profile (normal, or intrinsic) of a given observable
-across the simulation box.</p>
+<dt id="pytim.observables.Correlator">
+<em class="property">class </em><code class="descclassname">pytim.observables.</code><code class="descname">Correlator</code><span class="sig-paren">(</span><em>universe=None</em>, <em>observable=None</em>, <em>reference=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.observables.Correlator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the (self) correlation of an observable (scalar or vector)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>observable</strong> (<em>Observable</em>) – ‘Number’, ‘Mass’, or ‘Charge’: calculate
-the profile of this quantity. If None is
-supplied, it defaults to the number density</li>
-<li><strong>interface</strong> (<a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><em>ITIM</em></a>) – if provided, calculate the intrinsic
-profile with respect to the first layers</li>
-<li><strong>direction</strong> (<em>str</em>) – ‘x’,’y’, or ‘z’ : calculate the profile
-along this direction</li>
-<li><strong>MCnorm</strong> (<em>bool</em>) – if True (default) use a simple Monte Carlo
-estimate the effective volumes of the bins.</li>
+<li><strong>observable</strong> (<em>Observable</em>) – compute the autocorrelation of this observable.
+If the observable is None and the reference
+is not, the survival probability is computed.</li>
+<li><strong>normalize</strong> (<em>bool</em>) – normalize the correlation to 1 at t=0</li>
+<li><strong>reference</strong> (<em>AtomGroup</em>) – if the group passed to the sample() function
+changes its composition along the trajectory
+(such as a layer group), a reference group that
+includes all atoms that could appear in the
+variable group must be passed, in order to
+provide a proper normalization. See the example
+below.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Example (non-intrinsic, total profile + first 4 layers ):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.observables</span> <span class="k">import</span> <span class="n">Profile</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;name OW&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># here we calculate the profiles of oxygens only (note molecular=False)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">max_layers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">Layers</span><span class="o">=</span><span class="p">[]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># by default Profile() uses the number of atoms as an observable</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">Layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Profile</span><span class="p">())</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[::</span><span class="mi">50</span><span class="p">]:</span>
-<span class="gp">... </span>    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Layers</span><span class="p">)):</span>
-<span class="gp">... </span>        <span class="k">if</span> <span class="n">n</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
-<span class="gp">... </span>            <span class="n">group</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="n">n</span> <span class="p">]</span>
-<span class="gp">... </span>        <span class="k">else</span><span class="p">:</span>
-<span class="gp">... </span>            <span class="n">group</span> <span class="o">=</span> <span class="n">g</span>
-<span class="gp">... </span>        <span class="n">Layers</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">density</span><span class="o">=</span><span class="p">[]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">L</span> <span class="ow">in</span> <span class="n">Layers</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">low</span><span class="p">,</span><span class="n">up</span><span class="p">,</span><span class="n">avg</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">binwidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">density</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s1">&#39;profile.dat&#39;</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">low</span><span class="p">,</span><span class="n">up</span><span class="p">,</span><span class="n">density</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">density</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">density</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">density</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">density</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATERSMALL_GRO</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.utilities</span> <span class="k">import</span> <span class="n">lap</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1">#  tmpdir here is specified only for travis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">WATERSMALL_TRR</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">datafiles</span><span class="o">.</span><span class="n">pytim_data</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s1">&#39;WATERSMALL_LONG_TRR&#39;</span><span class="p">,</span><span class="n">tmpdir</span><span class="o">=</span><span class="s1">&#39;./&#39;</span><span class="p">)</span> 
+<span class="go">checking presence of a cached copy...</span>
 </pre></div>
 </div>
-<p>This results in the following profile (zooming close to the interface border)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATERSMALL_GRO</span><span class="p">,</span><span class="n">WATERSMALL_TRR</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;name OW&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">velocity</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">observables</span><span class="o">.</span><span class="n">Velocity</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">observables</span><span class="o">.</span><span class="n">Correlator</span><span class="p">(</span><span class="n">observable</span><span class="o">=</span><span class="n">velocity</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+<span class="gp">... </span>    <span class="n">corr</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vacf</span> <span class="o">=</span> <span class="n">corr</span><span class="o">.</span><span class="n">correlation</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This produces the following (steps of 1 fs):</p>
 <p>(<a class="reference external" href=".//observables-2.py">Source code</a>, <a class="reference external" href=".//observables-2.png">png</a>, <a class="reference external" href=".//observables-2.hires.png">hires.png</a>, <a class="reference external" href=".//observables-2.pdf">pdf</a>)</p>
 <div class="figure">
 <img alt="_images/observables-2.png" src="_images/observables-2.png" />
 </div>
-<p>Example (intrinsic, one layer):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<p>In order to compute the correlation for variable groups, one should proceed
+as follows:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">observables</span><span class="o">.</span><span class="n">Correlator</span><span class="p">(</span><span class="n">observable</span><span class="o">=</span><span class="n">velocity</span><span class="p">,</span><span class="n">reference</span><span class="o">=</span><span class="n">g</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># notice the molecular=False switch, in order for the</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># layer group to be made of oxygen atoms only and match</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># the reference group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span><span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># example only: sample longer for smooth results</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">10</span><span class="p">]:</span>
+<span class="gp">... </span>    <span class="n">corr</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">layer_vacf</span> <span class="o">=</span> <span class="n">corr</span><span class="o">.</span><span class="n">correlation</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In order to compute the survival probability of some atoms in a layer, it
+is possible to pass observable=None together with the reference group:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">observables</span><span class="o">.</span><span class="n">Correlator</span><span class="p">(</span><span class="n">observable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reference</span> <span class="o">=</span> <span class="n">g</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span> <span class="c1"># example only: sample longer for smooth results</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">10</span><span class="p">]:</span>
+<span class="gp">... </span>    <span class="n">corr</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">survival</span> <span class="o">=</span> <span class="n">corr</span><span class="o">.</span><span class="n">correlation</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="pytim.observables.Correlator.correlation">
+<code class="descname">correlation</code><span class="sig-paren">(</span><em>normalized=True</em>, <em>continuous=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.observables.Correlator.correlation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the autocorrelation from the sampled data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>normalized</strong> (<em>bool</em>) – normalize the correlation function to:
+its zero-time value for regular
+correlations; to the average of the
+characteristic function for the
+survival probability.</li>
+<li><strong>continuous</strong> (<em>bool</em>) – applies only when a reference group has
+been specified: if True (default) the
+contribution of a particle at time lag
+$tau=t_1-t_0$ is considered only if
+the particle did not leave the
+reference group between $t_0$ and
+$t_1$. If False, the intermittent
+correlation is calculated, and the
+above restriction is released.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># We build a fake trajectory to test the various options:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.observables</span> <span class="k">import</span> <span class="n">Profile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.observables</span> <span class="k">import</span> <span class="n">Correlator</span><span class="p">,</span> <span class="n">Velocity</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">velocities</span><span class="o">*=</span><span class="mf">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">velocities</span><span class="o">+=</span><span class="mf">1.0</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># velocity autocorrelation along x, variable group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vv</span> <span class="o">=</span> <span class="n">Correlator</span><span class="p">(</span><span class="n">observable</span><span class="o">=</span><span class="n">Velocity</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">),</span> <span class="n">reference</span><span class="o">=</span><span class="n">g</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nn</span> <span class="o">=</span> <span class="n">Correlator</span><span class="p">(</span><span class="n">reference</span><span class="o">=</span><span class="n">g</span><span class="p">)</span> <span class="c1"># survival probability in group g</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="n">vv</span><span class="p">,</span><span class="n">nn</span><span class="p">]:</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>     <span class="c1"># t=0</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>     <span class="c1"># t=1</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">g</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># t=2, exclude the second particle</span>
+<span class="gp">... </span>    <span class="n">g</span><span class="o">.</span><span class="n">velocities</span> <span class="o">/=</span> <span class="mf">2.</span> <span class="c1"># from now on v=0.5</span>
+<span class="gp">... </span>    <span class="n">c</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>     <span class="c1"># t=3</span>
+<span class="go">&gt;&gt;&gt;</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">,</span><span class="n">WATER_XTC</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s2">&quot;name OW&quot;</span><span class="p">)</span>
+<p>The timeseries sampled can be accessed using:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">vv</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span> <span class="c1"># rows refer to time, columns to particle</span>
+<span class="go">[[1.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.5, 0.5]]</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">max_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">cluster_cut</span><span class="o">=</span><span class="mf">3.5</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="n">inter</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">timeseries</span><span class="p">)</span>
+<span class="go">[[True, True], [True, True], [True, False], [True, True]]</span>
 <span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[::</span><span class="mi">50</span><span class="p">]:</span>
-<span class="gp">... </span>    <span class="n">profile</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">inter</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">low</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="n">avg</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">binwidth</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s1">&#39;profile.dat&#39;</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">low</span><span class="p">,</span><span class="n">up</span><span class="p">,</span><span class="n">avg</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>This results in the following profile:</p>
-<p>(<a class="reference external" href=".//observables-3.py">Source code</a>, <a class="reference external" href=".//observables-3.png">png</a>, <a class="reference external" href=".//observables-3.hires.png">hires.png</a>, <a class="reference external" href=".//observables-3.pdf">pdf</a>)</p>
-<div class="figure">
-<img alt="_images/observables-3.png" src="_images/observables-3.png" />
+<p>Note that the average of  the characteristic function
+$h(t)$ is done over all trajectories, including those
+that start with h=0. The correlation $&lt; h(t) h(0) &gt;$
+is divided by the average $&lt;h&gt;$ computed over all
+trajectores that extend up to a time lag $t$. The
+<cite>normalize</cite> switch has no effect.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># normalized, continuous</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">correlation</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="p">[</span> <span class="mf">7.</span><span class="o">/</span><span class="mi">7</span><span class="p">,</span> <span class="mf">4.</span><span class="o">/</span><span class="mi">5</span><span class="p">,</span> <span class="mf">2.</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mi">2</span><span class="p">]))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># normalized, intermittent</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">correlation</span><span class="p">(</span><span class="n">continuous</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="p">[</span> <span class="mf">7.</span><span class="o">/</span><span class="mi">7</span><span class="p">,</span> <span class="mf">4.</span><span class="o">/</span><span class="mi">5</span><span class="p">,</span> <span class="mf">3.</span><span class="o">/</span><span class="mi">4</span><span class="p">,</span> <span class="mf">2.</span><span class="o">/</span><span class="mi">2</span> <span class="p">]))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>The autocorrelation functions are calculated by taking
+into account in the average only those trajectory that
+start with $h=1$ (i.e., which start within the reference
+group). The normalization is done by dividing the
+correlation at time lag $t$ by its value at time lag 0
+computed over all trajectories that extend up to time
+lag $t$ and do not start with $h=0$.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># not normalizd, intermittent</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">vv</span><span class="o">.</span><span class="n">correlation</span><span class="p">(</span><span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">continuous</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.25</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.25</span><span class="p">)</span><span class="o">/</span><span class="mi">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.5</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">5</span> <span class="p">;</span> <span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.5</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span> <span class="p">;</span> <span class="n">c3</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="p">[</span> <span class="n">c0</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">c3</span><span class="p">]))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># check normalization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">vv</span><span class="o">.</span><span class="n">correlation</span><span class="p">(</span><span class="n">continuous</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="n">corr</span><span class="o">/</span><span class="n">corr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># not normalizd, continuous</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">vv</span><span class="o">.</span><span class="n">correlation</span><span class="p">(</span><span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">continuous</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.25</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.25</span><span class="p">)</span><span class="o">/</span><span class="mi">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">c1</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.5</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">5</span> <span class="p">;</span> <span class="n">c2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span><span class="o">/</span><span class="mi">4</span> <span class="p">;</span> <span class="n">c3</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="o">+</span><span class="mf">0.</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="p">[</span> <span class="n">c0</span><span class="p">,</span> <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">c3</span><span class="p">]))</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># check normalization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">vv</span><span class="o">.</span><span class="n">correlation</span><span class="p">(</span><span class="n">continuous</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="n">corr</span><span class="o">/</span><span class="n">corr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">True</span>
+</pre></div>
 </div>
 </dd></dl>
 
-</div>
-</div>
-<div class="section" id="time-correlation-functions">
-<h2>Time Correlation Functions<a class="headerlink" href="#time-correlation-functions" title="Permalink to this headline">¶</a></h2>
-<dl class="attribute">
-<dt id="pytim.correlator">
-<code class="descclassname">pytim.</code><code class="descname">correlator</code><a class="headerlink" href="#pytim.correlator" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#pytim.correlator" title="pytim.correlator"><code class="xref py py-class docutils literal"><span class="pre">pytim.correlator</span></code></a></p>
+<dl class="method">
+<dt id="pytim.observables.Correlator.sample">
+<code class="descname">sample</code><span class="sig-paren">(</span><em>group</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.observables.Correlator.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample the timeseries for the autocorrelation function</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>group</strong> (<em>AtomGroup</em>) – compute the observable using this group</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -285,7 +386,7 @@ estimate the effective volumes of the bins.</li>
 <h2>Misc<a class="headerlink" href="#misc" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="pytim.observables.LayerTriangulation">
-<em class="property">class </em><code class="descclassname">pytim.observables.</code><code class="descname">LayerTriangulation</code><span class="sig-paren">(</span><em>interface</em>, <em>layer=1</em>, <em>return_triangulation=True</em>, <em>return_statistics=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.observables.LayerTriangulation" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pytim.observables.</code><code class="descname">LayerTriangulation</code><span class="sig-paren">(</span><em>interface</em>, <em>return_triangulation=True</em>, <em>return_statistics=True</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.observables.LayerTriangulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the triangulation of the surface and some associated
 quantities. Notice that this forces the interface to be centered
 in the box.</p>
@@ -327,24 +428,39 @@ triangulation used for the interpolation</li>
 
 <dl class="class">
 <dt id="pytim.observables.IntrinsicDistance">
-<em class="property">class </em><code class="descclassname">pytim.observables.</code><code class="descname">IntrinsicDistance</code><span class="sig-paren">(</span><em>interface</em>, <em>layer=1</em>, <em>symmetry='default'</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.observables.IntrinsicDistance" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">pytim.observables.</code><code class="descname">IntrinsicDistance</code><span class="sig-paren">(</span><em>interface</em>, <em>symmetry='default'</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.observables.IntrinsicDistance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the intrinsic distance calculation.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>interface</strong> (<em>PYTIM</em>) – compute the intrinsic distance with respect
-to this interface</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>interface</strong> (<em>PYTIM</em>) – compute the intrinsic distance with respect
+to this interface</li>
+<li><strong>symmetry</strong> (<em>str</em>) – force calculation using this symmetry, if
+availabe (e.g. ‘generic’, ‘planar’, ‘spherical’)
+If ‘default’, uses the symmetry selected in
+the PYTIM interface instance.</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
-<dl class="docutils">
-<dt>:param str      symmetry <span class="classifier-delimiter">:</span> <span class="classifier">force calculation using this symmetry, if</span></dt>
-<dd>availabe (e.g. ‘generic’, ‘planar’, ‘spherical’)
-If ‘default’, uses the symmetry selected in
-the PYTIM interface instance.</dd>
-</dl>
-<p>Example: TODO</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim</span> <span class="k">import</span> <span class="n">observables</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">MICELLE_PDB</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">micelle</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">waterox</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;type O and resname SOL&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">GITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">micelle</span><span class="p">,</span> <span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dist</span>  <span class="o">=</span> <span class="n">observables</span><span class="o">.</span><span class="n">IntrinsicDistance</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="n">inter</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">waterox</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">[25.733  8.579  8.852 ... 18.566 13.709  9.876]</span>
+</pre></div>
+</div>
 <dl class="method">
 <dt id="pytim.observables.IntrinsicDistance.compute">
 <code class="descname">compute</code><span class="sig-paren">(</span><em>inp</em>, <em>kargs=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.observables.IntrinsicDistance.compute" title="Permalink to this definition">¶</a></dt>
@@ -556,6 +672,7 @@ three vectors.</p>
 <li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="newproperties.html">New properties of Atoms</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Modules</span></p>
 <ul class="current">
@@ -568,10 +685,7 @@ three vectors.</p>
 <li class="toctree-l3"><a class="reference internal" href="#module-rdf">Module: rdf</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#module-pytim.profile">Profiles</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#module-profile">Module: profile</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#profiles">Profiles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#time-correlation-functions">Time Correlation Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#misc">Misc</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#basic-observables">Basic Observables</a></li>
