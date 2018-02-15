@@ -299,7 +299,7 @@ class Interface(object):
             if planar_to_origin is False:
                 Interface.shift_positions_to_middle(group.universe, direction)
         else:
-            for xyz in [0,1,2]:
+            for xyz in [0, 1, 2]:
                 try:
                     Interface._center(group, xyz, halfbox_shift=False)
                 except ValueError:
@@ -326,4 +326,6 @@ class Interface(object):
             centered=centered,
             group=group,
             multiframe=multiframe)
+
+
 #
