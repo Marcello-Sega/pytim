@@ -26,6 +26,11 @@ dist_threads = 4
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('./pytim'))
+version = {}
+with open("../../pytim/version.py") as fp:
+    exec(fp.read(), version)
+
+
 
 # -- General configuration ------------------------------------------------
 

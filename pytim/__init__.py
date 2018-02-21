@@ -7,3 +7,4 @@ from .gitim import GITIM
 from .willard_chandler import WillardChandler
 from .chacon_tarazona import ChaconTarazona
 from . import observables, utilities, datafiles
+from .version import __version__
