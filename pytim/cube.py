@@ -87,7 +87,7 @@ def write_file(filename,
             natoms = len(group.atoms)
         else:
             natoms = 0
-        grid_size = np.array(grid_size,dtype=int)
+        grid_size = np.array(grid_size, dtype=int)
         shift = np.array([1, 1, 1]) * spacing / 2.
         #spacing =  spacing*(grid_size+1.)/grid_size
         f.write('CPMD CUBE FILE\n')

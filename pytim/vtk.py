@@ -26,7 +26,9 @@ def write_scalar_grid(filename, grid_size, spacing, scalars):
     with open(filename, "w") as f:
         f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
         f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
-        f.write(_format_vector(np.asarray(grid_size,dtype=int), format_str="{:d}") + "\n")
+        f.write(
+            _format_vector(
+                np.asarray(grid_size, dtype=int), format_str="{:d}") + "\n")
         f.write("SPACING " + _format_vector(spacing) + "\n")
         f.write("\n")
         f.write("ORIGIN " + _format_vector(spacing / 2.) + "\n")
