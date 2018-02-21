@@ -21,8 +21,6 @@ and :class:`~pytim.gitim.GITIM`, but not for
 are added to all atoms in the universe: :obj:`layers`, :obj:`clusters`
 and, in case of :class:`~pytim.itim.ITIM`, also :obj:`sides`.
 
-.. note::
-
 Note that, differently from what happens in :obj:`MDAnalysys`, also some of the standard properties (e.g. :obj:`radii`, :obj:`tempfactors`, :obj:`bfactors`,  :obj:`elements`) will *always* be associated to the atoms, *even if* the information is not present in the configuration file/trajectory (some heuristics is used by pytim to guess their values) 
 
 Layers
