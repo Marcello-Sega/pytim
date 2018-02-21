@@ -11,18 +11,18 @@ from sys import stderr
 
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
-from utilities_geometry import trim_triangulated_surface
-from utilities_geometry import triangulated_surface_stats
-from utilities_geometry import polygonalArea, fit_sphere, EulerRotation
-from utilities_geometry import find_surface_triangulation
-from utilities_geometry import pbc_compact, pbc_wrap
-from utilities_pbc import generate_periodic_border, rebox
-from gaussian_kde_pbc import gaussian_kde_pbc
-from utilities_dbscan import do_cluster_analysis_dbscan
+from .utilities_geometry import trim_triangulated_surface
+from .utilities_geometry import triangulated_surface_stats
+from .utilities_geometry import polygonalArea, fit_sphere, EulerRotation
+from .utilities_geometry import find_surface_triangulation
+from .utilities_geometry import pbc_compact, pbc_wrap
+from .utilities_pbc import generate_periodic_border, rebox
+from .gaussian_kde_pbc import gaussian_kde_pbc
+from .utilities_dbscan import do_cluster_analysis_dbscan
 
-from atoms_maps import atoms_maps
-from utilities_mesh import compute_compatible_mesh_params
-from utilities_mesh import generate_grid_in_box
+from .atoms_maps import atoms_maps
+from .utilities_mesh import compute_compatible_mesh_params
+from .utilities_mesh import generate_grid_in_box
 
 
 def lap(show=False):

@@ -8,7 +8,7 @@ import numpy as np
 from scipy import stats
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
-from observable import Observable
+from .observable import Observable
 
 
 class Number(Observable):

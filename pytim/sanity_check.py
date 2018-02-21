@@ -7,8 +7,8 @@ import MDAnalysis
 from . import datafiles
 from . import utilities
 from . import messages
-from properties import Layers, Clusters, Sides, _create_property
-from properties import guess_radii, _missing_attributes
+from .properties import Layers, Clusters, Sides, _create_property
+from .properties import guess_radii, _missing_attributes
 
 
 class SanityCheck(object):
@@ -30,7 +30,9 @@ class SanityCheck(object):
                 guess_radii(self.interface, group=g)
                 radii = np.copy(g.radii)
                 total += g
-        avg = round(np.average(self.interface.radii_dict.values()), 3)
+        vals = list(self.interface.radii_dict.values())
+        vals = np.array(vals).astype(float)
+        avg = round(np.average(vals), 3)
 
         nantypes = total.types[np.isnan(total.radii)]
         radii = np.copy(total.radii)

@@ -6,12 +6,12 @@
 """
 from __future__ import print_function
 import numpy as np
-import utilities
-from surface import SurfaceFlatInterface as Surface
-from sanity_check import SanityCheck
+from . import utilities
+from .surface import SurfaceFlatInterface as Surface
+from .sanity_check import SanityCheck
 
-from Interface import Interface
-from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+from .Interface import Interface
+from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
 
 class ChaconTarazona(Interface):
@@ -136,7 +136,7 @@ class ChaconTarazona(Interface):
         pos = utilities.get_pos(self.cluster_group, normal=self.normal)
         for ind in sorted_ind:
             part = pos[ind]
-            nx, ny = map(int, 2.999 * part[0:2] / box[0:2])
+            nx, ny = list(map(int, 2.999 * part[0:2] / box[0:2]))
             if sectors[nx, ny] == 0:
                 pivot.append(ind)
                 sectors[nx, ny] = 1

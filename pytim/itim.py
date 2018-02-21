@@ -8,16 +8,19 @@
 from __future__ import print_function
 from multiprocessing import Process, Queue
 import numpy as np
-from __builtin__ import zip as builtin_zip
+try:
+    from __builtin__ import zip as builtin_zip
+except:
+    from builtins import zip as builtin_zip
 from scipy.spatial import cKDTree
 
 from . import messages
-import utilities
-from surface import SurfaceFlatInterface as Surface
-from sanity_check import SanityCheck
+from . import utilities
+from .surface import SurfaceFlatInterface as Surface
+from .sanity_check import SanityCheck
 
-from Interface import Interface
-from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+from .Interface import Interface
+from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
 
 class ITIM(Interface):
@@ -231,7 +234,7 @@ J. Comp. Chem. 29, 945, 2008)*
             _x = np.linspace(0, box[0], num=self.mesh_nx, endpoint=False)
             _y = np.linspace(0, box[1], num=self.mesh_ny, endpoint=False)
             _X, _Y = np.meshgrid(_x, _y)
-            self.meshpoints = builtin_zip(_X.ravel(), _Y.ravel())
+            self.meshpoints = list(builtin_zip(_X.ravel(), _Y.ravel()))
             # cKDTree requires a box vetor with length double the dimension,
             _box = np.zeros(4)
             _box[:2] = box[:2]
@@ -313,7 +316,7 @@ J. Comp. Chem. 29, 945, 2008)*
 
     def _prepare_layers_assignment(self):
         self._assign_mesh()
-        size = (2, self.max_layers, self.mesh_nx * self.mesh_ny)
+        size = (2, int(self.max_layers), int(self.mesh_nx) * int(self.mesh_ny))
         self.mask = np.zeros(size, dtype=int)
 
         # this can be used later to shift back to the original shift

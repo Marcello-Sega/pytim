@@ -9,12 +9,12 @@ from __future__ import print_function
 import numpy as np
 from skimage import measure
 
-import messages
-import utilities, vtk, cube, wavefront_obj
-from sanity_check import SanityCheck
+from . import messages
+from . import utilities, vtk, cube, wavefront_obj
+from .sanity_check import SanityCheck
 
-from Interface import Interface
-from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+from .Interface import Interface
+from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
 
 class Writevtk(object):
@@ -328,7 +328,7 @@ class WillardChandler(Interface):
         # Tavares. Efficient implementation of Marching Cubes’ cases with
         # topological guarantees. Journal of Graphics Tools 8(2) pp. 1-15
         # (december 2003). DOI: 10.1080/10867651.2003.10487582
-        volume = self.density_field.reshape(tuple(ngrid[::-1]))
+        volume = self.density_field.reshape(tuple(np.array(ngrid[::-1]).astype(int)))
         verts, faces, normals, values = measure.marching_cubes(
             volume, None, spacing=tuple(spacing))
         # note that len(normals) == len(verts): they are normals

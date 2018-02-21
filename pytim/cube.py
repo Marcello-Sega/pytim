@@ -1,7 +1,7 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
-import utilities
+from . import utilities
 import numpy as np
 
 Bohr = .52917721067
@@ -87,7 +87,7 @@ def write_file(filename,
             natoms = len(group.atoms)
         else:
             natoms = 0
-        grid_size = np.array(grid_size)
+        grid_size = np.array(grid_size,dtype=int)
         shift = np.array([1, 1, 1]) * spacing / 2.
         #spacing =  spacing*(grid_size+1.)/grid_size
         f.write('CPMD CUBE FILE\n')

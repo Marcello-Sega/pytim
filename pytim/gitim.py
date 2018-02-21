@@ -8,17 +8,17 @@ from __future__ import print_function
 import numpy as np
 from scipy.spatial import distance
 
-import utilities
-from sanity_check import SanityCheck
-from surface import SurfaceFlatInterface
-from surface import SurfaceGenericInterface
+from . import utilities
+from .sanity_check import SanityCheck
+from .surface import SurfaceFlatInterface
+from .surface import SurfaceGenericInterface
 try:
     from pytetgen import Delaunay
 except ImportError:
     from scipy.spatial import Delaunay
 
-from Interface import Interface
-from patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+from .Interface import Interface
+from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
 
 class GITIM(Interface):
@@ -209,15 +209,12 @@ J. Chem. Phys. 138, 044110, 2013)*
             invM = np.linalg.inv(M)
             u = np.dot(invM, d)
             v = r_i[0] - np.dot(invM, s)
-        except np.linalg.linalg.LinAlgError as err:
-            if 'Singular matrix' in err.message:
-                if self.warnings is True:
-                    print("Warning, singular matrix for ", r_i)
+        except np.linalg.linalg.LinAlgError:
+            if self.warnings is True:
+                print("Warning, singular matrix for ", r_i)
                 # TODO is this correct? The singular matrix most likely comes
                 # out of points alinged in the plane
-                return 0
-            else:
-                raise RuntimeError(err.message)
+            return 0
 
         u2 = np.sum(u**2)
         v2 = np.sum(v**2)

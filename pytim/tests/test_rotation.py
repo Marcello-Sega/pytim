@@ -34,9 +34,9 @@
     ...         percent = (miss1 + miss2)*0.5/len(ref_ind) * 100.
     ...         if percent > 2: # this should be 0 for ITIM, and < 5
     ...                         # for GITIM, with this config+alpha
-    ...             print miss1+miss2
-    ...             print  " differences in indices in method",
-    ...             print  method.__name__, " == ",percent," %"
+    ...             print (miss1+miss2)
+    ...             print ( " differences in indices in method",)
+    ...             print ( method.__name__, " == ",percent," %")
 
     >>> del interface
     >>> del u
@@ -70,9 +70,9 @@
     ...         miss2 = (np.in1d(ind,ref_ind)==False).sum()
     ...         percent = (miss1 + miss2)*0.5/len(ref_ind) * 100.
     ...         if percent > 4 : # should be ~ 4 % for this system
-    ...             print miss1+miss2
-    ...             print  " differences in indices in method",
-    ...             print  method.__name__, " == ",percent," %"
+    ...             print (miss1+miss2)
+    ...             print ( " differences in indices in method",)
+    ...             print ( method.__name__, " == ",percent," %")
 
     >>> del interface
     >>> del u
