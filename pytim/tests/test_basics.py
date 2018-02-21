@@ -14,11 +14,11 @@
     >>> u         = mda.Universe(WATER_GRO)
     >>> oxygens   = u.select_atoms("name OW")
     >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4)
-    >>> print len(interface.layers[0,0])
+    >>> print (len(interface.layers[0,0]))
     786
     >>> del interface
     >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4, multiproc=False)
-    >>> print len(interface.layers[0,0])
+    >>> print (len(interface.layers[0,0]))
     786
     >>> del interface
 
@@ -53,10 +53,10 @@
     >>> u         = mda.Universe(WATER_GRO)
     >>> oxygens   = u.select_atoms("name OW")
     >>> interface = pytim.ITIM(u, alpha=1.5,group=oxygens, max_layers=1,multiproc=False,molecular=False)
-    >>> print len(interface.layers[0,0])
+    >>> print (len(interface.layers[0,0]))
     262
     >>> interface = pytim.ITIM(oxygens, alpha=1.5,max_layers=1,multiproc=False,molecular=False)
-    >>> print len(interface.layers[0,0])
+    >>> print (len(interface.layers[0,0]))
     262
 
 
@@ -69,9 +69,9 @@
     >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4,molecular=True)
     >>> interface.writepdb('test.pdb',centered=False)
     >>> PDB =open('test.pdb','r').readlines()
-    >>> line = filter(lambda l: 'ATOM     19 ' in l, PDB)[0]
+    >>> line = list(filter(lambda l: 'ATOM     19 ' in l, PDB))[0]
     >>> beta = line[62:66] # PDB file format is fixed
-    >>> print beta
+    >>> print(beta)
     4.00
 
 
@@ -101,11 +101,11 @@
     ...             ids_mdtraj.append(inter.atoms.ids)
     ...         for fr in [0,1]:
     ...             if not np.all(ids_mda[fr] == ids_mdtraj[fr]):
-    ...                 print "MDAnalysis and mdtraj surface atoms do not coincide"
+    ...                 print ("MDAnalysis and mdtraj surface atoms do not coincide")
     ...         _a = u.trajectory[1] # we make sure we load the second frame
     ...         _b = t[1]
     ...         if not np.all(np.isclose(inter.atoms.positions[0], ref.atoms.positions[0])):
-    ...             print "MDAnalysis and mdtraj atomic positions do not coincide"
+    ...             print("MDAnalysis and mdtraj atomic positions do not coincide")
     ...     except:
     ...         raise RuntimeError("mdtraj available, but a general exception happened")
     ... except:
@@ -123,7 +123,7 @@
     >>> inter = pytim.GITIM(u, group=solvent, biggest_cluster_only=True)
     Warning: the option biggest_cluster_only has no effect without setting cluster_cut, ignoring it
 
-    >>> print inter.biggest_cluster_only
+    >>> print (inter.biggest_cluster_only)
     False
 
     >>> import pytim

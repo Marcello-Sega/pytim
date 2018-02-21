@@ -10,6 +10,7 @@
 
     >>> import MDAnalysis as mda
     >>> import pytim
+    >>> import numpy as np
     >>> from pytim.datafiles import *
     >>> u         = mda.Universe(WATER_GRO,WATER_XTC)
     >>> print(u)
@@ -35,15 +36,15 @@
 
     Example: list all topologies
 
-    >>> print (pytim_data.topol)
-    ['WATER_LMP_DATA', 'AMBER03_TOP', 'G43A1_TOP', 'CHARMM27_TOP']
+    >>> print(np.sort(pytim_data.topol))
+    ['AMBER03_TOP' 'CHARMM27_TOP' 'G43A1_TOP' 'WATER_LMP_DATA']
 
 
 
     Example: list all trajectories
 
-    >>> print (pytim_data.traj)
-    ['WATER_LMP_XTC', 'WATER_XTC']
+    >>> print (np.sort(pytim_data.traj))
+    ['WATER_LMP_XTC' 'WATER_XTC']
 
 
 
@@ -87,7 +88,10 @@ from pkg_resources import resource_filename
 import tempfile
 import re as re
 import urllib
-import hashlib
+try:
+    from urllib import urlopen as urlopen
+except:
+    from urllib.request import urlopen as urlopen
 
 
 class Data(object):
@@ -141,8 +145,9 @@ class Data(object):
         urlbase_md5 = 'https://raw.githubusercontent.com/Marcello-Sega/pytim/extended_datafiles/files/'
         urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'
         try:
-            md5 = urllib.urlopen(urlbase_md5 + filename + '.MD5').readline()
-            print("checking presence of a cached copy...", end=' ')
+            with urlopen(urlbase_md5 + filename + '.MD5') as handle:
+                md5 = handle.read()
+                print("checking presence of a cached copy...", end=' ')
             md5_local = hashlib.md5(open(dirname + filename,
                                          'rb').read()).hexdigest()
             if md5_local in md5:
@@ -151,14 +156,18 @@ class Data(object):
         except BaseException:
             pass
         print("not found. Fetching remote file...", end=' ')
-        newfile = urllib.urlopen(urlbase + filename + '?raw=true')
-        with open(dirname + filename, 'wb') as output:
-            output.write(newfile.read())
-        print("done.")
-        return dirname + filename
+        with urlopen(urlbase + filename + '?raw=true') as newfile:
+            with open(dirname + filename, 'wb') as output:
+                output.write(newfile.read())
+                print("done.")
+                return dirname + filename
 
     def _generate_data_property(self, name):
-        labels = [label for label, val in self.type.iteritems() if val == name]
+        labels = []
+        for label in self.type.keys():
+            if self.type[label] == name:
+                labels.append(label)
+        #labels = [label for label, val in self.type.iteritems() if val == name]
         return list(set(labels) & set(self.label))
 
     @property

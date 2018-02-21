@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractproperty
 import numpy as np
 from scipy.spatial import Delaunay, cKDTree
 from scipy.interpolate import LinearNDInterpolator
-import utilities
+from . import utilities
 from . import messages
 
 
@@ -84,7 +84,7 @@ class Surface(object):
                         (no Q = 0.0)
         """
         self.box = np.roll(box, 2 - self.normal)
-        nmax = map(int, np.ceil(self.box[0:2] / self.alpha))
+        nmax = list(map(int, np.ceil(self.box[0:2] / self.alpha)))
         self.q_vectors = np.mgrid[0:nmax[0], 0:nmax[1]] * 1.0
         self.q_vectors[0] *= 2. * np.pi / box[0]
         self.q_vectors[1] *= 2. * np.pi / box[1]

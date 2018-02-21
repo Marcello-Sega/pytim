@@ -47,7 +47,7 @@ class Orientation(Observable):
         else:
             pos = inp.positions
         flat = pos.flatten()
-        pos = flat.reshape(len(flat) / 3, 3)
+        pos = flat.reshape(len(flat) // 3, 3)
         a = pos[1::3] - pos[0::3]
         b = pos[2::3] - pos[0::3]
 

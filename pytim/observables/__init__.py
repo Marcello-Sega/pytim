@@ -6,15 +6,15 @@
 from pytim import utilities
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
-from observable import Observable
-from basic_observables import Position, Velocity, Force
-from basic_observables import Number, Mass, Charge, NumberOfResidues
+from .observable import Observable
+from .basic_observables import Position, Velocity, Force
+from .basic_observables import Number, Mass, Charge, NumberOfResidues
 
-from intrinsic_distance import IntrinsicDistance
-from profile import Profile
-from rdf import RDF
-from rdf2d import RDF2D
-from free_volume import FreeVolume
-from correlator import Correlator
-from orientation import Orientation
-from layer_triangulation import LayerTriangulation
+from .intrinsic_distance import IntrinsicDistance
+from .profile import Profile
+from .rdf import RDF
+from .rdf2d import RDF2D
+from .free_volume import FreeVolume
+from .correlator import Correlator
+from .orientation import Orientation
+from .layer_triangulation import LayerTriangulation

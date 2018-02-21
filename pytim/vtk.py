@@ -1,7 +1,8 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
-import utilities
+from . import utilities
+import numpy as np
 
 
 def _format_vector(vector, format_str="{:f}"):
@@ -25,7 +26,7 @@ def write_scalar_grid(filename, grid_size, spacing, scalars):
     with open(filename, "w") as f:
         f.write("# vtk DataFile Version 2.0\nscalar\nASCII\n")
         f.write("DATASET STRUCTURED_POINTS\nDIMENSIONS ")
-        f.write(_format_vector(grid_size, format_str="{:d}") + "\n")
+        f.write(_format_vector(np.asarray(grid_size,dtype=int), format_str="{:d}") + "\n")
         f.write("SPACING " + _format_vector(spacing) + "\n")
         f.write("\n")
         f.write("ORIGIN " + _format_vector(spacing / 2.) + "\n")

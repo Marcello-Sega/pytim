@@ -21,7 +21,7 @@
     >>> print (np.sort(c2)[-2:])
     [   0 9335]
 
-    >>> print (np.all(c1==c2), np.all(l1==l2))
+    >>> print ((np.all(c1==c2), np.all(l1==l2)))
     (True, True)
 
 

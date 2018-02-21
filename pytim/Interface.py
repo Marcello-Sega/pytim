@@ -2,10 +2,10 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from abc import ABCMeta, abstractmethod
 import numpy as np
-from properties import _create_property
-from pdb import _writepdb
-import messages
-import utilities
+from .properties import _create_property
+from .pdb import _writepdb
+from . import messages
+from . import utilities
 
 
 class Interface(object):

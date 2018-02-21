@@ -70,12 +70,12 @@
     ...     Val.append(L.get_values(binwidth=2.0)[2])
     >>>
 
-    >>> print np.round(np.sum(np.array(Val[0]) * np.prod(u.dimensions[:3])) / len(Val[0]),decimals=0)
+    >>> print (np.round(np.sum(np.array(Val[0]) * np.prod(u.dimensions[:3])) / len(Val[0]),decimals=0))
     4000.0
 
     >>> # the sum of the layers' contribution is expected to add up only close
     >>> # to the surface
-    >>> print not np.sum(np.abs(np.sum(Val[1:],axis=0)[47:] - Val[0][47:])>1e-15)
+    >>> print (not np.sum(np.abs(np.sum(Val[1:],axis=0)[47:] - Val[0][47:])>1e-15))
     True
 
 

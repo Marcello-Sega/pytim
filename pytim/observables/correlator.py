@@ -352,7 +352,7 @@ class Correlator(object):
 
         dim = self.dim
         n_part = len(ms[0])
-        corr = np.zeros((ts.shape[0], ts.shape[1] / dim))
+        corr = np.zeros((int(ts.shape[0]), int(ts.shape[1]) // dim))
 
         for part in range(n_part):
             edges = self._find_edges(ms[::, part])
