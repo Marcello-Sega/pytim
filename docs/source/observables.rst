@@ -4,12 +4,12 @@ Observables
 
 Radial Distribution Functions
 #############################
-.. automodule:: pytim.rdf
+.. automodule:: pytim.observables.rdf
     :members:
 
 Profiles
 ########
-.. automodule:: pytim.profile
+.. automodule:: pytim.observables.profile
     :members:
 
 Time Correlation Functions
