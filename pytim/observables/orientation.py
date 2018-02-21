@@ -33,7 +33,7 @@ class Orientation(Observable):
         :returns: the orientation vectors
 
         For each triplet of positions A1,A2,A3, computes the unit vector
-        beteeen A2-A1 and  A3-A1 or, if the option 'normal' is passed at
+        between A2-A1 and  A3-A1 or, if the option 'normal' is passed at
         initialization, the unit vector normal to the plane spanned by the
         three vectors.
 
