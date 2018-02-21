@@ -144,10 +144,10 @@ class Data(object):
             dirname = tmpdir
         urlbase_md5 = 'https://raw.githubusercontent.com/Marcello-Sega/pytim/extended_datafiles/files/'
         urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'
+        print("checking presence of a cached copy...", end=' ')
         try:
             with urlopen(urlbase_md5 + filename + '.MD5') as handle:
                 md5 = handle.read()
-                print("checking presence of a cached copy...", end=' ')
             md5_local = hashlib.md5(open(dirname + filename,
                                          'rb').read()).hexdigest()
             if md5_local in md5:
@@ -156,11 +156,11 @@ class Data(object):
         except BaseException:
             pass
         print("not found. Fetching remote file...", end=' ')
-        with urlopen(urlbase + filename + '?raw=true') as newfile:
-            with open(dirname + filename, 'wb') as output:
-                output.write(newfile.read())
-                print("done.")
-                return dirname + filename
+        newfile = urlopen(urlbase + filename + '?raw=true')
+        with open(dirname + filename, 'wb') as output:
+            output.write(newfile.read())
+            print("done.")
+            return dirname + filename
 
     def _generate_data_property(self, name):
         labels = []
