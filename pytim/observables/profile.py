@@ -15,9 +15,11 @@ class Profile(object):
     """Calculates the profile (normal, or intrinsic) of a given observable
     across the simulation box.
 
-    :param Observable observable:   'Number', 'Mass', or 'Charge': calculate
-                                    the profile of this quantity. If None is
-                                    supplied, it defaults to the number density
+    :param Observable observable:   'Number', 'Mass', or any other observable:
+                                    calculate the profile of this quantity. If
+                                    None is supplied, it defaults to the number
+                                    density. The number density is always
+                                    calculated on a per atom basis.
     :param ITIM       interface:    if provided, calculate the intrinsic
                                     profile with respect to the first layers
     :param str        direction:    'x','y', or 'z' : calculate the profile
