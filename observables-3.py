@@ -1,24 +1,21 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import MDAnalysis as mda
 import pytim
-from   pytim.datafiles import *
-from   pytim.observables import Profile
+import MDAnalysis as mda
+import numpy as np
+from pytim.datafiles import WATERSMALL_GRO
+from pytim.utilities import lap
+WATERSMALL_TRR=pytim.datafiles.pytim_data.fetch('WATERSMALL_LONG_TRR')
 
-u = mda.Universe(WATER_GRO,WATER_XTC)
-g = u.select_atoms("name OW")
+u = mda.Universe(WATERSMALL_GRO,WATERSMALL_TRR)
+g = u.select_atoms('name OW')
 
-inter = pytim.ITIM(u, group=g,max_layers=1,cluster_cut=3.5,centered=True, molecular=False)
-profile = Profile(interface=inter)
+velocity = pytim.observables.Velocity()
+corr = pytim.observables.Correlator(observable=velocity)
+for t in u.trajectory[1:]:
+    corr.sample(g)
 
-for ts in u.trajectory[::50]:
-    profile.sample(g)
+vacf = corr.correlation()
 
-low, up, avg = profile.get_values(binwidth=0.2)
-
-z = (low+up)/2.
-plt.plot(z, avg)
-axes = plt.gca()
-axes.set_xlim([-15,5])
-axes.set_ylim([0,0.05])
+from matplotlib import pyplot as plt
+plt.plot(vacf[:1000])
+plt.plot([0]*1000)
 plt.show()
