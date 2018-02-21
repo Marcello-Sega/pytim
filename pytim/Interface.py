@@ -353,10 +353,10 @@ class Interface(object):
         """ Write the frame to a pdb file, marking the atoms belonging
             to the layers with different beta factors.
 
-            :param str       filename   : the output file name
-            :param str       centered   : 'origin', 'middle', or 'no'
-            :param AtomGroup group      : if 'all' is passed, use universe
-            :param bool      multiframe : append to pdb file if True
+            :param str       filename:    the output file name
+            :param str       centered:    'origin', 'middle', or 'no'
+            :param AtomGroup group:       if 'all' is passed, use universe
+            :param bool      multiframe:  append to pdb file if True
             :param ndarray   tempfactors: use this array as temp (beta) factors
 
             Example: save the positions (centering the interface in the cell)
@@ -373,14 +373,14 @@ class Interface(object):
             Example: save the positions without centering the interface. This
                      will not shift the atoms from the original position
                      (still, they will be put into the basic cell).
-                     The :param:`multiframe` option set to :False: will
+                     The :obj:`multiframe` option set to :obj:`False` will
                      overwrite the file
 
             >>> interface.writepdb('layers.pdb',centered='no')
 
-            Note that if GITIM is used, and the :param:`symmetry` option is
-            different from 'planar', the :param:`centered='origin'` option is
-            equivalent to :param:`centered='middle'`.
+            Note that if GITIM is used, and the :obj:`symmetry` option is
+            different from :obj:`'planar'`, the :obj:`centered='origin'` option is
+            equivalent to :obj:`centered='middle'`.
         """
 
         _writepdb(

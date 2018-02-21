@@ -143,15 +143,15 @@
     ValueError: parameter mesh must be positive
 
 
->>> # check that it is possible to use two trajectories
->>> import MDAnalysis as mda
->>> import pytim
->>> from pytim.datafiles import WATER_GRO, WATER_XTC
->>> u = mda.Universe(WATER_GRO,WATER_XTC)
->>> u2 = mda.Universe(WATER_GRO,WATER_XTC)
->>> inter = pytim.ITIM(u,group=u.select_atoms('resname SOL'))
->>> inter2 = pytim.ITIM(u2,group=u2.select_atoms('resname SOL'))
->>> for ts in u.trajectory[::50]:
-... 	ts2 = u2.trajectory[ts.frame]
+    >>> # check that it is possible to use two trajectories
+    >>> import MDAnalysis as mda
+    >>> import pytim
+    >>> from pytim.datafiles import WATER_GRO, WATER_XTC
+    >>> u = mda.Universe(WATER_GRO,WATER_XTC)
+    >>> u2 = mda.Universe(WATER_GRO,WATER_XTC)
+    >>> inter = pytim.ITIM(u,group=u.select_atoms('resname SOL'))
+    >>> inter2 = pytim.ITIM(u2,group=u2.select_atoms('resname SOL'))
+    >>> for ts in u.trajectory[::50]:
+    ... 	ts2 = u2.trajectory[ts.frame]
 
 """
