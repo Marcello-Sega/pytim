@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Pytim: Quick Tour &#8212; Pytim 0.6.3 documentation</title>
+    <title>Pytim: Quick Tour &#8212; Pytim 0.7.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.6.3',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -26,8 +18,7 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="How to Install Pytim" href="install.html" />
     <link rel="prev" title="Pytim: Quick Tour" href="index.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -43,7 +34,7 @@
         <li class="right" >
           <a href="index.html" title="Pytim: Quick Tour"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.7.0 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -58,9 +49,9 @@
 <p>Although <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a> is needed to perform the interfacial analysis, you can also use Pytim on top  <a class="reference external" href="http://www.mdtraj.org/">MDTraj</a> or directly online from a simulation performed using <a class="reference external" href="http://www.openmm.org/">OpenMM</a>. For more information see the <a class="reference internal" href="Tutorials.html"><span class="doc">Tutorials</span></a>.</p>
 <div class="section" id="basic-example">
 <h2>Basic Example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h2>
-<p>This is a basic example that shows how easy is to use the <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a> class
+<p>This is a basic example that shows how easy is to use the <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">ITIM</span></code></a> class
 for planar interfaces:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
 <span class="kn">import</span> <span class="nn">pytim</span>
 <span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="o">*</span>
 
@@ -86,14 +77,14 @@ as an input file one of the structures provided by the package, in
 this case a water/vapor interface in a gromos file format (the
 variable WATER_GRO is made available by the pytim.datafiles module)</li>
 <li>The interfacial analysis is then initialized using the
-<a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a> class, and the molecular layers are
+<a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">ITIM</span></code></a> class, and the molecular layers are
 calculated automatically.</li>
 <li>The whole configuration is saved to a pdb for graphical inspection using
-<a class="reference internal" href="ITIM.html#pytim.itim.ITIM.writepdb" title="pytim.itim.ITIM.writepdb"><code class="xref py py-meth docutils literal"><span class="pre">writepdb()</span></code></a>
+<a class="reference internal" href="ITIM.html#pytim.itim.ITIM.writepdb" title="pytim.itim.ITIM.writepdb"><code class="xref py py-meth docutils literal notranslate"><span class="pre">writepdb()</span></code></a>
 (with surface atoms having a beta factor equal to the numer of the layer
 they belong to).</li>
 <li>The groups of atoms corresponding to different layers can be extracted using
-<a class="reference internal" href="ITIM.html#pytim.itim.ITIM.layers" title="pytim.itim.ITIM.layers"><code class="xref py py-meth docutils literal"><span class="pre">layers()</span></code></a></li>
+<a class="reference internal" href="ITIM.html#pytim.itim.ITIM.layers" title="pytim.itim.ITIM.layers"><code class="xref py py-meth docutils literal notranslate"><span class="pre">layers()</span></code></a></li>
 </ol>
 <p>The result of the calculation can be seen in the following picture,
 where surface oxygen atoms are highlighted in blue.</p>
@@ -104,9 +95,9 @@ where surface oxygen atoms are highlighted in blue.</p>
 <h2>Non-planar interfaces<a class="headerlink" href="#non-planar-interfaces" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="gitim">
 <h3>GITIM<a class="headerlink" href="#gitim" title="Permalink to this headline">¶</a></h3>
-<p>One of the possibilities is to use  <code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code> to identify surface atoms in a conceptually similar way to <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a>.
+<p>One of the possibilities is to use  <code class="xref py py-class docutils literal notranslate"><span class="pre">GITIM</span></code> to identify surface atoms in a conceptually similar way to <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">ITIM</span></code></a>.
 We make here the example of multiple solvation layers around glucose:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
 <span class="kn">import</span> <span class="nn">pytim</span>
 <span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">GLUCOSE_PDB</span>
 
@@ -130,8 +121,8 @@ We make here the example of multiple solvation layers around glucose:</p>
 <div class="section" id="willard-chandler">
 <h3>Willard-Chandler<a class="headerlink" href="#willard-chandler" title="Permalink to this headline">¶</a></h3>
 <p>If one is not directly interested in interfacial atoms, but in the location of the instantaneous, continuous surface, it is possible to use
-the method of Willard and Chandler. Options for the output are the <cite>wavefront</cite> <code class="xref py py-obj docutils literal"><span class="pre">obj</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">cube</span></code> and <code class="xref py py-obj docutils literal"><span class="pre">vtk</span></code> formats, the last two being able to carry also the information about the atomic positions, besides the surface. The formats can be read by <a class="reference external" href="https://www.paraview.org/">Paraview</a>.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+the method of Willard and Chandler. Options for the output are the <cite>wavefront</cite> <code class="xref py py-obj docutils literal notranslate"><span class="pre">obj</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">cube</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">vtk</span></code> formats, the last two being able to carry also the information about the atomic positions, besides the surface. The formats can be read by <a class="reference external" href="https://www.paraview.org/">Paraview</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
 <span class="kn">import</span> <span class="nn">pytim</span>
 <span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">MICELLE_PDB</span>
 <span class="kn">import</span> <span class="nn">nglview</span>
@@ -150,23 +141,23 @@ the method of Willard and Chandler. Options for the output are the <cite>wavefro
 </div>
 <div class="section" id="molecular-vs-atomic">
 <h2>Molecular vs Atomic<a class="headerlink" href="#molecular-vs-atomic" title="Permalink to this headline">¶</a></h2>
-<p>By default methods like <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a> or
-<a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code></a> use the <code class="xref py py-obj docutils literal"><span class="pre">molecular=True</span></code> option,
+<p>By default methods like <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">ITIM</span></code></a> or
+<a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">GITIM</span></code></a> use the <code class="xref py py-obj docutils literal notranslate"><span class="pre">molecular=True</span></code> option,
 meaning that whenever an atom is identified as interfacial, all
 other atoms in the same residue will be tagged as interfacial. This
 is usually the appropriate option for small molecular liquids,
 especially if successive layers are going to be analyzed. Taking
 the example of water, if all atoms are passed to, say,
-<a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a>, and <code class="xref py py-obj docutils literal"><span class="pre">molecular=False</span></code>, the first
+<a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">ITIM</span></code></a>, and <code class="xref py py-obj docutils literal notranslate"><span class="pre">molecular=False</span></code>, the first
 layer will be composed only of oxygen atoms (the hydrogen atoms
 being located within the radius of oxygen). As a consequence, the
 second layer would be composed mostly of hydrogen atoms, and so on.
 For larger molecules like in the case of lipids, instead, it is
 more informative to look at the location of different atoms along
-the surface normal, therefore the <code class="xref py py-obj docutils literal"><span class="pre">molecular=False</span></code> option
+the surface normal, therefore the <code class="xref py py-obj docutils literal notranslate"><span class="pre">molecular=False</span></code> option
 is advisable, otherwise, as in the case of a small micelle, all
 atoms in the lipids would be tagged as interfacial.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
 <span class="kn">import</span> <span class="nn">pytim</span>
 <span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">MICELLE_PDB</span>
 <span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
@@ -192,8 +183,8 @@ atoms in the lipids would be tagged as interfacial.</p>
 </td>
 </tr>
 <tr class="row-odd"><td colspan="2">Left: layers of interfacial water and micelle (section cut)
-using <code class="xref py py-obj docutils literal"><span class="pre">molecular=True</span></code>.
-Right: same using <code class="xref py py-obj docutils literal"><span class="pre">molecular=False</span></code>
+using <code class="xref py py-obj docutils literal notranslate"><span class="pre">molecular=True</span></code>.
+Right: same using <code class="xref py py-obj docutils literal notranslate"><span class="pre">molecular=False</span></code>
 blue: 1st layer; red: 2nd layer ; yellow: 3rd layer ; orange: 4th layer</td>
 </tr>
 </tbody>
@@ -215,9 +206,9 @@ smaller clusters. The available criteria for building the clusters are</p>
 </ol>
 <dl class="docutils">
 <dt>In order to use the simple cutoff criterion, it is enough to pass the cluster cutoff to the</dt>
-<dd><a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a> or  <code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code> classes, for example:</dd>
+<dd><a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">ITIM</span></code></a> or  <code class="xref py py-class docutils literal notranslate"><span class="pre">GITIM</span></code> classes, for example:</dd>
 </dl>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
 <span class="kn">import</span> <span class="nn">pytim</span>
 <span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">WATER_550K_GRO</span>
 
@@ -226,7 +217,7 @@ smaller clusters. The available criteria for building the clusters are</p>
 <span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">cluster_cut</span><span class="o">=</span><span class="mf">3.5</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>At high temperatures, as in this case, using the <code class="xref py py-obj docutils literal"><span class="pre">cluster_cut</span></code> option solves the problem with the molecules in the vapour phase</p>
+<p>At high temperatures, as in this case, using the <code class="xref py py-obj docutils literal notranslate"><span class="pre">cluster_cut</span></code> option solves the problem with the molecules in the vapour phase</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="50%" />
@@ -238,16 +229,16 @@ smaller clusters. The available criteria for building the clusters are</p>
 <td><a class="first last reference internal image-reference" href="_images/cluster.png"><img alt="_images/cluster.png" class="align-center" src="_images/cluster.png" style="width: 95%;" /></a>
 </td>
 </tr>
-<tr class="row-even"><td colspan="2">Left:  Interfacial molecules identified using <code class="xref py py-obj docutils literal"><span class="pre">ITIM</span></code>
+<tr class="row-even"><td colspan="2">Left:  Interfacial molecules identified using <code class="xref py py-obj docutils literal notranslate"><span class="pre">ITIM</span></code>
 and no clustering pre-filtering.
-Right: same system  using <code class="xref py py-obj docutils literal"><span class="pre">cluster_cut=3.5</span></code>
+Right: same system  using <code class="xref py py-obj docutils literal notranslate"><span class="pre">cluster_cut=3.5</span></code>
 (blue: first layer; red: vapour phase)</td>
 </tr>
 </tbody>
 </table>
 <p>In some cases, the density of the vapour (or opposite) phase is so high, that using any reasonable cutoff, the molecules are percolating
 the simulation box. In this case, it is advisable to switch to a density based cluster approach. Pytim uses the <cite>DBSCAN</cite> algorithm, with, in addition, an automated procedure to determine which density should be used to discriminate between liquid and vapour (or high-concentration/low-concentration) regions. An example is a binary mixture of ionic liquids and benzene, which have, respectively, a low and high mutual miscibility.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="kn">as</span> <span class="nn">mda</span>
 <span class="kn">import</span> <span class="nn">pytim</span>
 <span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">ILBENZENE_GRO</span>
 
@@ -274,8 +265,8 @@ the simulation box. In this case, it is advisable to switch to a density based c
 <tr class="row-even"><td colspan="2">Left:  the ionic-liquid / benzene mixture, all molecule shown,
 including the ionic liquid (spheres) and benzene (sticks)
 Right: benzene phases/interface determined using DBSCAN
-(options <code class="xref py py-obj docutils literal"><span class="pre">cluster_cut=10.</span></code> and
-<code class="xref py py-obj docutils literal"><span class="pre">cluster_threshold_density='auto'</span></code>
+(options <code class="xref py py-obj docutils literal notranslate"><span class="pre">cluster_cut=10.</span></code> and
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">cluster_threshold_density='auto'</span></code>
 (blue: low-concentration phase; gray: high-concentration phase
 ; red: interfacial benzene rings.</td>
 </tr>
@@ -350,12 +341,14 @@ Right: benzene phases/interface determined using DBSCAN
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -377,12 +370,12 @@ Right: benzene phases/interface determined using DBSCAN
         <li class="right" >
           <a href="index.html" title="Pytim: Quick Tour"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.6.3 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.7.0 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Marcello Sega.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.0.
     </div>
   </body>
 </html>
