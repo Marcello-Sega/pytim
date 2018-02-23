@@ -293,7 +293,6 @@ class Profile(object):
             bins=nbins)
         return [bins[0:-1], bins[1:], avg]
 
-
     @staticmethod
     def _():
         """
@@ -330,5 +329,3 @@ class Profile(object):
 
         """
         pass
-
-

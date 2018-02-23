@@ -29,10 +29,10 @@ class Surface(object):
         self.normal = interface.normal
         self.alpha = interface.alpha
         self.options = options
-        self.z  = self.normal
+        self.z = self.normal
         try:
-            self.xyz = np.roll(np.array([0,1,2]),2-self.z)
-            self.xy =  self.xyz[0:2]
+            self.xyz = np.roll(np.array([0, 1, 2]), 2 - self.z)
+            self.xy = self.xyz[0:2]
         except:
             self.xyz, self.xy = None, None
         try:
@@ -147,9 +147,9 @@ class Surface(object):
         delta = self.interface.alpha * 4.0 + 1e-6
         # here we rotate the system to have normal along z
         upperpos = utilities.generate_periodic_border(
-            upper.positions[:,self.xyz], box, delta, method='2d')[0]
+            upper.positions[:, self.xyz], box, delta, method='2d')[0]
         lowerpos = utilities.generate_periodic_border(
-            lower.positions[:,self.xyz], box, delta, method='2d')[0]
+            lower.positions[:, self.xyz], box, delta, method='2d')[0]
 
         self.surf_triang = [None, None]
         self.trimmed_surf_triangs = [None, None]
@@ -248,11 +248,9 @@ class Surface(object):
                     "interpolated position on the surface."
                     "Something is wrong.")
         # positive values are outside the surface, negative inside
-        cond = np.where(np.isclose(distance,0., atol=1e-2))
+        cond = np.where(np.isclose(distance, 0., atol=1e-2))
         distance[cond] = 0.0
         return distance
-
-
 
     def _initialize_distance_interpolator_flat(self, layer):
         self._layer = layer
@@ -261,8 +259,7 @@ class Surface(object):
         self._interpolator = [None, None]
         for side in [0, 1]:
             self._interpolator[side] = LinearNDInterpolator(
-                self.surf_triang[side],
-                self.triangulation_points[side][:, 2])
+                self.surf_triang[side], self.triangulation_points[side][:, 2])
 
 
 class SurfaceFlatInterface(Surface):
@@ -282,17 +279,17 @@ class SurfaceFlatInterface(Surface):
             upper_interp = self._interpolator[0](positions[:, self.xy])
             lower_interp = self._interpolator[1](positions[:, self.xy])
 
-        d1 = upper_interp-positions[:,self.z]
-        d1[np.where(d1>box/2.)]-=box
-        d1[np.where(d1<-box/2.)]+=box
+        d1 = upper_interp - positions[:, self.z]
+        d1[np.where(d1 > box / 2.)] -= box
+        d1[np.where(d1 < -box / 2.)] += box
 
-        d2 = lower_interp-positions[:,self.z]
-        d2[np.where(d2>box/2.)]-=box
-        d2[np.where(d2<-box/2.)]+=box
+        d2 = lower_interp - positions[:, self.z]
+        d2[np.where(d2 > box / 2.)] -= box
+        d2[np.where(d2 < -box / 2.)] += box
 
         cond = np.where(np.abs(d1) <= np.abs(d2))[0]
-        distance = lower_interp - positions[:,self.z]
-        distance[cond] = positions[cond][:,self.z] - upper_interp[cond]
+        distance = lower_interp - positions[:, self.z]
+        distance[cond] = positions[cond][:, self.z] - upper_interp[cond]
 
         return distance
 
