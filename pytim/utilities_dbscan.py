@@ -79,6 +79,7 @@ def do_cluster_analysis_dbscan(group,
     dbscan_inner(core_samples, neighborhoods, labels, counts)
     return labels, counts, n_neighbors
 
+
 def _():
     """
     This is a collection of tests to check
