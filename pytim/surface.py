@@ -234,14 +234,15 @@ class Surface(object):
         cond = np.where(pos[:, 0:2] < 0 * box[0:2])
         pos[cond] += box[cond[1]]
 
-        elevation = self.interpolation(pos)
-        if np.sum(np.isnan(elevation)) > 1 + int(0.01 * len(pos)):
+        distance = self.interpolation(pos)
+        if np.sum(np.isnan(distance)) > 1 + int(0.01 * len(pos)):
             Warning("more than 1% of points have fallen outside"
                     "the convex hull while determining the"
                     "interpolated position on the surface."
                     "Something is wrong.")
         # positive values are outside the surface, negative inside
-        distance = (pos[:, 2] - elevation) * np.sign(pos[:, 2])
+        cond = np.where(np.isclose(distance,0., atol=1e-2))
+        distance[cond] = 0.0
         return distance
 
     def _initialize_distance_interpolator_flat(self, layer):
@@ -251,8 +252,8 @@ class Surface(object):
         self._interpolator = [None, None]
         for side in [0, 1]:
             self._interpolator[side] = LinearNDInterpolator(
-                self.surf_triang[layer],
-                self.triangulation_points[layer][:, 2])
+                self.surf_triang[side],
+                self.triangulation_points[side][:, 2])
 
 
 class SurfaceFlatInterface(Surface):
@@ -261,24 +262,31 @@ class SurfaceFlatInterface(Surface):
         return self._distance_flat(positions)
 
     def interpolation(self, inp):
+        # TODO fix other orientations
         positions = utilities.extract_positions(inp)
-        upper_set = positions[positions[:, 2] >= 0]
-        lower_set = positions[positions[:, 2] < 0]
-
-        elevation = np.zeros(len(positions))
-
+        box = self.interface.universe.dimensions[2]
         try:
             self.options['from_modes']
             upper_interp = self.surface_from_modes(upper_set, self.modes[0])
             lower_interp = self.surface_from_modes(lower_set, self.modes[1])
         except (TypeError, KeyError):
             self._initialize_distance_interpolator_flat(layer=self._layer)
-            upper_interp = self._interpolator[0](upper_set[:, 0:2])
-            lower_interp = self._interpolator[1](lower_set[:, 0:2])
+            upper_interp = self._interpolator[0](positions[:, 0:2])
+            lower_interp = self._interpolator[1](positions[:, 0:2])
 
-        elevation[np.where(positions[:, 2] >= 0)] = upper_interp
-        elevation[np.where(positions[:, 2] < 0)] = lower_interp
-        return elevation
+        d1 = upper_interp-positions[:,2]
+        d1[np.where(d1>box/2.)]-=box
+        d1[np.where(d1<-box/2.)]+=box
+
+        d2 = lower_interp-positions[:,2]
+        d2[np.where(d2>box/2.)]-=box
+        d2[np.where(d2<-box/2.)]+=box
+
+        cond = np.where(np.abs(d1) <= np.abs(d2))[0]
+        distance = lower_interp - positions[:,2]
+        distance[cond] = positions[cond][:,2] - upper_interp[cond]
+
+        return distance
 
     def dump(self):
         pass
