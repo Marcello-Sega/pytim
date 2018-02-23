@@ -400,7 +400,6 @@ class Interface(object):
         
         >>> # TEST:0 loading the module
         >>> import pytim
-        >>> pytim.Interface._() ; # coverage
 
         >>> # TEST:1 basic functionality
         >>> import MDAnalysis as mda
@@ -564,8 +563,6 @@ class Interface(object):
         >>> import pytim
         >>> import numpy as np
         >>> from pytim.datafiles import WATER_GRO
-        >>>
-        >>> pytim.Interface.__() ; # coverage
         >>>
         >>> for method in [pytim.ITIM , pytim.GITIM] :
         ...     u = mda.Universe(WATER_GRO)
