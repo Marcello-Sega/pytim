@@ -30,8 +30,11 @@ class Surface(object):
         self.alpha = interface.alpha
         self.options = options
         self.z  = self.normal
-        self.xyz = np.roll(np.array([0,1,2]),2-self.z)
-        self.xy =  self.xyz[0:2]
+        try:
+            self.xyz = np.roll(np.array([0,1,2]),2-self.z)
+            self.xy =  self.xyz[0:2]
+        except:
+            self.xyz, self.xy = None, None
         try:
             self._layer = options['layer']
         except (TypeError, KeyError):
