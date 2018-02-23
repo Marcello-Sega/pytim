@@ -302,6 +302,7 @@ class Profile(object):
         >>> import MDAnalysis as mda
         >>> import numpy as np
         >>> import pytim
+        >>> pytim.observables.Profile._()
         >>> from pytim.datafiles import WATERSMALL_GRO
         >>> from matplotlib import pyplot as plt
         >>> u = mda.Universe(WATERSMALL_GRO)

@@ -86,6 +86,7 @@ def _():
 
     >>> import MDAnalysis as mda
     >>> import pytim
+    >>> pytim.utilities_dbscan._() ; # coverage
     >>> import numpy as np
     >>> from pytim.datafiles import ILBENZENE_GRO
     >>> from pytim.utilities import do_cluster_analysis_dbscan as DBScan

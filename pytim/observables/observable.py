@@ -109,6 +109,7 @@ class Observable(object):
         >>> # OBSERVABLES TEST: 1
         >>> import MDAnalysis as mda
         >>> import pytim
+        >>> pytim.observables.Observable._() ; # coverage
         >>> from pytim import observables
         >>> from pytim.datafiles import *
         >>> import numpy as np
