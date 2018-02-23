@@ -29,6 +29,9 @@ class Surface(object):
         self.normal = interface.normal
         self.alpha = interface.alpha
         self.options = options
+        self.z  = self.normal
+        self.xyz = np.roll(np.array([0,1,2]),2-self.z)
+        self.xy =  self.xyz[0:2]
         try:
             self._layer = options['layer']
         except (TypeError, KeyError):
@@ -134,15 +137,16 @@ class Surface(object):
         if layer > len(self.interface._layers[0]):
             raise ValueError(messages.UNDEFINED_LAYER)
 
-        box = self.interface.universe.dimensions[:3]
+        box = self.interface.universe.dimensions[:3][self.xyz]
 
-        upper = self.interface._layers[0][layer]
-        lower = self.interface._layers[1][layer]
+        upper = (self.interface._layers[0][layer])
+        lower = (self.interface._layers[1][layer])
         delta = self.interface.alpha * 4.0 + 1e-6
+        # here we rotate the system to have normal along z
         upperpos = utilities.generate_periodic_border(
-            upper.positions, box, delta, method='2d')[0]
+            upper.positions[:,self.xyz], box, delta, method='2d')[0]
         lowerpos = utilities.generate_periodic_border(
-            lower.positions, box, delta, method='2d')[0]
+            lower.positions[:,self.xyz], box, delta, method='2d')[0]
 
         self.surf_triang = [None, None]
         self.trimmed_surf_triangs = [None, None]
@@ -245,6 +249,8 @@ class Surface(object):
         distance[cond] = 0.0
         return distance
 
+
+
     def _initialize_distance_interpolator_flat(self, layer):
         self._layer = layer
         self.triangulate_layer_flat(layer=self._layer)
@@ -262,29 +268,28 @@ class SurfaceFlatInterface(Surface):
         return self._distance_flat(positions)
 
     def interpolation(self, inp):
-        # TODO fix other orientations
         positions = utilities.extract_positions(inp)
-        box = self.interface.universe.dimensions[2]
+        box = self.interface.universe.dimensions[self.z]
         try:
             self.options['from_modes']
             upper_interp = self.surface_from_modes(upper_set, self.modes[0])
             lower_interp = self.surface_from_modes(lower_set, self.modes[1])
         except (TypeError, KeyError):
             self._initialize_distance_interpolator_flat(layer=self._layer)
-            upper_interp = self._interpolator[0](positions[:, 0:2])
-            lower_interp = self._interpolator[1](positions[:, 0:2])
+            upper_interp = self._interpolator[0](positions[:, self.xy])
+            lower_interp = self._interpolator[1](positions[:, self.xy])
 
-        d1 = upper_interp-positions[:,2]
+        d1 = upper_interp-positions[:,self.z]
         d1[np.where(d1>box/2.)]-=box
         d1[np.where(d1<-box/2.)]+=box
 
-        d2 = lower_interp-positions[:,2]
+        d2 = lower_interp-positions[:,self.z]
         d2[np.where(d2>box/2.)]-=box
         d2[np.where(d2<-box/2.)]+=box
 
         cond = np.where(np.abs(d1) <= np.abs(d2))[0]
-        distance = lower_interp - positions[:,2]
-        distance[cond] = positions[cond][:,2] - upper_interp[cond]
+        distance = lower_interp - positions[:,self.z]
+        distance[cond] = positions[cond][:,self.z] - upper_interp[cond]
 
         return distance
 

@@ -23,7 +23,9 @@ class Profile(object):
     :param ITIM       interface:    if provided, calculate the intrinsic
                                     profile with respect to the first layers
     :param str        direction:    'x','y', or 'z' : calculate the profile
-                                    along this direction
+                                    along this direction. (default: 'z' or
+                                    the normal direction of the interface,
+                                    if provided.
     :param bool       MCnorm:       if True (default) use a simple Monte Carlo
                                     estimate the effective volumes of the bins.
 
@@ -150,15 +152,20 @@ class Profile(object):
     """
 
     def __init__(self,
-                 direction='z',
+                 direction=None,
                  observable=None,
                  interface=None,
                  symmetry='default',
                  MCnorm=True):
-        # TODO: the directions are handled differently, fix it in the code
 
         _dir = {'x': 0, 'y': 1, 'z': 2}
-        self._dir = _dir[direction]
+        if direction is None:
+            try:
+                self._dir = interface.normal
+            except:
+                self._dir = 2
+        else:
+            self._dir = _dir[direction]
         self.interface = interface
         self._MCnorm = MCnorm
         if symmetry == 'default' and interface is not None:
@@ -285,3 +292,41 @@ class Profile(object):
             statistic='mean',
             bins=nbins)
         return [bins[0:-1], bins[1:], avg]
+
+
+    @staticmethod
+    def _():
+        """
+        >>> # this doctest checks that the same profile is
+        >>> # obtained after rotating the system
+        >>> import MDAnalysis as mda
+        >>> import numpy as np
+        >>> import pytim
+        >>> from pytim.datafiles import WATERSMALL_GRO
+        >>> from matplotlib import pyplot as plt
+        >>> u = mda.Universe(WATERSMALL_GRO)
+        >>> inter = pytim.ITIM(u,cluster_cut=3.5,alpha=2.5)
+        >>> print(inter.normal)
+        2
+
+        >>> prof = pytim.observables.Profile(interface=inter)
+        >>> prof.sample(u.atoms)
+        >>> sv = prof.sampled_values
+        >>> u.atoms.positions=np.roll(u.atoms.positions,1,axis=1)
+        >>> box = u.dimensions[:]
+        >>> box[0]=box[2]
+        >>> box[2]=box[1]
+        >>> u.dimensions = box
+        >>> inter = pytim.ITIM(u,cluster_cut=3.5,alpha=2.5)
+        >>> print(inter.normal)
+        0
+
+        >>> prof = pytim.observables.Profile(interface=inter)
+        >>> prof.sample(u.atoms)
+        >>> sv2 = prof.sampled_values
+        >>> print(np.all(sv==sv2))
+        True
+
+        """
+
+
