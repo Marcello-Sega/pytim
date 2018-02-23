@@ -564,7 +564,7 @@ class Interface(object):
         >>> import pytim
         >>> import numpy as np
         >>> from pytim.datafiles import WATER_GRO
-        >>> pytim.ITIM._() ; # coverage
+        >>> pytim.ITIM.__() ; # coverage
         >>>
         >>> for method in [pytim.ITIM , pytim.GITIM] :
         ...     u = mda.Universe(WATER_GRO)
