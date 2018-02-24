@@ -29,6 +29,12 @@ class Surface(object):
         self.normal = interface.normal
         self.alpha = interface.alpha
         self.options = options
+        self.z = self.normal
+        try:
+            self.xyz = np.roll(np.array([0, 1, 2]), 2 - self.z)
+            self.xy = self.xyz[0:2]
+        except:
+            self.xyz, self.xy = None, None
         try:
             self._layer = options['layer']
         except (TypeError, KeyError):
@@ -134,15 +140,16 @@ class Surface(object):
         if layer > len(self.interface._layers[0]):
             raise ValueError(messages.UNDEFINED_LAYER)
 
-        box = self.interface.universe.dimensions[:3]
+        box = self.interface.universe.dimensions[:3][self.xyz]
 
-        upper = self.interface._layers[0][layer]
-        lower = self.interface._layers[1][layer]
+        upper = (self.interface._layers[0][layer])
+        lower = (self.interface._layers[1][layer])
         delta = self.interface.alpha * 4.0 + 1e-6
+        # here we rotate the system to have normal along z
         upperpos = utilities.generate_periodic_border(
-            upper.positions, box, delta, method='2d')[0]
+            upper.positions[:, self.xyz], box, delta, method='2d')[0]
         lowerpos = utilities.generate_periodic_border(
-            lower.positions, box, delta, method='2d')[0]
+            lower.positions[:, self.xyz], box, delta, method='2d')[0]
 
         self.surf_triang = [None, None]
         self.trimmed_surf_triangs = [None, None]
@@ -234,14 +241,15 @@ class Surface(object):
         cond = np.where(pos[:, 0:2] < 0 * box[0:2])
         pos[cond] += box[cond[1]]
 
-        elevation = self.interpolation(pos)
-        if np.sum(np.isnan(elevation)) > 1 + int(0.01 * len(pos)):
+        distance = self.interpolation(pos)
+        if np.sum(np.isnan(distance)) > 1 + int(0.01 * len(pos)):
             Warning("more than 1% of points have fallen outside"
                     "the convex hull while determining the"
                     "interpolated position on the surface."
                     "Something is wrong.")
         # positive values are outside the surface, negative inside
-        distance = (pos[:, 2] - elevation) * np.sign(pos[:, 2])
+        cond = np.where(np.isclose(distance, 0., atol=1e-2))
+        distance[cond] = 0.0
         return distance
 
     def _initialize_distance_interpolator_flat(self, layer):
@@ -251,8 +259,7 @@ class Surface(object):
         self._interpolator = [None, None]
         for side in [0, 1]:
             self._interpolator[side] = LinearNDInterpolator(
-                self.surf_triang[layer],
-                self.triangulation_points[layer][:, 2])
+                self.surf_triang[side], self.triangulation_points[side][:, 2])
 
 
 class SurfaceFlatInterface(Surface):
@@ -262,23 +269,29 @@ class SurfaceFlatInterface(Surface):
 
     def interpolation(self, inp):
         positions = utilities.extract_positions(inp)
-        upper_set = positions[positions[:, 2] >= 0]
-        lower_set = positions[positions[:, 2] < 0]
-
-        elevation = np.zeros(len(positions))
-
+        box = self.interface.universe.dimensions[self.z]
         try:
             self.options['from_modes']
             upper_interp = self.surface_from_modes(upper_set, self.modes[0])
             lower_interp = self.surface_from_modes(lower_set, self.modes[1])
         except (TypeError, KeyError):
             self._initialize_distance_interpolator_flat(layer=self._layer)
-            upper_interp = self._interpolator[0](upper_set[:, 0:2])
-            lower_interp = self._interpolator[1](lower_set[:, 0:2])
+            upper_interp = self._interpolator[0](positions[:, self.xy])
+            lower_interp = self._interpolator[1](positions[:, self.xy])
 
-        elevation[np.where(positions[:, 2] >= 0)] = upper_interp
-        elevation[np.where(positions[:, 2] < 0)] = lower_interp
-        return elevation
+        d1 = upper_interp - positions[:, self.z]
+        d1[np.where(d1 > box / 2.)] -= box
+        d1[np.where(d1 < -box / 2.)] += box
+
+        d2 = lower_interp - positions[:, self.z]
+        d2[np.where(d2 > box / 2.)] -= box
+        d2[np.where(d2 < -box / 2.)] += box
+
+        cond = np.where(np.abs(d1) <= np.abs(d2))[0]
+        distance = lower_interp - positions[:, self.z]
+        distance[cond] = positions[cond][:, self.z] - upper_interp[cond]
+
+        return distance
 
     def dump(self):
         pass
