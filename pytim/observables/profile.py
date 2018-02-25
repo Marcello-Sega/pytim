@@ -99,28 +99,28 @@ class Profile(object):
         plt.gca().set_xlim([80,120])
         plt.show()
 
-    Example (intrinsic, one layer):
+    Example (intrinsic profile):
 
     >>> import numpy as np
     >>> import MDAnalysis as mda
     >>> import pytim
-    >>> from   pytim.datafiles import *
+    >>> from   pytim.datafiles import LJ_GRO
     >>> from   pytim.observables import Profile
 
-    >>> u = mda.Universe(WATER_GRO,WATER_XTC)
-    >>> g = u.select_atoms("name OW")
+    >>> XTC = pytim.datafiles.pytim_data.fetch('LJ_BIG_XTC',tmpdir='./')
+    >>> u = mda.Universe(LJ_GRO,XTC)
     >>>
-    >>> inter = pytim.ITIM(u, group=g,max_layers=1,cluster_cut=3.5,centered=True, molecular=False)
+    >>> inter = pytim.ITIM(u,alpha=2.5,cluster_cut=4.5)
     >>> profile = Profile(interface=inter)
     >>>
     >>> for ts in u.trajectory[::50]:
-    ...     profile.sample(inter.atoms)
+    ...     profile.sample(g)
     >>>
-    >>> low, up, avg = profile.get_values(binwidth=0.2)
+    >>> low, up, avg = profile.get_values(binwidth=0.5)
     >>> np.savetxt('profile.dat',list(zip(low,up,avg)))
 
 
-    This results in the following profile:
+    This results in the following profile (sampling more often):
 
     .. plot::
 
@@ -128,25 +128,25 @@ class Profile(object):
         import numpy as np
         import MDAnalysis as mda
         import pytim
-        from   pytim.datafiles import *
+        from   pytim.datafiles import LJ_GRO
         from   pytim.observables import Profile
 
-        u = mda.Universe(WATER_GRO,WATER_XTC)
-        g = u.select_atoms("name OW")
-
-        inter = pytim.ITIM(u, group=g,max_layers=1,cluster_cut=3.5,centered=True, molecular=False)
+        XTC = pytim.datafiles.pytim_data.fetch('LJ_BIG_XTC',tmpdir='./')
+        u = mda.Universe(LJ_GRO,XTC)
+       
+        inter = pytim.ITIM(u,alpha=2.5,cluster_cut=4.5)
         profile = Profile(interface=inter)
-
-        for ts in u.trajectory[::50]:
+       
+        for ts in u.trajectory[::]:
             profile.sample(g)
-
-        low, up, avg = profile.get_values(binwidth=0.2)
+       
+        low, up, avg = profile.get_values(binwidth=0.5)
 
         z = (low+up)/2.
+        plt.xlim([-20,20])
+        plt.ylim([0,0.03])
+
         plt.plot(z, avg)
-        axes = plt.gca()
-        axes.set_xlim([-15,5])
-        axes.set_ylim([0,0.05])
         plt.show()
 
     """

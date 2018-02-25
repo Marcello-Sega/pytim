@@ -1,7 +1,7 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 """ Location of data files for Pytim examples and tests
-    ====================================================
+====================================================
 
     Real MD simulation data are stored in the ``data/`` subdirectory.
 
@@ -23,6 +23,7 @@
     CCL4_WATER_GRO       Carbon tetrachloride/TIP4p water interface
     FULLERENE_PDB        fullerene
     GLUCOSE_PDB          solvated beta-d-glucose
+    LJ_GRO               Lennard-Jones liquid/vapour interface
     MICELLE_PDB          DPC micelle
     WATERSMALL_GRO       small SPC water/vapour interface
     WATER_520K_GRO       SPC/E water/vapour interface, 520K
@@ -71,6 +72,7 @@ __all__ = [
     "WATER_550K_GRO",  # GROMACS single frame, SPC/E water/vapour interface,550 K
     "METHANOL_GRO",  # methanol/vapour interface with molecules in the  vapour phase
     "ILBENZENE_GRO",  # Ionic liquid/benzene, partial miscibility
+    "LJ_GRO", # Lennard-Jones liquid/vapour interface
     "MICELLE_PDB",  # PDB of dodecylphosphocholine micelle in water
     "FULLERENE_PDB",  # PDB of C60
     "GLUCOSE_PDB",  # PDB of solvated beta-d-glucose
@@ -259,6 +261,10 @@ pytim_data.add('FULLERENE_PDB', 'config', 'PDB', 'fullerene')
 
 GLUCOSE_PDB = resource_filename('pytim', 'data/glucose.pdb')
 pytim_data.add('GLUCOSE_PDB', 'config', 'PDB', 'solvated beta-d-glucose')
+
+LJ_GRO = resource_filename('pytim', 'data/LJ.gro')
+pytim_data.add('LJ_GRO', 'config', 'GRO',
+               'Lennard-Jones liquid/vapour interface')
 
 WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
 pytim_data.add('WATERSMALL_GRO', 'config', 'GRO',
