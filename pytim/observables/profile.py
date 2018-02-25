@@ -122,33 +122,7 @@ class Profile(object):
 
     This results in the following profile (sampling more often):
 
-    .. plot::
-
-        import matplotlib.pyplot as plt
-        import numpy as np
-        import MDAnalysis as mda
-        import pytim
-        from   pytim.datafiles import LJ_GRO
-        from   pytim.observables import Profile
-
-        XTC = pytim.datafiles.pytim_data.fetch('LJ_BIG_XTC',tmpdir='./')
-        u = mda.Universe(LJ_GRO,XTC)
-       
-        inter = pytim.ITIM(u,alpha=2.5,cluster_cut=4.5)
-        profile = Profile(interface=inter)
-       
-        for ts in u.trajectory[::]:
-            profile.sample(g)
-       
-        low, up, avg = profile.get_values(binwidth=0.5)
-
-        z = (low+up)/2.
-        plt.xlim([-20,20])
-        plt.ylim([0,0.03])
-
-        plt.plot(z, avg)
-        plt.show()
-
+    image:: intrinsic_lj.png
     """
 
     def __init__(self,
