@@ -47,25 +47,24 @@ class Profile(object):
     >>> # Note that by default Profile() uses the number of atoms as an observable
     >>> Layers = []
     >>> for n in range(5):
-    >>>     Layers.append(Profile())
+    ...     Layers.append(Profile())
     >>>
     >>> # Go through the trajectory, center the liquid slab and sample the profiles
     >>> for ts in u.trajectory[::50]:
-    >>>         print ts.frame,
-    >>>         # this shifts the system so that the center of mass of the liquid slab
-    >>>         # is in the middle of the box
-    >>>         inter.center()
-    >>>
-    >>>         Layers[0].sample(g)
-    >>>         Layers[1].sample(u.atoms[u.atoms.layers == 1 ])
-    >>>         Layers[2].sample(u.atoms[u.atoms.layers == 2 ])
-    >>>         Layers[3].sample(u.atoms[u.atoms.layers == 3 ])
-    >>>         Layers[4].sample(u.atoms[u.atoms.layers == 4 ])
+    ...         # this shifts the system so that the center of mass of the liquid slab
+    ...         # is in the middle of the box
+    ...         inter.center()
+    ...
+    ...         Layers[0].sample(g)
+    ...         Layers[1].sample(u.atoms[u.atoms.layers == 1 ])
+    ...         Layers[2].sample(u.atoms[u.atoms.layers == 2 ])
+    ...         Layers[3].sample(u.atoms[u.atoms.layers == 3 ])
+    ...         Layers[4].sample(u.atoms[u.atoms.layers == 4 ])
     >>>
     >>> density=[]
     >>> for L in Layers:
-    >>>     low,up,avg = L.get_values(binwidth=0.5)
-    >>>     density.append(avg)
+    ...     low,up,avg = L.get_values(binwidth=0.5)
+    ...     density.append(avg)
     >>>
     >>> # (low + up )/2 is the middle of the bin
     >>> np.savetxt('profile.dat',list(zip(low,up,density[0],density[1],density[2],density[3],density[4])))
@@ -84,6 +83,8 @@ class Profile(object):
     >>> from   pytim.observables import Profile
 
     >>> XTC = pytim.datafiles.pytim_data.fetch('LJ_BIG_XTC',tmpdir='./')
+    checking presence of a cached copy... not found. Fetching remote file... done.
+
     >>> u = mda.Universe(LJ_GRO,XTC)
     >>>
     >>> inter = pytim.ITIM(u,alpha=2.5,cluster_cut=4.5)
