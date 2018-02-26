@@ -42,64 +42,40 @@ class Profile(object):
     >>> # here we calculate the profiles of oxygens only (note molecular=False)
     >>> inter = pytim.ITIM(u,group=g,max_layers=4,centered=True, molecular=False)
     >>>
-    >>> Layers=[]
-    >>> # by default Profile() uses the number of atoms as an observable
-    >>> for n in np.arange(0,5):
-    ...     Layers.append(Profile())
+    >>> # We create a list of 5 profiles, one for the total and 4 for the first
+    >>> # 4 layers.
+    >>> # Note that by default Profile() uses the number of atoms as an observable
+    >>> Layers = []
+    >>> for n in range(5):
+    >>>     Layers.append(Profile())
     >>>
+    >>> # Go through the trajectory, center the liquid slab and sample the profiles
     >>> for ts in u.trajectory[::50]:
-    ...     for n in range(len(Layers)):
-    ...         if n>0:
-    ...             group = u.atoms[u.atoms.layers == n ]
-    ...         else:
-    ...             group = g
-    ...         Layers[n].sample(group)
+    >>>         print ts.frame,
+    >>>         # this shifts the system so that the center of mass of the liquid slab
+    >>>         # is in the middle of the box
+    >>>         inter.center()
+    >>>
+    >>>         Layers[0].sample(g)
+    >>>         Layers[1].sample(u.atoms[u.atoms.layers == 1 ])
+    >>>         Layers[2].sample(u.atoms[u.atoms.layers == 2 ])
+    >>>         Layers[3].sample(u.atoms[u.atoms.layers == 3 ])
+    >>>         Layers[4].sample(u.atoms[u.atoms.layers == 4 ])
     >>>
     >>> density=[]
     >>> for L in Layers:
-    ...     low,up,avg = L.get_values(binwidth=0.5)
-    ...     density.append(avg)
+    >>>     low,up,avg = L.get_values(binwidth=0.5)
+    >>>     density.append(avg)
     >>>
+    >>> # (low + up )/2 is the middle of the bin
     >>> np.savetxt('profile.dat',list(zip(low,up,density[0],density[1],density[2],density[3],density[4])))
 
-    This results in the following profile (zooming close to the interface border)
+    This results in the following profile (sampling more often and zooming close to the interface border)
 
-    .. plot::
+    .. image:: nonintrinsic_water.png
+        :width: 50%
 
-        from matplotlib import pyplot as plt
-
-        import numpy as np
-        import MDAnalysis as mda
-        import pytim
-        from   pytim.datafiles import *
-        from   pytim.observables import Profile
-
-        u = mda.Universe(WATER_GRO,WATER_XTC)
-        g=u.select_atoms('name OW')
-        # here we calculate the profiles of oxygens only (note molecular=False)
-        inter = pytim.ITIM(u,group=g,max_layers=4,centered=True, molecular=False)
-
-        Layers=[]
-        # by default Profile() uses the number of atoms as an observable
-        for n in np.arange(0,5):
-            Layers.append(Profile())
-
-        for ts in u.trajectory[::50]:
-            for n in range(len(Layers)):
-                if n>0:
-                    group = u.atoms[u.atoms.layers == n ]
-                else:
-                    group = g
-                Layers[n].sample(group)
-
-        for L in Layers:
-            low,up,avg = L.get_values(binwidth=0.5)
-            plt.plot(low,avg)
-
-        plt.gca().set_xlim([80,120])
-        plt.show()
-
-    Example (intrinsic profile):
+    Example: the intrinsic profile of a LJ liquid/vapour interface:
 
     >>> import numpy as np
     >>> import MDAnalysis as mda
@@ -122,7 +98,13 @@ class Profile(object):
 
     This results in the following profile (sampling more often):
 
-    image:: intrinsic_lj.png
+    .. image:: intrinsic_lj.png
+        :width: 50%
+
+    Note the missing point at position = 0, this is the delta-function contirbution.
+    Negative positions are within the liquid phase, while positive ones are in the vapour
+    phase.
+
     """
 
     def __init__(self,
