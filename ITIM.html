@@ -4,12 +4,20 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>ITIM &#8212; Pytim 0.7.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -18,7 +26,8 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="GITIM" href="GITIM.html" />
     <link rel="prev" title="New properties of Atoms" href="newproperties.html" /> 
-  </head><body>
+  </head>
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -84,7 +93,7 @@ search, if cluster_cut is not None</li>
 <li><strong>extra_cluster_groups</strong> (<em>Object</em>) – Additional groups, to allow for
 mixed interfaces</li>
 <li><strong>info</strong> (<em>bool</em>) – Print additional info</li>
-<li><strong>centered</strong> (<em>bool</em>) – Center the  <code class="xref py py-obj docutils literal notranslate"><span class="pre">group</span></code></li>
+<li><strong>centered</strong> (<em>bool</em>) – Center the  <code class="xref py py-obj docutils literal"><span class="pre">group</span></code></li>
 <li><strong>warnings</strong> (<em>bool</em>) – Print warnings</li>
 <li><strong>mesh</strong> (<em>float</em>) – The grid spacing used for the testlines
 (default 0.4 Angstrom)</li>
@@ -96,7 +105,7 @@ every time a new frame is selected.</li>
 </tbody>
 </table>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
@@ -107,7 +116,7 @@ every time a new frame is selected.</li>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">max_layers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">molecular</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># atoms in the layers can be accesses either through</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># atoms in the layers can be accesses either through</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># the layers array:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
 <span class="go">[[&lt;AtomGroup with 786 atoms&gt; &lt;AtomGroup with 681 atoms&gt;</span>
@@ -116,20 +125,20 @@ every time a new frame is selected.</li>
 <span class="go">  &lt;AtomGroup with 666 atoms&gt; &lt;AtomGroup with 636 atoms&gt;]]</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># upper side, first layer</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># upper side, first layer</span>
 <span class="go">&lt;AtomGroup with 786 atoms&gt;</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="c1"># lower side, third layer</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="c1"># lower side, third layer</span>
 <span class="go">&lt;AtomGroup with 666 atoms&gt;</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># or as a whole AtomGroup. This can include all atoms in all layers</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># or as a whole AtomGroup. This can include all atoms in all layers</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">atoms</span>
 <span class="go">&lt;AtomGroup with 5571 atoms&gt;</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">selection</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">sides</span> <span class="o">==</span> <span class="mi">0</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">selection</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">sides</span> <span class="o">==</span> <span class="mi">0</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span> <span class="n">selection</span> <span class="p">]</span> <span class="c1"># all atoms in the upper side layer</span>
 <span class="go">&lt;AtomGroup with 2781 atoms&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">selection</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">,</span> <span class="n">selection</span><span class="p">)</span>
@@ -137,20 +146,20 @@ every time a new frame is selected.</li>
 <span class="go">&lt;AtomGroup with 681 atoms&gt;</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># the whole system can be quickly saved to a pdb file</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># the whole system can be quickly saved to a pdb file</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># including the layer information, written in the beta field</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># using:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;system.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># of course, the native interface of MDAnalysis can be used to</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># of course, the native interface of MDAnalysis can be used to</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># write pdb files, but the centering options are not available.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Writing to other formats that do not support the beta factor</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># will loose the information on the layers.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;only_layers.pdb&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># In some cases it might be necessary to compute two interfaces.</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># In some cases it might be necessary to compute two interfaces.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># This could be done in the following way:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
@@ -182,7 +191,7 @@ the new layers and sides.</p>
 <code class="descname">layers</code><a class="headerlink" href="#pytim.itim.ITIM.layers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access the layers as numpy arrays of AtomGroups.</p>
 <p>The object can be sliced as usual with numpy arrays, so, for example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -195,18 +204,18 @@ the new layers and sides.</p>
 <span class="go"> &lt;AtomGroup with 663 atoms&gt; &lt;AtomGroup with 651 atoms&gt;]</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">repr</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># lower side (1), first layer (0)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">repr</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># lower side (1), first layer (0)</span>
 <span class="go">&#39;&lt;AtomGroup with 786 atoms&gt;&#39;</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> <span class="c1"># 1st - 3rd layer (0:3), on both sides</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> <span class="c1"># 1st - 3rd layer (0:3), on both sides</span>
 <span class="go">[[&lt;AtomGroup with 786 atoms&gt; &lt;AtomGroup with 681 atoms&gt;</span>
 <span class="go">  &lt;AtomGroup with 663 atoms&gt;]</span>
 <span class="go"> [&lt;AtomGroup with 786 atoms&gt; &lt;AtomGroup with 702 atoms&gt;</span>
 <span class="go">  &lt;AtomGroup with 666 atoms&gt;]]</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="c1"># side 1, layers 1-4 &amp; stride 2 (0:4:2)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="c1"># side 1, layers 1-4 &amp; stride 2 (0:4:2)</span>
 <span class="go">[&lt;AtomGroup with 786 atoms&gt; &lt;AtomGroup with 666 atoms&gt;]</span>
 </pre></div>
 </div>
@@ -236,7 +245,7 @@ to the layers with different beta factors.</p>
 <dt>Example: save the positions (centering the interface in the cell)</dt>
 <dd>without appending</dd>
 </dl>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim.datafiles</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span>
@@ -249,15 +258,15 @@ to the layers with different beta factors.</p>
 <dt>Example: save the positions without centering the interface. This</dt>
 <dd>will not shift the atoms from the original position
 (still, they will be put into the basic cell).
-The <code class="xref py py-obj docutils literal notranslate"><span class="pre">multiframe</span></code> option set to <code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code> will
+The <code class="xref py py-obj docutils literal"><span class="pre">multiframe</span></code> option set to <code class="xref py py-obj docutils literal"><span class="pre">False</span></code> will
 overwrite the file</dd>
 </dl>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that if GITIM is used, and the <code class="xref py py-obj docutils literal notranslate"><span class="pre">symmetry</span></code> option is
-different from <code class="xref py py-obj docutils literal notranslate"><span class="pre">'planar'</span></code>, the <code class="xref py py-obj docutils literal notranslate"><span class="pre">centered='origin'</span></code> option is
-equivalent to <code class="xref py py-obj docutils literal notranslate"><span class="pre">centered='middle'</span></code>.</p>
+<p>Note that if GITIM is used, and the <code class="xref py py-obj docutils literal"><span class="pre">symmetry</span></code> option is
+different from <code class="xref py py-obj docutils literal"><span class="pre">'planar'</span></code>, the <code class="xref py py-obj docutils literal"><span class="pre">centered='origin'</span></code> option is
+equivalent to <code class="xref py py-obj docutils literal"><span class="pre">centered='middle'</span></code>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -329,14 +338,12 @@ equivalent to <code class="xref py py-obj docutils literal notranslate"><span cl
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
-    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -363,7 +370,7 @@ equivalent to <code class="xref py py-obj docutils literal notranslate"><span cl
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Marcello Sega.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
     </div>
   </body>
 </html>

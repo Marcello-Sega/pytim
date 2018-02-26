@@ -77,7 +77,7 @@ according to the cluster they belong when calling:
     >>> np.sum(g.clusters==-1)
     10164
 
-The option :option:`tempfactors` of :func:`~pytim.Interface.writepdb`
+The option :obj:`tempfactors` of :func:`~pytim.Interface.writepdb`
 can be used to save to a pdb file, instead of the information about
 the layers (default), the cluster labels:
 

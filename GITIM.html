@@ -4,12 +4,20 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>GITIM &#8212; Pytim 0.7.0 documentation</title>
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -18,7 +26,8 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="WillardChandler" href="WillardChandler.html" />
     <link rel="prev" title="ITIM" href="ITIM.html" /> 
-  </head><body>
+  </head>
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -85,11 +94,11 @@ search, if cluster_cut is not None</li>
 mixed interfaces</li>
 <li><strong>biggest_cluster_only</strong> (<em>bool</em>) – Tag as surface atoms/molecules only
 those in the largest cluster. Need to
-specify also a <code class="xref py py-obj docutils literal notranslate"><span class="pre">cluster_cut</span></code> value.</li>
+specify also a <code class="xref py py-obj docutils literal"><span class="pre">cluster_cut</span></code> value.</li>
 <li><strong>symmetry</strong> (<em>str</em>) – Gives the code a hint about the topology
 of the interface: ‘generic’ (default)
 or  ‘planar’</li>
-<li><strong>centered</strong> (<em>bool</em>) – Center the  <code class="xref py py-obj docutils literal notranslate"><span class="pre">group</span></code></li>
+<li><strong>centered</strong> (<em>bool</em>) – Center the  <code class="xref py py-obj docutils literal"><span class="pre">group</span></code></li>
 <li><strong>info</strong> (<em>bool</em>) – Print additional info</li>
 <li><strong>warnings</strong> (<em>bool</em>) – Print warnings</li>
 <li><strong>autoassign</strong> (<em>bool</em>) – If true (default) detect the interface
@@ -100,7 +109,7 @@ every time a new frame is selected.</li>
 </tbody>
 </table>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -116,7 +125,7 @@ every time a new frame is selected.</li>
 </div>
 <p>Successive layers can be identified with GITIM as well.
 In this example we identify two solvation shells of glucose:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="o">*</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -154,7 +163,7 @@ the new layers and sides.</p>
 <dd><p>Access the layers as numpy arrays of AtomGroups.</p>
 <p>The object can be sliced as usual with numpy arrays.
 Differently from ITIM, there are no sides. Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">MICELLE_PDB</span>
 <span class="go">&gt;&gt;&gt;</span>
@@ -194,7 +203,7 @@ to the layers with different beta factors.</p>
 <dt>Example: save the positions (centering the interface in the cell)</dt>
 <dd>without appending</dd>
 </dl>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim.datafiles</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span>
@@ -207,15 +216,15 @@ to the layers with different beta factors.</p>
 <dt>Example: save the positions without centering the interface. This</dt>
 <dd>will not shift the atoms from the original position
 (still, they will be put into the basic cell).
-The <code class="xref py py-obj docutils literal notranslate"><span class="pre">multiframe</span></code> option set to <code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code> will
+The <code class="xref py py-obj docutils literal"><span class="pre">multiframe</span></code> option set to <code class="xref py py-obj docutils literal"><span class="pre">False</span></code> will
 overwrite the file</dd>
 </dl>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that if GITIM is used, and the <code class="xref py py-obj docutils literal notranslate"><span class="pre">symmetry</span></code> option is
-different from <code class="xref py py-obj docutils literal notranslate"><span class="pre">'planar'</span></code>, the <code class="xref py py-obj docutils literal notranslate"><span class="pre">centered='origin'</span></code> option is
-equivalent to <code class="xref py py-obj docutils literal notranslate"><span class="pre">centered='middle'</span></code>.</p>
+<p>Note that if GITIM is used, and the <code class="xref py py-obj docutils literal"><span class="pre">symmetry</span></code> option is
+different from <code class="xref py py-obj docutils literal"><span class="pre">'planar'</span></code>, the <code class="xref py py-obj docutils literal"><span class="pre">centered='origin'</span></code> option is
+equivalent to <code class="xref py py-obj docutils literal"><span class="pre">centered='middle'</span></code>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -287,14 +296,12 @@ equivalent to <code class="xref py py-obj docutils literal notranslate"><span cl
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
-    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -321,7 +328,7 @@ equivalent to <code class="xref py py-obj docutils literal notranslate"><span cl
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Marcello Sega.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.0.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
     </div>
   </body>
 </html>

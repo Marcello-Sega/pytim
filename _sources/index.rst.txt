@@ -31,13 +31,6 @@
 
 
 
-.. The next toctree is hidden to include testsuite in the doctest without showing it in the html pages
-.. toctree::
-    :hidden:
-
-    testsuite
-
-
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
