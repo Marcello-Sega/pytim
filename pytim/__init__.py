@@ -4,6 +4,7 @@
 
 from .itim import ITIM
 from .gitim import GITIM
+from .usti import USTI
 from .willard_chandler import WillardChandler
 from .chacon_tarazona import ChaconTarazona
 from . import observables, utilities, datafiles

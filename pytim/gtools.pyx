@@ -1,7 +1,8 @@
-cdef extern from "gtools.h":
-  double sphere(int idx0, int idx1, int idx2, int idx3, const double* points, const double* weights, double* center)
-
 cimport cython
+
+cdef extern from "gtools.h":
+  cdef double sphere(int idx0, int idx1, int idx2, int idx3, const double* points, const double* weights, double* center)
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 # adapter for call for one tetrahedon
