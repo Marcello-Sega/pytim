@@ -18,6 +18,7 @@ except ImportError:
 
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
+from Cython.Build import cythonize
 from distutils.extension import Extension
 try:
     from Cython.Distutils import build_ext
@@ -51,11 +52,13 @@ pytim_dbscan = Extension(
     language="c++",
     include_dirs=[numpy.get_include()])
 
-gtools = Extension("gtools,"
-    sources=["gtools.pyx", "gtools/gtools.cpp", "gtools/gtools.h"]
-    include_dirs=[np.get_include()],
-    extra_compile_args=["-O3"],
-    language="c++")
+gtools = Extension("gtools",
+    sources=[ "pytim/gtools.pyx", "pytim/gtools/gtools.cpp"],
+    language="c++",
+    include_dirs=[numpy.get_include(),'pytim/gtools/'],
+    extra_compile_args=["-O3" ])
+
+extensions = [pytim_dbscan, gtools]
     
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -75,7 +78,7 @@ with open("pytim/version.py") as fp:
 
 setup(
     name='pytim',
-    ext_modules=[pytim_dbscan, gtools],
+    ext_modules= extensions,
     cmdclass={'build_ext': build_ext,
               'test': NoseTestCommand},
     # Versions should comply with PEP440.  For a discussion on single-sourcing

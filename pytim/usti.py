@@ -1,17 +1,17 @@
 #!/usr/bin/python
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-""" Module: USTI
-    =============
+""" Module: usti
+    ============
 """
 from __future__ import print_function
 import numpy as np
+import datetime
 from scipy.spatial import distance
+from gtools import tsphere
 
 from . import utilities
 from .sanity_check import SanityCheck
-from .surface import SurfaceFlatInterface
-from .surface import SurfaceGenericInterface
 try:
     from pytetgen import Delaunay
 except ImportError:
@@ -20,17 +20,13 @@ except ImportError:
 from .Interface import Interface
 from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
-import pytim.utilities_USTI as utilities
-import pytim.quasiTriangulation
-import pytim.gtool
-import datetime
-
+from . import quasiTriangulation
 
 class USTI(Interface):
-    """ Identifies interfacial molecules at curved interfaces.
+    """ Identifies interfacial molecules at curved interfaces using
+        the method TODO add description
 
-        *(Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M., \
-J. Chem. Phys. 138, 044110, 2013)*
+        * TODO: add reference *
 
         :param Object universe:     The MDAnalysis Universe, MDTraj trajectory
                                     or OpenMM Simulation objects.
@@ -100,7 +96,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
         self.autoassign = autoassign
-        
+
         self.do_center = centered
 
         self.biggest_cluster_only = biggest_cluster_only
@@ -112,12 +108,10 @@ J. Chem. Phys. 138, 044110, 2013)*
         self.cluster_threshold_density = cluster_threshold_density
         self._clusters=[]
         self.max_layers = max_layers
-        self.max_interfaces=max_interfaces
+        self.max_interfaces = max_interfaces
         self._layers = np.empty([max_layers], dtype=type(universe.atoms))
-        
         self.trianType=trianType
         self.periodicity=periodicity
-        
         self.info = info
         self.normal = None
         self.PDB = {}
@@ -131,9 +125,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         PatchTrajectory(self.universe.trajectory, self)
 
         self._assign_layers()
-        
+
         self._layers=self._layers[0,0,0:self.max_layers]
-        print(self._layers)
 
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
@@ -149,14 +142,14 @@ J. Chem. Phys. 138, 044110, 2013)*
             if(self.trianType=='quasi'):
                 isDense[i]=1 if self.triangulation.touchingRadii[i]< alpha else 0
             elif(self.trianType=='Delaunay'):
-                isDense[i]=1 if pytim.gtool.tsphere(simplex[0],simplex[1],simplex[2],simplex[3], self.triangulation.points, weights, center)<alpha else 0
+                isDense[i]=1 if tsphere(simplex[0],simplex[1],simplex[2],simplex[3], self.triangulation.points, weights, center)<alpha else 0
             elif(self.trianType=='regular'):
                 weights=self.triangulation.weights
-                isDense[i]=1 if pytim.gtool.tsphere(simplex[0],simplex[1],simplex[2],simplex[3], self.triangulation.points, weights, center)<alpha else 0
+                isDense[i]=1 if tsphere(simplex[0],simplex[1],simplex[2],simplex[3], self.triangulation.points, weights, center)<alpha else 0
             i+=1
         return isDense
-    
-    
+
+
     def makeClusters(self,alpha,tetrahedrons,neighbors,box,extraids):
         isDense=self.assignTetrahedrons(tetrahedrons,alpha) #It assigns tetrahedrons to the dilute or dense phase
         t = self.triangulation
@@ -172,7 +165,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         nCl=-1
         inCl[:]=-1
         dim=0
-        
+
         for i in range(0,n):
             if(inCl[i]==-1): #i-th tetrahedron isn't used in any cluster
                 nCl+=1
@@ -213,7 +206,7 @@ J. Chem. Phys. 138, 044110, 2013)*
                                         dim=3
                                         clusters[nCl].clusterDimension=dim
         return [clusters, tInCl]
-    
+
     def findInterfaces(self,tInCl,clusters,tNeighbors,simplices):
         interfaces=[]#np.empty((len(clusters),),dtype=object)
         for i in range(0,len(clusters)):
@@ -227,7 +220,7 @@ J. Chem. Phys. 138, 044110, 2013)*
                     interfaces[i].append(Triangle(simplices[item][0],simplices[item][1],simplices[item][3]))
                 if(tNeighbors[item][3]<0 or i!=tInCl[tNeighbors[item][3]]):
                     interfaces[i].append(Triangle(simplices[item][0],simplices[item][1],simplices[item][2]))
-                    
+
                 if(len(tNeighbors[item])>4):
                     if((tNeighbors[item][4]>-2) and i!=tInCl[tNeighbors[item][4]]):
                         interfaces[i].append(Triangle(simplices[item][1],simplices[item][2],simplices[item][3]))
@@ -238,7 +231,7 @@ J. Chem. Phys. 138, 044110, 2013)*
                     if(tNeighbors[item][7]>-2 and i!=tInCl[tNeighbors[item][7]]):
                         interfaces[i].append(Triangle(simplices[item][0],simplices[item][1],simplices[item][2]))
         return interfaces
-    
+
     def findNeighboringTriangles(self,interface,extraids):
         neighbors=[]
         for i in range(0,len(interface)):
@@ -250,14 +243,14 @@ J. Chem. Phys. 138, 044110, 2013)*
                     if(not j in neighbors[i]):
                         neighbors[i].append(j)
         return neighbors
-    
+
     def makeClustersFromInterfaces(self,neighbors,interface):
         compactInterfaces=[]
         rij=np.array(3)
         inCl=np.zeros(len(interface))
         inCl[:]=-1
         nCl=-1
-        
+
         for i in range(0,len(interface)):
             if(inCl[i]==-1):
                 compactInterfaces.append([])
@@ -270,18 +263,21 @@ J. Chem. Phys. 138, 044110, 2013)*
                             compactInterfaces[nCl].append(k)
                             inCl[k]=nCl
         return compactInterfaces
-    
+
     def getInterfaces(self,tInCl,clusters,tNeighbors,tetrahedrons,extraids):
-        
+
         interfaces=[]
         interface=self.findInterfaces(tInCl,clusters,tNeighbors,tetrahedrons)
-        
+        if self.info:
+            print('findInterfaces done')
         for i in range(0,len(interface)):
             neighbors=self.findNeighboringTriangles(interface[i],extraids)
             interfaces.append(self.makeClustersFromInterfaces(neighbors,interface[i]))
         return [interface,interfaces]
-    
-    def findLayers(self,cluster,clusterInterface,individualInterface,extraids): #return list of indices of molecules in individual layers for requaired cluster 
+
+    def findLayers(self,cluster,clusterInterface,individualInterface,extraids): 
+        """ return list of indices of molecules in individual layers for the required cluster
+        """
         layers=[]
         layers.append([])
         isUsed={}
@@ -300,8 +296,8 @@ J. Chem. Phys. 138, 044110, 2013)*
             if(not str(index1) in isUsed):
                 layers[0].append(index1)
                 isUsed[str(index1)]=0
-               
-        i=0 
+
+        i=0
         for lay in layers:
             next=False
             for item in lay:
@@ -313,17 +309,19 @@ J. Chem. Phys. 138, 044110, 2013)*
                         layers[i+1].append(n)
                         isUsed[str(n)]=i+1
             i+=1
-            
+
         return layers[0:i-1]
-    
-    def getLayers(self,clusters,interface,interfaces,extraids): #colect layers from each interfaces in each cluster
+
+    def getLayers(self,clusters,interface,interfaces,extraids): 
+        """ collect layers from each interfaces in each cluster
+        """
         layers=[]
         for i in range(0,len(interface)):
             layers.append([])
             for infc in interfaces[i]:
                 layers[i].append(self.findLayers(clusters[i],interface[i],infc,extraids))
-        return layers    
-        
+        return layers
+
     def alpha_shape(self, alpha):
         box = self.universe.dimensions[:3]
         delta = 2. * self.alpha + 1e-6
@@ -333,12 +331,13 @@ J. Chem. Phys. 138, 044110, 2013)*
         gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
         if self._noextrapoints == False:
             extrapoints, extraids = utilities.generate_periodic_border(
-                points, box, delta,self.periodicity,method='3d')
-        
+                points, box, delta,method='3d')
+
         extrapoints = np.asarray(points,dtype=np.float)
         extraids=np.arange(len(points), dtype=np.int)
-        
-        t1 = datetime.datetime.now()
+
+        if self.info:
+            t1 = datetime.datetime.now()
         weights=np.zeros(len(extrapoints))
         if(self.trianType=="Delaunay"):
             self.triangulation = Delaunay(extrapoints)
@@ -349,35 +348,39 @@ J. Chem. Phys. 138, 044110, 2013)*
                 self.triangulation=quasiTriangulation.QuasiTriangulation(extrapoints,weights,box+2.0*delta)
             elif(self.trianType=='regular'):
                 self.triangulation = Delaunay(extrapoints,weights=weights)
-                
-        print(len(self.triangulation.simplices))
-        t2 = datetime.datetime.now()
-        print("time of triangulation: ",t2-t1)
+
+        if self.info:
+            print(len(self.triangulation.simplices))
+            t2 = datetime.datetime.now()
+            print("time of triangulation: ",t2-t1)
         [tetrahedrons,neighbors]=utilities.clearPBCtriangulation(self.triangulation,extrapoints,extraids,box)
-        t3 = datetime.datetime.now()
-        print("PBC smoothing: ",t3-t2)
+        if self.info:
+            t3 = datetime.datetime.now()
+            print("PBC smoothing: ",t3-t2)
         [self._clusters,tInCl]=self.makeClusters(alpha,tetrahedrons,neighbors,box,extraids)
-        t4 = datetime.datetime.now()
-        print("clusters: ",t4-t3)
+        if self.info:
+            t4 = datetime.datetime.now()
+            print("clusters: ",t4-t3)
         [interface,interfaces]=self.getInterfaces(tInCl,self._clusters,neighbors,tetrahedrons,extraids)
-        t5 = datetime.datetime.now()
-        print("interfaces: ",t5-t4)
+        if self.info:
+            t5 = datetime.datetime.now()
+            print("interfaces: ",t5-t4)
         if(len(interface)==1 and len(interface[0])==0):
-            print("No interfaces found! Please check the value of threshold parameter!")
-            exit()
-            
+            raise RuntimeError("No interfaces found! Please check the value of threshold parameter!")
+
         layers=self.getLayers(self._clusters,interface,interfaces,extraids)
-        t6 = datetime.datetime.now()
-        print("layers: ",t6-t5)
+        if self.info:
+            t6 = datetime.datetime.now()
+            print("layers: ",t6-t5)
         self._layers = np.empty([len(self._clusters),self.max_interfaces, self.max_layers], dtype=type(self.universe.atoms))
         i=0
         for c in self._clusters:
              c.interfaces=interfaces[i]
              i+=1
-        
+
         return layers
-        
-        
+
+
     def _assign_layers(self):
         """Determine the USTI layers."""
         self.reset_labels()
@@ -398,14 +401,14 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         size = len(self.cluster_group.positions)
         alpha_ids = self.alpha_shape(self.alpha)
-        
+
         max_usedLayers=0
 
         #for each cluster "c" and its each interface "i" asign layer "l"
         for c in range(0,len(alpha_ids)):
             for i in range(0,len(alpha_ids[c])):
                 if(i<len(alpha_ids[c])and i<self.max_interfaces):
-                    for l in range(0,len(alpha_ids[c][i])):    
+                    for l in range(0,len(alpha_ids[c][i])):
                         if(l<len(alpha_ids[c][i]) and l<self.max_layers):
                             if self.molecular:
                                 self._layers[c,i,l] = self.cluster_group[alpha_ids[c][i][l]].residues.atoms
@@ -414,8 +417,8 @@ J. Chem. Phys. 138, 044110, 2013)*
                             if(c==0 and i==0 and self._layers[c,i,l] is not None):
                                 max_usedLayers+=1
             self.clusters[c].layers=self.layers[c]
-                        
-        for c in range(0,len(alpha_ids)):                    
+
+        for c in range(0,len(alpha_ids)):
             for i in range(0,len(alpha_ids[c])):
                 if(i<len(alpha_ids[c])and i<self.max_interfaces):
                     for l in range(0,len(alpha_ids[c][i])):
@@ -427,7 +430,7 @@ J. Chem. Phys. 138, 044110, 2013)*
             print("Warning: the system contains fewer layers than required")
             print("requiered: ", self.max_layers, " found: ",max_usedLayers)
             self.max_layers=max_usedLayers
-    
+
 
     @property
     def layers(self):
@@ -435,6 +438,7 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         The object can be sliced as usual with numpy arrays.
         Differently from ITIM, there are no sides. Example:
+        TODO: check this example
 
         >>> import MDAnalysis as mda
         >>> import pytim
@@ -442,7 +446,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         >>>
         >>> u = mda.Universe(MICELLE_PDB)
         >>> micelle = u.select_atoms('resname DPC')
-        >>> inter = pytim.GITIM(u, group=micelle, max_layers=3,molecular=False)
+        >>> inter = pytim.USTI(u, group=micelle, max_layers=3,molecular=False)
         >>> inter.layers  #all layers
         array([<AtomGroup with 909 atoms>, <AtomGroup with 301 atoms>,
                <AtomGroup with 164 atoms>], dtype=object)
@@ -451,12 +455,12 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         """
         return self._layers
-    
+
     @property
     def clusters(self):
         return self._clusters
 
-#
+
 class Cluster():
     def __init__(self,clusterGroup):
         self.tetrahedrons=[]
@@ -473,7 +477,7 @@ class Cluster():
             if(not index1 in self.atomIndices):
                 self.atomIndices.append(index1)
                 if(not str(index1) in self.neighboringAtoms):
-                    self.neighboringAtoms[str(index1)]=[]     
+                    self.neighboringAtoms[str(index1)]=[]
             self.appendAtomNeighbors(index1,extraids[tetrahedron])
     def appendAtomNeighbors(self,index1,index2):
         for i in index2:
@@ -484,43 +488,43 @@ class Cluster():
     @property
     def clusterDimension(self):
         return self._clusterDimension
-    
+
     @clusterDimension.setter
     def clusterDimension(self,dimension):
         self._clusterDimension=dimension
-        
+
     @property
     def clusterDensity(self):
         return self._clusterDensity
-    
+
     @clusterDensity.setter
     def clusterDensity(self,_density):
         self._clusterDensity=_density
-        
+
     @property
     def interfaces(self):
         return self.__interfaces
-    
+
     @interfaces.setter
     def interfaces(self,value):
         for i in value:
             self.__interfaces.append(i)
-    
+
     @property
     def layers(self):
         return self.__layers
-    
+
     @layers.setter
     def layers(self,value):
         for i in value: #loop over interfaces
             self.__layers.append(i)
-        
+
 class Triangle():
     def __init__(self,A,B,C):
         self.A=A
         self.B=B
         self.C=C
-        
+
     def isNeighborOf(self,triangle,extraids):
         if(int(extraids[self.A]==extraids[triangle.A] or extraids[self.A]==extraids[triangle.B] or extraids[self.A]==extraids[triangle.C])+
             int(extraids[self.B]==extraids[triangle.A] or extraids[self.B]==extraids[triangle.B] or extraids[self.B]==extraids[triangle.C])+

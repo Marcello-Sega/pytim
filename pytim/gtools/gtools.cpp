@@ -1,10 +1,13 @@
-#include"vcl/vectorclass.h"
-#include"vcl/vector3d.h"
-#include<iostream>
-#include<cmath>
-#include<ctime>
+#include <vcl/vectorclass.h>
+#include <vcl/vector3d.h>
+#include <iostream>
+#include <cmath>
+#include <ctime>
 
+#ifdef __cplusplus
 extern "C" {
+#endif
+
 double sphere(int idx0, int idx1, int idx2, int idx3, 
               const double* points, const double* weights, double* center) {
 	Vec3d r1,r2,r3,r4;
@@ -88,5 +91,7 @@ double sphere(int idx0, int idx1, int idx2, int idx3,
     cntr.store_partial(3, center);
     return Rs; 
 }
+#ifdef __cplusplus
 }
+#endif
 
