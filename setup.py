@@ -51,6 +51,13 @@ pytim_dbscan = Extension(
     language="c++",
     include_dirs=[numpy.get_include()])
 
+gtools = Extension("gtools,"
+    sources=["gtools.pyx", "gtools/gtools.cpp", "gtools/gtools.h"]
+    include_dirs=[np.get_include()],
+    extra_compile_args=["-O3"],
+    language="c++")
+    
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
@@ -68,7 +75,7 @@ with open("pytim/version.py") as fp:
 
 setup(
     name='pytim',
-    ext_modules=[pytim_dbscan],
+    ext_modules=[pytim_dbscan, gtools],
     cmdclass={'build_ext': build_ext,
               'test': NoseTestCommand},
     # Versions should comply with PEP440.  For a discussion on single-sourcing
