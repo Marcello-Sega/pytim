@@ -86,6 +86,7 @@ class Profile(object):
     checking presence of a cached copy... not found. Fetching remote file... done.
 
     >>> u = mda.Universe(LJ_GRO,XTC)
+    >>> g = u.select_atoms('all')
     >>>
     >>> inter = pytim.ITIM(u,alpha=2.5,cluster_cut=4.5)
     >>> profile = Profile(interface=inter)
