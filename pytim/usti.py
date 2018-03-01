@@ -124,9 +124,14 @@ class USTI(Interface):
 
         PatchTrajectory(self.universe.trajectory, self)
 
+        if self.info: t1 = datetime.datetime.now()
         self._assign_layers()
+        if self.info:
+            t2 = datetime.datetime.now()
+            print("time of USTI: ",t2-t1)
 
         self._layers=self._layers[0,0,0:self.max_layers]
+        
 
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
@@ -165,13 +170,16 @@ class USTI(Interface):
         nCl=-1
         inCl[:]=-1
         dim=0
-
+        
         for i in range(0,n):
             if(inCl[i]==-1): #i-th tetrahedron isn't used in any cluster
                 nCl+=1
                 clusters.append(Cluster(self.cluster_group))
                 clusters[nCl].clusterDensity=isDense[i]
                 clusters[nCl].clusterDimension=0
+                dim=0
+                vec1d[:]=0
+                vec2d[:]=0
                 clusters[nCl].appendTetrahedron(i,tetrahedrons[i],extraids)
                 inCl[i]=nCl
                 tInCl[i]=nCl
@@ -179,7 +187,7 @@ class USTI(Interface):
                 for j in clusters[nCl].tetrahedrons: #loop over tetrahedra already added to the cluster
                     for k in neighbors[j]:
                         if k<0: continue
-                        rij[:]=t.points[extraids[tetrahedrons[k][0]],:]-t.points[extraids[tetrahedrons[j][0]],:]
+                        rij[:]=t.points[extraids[tetrahedrons[k][0]],:]-rInCl[j,:]#t.points[extraids[tetrahedrons[j][0]],:]
                         utilities.PBC(rij,box)
                         rij[:]+=rInCl[j,:]
                         if(inCl[k]==-1 and isDense[k]==isDense[i]):
@@ -194,7 +202,7 @@ class USTI(Interface):
                             if(any(vec)):
                                 if(dim==0):
                                     dim=1
-                                    vec1d=vec
+                                    vec1d[0]=vec[0];vec1d[1]=vec[1];vec1d[2]=vec[2];
                                     clusters[nCl].clusterDimension=dim
                                 elif(dim==1):
                                     vec2d=np.cross(vec,vec1d)
@@ -202,11 +210,11 @@ class USTI(Interface):
                                         dim=2
                                         clusters[nCl].clusterDimension=dim
                                 elif(dim==2):
-                                    if(dot(vec,vec2d)!=0):
+                                    if(np.dot(vec,vec2d)!=0):
                                         dim=3
                                         clusters[nCl].clusterDimension=dim
         return [clusters, tInCl]
-
+    
     def findInterfaces(self,tInCl,clusters,tNeighbors,simplices):
         interfaces=[]#np.empty((len(clusters),),dtype=object)
         for i in range(0,len(clusters)):
@@ -220,7 +228,7 @@ class USTI(Interface):
                     interfaces[i].append(Triangle(simplices[item][0],simplices[item][1],simplices[item][3]))
                 if(tNeighbors[item][3]<0 or i!=tInCl[tNeighbors[item][3]]):
                     interfaces[i].append(Triangle(simplices[item][0],simplices[item][1],simplices[item][2]))
-
+                    
                 if(len(tNeighbors[item])>4):
                     if((tNeighbors[item][4]>-2) and i!=tInCl[tNeighbors[item][4]]):
                         interfaces[i].append(Triangle(simplices[item][1],simplices[item][2],simplices[item][3]))
@@ -231,26 +239,30 @@ class USTI(Interface):
                     if(tNeighbors[item][7]>-2 and i!=tInCl[tNeighbors[item][7]]):
                         interfaces[i].append(Triangle(simplices[item][0],simplices[item][1],simplices[item][2]))
         return interfaces
-
+    
+    
     def findNeighboringTriangles(self,interface,extraids):
-        neighbors=[]
-        for i in range(0,len(interface)):
-            neighbors.append([])
-            for j in range(0,len(interface)):
-                if(i==j):
-                    continue
+        neighbors=np.ones((len(interface),27),dtype=np.int)*(-1)
+        neighborsCount=np.zeros(len(interface),dtype=np.int)
+        for i in range(0,len(interface)-1):
+            for j in range(i+1,len(interface)):
                 if(interface[i].isNeighborOf(interface[j],extraids)):
                     if(not j in neighbors[i]):
-                        neighbors[i].append(j)
+                        neighbors[i][neighborsCount[i]]=j
+                        neighborsCount[i]+=1
+                    if(not i in neighbors[j]):
+                        neighbors[j][neighborsCount[j]]=i
+                        neighborsCount[j]+=1
         return neighbors
-
+    
+    
     def makeClustersFromInterfaces(self,neighbors,interface):
         compactInterfaces=[]
         rij=np.array(3)
         inCl=np.zeros(len(interface))
         inCl[:]=-1
         nCl=-1
-
+        
         for i in range(0,len(interface)):
             if(inCl[i]==-1):
                 compactInterfaces.append([])
@@ -259,11 +271,12 @@ class USTI(Interface):
                 inCl[i]=nCl
                 for j in compactInterfaces[nCl]:
                     for k in neighbors[j]:
+                        if(k<0):continue
                         if(inCl[k]<0):
                             compactInterfaces[nCl].append(k)
                             inCl[k]=nCl
         return compactInterfaces
-
+   
     def getInterfaces(self,tInCl,clusters,tNeighbors,tetrahedrons,extraids):
 
         interfaces=[]
@@ -285,31 +298,31 @@ class USTI(Interface):
         next=False
         for intf in individualInterface:
             index1=extraids[clusterInterface[intf].A]
-            if(not str(index1) in isUsed):
+            if(not index1 in isUsed):
                 layers[0].append(index1)
-                isUsed[str(index1)]=0
+                isUsed[index1]=0
             index1=extraids[clusterInterface[intf].B]
-            if(not str(index1) in isUsed):
+            if(not index1 in isUsed):
                 layers[0].append(index1)
-                isUsed[str(index1)]=0
+                isUsed[index1]=0
             index1=extraids[clusterInterface[intf].C]
-            if(not str(index1) in isUsed):
+            if(not index1 in isUsed):
                 layers[0].append(index1)
-                isUsed[str(index1)]=0
-
-        i=0
+                isUsed[index1]=0
+               
+        i=0 
         for lay in layers:
             next=False
             for item in lay:
                 if(not next):
                     layers.append([])
                     next=True
-                for n in cluster.neighboringAtoms[str(item)]:
-                    if(not str(n) in isUsed):
+                for n in cluster.neighboringAtoms[item]:
+                    if(not n in isUsed):
                         layers[i+1].append(n)
-                        isUsed[str(n)]=i+1
+                        isUsed[n]=i+1
             i+=1
-
+            
         return layers[0:i-1]
 
     def getLayers(self,clusters,interface,interfaces,extraids): 
@@ -320,7 +333,7 @@ class USTI(Interface):
             layers.append([])
             for infc in interfaces[i]:
                 layers[i].append(self.findLayers(clusters[i],interface[i],infc,extraids))
-        return layers
+        return layers    
 
     def alpha_shape(self, alpha):
         box = self.universe.dimensions[:3]
@@ -330,11 +343,10 @@ class USTI(Interface):
         np.random.seed(0)  # pseudo-random for reproducibility
         gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
         if self._noextrapoints == False:
-            extrapoints, extraids = utilities.generate_periodic_border(
-                points, box, delta,method='3d')
+            extrapoints, extraids = utilities.generate_periodic_border_for_usti(
+                points, box, delta,self.periodicity)
 
-        extrapoints = np.asarray(points,dtype=np.float)
-        extraids=np.arange(len(points), dtype=np.int)
+        extrapoints = np.asarray(extrapoints,dtype=np.float)
 
         if self.info:
             t1 = datetime.datetime.now()
@@ -374,12 +386,15 @@ class USTI(Interface):
             print("layers: ",t6-t5)
         self._layers = np.empty([len(self._clusters),self.max_interfaces, self.max_layers], dtype=type(self.universe.atoms))
         i=0
+        maxvalue=0
         for c in self._clusters:
              c.interfaces=interfaces[i]
+             if(len(c.tetrahedrons)>maxvalue):
+                maxvalue=len(c.tetrahedrons)
+                self.largestCluster=i
              i+=1
-
+        
         return layers
-
 
     def _assign_layers(self):
         """Determine the USTI layers."""
@@ -416,8 +431,7 @@ class USTI(Interface):
                                 self._layers[c,i,l] = self.cluster_group[alpha_ids[c][i][l]]
                             if(c==0 and i==0 and self._layers[c,i,l] is not None):
                                 max_usedLayers+=1
-            self.clusters[c].layers=self.layers[c]
-
+            
         for c in range(0,len(alpha_ids)):
             for i in range(0,len(alpha_ids[c])):
                 if(i<len(alpha_ids[c])and i<self.max_interfaces):
@@ -425,6 +439,8 @@ class USTI(Interface):
                         if(l<len(alpha_ids[c][i]) and l<self.max_layers):
                             #self.label_group(self._layers[c,i,l], str(c)+'00'+str(i+1+l/10.0))
                             self.label_group(self._layers[c,i,l], beta=1. * (l + 1), layer=(l + 1))
+            self.clusters[c].layers=self.layers[c]
+
 
         if(max_usedLayers<self.max_layers):
             print("Warning: the system contains fewer layers than required")
@@ -460,7 +476,6 @@ class USTI(Interface):
     def clusters(self):
         return self._clusters
 
-
 class Cluster():
     def __init__(self,clusterGroup):
         self.tetrahedrons=[]
@@ -474,57 +489,67 @@ class Cluster():
         self.tetrahedrons.append(index)
         for i in range(0,4):
             index1=extraids[tetrahedron[i]]
+            if(not index1 in self.neighboringAtoms):
+                self.atomIndices.append(index1)
+                self.neighboringAtoms[index1]=[]     
+            self.appendAtomNeighbors(index1,extraids[tetrahedron])
+            
+    def appendTetrahedronOld(self,index,tetrahedron,extraids):
+        self.tetrahedrons.append(index)
+        for i in range(0,4):
+            index1=extraids[tetrahedron[i]]
             if(not index1 in self.atomIndices):
                 self.atomIndices.append(index1)
-                if(not str(index1) in self.neighboringAtoms):
-                    self.neighboringAtoms[str(index1)]=[]
+                if(not index1 in self.neighboringAtoms):
+                    self.neighboringAtoms[index1]=[]     
             self.appendAtomNeighbors(index1,extraids[tetrahedron])
+            
     def appendAtomNeighbors(self,index1,index2):
         for i in index2:
             if i==index1:
                 continue
-            if(not str(i) in self.neighboringAtoms[str(index1)]):
-                self.neighboringAtoms[str(index1)].append(i)
+            if(not i in self.neighboringAtoms[index1]):
+                self.neighboringAtoms[index1].append(i)
     @property
     def clusterDimension(self):
         return self._clusterDimension
-
+    
     @clusterDimension.setter
     def clusterDimension(self,dimension):
         self._clusterDimension=dimension
-
+        
     @property
     def clusterDensity(self):
         return self._clusterDensity
-
+    
     @clusterDensity.setter
     def clusterDensity(self,_density):
         self._clusterDensity=_density
-
+        
     @property
     def interfaces(self):
         return self.__interfaces
-
+    
     @interfaces.setter
     def interfaces(self,value):
         for i in value:
             self.__interfaces.append(i)
-
+    
     @property
     def layers(self):
         return self.__layers
-
+    
     @layers.setter
     def layers(self,value):
         for i in value: #loop over interfaces
             self.__layers.append(i)
-
+        
 class Triangle():
     def __init__(self,A,B,C):
         self.A=A
         self.B=B
         self.C=C
-
+        
     def isNeighborOf(self,triangle,extraids):
         if(int(extraids[self.A]==extraids[triangle.A] or extraids[self.A]==extraids[triangle.B] or extraids[self.A]==extraids[triangle.C])+
             int(extraids[self.B]==extraids[triangle.A] or extraids[self.B]==extraids[triangle.B] or extraids[self.B]==extraids[triangle.C])+

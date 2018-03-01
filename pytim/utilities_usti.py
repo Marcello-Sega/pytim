@@ -2,6 +2,43 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
 import numpy as np
+import itertools
+
+
+def generate_periodic_border_for_usti(points, box, delta,periodicity):
+    """ Selects the pparticles within a skin depth delta from the
+        simulation box, and replicates them to mimic periodic
+        boundary conditions. Returns all points (original +
+        periodic copies) and the indices of the original particles
+    """
+    extrapoints = np.copy(points)
+    
+    shifts = np.array(list(itertools.product([1, -1, 0], repeat=3)))
+    
+    extraids = np.arange(len(points), dtype=np.int)
+    for shift in shifts:
+        if(np.sum(shift * shift)):  # avoid [0,0,0]
+            if(periodicity[0]<0.1 and shift[0]!=0):continue # skip copying in forbidden dimensions
+            if(periodicity[1]<0.1 and shift[1]!=0):continue
+            if(periodicity[2]<0.1 and shift[2]!=0):continue
+            
+            # this needs some explanation:
+            # if shift ==0  -> the condition is always true
+            # if shift ==1  -> the condition is x > box - delta
+            # if shift ==-1 -> the condition is -x > 0 - delta -> x <delta
+            # Requiring np.all() to be true makes the logical and returns
+            # (axis=1) True for all indices whose atoms satisfy the
+            # condition
+            selection = np.all(shift * points >= shift * shift *
+                               ((box + shift * box) / 2. - delta),
+                               axis=1)
+            # add the new points at the border of the box
+            extrapoints = np.append(
+                extrapoints, points[selection] - shift * box, axis=0)
+            # we keep track of the original ids.
+            extraids = np.append(extraids, np.where(selection)[0])
+    return extrapoints, extraids
+
 
 def PBC(vector,box):
     cond = np.where(vector<-box/2.)
@@ -33,10 +70,8 @@ def isTooLarge(a,b,c,d,box):
     if np.any(sqd > boxz2):
         return True
     return False
-
 def isUnique(indices,tHash):
-    ind1=np.sort(indices)
-    if(str(ind1) in tHash):
+    if(indices in tHash):
         return False
     return True
 
@@ -44,17 +79,18 @@ def findPBCNeighboringSimplices(triangulation,originalIndex,finalSimplices,tHash
     pbcNeighbors=[]
     t=triangulation
     neighbor=0
+    #vec1=np.zeros(4)
+    tup=tuple()
+    
     for index in range(0,len(originalIndex)):
         pbcNeighbors.append([])
         for i in range(0,4):
             neighbor=t.neighbors[originalIndex[index],i]
-            vec1=np.array([extraids[t.simplices[neighbor,0]], extraids[t.simplices[neighbor,1]], extraids[t.simplices[neighbor,2]], extraids[t.simplices[neighbor,3]]])
-            vec1=np.sort(vec1)
-            if(str(vec1) in tHash):
-                pbcNeighbors[index].append(tHash[str(vec1)])
+            tup=tuple(sorted((extraids[t.simplices[neighbor,0]],extraids[t.simplices[neighbor,1]],extraids[t.simplices[neighbor,2]],extraids[t.simplices[neighbor,3]])))
+            if(tup in tHash):
+                pbcNeighbors[index].append(tHash[tup])
             else:
                 pbcNeighbors[index].append(-1)
-    #print("ukaz souseda: ",t.neighbors[1,0])
     return pbcNeighbors
     
 
@@ -67,12 +103,17 @@ def clearPBCtriangulation(triangulation,extrapoints,extraids,box):
     outz=np.zeros(4)
     tHash={}
     index=0
+    tup=tuple()
+    
+    
     for simplex in t.simplices:
-       # if (isTooLarge(t.points[extraids[simplex[0]]],t.points[extraids[simplex[1]]],
+        #if (isTooLarge(t.points[extraids[simplex[0]]],t.points[extraids[simplex[1]]],
         #               t.points[extraids[simplex[2]]],t.points[extraids[simplex[3]]],box)):
         #    continue
-        vec1=np.array([extraids[simplex[0]], extraids[simplex[1]], extraids[simplex[2]], extraids[simplex[3]]])
-        #je uvnitr domény?
+        #vec1=np.array([extraids[simplex[0]], extraids[simplex[1]], extraids[simplex[2]], extraids[simplex[3]]])
+        #vec1[:]=extraids[simplex[:]]
+        tup=tuple(sorted((extraids[simplex[0]],extraids[simplex[1]],extraids[simplex[2]],extraids[simplex[3]])))#tuple(sorted(vec1))
+        #is inside of original domain?
         outx[:]=0
         outy[:]=0
         outz[:]=0
@@ -84,13 +125,14 @@ def clearPBCtriangulation(triangulation,extrapoints,extraids,box):
             if(t.points[simplex[i],2]>box[2] or t.points[simplex[i],2]<0):
                 outz[i]=1
         if(sum(outx)<=2 and sum(outy)<=2 and sum(outz)<=2):
-            if(isUnique(vec1,tHash)):
+            if(isUnique(tup,tHash)):
                 finalSimplices.append(simplex)
                 originalIndex.append(index)
                 #print("test",len(finalSimplices),len(t.simplices))
-                vec1=np.array([extraids[simplex[0]], extraids[simplex[1]], extraids[simplex[2]], extraids[simplex[3]]])
-                vec1=np.sort(vec1)
-                tHash[str(vec1)]=len(finalSimplices)-1
+                #vec1[:]=extraids[simplex[:]]
+                #vec1=np.array([extraids[simplex[0]], extraids[simplex[1]], extraids[simplex[2]], extraids[simplex[3]]])
+                #vec1=np.sort(vec1)
+                tHash[tup]=len(finalSimplices)-1
         index+=1
     neighbors=findPBCNeighboringSimplices(triangulation,originalIndex,finalSimplices,tHash,extraids)
     return [finalSimplices,neighbors]
