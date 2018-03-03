@@ -28,7 +28,7 @@ from .atoms_maps import atoms_maps
 from .utilities_mesh import compute_compatible_mesh_params
 from .utilities_mesh import generate_grid_in_box
 
-from .utilities_usti import PBC, squareDistancePBC, isTooLarge, isUnique
+from .utilities_usti import PBC, PBC2, squareDistancePBC, isTooLarge, isUnique
 from .utilities_usti import findPBCNeighboringSimplices, clearPBCtriangulation
 from .utilities_usti import generate_periodic_border_for_usti
 
