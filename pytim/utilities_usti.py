@@ -45,6 +45,14 @@ def PBC(vector,box):
     vector[cond]+=box[cond]
     cond = np.where(vector>box/2.)
     vector[cond]-=box[cond]
+    
+def PBC2(vector, box):
+    if(vector[0]<-box[0]/2.0):vector[0]+=box[0]
+    if(vector[0]>box[0]/2.0):vector[0]-=box[0]
+    if(vector[1]<-box[1]/2.0):vector[1]+=box[1]
+    if(vector[1]>box[1]/2.0):vector[1]-=box[1]
+    if(vector[2]<-box[2]/2.0):vector[2]+=box[2]
+    if(vector[2]>box[2]/2.0):vector[2]-=box[2]
 
 def squareDistancePBC(r1,r2,box):
     rij=r2-r1
@@ -76,21 +84,24 @@ def isUnique(indices,tHash):
     return True
 
 def findPBCNeighboringSimplices(triangulation,originalIndex,finalSimplices,tHash,extraids):
-    pbcNeighbors=[]
+    pbcNeighbors=np.ones((len(finalSimplices),len(finalSimplices[0])),dtype=np.int)
+    neighborCounter=np.zeros(len(finalSimplices),dtype=np.int)
     t=triangulation
     neighbor=0
     #vec1=np.zeros(4)
     tup=tuple()
     
     for index in range(0,len(originalIndex)):
-        pbcNeighbors.append([])
+        #pbcNeighbors.append([])
         for i in range(0,4):
             neighbor=t.neighbors[originalIndex[index],i]
             tup=tuple(sorted((extraids[t.simplices[neighbor,0]],extraids[t.simplices[neighbor,1]],extraids[t.simplices[neighbor,2]],extraids[t.simplices[neighbor,3]])))
             if(tup in tHash):
-                pbcNeighbors[index].append(tHash[tup])
+                pbcNeighbors[index][neighborCounter[index]]=(tHash[tup])
+                neighborCounter[index]+=1
             else:
-                pbcNeighbors[index].append(-1)
+                pbcNeighbors[index][neighborCounter[index]]=-1
+                neighborCounter[index]+=1
     return pbcNeighbors
     
 
@@ -135,4 +146,5 @@ def clearPBCtriangulation(triangulation,extrapoints,extraids,box):
                 tHash[tup]=len(finalSimplices)-1
         index+=1
     neighbors=findPBCNeighboringSimplices(triangulation,originalIndex,finalSimplices,tHash,extraids)
+    finalSimplices=np.asarray(finalSimplices,dtype=np.int)
     return [finalSimplices,neighbors]
