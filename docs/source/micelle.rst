@@ -7,7 +7,7 @@ Surface of a micelle
 
 Summary
 -------
-We use the :class:`~pytim.gitim.GITIM` class to investigate the surface composition of a DPC micelle
+We use the :class:`~pytim.gitim.GITIM` class to investigate the surface composition of a DPC micelle.
 
 This tutorial shows how to do some basic statistical analysis and how to visualize
 surface atoms / pockets for water.
@@ -24,7 +24,7 @@ Berendsen, J. Phys. Chem. B 104, pp. 6380-6388, 2000)
    :width: 35%
    :align: center
 
-As this is not a planar interface, we will use the GITIM class to identify the atoms at the
+As this is not a planar interface, we will use the :class:`~pytim.gitim.GITIM` class to identify the atoms at the
 surface of the micelle. Our reference group for the surface analysis includes therefore
 all DPC molecules
 
@@ -41,9 +41,10 @@ all DPC molecules
 
 
 In order to calculate the surface atoms, we invoke :class:`~pytim.gitim.GITIM`, passing
-the group `g` as the `group` option, and set `molecular=False` in order to mark
+the group :py:obj:`g` as the :py:obj:`group` option, and set :py:obj:`molecular=False`
+in order to mark
 only the atoms at the surface, and not the whole residues to which these atoms belong.
-We override the standard radii (from the gromos 43a1 forcefield) with a simple set that 
+We override the standard radii (from the gromos 43a1 forcefield) with a simple set that
 will match the atom types.
 
     >>> # define radii for atom types
