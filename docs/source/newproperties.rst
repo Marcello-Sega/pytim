@@ -7,7 +7,9 @@ New properties of Atoms
 
 Summary
 -------
-Pytim adds some new properties to the :class:`Atoms` class of :obj:`MDAnalysis`.
+:doc:`Pytim <quick>` adds some new properties to the :class:`Atoms` class of MDAnalysis_.
+
+.. _MDAnalysis: http://www.mdanalysis.org/
 
 This tutorial shows what they are and how to used them.
 
@@ -21,12 +23,12 @@ and :class:`~pytim.gitim.GITIM`, but not for
 are added to all atoms in the universe: :obj:`layers`, :obj:`clusters`
 and, in case of :class:`~pytim.itim.ITIM`, also :obj:`sides`.
 
-Note that, differently from what happens in :obj:`MDAnalysys`, also some of the standard properties (e.g. :obj:`radii`, :obj:`tempfactors`, :obj:`bfactors`,  :obj:`elements`) will *always* be associated to the atoms, *even if* the information is not present in the configuration file/trajectory (some heuristics is used by pytim to guess their values) 
+Note that, differently from what happens in MDAnalysis_, also some of the standard properties (e.g. :obj:`radii`, :obj:`tempfactors`, :obj:`bfactors`,  :obj:`elements`) will *always* be associated to the atoms, *even if* the information is not present in the configuration file/trajectory (some heuristics is used by :doc:`Pytim <quick>` to guess their values)
 
 Layers
 ------
 
-The value of `atoms.layers` can be either -1 (atom not in any of the layers) or 1, 2, 3,..., :obj:`max_layers`
+The value of :py:obj:`atoms.layers` can be either -1 (atom not in any of the layers) or 1, 2, 3,..., :obj:`max_layers`
 
     >>> import numpy as np
     >>> import MDAnalysis as mda
@@ -49,7 +51,7 @@ This property can be used to select a particular subset of atoms, e.g.
 Clusters
 --------
 
-The value of `atoms.clusters` can be -1 if the atom is not in a
+The value of :py:obj:`atoms.clusters` can be -1 if the atom is not in a
 cluster (or not in the group for which the cluster search is
 performed) or 0,1,... if it belongs to the largest cluster,
 second-to-largest cluster, and so on, respectively.
@@ -71,13 +73,13 @@ according to the cluster they belong when calling:
     >>> np.sum(g.clusters==2)
     264
     >>> np.sum(g.clusters==3) # no more clusters...
-    0   
-    >>> # the remaining benzene molecues are not clustering 
+    0
+    >>> # the remaining benzene molecues are not clustering
     >>> # (i.e., isolated according to the criterion chosen)
     >>> np.sum(g.clusters==-1)
     10164
 
-The option :obj:`tempfactors` of :func:`~pytim.Interface.writepdb`
+The option :obj:`tempfactors` of :meth:`~pytim.itim.ITIM.writepdb`
 can be used to save to a pdb file, instead of the information about
 the layers (default), the cluster labels:
 
