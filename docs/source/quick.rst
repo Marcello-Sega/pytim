@@ -1,9 +1,9 @@
 Pytim: Quick Tour
 *****************
 
-Pytim is a package based on MDAnalysis_ for the identification and analysis of surface molecules in configuration files or in trajectories from molecular dynamics simulations.
+:doc:`Pytim <quick>` is a package based on MDAnalysis_ for the identification and analysis of surface molecules in configuration files or in trajectories from molecular dynamics simulations.
 
-Although MDAnalysis_ is needed to perform the interfacial analysis, you can also use Pytim on top of MDTraj_ or directly online from a simulation performed using OpenMM_. For more information see the :doc:`Tutorials`.
+Although MDAnalysis_ is needed to perform the interfacial analysis, you can also use :doc:`Pytim <quick>` on top of MDTraj_ or directly online from a simulation performed using OpenMM_. For more information see the :doc:`Tutorials`.
 
 .. _MDAnalysis: http://www.mdanalysis.org/
 .. _MDTraj: http://www.mdtraj.org/
@@ -182,7 +182,7 @@ atoms in the lipids would be tagged as interfacial.
 Filtering vapour molecules
 ===============================
 
-Pytim offers the option to identify the relevant phases before
+:doc:`Pytim <quick>` offers the option to identify the relevant phases before
 proceeding to the surface identification. This is a necessary step,
 for example, if the vapour phase of a water/vapour interface is not
 empty, or if a two-components system has non-negligible miscibilities.
@@ -223,7 +223,7 @@ At high temperatures, as in this case, using the :py:obj:`cluster_cut` option so
 +---------------------------------------------------------------+
 
 In some cases, the density of the vapour (or opposite) phase is so high, that using any reasonable cutoff, the molecules are percolating
-the simulation box. In this case, it is advisable to switch to a density based cluster approach. Pytim uses the DBSCAN algorithm, with, in addition, an automated procedure to determine which density should be used to discriminate between liquid and vapour (or high-concentration/low-concentration) regions. An example is a binary mixture of ionic liquids and benzene, which have, respectively, a low and high mutual miscibility.
+the simulation box. In this case, it is advisable to switch to a density based cluster approach. :doc:`Pytim <quick>` uses the DBSCAN algorithm, with, in addition, an automated procedure to determine which density should be used to discriminate between liquid and vapour (or high-concentration/low-concentration) regions. An example is a binary mixture of ionic liquids and benzene, which have, respectively, a low and high mutual miscibility.
 
 
 .. code-block:: python
