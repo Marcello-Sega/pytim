@@ -15,7 +15,9 @@ class Profile(object):
     """Calculates the profile (normal, or intrinsic) of a given observable
     across the simulation box.
 
-    :param Observable observable:   'Number', 'Mass', or any other observable:
+    :param Observable observable:   :class:`Number <pytim.observables.Number>`,
+                                    :class:`Mass <pytim.observables.Mass>`, or
+                                    any other observable:
                                     calculate the profile of this quantity. If
                                     None is supplied, it defaults to the number
                                     density. The number density is always

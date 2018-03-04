@@ -27,17 +27,21 @@ Misc
 
 Basic Observables
 #################
+.. autoclass:: pytim.observables.Charge
+    :members:
+.. autoclass:: pytim.observables.Force
+    :members:
+.. autoclass:: pytim.observables.Mass
+    :members:
 .. autoclass:: pytim.observables.Number
     :members:
 .. autoclass:: pytim.observables.NumberOfResidues
     :members:
+.. autoclass:: pytim.observables.Orientation
+    :members:
 .. autoclass:: pytim.observables.Position
     :members:
 .. autoclass:: pytim.observables.Velocity
-    :members:
-.. autoclass:: pytim.observables.Force
-    :members:
-.. autoclass:: pytim.observables.Orientation
     :members:
 
 
