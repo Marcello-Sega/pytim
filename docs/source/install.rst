@@ -9,12 +9,17 @@ Download the source from github
 -------------------------------
 
 
-The package will download all the dependencies which are needed. Prerequisites for running the setup.py script are `setuptools` and `cython`.
+The package will download all the dependencies which are needed. Prerequisites for running the setup.py script are setuptools_, numpy_ and cython_.
+
+.. _setuptools: https://pypi.python.org/pypi/setuptools
+.. _numpy:  http://www.numpy.org
+.. _cython: http://www.cython.org
 
 .. code-block:: bash
 
-	pip install setuptools --user  --upgrade
-	pip install cython     --user  --upgrade
+	pip install setuptools --user --upgrade
+	pip install numpy --user --upgrade
+	pip install cython --user --upgrade
 
 	git clone https://github.com/Marcello-Sega/pytim.git
 	cd pytim
@@ -26,14 +31,15 @@ Note that on os-x it is usually better not to install Pytim system-wide using `s
 Using pip to access the Python Package Index
 --------------------------------------------
 
-The package can also be installed directly from the Python Package Index, along with the prerequisites `setuptools` and `cython`.
+The package can also be installed directly from the Python Package Index, along with all the prerequisites.
 
 .. code-block:: bash
 
-	pip install setuptools --user  --upgrade
-	pip install cython     --user  --upgrade
+	pip install setuptools --user --upgrade
+	pip install cython --user --upgrade
+	pip install numpy --user --upgrade
 
-	pip install pytim      --user  --upgrade
+	pip install pytim --user --upgrade
 
 Using Anaconda
 --------------
