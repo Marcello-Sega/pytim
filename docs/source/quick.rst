@@ -3,7 +3,7 @@ Pytim: Quick Tour
 
 Pytim is a package based on MDAnalysis_ for the identification and analysis of surface molecules in configuration files or in trajectories from molecular dynamics simulations.
 
-Although MDAnalysis_ is needed to perform the interfacial analysis, you can also use Pytim on top  MDTraj_ or directly online from a simulation performed using OpenMM_. For more information see the :doc:`Tutorials`.
+Although MDAnalysis_ is needed to perform the interfacial analysis, you can also use Pytim on top of MDTraj_ or directly online from a simulation performed using OpenMM_. For more information see the :doc:`Tutorials`.
 
 .. _MDAnalysis: http://www.mdanalysis.org/
 .. _MDTraj: http://www.mdtraj.org/
@@ -24,10 +24,10 @@ for planar interfaces:
     from   pytim.datafiles import *
 
     # load an example configuration file
-    u         = mda.Universe(WATER_GRO)
+    u = mda.Universe(WATER_GRO)
 
     # initialize the interface, this has to be called only once
-    # before iterating over the trajectory! 
+    # before iterating over the trajectory!
     interface = pytim.ITIM(u)
 
     # write a pdb with the information on the surface layers
@@ -40,20 +40,20 @@ for planar interfaces:
 
 The above lines are doing the following:
 
-1. Import the modules of MDAanalysis, pytim, and some example datafiles,
-   then initialize the MDAnalysis universe in the usual way, using
+1. Import the modules of MDAnalysis_, pytim, and some example datafiles,
+   then initialize the MDAnalysis_ universe in the usual way, using
    as an input file one of the structures provided by the package, in
    this case a water/vapor interface in a gromos file format (the
-   variable WATER_GRO is made available by the pytim.datafiles module)
+   variable WATER_GRO is made available by the :mod:`~pytim.datafiles` module).
 2. The interfacial analysis is then initialized using the
    :class:`~pytim.itim.ITIM` class, and the molecular layers are
    calculated automatically.
-3. The whole configuration is saved to a pdb for graphical inspection using
+3. The whole configuration is saved to a pdb file for graphical inspection using
    :meth:`~pytim.itim.ITIM.writepdb`
    (with surface atoms having a beta factor equal to the numer of the layer
    they belong to).
-4. The groups of atoms corresponding to different layers can be extracted using
-   :meth:`~pytim.itim.ITIM.layers`
+4. The groups of atoms corresponding to different layers can be extracted using the
+   :meth:`~pytim.itim.ITIM.layers` method.
 
 The result of the calculation can be seen in the following picture,
 where surface oxygen atoms are highlighted in blue.
@@ -63,15 +63,15 @@ where surface oxygen atoms are highlighted in blue.
    :width: 70%
    :align: center
 
-This is a very basic example, and more are given below, in the :doc:`Tutorials`, and in the documentation pages of the modules.
+This is a very basic example, and more are given below, in the :doc:`Tutorials`, and in the documentation of the modules.
 
-Non-planar interfaces 
+Non-planar interfaces
 =====================
 
 GITIM
 -----
 
-One of the possibilities is to use  :class:`~pytim.itim.GITIM` to identify surface atoms in a conceptually similar way to :class:`~pytim.itim.ITIM`.
+One of the possibilities is to use  :class:`~pytim.gitim.GITIM` to identify surface atoms in a conceptually similar way to :class:`~pytim.itim.ITIM`.
 We make here the example of multiple solvation layers around glucose:
 
 .. code-block:: python
@@ -79,14 +79,14 @@ We make here the example of multiple solvation layers around glucose:
     import MDAnalysis as mda
     import pytim
     from   pytim.datafiles import GLUCOSE_PDB
-    
+
     u       = mda.Universe(GLUCOSE_PDB)
     solvent = u.select_atoms('name OW')
     glc     = u.atoms - solvent.residues.atoms
-    
+
     # alpha is the probe-sphere radius
     inter = pytim.GITIM(u, group=solvent, max_layers=3, alpha=2)
-    
+
     for i in [0,1,2]:
         print "Layer "+str(i),repr(inter.layers[i])
 
@@ -105,7 +105,8 @@ Willard-Chandler
 ----------------
 
 If one is not directly interested in interfacial atoms, but in the location of the instantaneous, continuous surface, it is possible to use
-the method of Willard and Chandler. Options for the output are the `wavefront` :py:obj:`obj`, :py:obj:`cube` and :py:obj:`vtk` formats, the last two being able to carry also the information about the atomic positions, besides the surface. The formats can be read by Paraview_.
+the method of :class:`Willard and Chandler <pytim.willard_chandler.WillardChandler>`.
+Options for the output are the `wavefront` :py:obj:`obj`, :py:obj:`cube` and :py:obj:`vtk` formats, the last two being able to carry also the information about the atomic positions, besides the surface. The formats can be read by Paraview_.
 
 .. code-block:: python
 
@@ -113,13 +114,13 @@ the method of Willard and Chandler. Options for the output are the `wavefront` :
     import pytim
     from pytim.datafiles import MICELLE_PDB
     import nglview
-    
+
     u = mda.Universe(MICELLE_PDB)
     g = u.select_atoms('resname DPC')
     # In the WillardChandler module, `alpha` is the Gaussian width  of the kernel
-    # and `mesh` is the grid size where the continuum surface is sampled 
+    # and `mesh` is the grid size where the continuum surface is sampled
     interface = pytim.WillardChandler(u, group=g, mesh=1.5, alpha=3.0)
-    # particles are written using the option `group` 
+    # particles are written using the option `group`
     interface.writecube('data.cube', group = g )
 
 
@@ -146,7 +147,7 @@ second layer would be composed mostly of hydrogen atoms, and so on.
 For larger molecules like in the case of lipids, instead, it is
 more informative to look at the location of different atoms along
 the surface normal, therefore the :py:obj:`molecular=False` option
-is advisable, otherwise, as in the case of a small micelle, all
+is advisable. Otherwise, as in the case of a small micelle, all
 atoms in the lipids would be tagged as interfacial.
 
 .. code-block:: python
@@ -186,16 +187,16 @@ proceeding to the surface identification. This is a necessary step,
 for example, if the vapour phase of a water/vapour interface is not
 empty, or if a two-components system has non-negligible miscibilities.
 
-In order to filter out molecules in the vapour (or in the opposite) phase, 
+In order to filter out molecules in the vapour (or in the opposite) phase,
 pytim relies on different clustering schemes, where the system is partitioned
-in a set of atoms belonging to the largest cluster, the remaining atoms belonging to the 
-smaller clusters. The available criteria for building the clusters are 
+in a set of atoms belonging to the largest cluster, the remaining atoms belonging to the
+smaller clusters. The available criteria for building the clusters are
 
-1. A simple cutoff criterion of connectivity
+1. A simple cutoff criterion based on the connectivity
 2. A local density based clustering criterion (DBSCAN)
 
-In order to use the simple cutoff criterion, it is enough to pass the cluster cutoff to the 
- :class:`~pytim.itim.ITIM` or  :class:`~pytim.itim.GITIM` classes, for example:
+In order to use the simple cutoff criterion, it is enough to pass the cluster cutoff to the
+ :class:`~pytim.itim.ITIM` or  :class:`~pytim.gitim.GITIM` classes, for example:
 
 .. code-block:: python
 
@@ -214,14 +215,15 @@ At high temperatures, as in this case, using the :py:obj:`cluster_cut` option so
 |    :width: 95%                |    :width:  95%               |
 |    :align: center             |    :align: center             |
 +-------------------------------+-------------------------------+
-| Left:  Interfacial molecules identified using :py:obj:`ITIM`  |
+| Left:  Interfacial molecules identified using                 |
+| :class:`~pytim.itim.ITIM`                                     |
 | and no clustering pre-filtering.                              |
 | Right: same system  using :py:obj:`cluster_cut=3.5`           |
 | (blue: first layer; red: vapour phase)                        |
 +---------------------------------------------------------------+
 
 In some cases, the density of the vapour (or opposite) phase is so high, that using any reasonable cutoff, the molecules are percolating
-the simulation box. In this case, it is advisable to switch to a density based cluster approach. Pytim uses the `DBSCAN` algorithm, with, in addition, an automated procedure to determine which density should be used to discriminate between liquid and vapour (or high-concentration/low-concentration) regions. An example is a binary mixture of ionic liquids and benzene, which have, respectively, a low and high mutual miscibility. 
+the simulation box. In this case, it is advisable to switch to a density based cluster approach. Pytim uses the DBSCAN algorithm, with, in addition, an automated procedure to determine which density should be used to discriminate between liquid and vapour (or high-concentration/low-concentration) regions. An example is a binary mixture of ionic liquids and benzene, which have, respectively, a low and high mutual miscibility.
 
 
 .. code-block:: python
@@ -229,13 +231,13 @@ the simulation box. In this case, it is advisable to switch to a density based c
 	import MDAnalysis as mda
 	import pytim
 	from   pytim.datafiles import ILBENZENE_GRO
-	
+
 	u = mda.Universe(ILBENZENE_GRO)
 	# LIG is benzene
 	g = u.select_atoms('resname LIG')
 	# 1. To switch from the simple clustering scheme to DBSCAN, set the `cluster_threshold_density`
 	# 2. To estimate correctly the local density, use a larger cutoff than that of the simple clustering
-	# 3. With `cluster_threshold_density='auto'`, the threshold density is estimated by pytim 
+	# 3. With `cluster_threshold_density='auto'`, the threshold density is estimated by pytim
 	inter  = pytim.ITIM(u,group=g,cluster_cut=10.,cluster_threshold_density='auto',alpha=1.5)
 
 
