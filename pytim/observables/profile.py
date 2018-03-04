@@ -82,23 +82,20 @@ class Profile(object):
     >>> from   pytim.datafiles import LJ_GRO
     >>> from   pytim.observables import Profile
 
-    >>> XTC = pytim.datafiles.pytim_data.fetch('LJ_BIG_XTC',tmpdir='./')
-    checking presence of a cached copy... not found. Fetching remote file... done.
-
-    >>> u = mda.Universe(LJ_GRO,XTC)
+    >>> u = mda.Universe(LJ_GRO,LJ_SHORT_XTC)
     >>> g = u.select_atoms('all')
     >>>
     >>> inter = pytim.ITIM(u,alpha=2.5,cluster_cut=4.5)
     >>> profile = Profile(interface=inter)
     >>>
-    >>> for ts in u.trajectory[::50]:
+    >>> for ts in u.trajectory:
     ...     profile.sample(g)
     >>>
     >>> low, up, avg = profile.get_values(binwidth=0.5)
     >>> np.savetxt('profile.dat',list(zip(low,up,avg)))
 
 
-    This results in the following profile (sampling more often):
+    This results in the following profile (sampling a longer trajectory):
 
     .. image:: intrinsic_lj.png
         :width: 50%

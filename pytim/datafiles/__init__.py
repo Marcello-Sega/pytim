@@ -45,7 +45,7 @@
     Example: list all trajectories
 
     >>> print (np.sort(pytim_data.traj))
-    ['WATER_LMP_XTC' 'WATER_XTC']
+    ['LJ_SHORT_XTC' 'WATER_LMP_XTC' 'WATER_XTC']
 
 
 
@@ -73,6 +73,7 @@ __all__ = [
     "METHANOL_GRO",  # methanol/vapour interface with molecules in the  vapour phase
     "ILBENZENE_GRO",  # Ionic liquid/benzene, partial miscibility
     "LJ_GRO",  # Lennard-Jones liquid/vapour interface
+    "LJ_SHORT_XTC",  # Lennard-Jones liquid/vapour interface trajectory
     "MICELLE_PDB",  # PDB of dodecylphosphocholine micelle in water
     "FULLERENE_PDB",  # PDB of C60
     "GLUCOSE_PDB",  # PDB of solvated beta-d-glucose
@@ -265,6 +266,9 @@ pytim_data.add('GLUCOSE_PDB', 'config', 'PDB', 'solvated beta-d-glucose')
 LJ_GRO = resource_filename('pytim', 'data/LJ.gro')
 pytim_data.add('LJ_GRO', 'config', 'GRO',
                'Lennard-Jones liquid/vapour interface')
+
+LJ_SHORT_XTC = resource_filename('pytim', 'data/LJ.short.xtc')
+pytim_data.add('LJ_SHORT_XTC', 'traj', 'XTC', 'LJ liquid/vapour interface')
 
 WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
 pytim_data.add('WATERSMALL_GRO', 'config', 'GRO',
