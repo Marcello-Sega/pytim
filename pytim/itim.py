@@ -29,8 +29,8 @@ class ITIM(Interface):
         *(Pártay, L. B.; Hantal, Gy.; Jedlovszky, P.; Vincze, Á.; Horvai, G., \
 J. Comp. Chem. 29, 945, 2008)*
 
-        :param Object universe:   The MDAnalysis Universe, MDTraj trajectory
-                                  or OpenMM Simulation objects.
+        :param Object universe:   The MDAnalysis_ Universe, MDTraj_ trajectory
+                                  or OpenMM_ Simulation objects.
         :param Object group:      An AtomGroup, or an array-like object with
                                   the indices of the atoms in the group.  Will
                                   identify the interfacial molecules from this
@@ -70,8 +70,8 @@ J. Comp. Chem. 29, 945, 2008)*
         >>> import pytim
         >>> from pytim.datafiles import *
         >>>
-        >>> u         = mda.Universe(WATER_GRO)
-        >>> oxygens   = u.select_atoms("name OW")
+        >>> u = mda.Universe(WATER_GRO)
+        >>> oxygens = u.select_atoms("name OW")
         >>>
         >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4,molecular=True)
 
@@ -125,7 +125,9 @@ J. Comp. Chem. 29, 945, 2008)*
         >>> for ts in u.trajectory[::50]:
         ... 	ts2 = u2.trajectory[ts.frame]
 
-
+        .. _MDAnalysis: http://www.mdanalysis.org/
+        .. _MDTraj: http://www.mdtraj.org/
+        .. _OpenMM: http://www.openmm.org/
     """
 
     @property
@@ -138,8 +140,8 @@ J. Comp. Chem. 29, 945, 2008)*
         >>> import pytim
         >>> from pytim.datafiles import *
         >>>
-        >>> u         = mda.Universe(WATER_GRO)
-        >>> oxygens   = u.select_atoms("name OW")
+        >>> u = mda.Universe(WATER_GRO)
+        >>> oxygens = u.select_atoms("name OW")
         >>>
         >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4,molecular=True)
         >>> print(interface.layers[0,:])  # upper side (0), all layers

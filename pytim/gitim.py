@@ -27,8 +27,8 @@ class GITIM(Interface):
         *(Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M., \
 J. Chem. Phys. 138, 044110, 2013)*
 
-        :param Object universe:     The MDAnalysis Universe, MDTraj trajectory
-                                    or OpenMM Simulation objects.
+        :param Object universe:   The MDAnalysis_ Universe, MDTraj_ trajectory
+                                  or OpenMM_ Simulation objects.
         :param Object group:        An AtomGroup, or an array-like object with
                                     the indices of the atoms in the group. Will
                                     identify the interfacial molecules from
@@ -71,8 +71,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         >>> import pytim
         >>> from   pytim.datafiles import *
         >>>
-        >>> u       = mda.Universe(MICELLE_PDB)
-        >>> g       = u.select_atoms('resname DPC')
+        >>> u = mda.Universe(MICELLE_PDB)
+        >>> g = u.select_atoms('resname DPC')
         >>>
         >>> interface =pytim.GITIM(u,group=g,molecular=False, alpha=2.5)
         >>> layer = interface.layers[0]
@@ -81,7 +81,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         <AtomGroup with 793 atoms>
 
 
-        Successive layers can be identified with GITIM as well.
+        Successive layers can be identified with :mod:`~pytim.gitim.GITIM` as well.
         In this example we identify two solvation shells of glucose:
 
 
@@ -89,8 +89,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         >>> import pytim
         >>> from   pytim.datafiles import *
         >>>
-        >>> u       = mda.Universe(GLUCOSE_PDB)
-        >>> g       = u.select_atoms('name OW')
+        >>> u = mda.Universe(GLUCOSE_PDB)
+        >>> g = u.select_atoms('name OW')
         >>> # it is faster to consider only oxygens.
         >>> # Hydrogen atoms are anyway within Oxygen's radius,
         >>> # in SPC* models.
@@ -102,6 +102,9 @@ J. Chem. Phys. 138, 044110, 2013)*
         >>> print (repr(interface.layers[1]))
         <AtomGroup with 117 atoms>
 
+        .. _MDAnalysis: http://www.mdanalysis.org/
+        .. _MDTraj: http://www.mdtraj.org/
+        .. _OpenMM: http://www.openmm.org/
     """
 
     def __init__(self,
@@ -345,7 +348,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         """Access the layers as numpy arrays of AtomGroups.
 
         The object can be sliced as usual with numpy arrays.
-        Differently from ITIM, there are no sides. Example:
+        Differently from :mod:`~pytim.itim.ITIM`, there are no sides. Example:
 
         >>> import MDAnalysis as mda
         >>> import pytim
