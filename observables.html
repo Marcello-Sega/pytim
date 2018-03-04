@@ -176,25 +176,24 @@ estimate the effective volumes of the bins.</li>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Note that by default Profile() uses the number of atoms as an observable</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Layers</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">Layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Profile</span><span class="p">())</span>
+<span class="gp">... </span>    <span class="n">Layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Profile</span><span class="p">())</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Go through the trajectory, center the liquid slab and sample the profiles</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">[::</span><span class="mi">50</span><span class="p">]:</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="nb">print</span> <span class="n">ts</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="c1"># this shifts the system so that the center of mass of the liquid slab</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="c1"># is in the middle of the box</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="n">inter</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
-<span class="go">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="n">Layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="n">Layers</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="n">Layers</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="n">Layers</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="mi">3</span> <span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span>        <span class="n">Layers</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="mi">4</span> <span class="p">])</span>
+<span class="gp">... </span>        <span class="c1"># this shifts the system so that the center of mass of the liquid slab</span>
+<span class="gp">... </span>        <span class="c1"># is in the middle of the box</span>
+<span class="gp">... </span>        <span class="n">inter</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
+<span class="gp">...</span>
+<span class="gp">... </span>        <span class="n">Layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="n">Layers</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">])</span>
+<span class="gp">... </span>        <span class="n">Layers</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">])</span>
+<span class="gp">... </span>        <span class="n">Layers</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="mi">3</span> <span class="p">])</span>
+<span class="gp">... </span>        <span class="n">Layers</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="mi">4</span> <span class="p">])</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">density</span><span class="o">=</span><span class="p">[]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">L</span> <span class="ow">in</span> <span class="n">Layers</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">low</span><span class="p">,</span><span class="n">up</span><span class="p">,</span><span class="n">avg</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">binwidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">density</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">low</span><span class="p">,</span><span class="n">up</span><span class="p">,</span><span class="n">avg</span> <span class="o">=</span> <span class="n">L</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">binwidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">density</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">avg</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># (low + up )/2 is the middle of the bin</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="s1">&#39;profile.dat&#39;</span><span class="p">,</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">low</span><span class="p">,</span><span class="n">up</span><span class="p">,</span><span class="n">density</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">density</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">density</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">density</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">density</span><span class="p">[</span><span class="mi">4</span><span class="p">])))</span>
@@ -211,7 +210,11 @@ estimate the effective volumes of the bins.</li>
 </pre></div>
 </div>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">XTC</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">datafiles</span><span class="o">.</span><span class="n">pytim_data</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="s1">&#39;LJ_BIG_XTC&#39;</span><span class="p">,</span><span class="n">tmpdir</span><span class="o">=</span><span class="s1">&#39;./&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">LJ_GRO</span><span class="p">,</span><span class="n">XTC</span><span class="p">)</span>
+<span class="go">checking presence of a cached copy... not found. Fetching remote file... done.</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">LJ_GRO</span><span class="p">,</span><span class="n">XTC</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span><span class="n">cluster_cut</span><span class="o">=</span><span class="mf">4.5</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">profile</span> <span class="o">=</span> <span class="n">Profile</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="n">inter</span><span class="p">)</span>
@@ -326,10 +329,10 @@ survival probability.</li>
 <li><strong>continuous</strong> (<em>bool</em>) – applies only when a reference group has
 been specified: if True (default) the
 contribution of a particle at time lag
-$tau=t_1-t_0$ is considered only if
-the particle did not leave the
-reference group between $t_0$ and
-$t_1$. If False, the intermittent
+<img class="math" src="_images/math/4c48af959f38dd5e6684149aceed616519baebfe.png" alt="\tau=t_1-t_0"/> is considered
+only if the particle did not leave the
+reference group between <img class="math" src="_images/math/1410bd3aa3d34373bc7de52c132b4fd6f154019a.png" alt="t_0"/> and
+<img class="math" src="_images/math/6eb05aaedfa7921f64109ee5970f084e14087ed1.png" alt="t_1"/>. If False, the intermittent
 correlation is calculated, and the
 above restriction is released.</li>
 </ul>
@@ -374,10 +377,11 @@ above restriction is released.</li>
 </pre></div>
 </div>
 <p>Note that the average of  the characteristic function
-$h(t)$ is done over all trajectories, including those
-that start with h=0. The correlation $&lt; h(t) h(0) &gt;$
-is divided by the average $&lt;h&gt;$ computed over all
-trajectores that extend up to a time lag $t$. The
+<img class="math" src="_images/math/1a2690c814ae19396db195806580423bc17398b0.png" alt="h(t)"/> is done over all trajectories, including those
+that start with h=0.
+The correlation <img class="math" src="_images/math/d52bcb1de892536b222abfe9c72422afedfd8f1d.png" alt="\langle h(t)h(0) \rangle"/> is divided
+by the average <img class="math" src="_images/math/58d08aa3a281536cdb023813440c17f9af3c1ffe.png" alt="\langle h \rangle"/> computed over all
+trajectores that extend up to a time lag <img class="math" src="_images/math/5ec053cf70dc1c98cc297322250569eda193e7a4.png" alt="t"/>. The
 <cite>normalize</cite> switch has no effect.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># normalized, continuous</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">correlation</span><span class="p">()</span>
@@ -391,11 +395,11 @@ trajectores that extend up to a time lag $t$. The
 </div>
 <p>The autocorrelation functions are calculated by taking
 into account in the average only those trajectory that
-start with $h=1$ (i.e., which start within the reference
+start with <img class="math" src="_images/math/e225d7b3b23a45526a8db8c2020c2d85d115d566.png" alt="h=1"/> (i.e., which start within the reference
 group). The normalization is done by dividing the
-correlation at time lag $t$ by its value at time lag 0
+correlation at time lag <img class="math" src="_images/math/5ec053cf70dc1c98cc297322250569eda193e7a4.png" alt="t"/> by its value at time lag 0
 computed over all trajectories that extend up to time
-lag $t$ and do not start with $h=0$.</p>
+lag <img class="math" src="_images/math/5ec053cf70dc1c98cc297322250569eda193e7a4.png" alt="t"/> and do not start with <img class="math" src="_images/math/149ccbe5c545564e85bc7e1f6b90906e58b1e3e2.png" alt="h=0"/>.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># not normalizd, intermittent</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">corr</span> <span class="o">=</span> <span class="n">vv</span><span class="o">.</span><span class="n">correlation</span><span class="p">(</span><span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="n">continuous</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">c0</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.25</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="mf">0.25</span><span class="p">)</span><span class="o">/</span><span class="mi">7</span>
