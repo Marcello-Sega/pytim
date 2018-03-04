@@ -174,7 +174,7 @@ class Correlator(object):
             :parameter bool continuous: applies only when a reference group has
                                         been specified: if True (default) the
                                         contribution of a particle at time lag
-                                        :math:`\\tau=t_1-t_0` is considered 
+                                        :math:`\\tau=t_1-t_0` is considered
                                         only if the particle did not leave the
                                         reference group between :math:`t_0` and
                                         :math:`t_1`. If False, the intermittent
@@ -219,8 +219,8 @@ class Correlator(object):
 
             Note that the average of  the characteristic function
             :math:`h(t)` is done over all trajectories, including those
-            that start with h=0. 
-            The correlation :math:`\\langle h(t)h(0) \\rangle` is divided 
+            that start with h=0.
+            The correlation :math:`\\langle h(t)h(0) \\rangle` is divided
             by the average :math:`\\langle h \\rangle` computed over all
             trajectores that extend up to a time lag :math:`t`. The
             `normalize` switch has no effect.
