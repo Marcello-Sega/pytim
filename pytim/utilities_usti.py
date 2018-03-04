@@ -83,10 +83,9 @@ def isUnique(indices,tHash):
         return False
     return True
 
-def findPBCNeighboringSimplices(triangulation,originalIndex,finalSimplices,tHash,extraids):
+def findPBCNeighboringSimplices(t,originalIndex,finalSimplices,tHash,extraids):
     pbcNeighbors=np.ones((len(finalSimplices),len(finalSimplices[0])),dtype=np.int)
     neighborCounter=np.zeros(len(finalSimplices),dtype=np.int)
-    t=triangulation
     neighbor=0
     #vec1=np.zeros(4)
     tup=tuple()
@@ -106,7 +105,6 @@ def findPBCNeighboringSimplices(triangulation,originalIndex,finalSimplices,tHash
     
 
 def clearPBCtriangulation(triangulation,extrapoints,extraids,box):
-    t=triangulation
     finalSimplices=[]
     originalIndex=[]
     outx=np.zeros(4)
@@ -117,7 +115,7 @@ def clearPBCtriangulation(triangulation,extrapoints,extraids,box):
     tup=tuple()
     
     
-    for simplex in t.simplices:
+    for simplex in triangulation.simplices:
         #if (isTooLarge(t.points[extraids[simplex[0]]],t.points[extraids[simplex[1]]],
         #               t.points[extraids[simplex[2]]],t.points[extraids[simplex[3]]],box)):
         #    continue
@@ -129,11 +127,11 @@ def clearPBCtriangulation(triangulation,extrapoints,extraids,box):
         outy[:]=0
         outz[:]=0
         for i in range(0,4):
-            if(t.points[simplex[i],0]>box[0] or t.points[simplex[i],0]<0):
+            if(triangulation.points[simplex[i],0]>box[0] or triangulation.points[simplex[i],0]<0):
                 outx[i]=1
-            if(t.points[simplex[i],1]>box[1] or t.points[simplex[i],1]<0):
+            if(triangulation.points[simplex[i],1]>box[1] or triangulation.points[simplex[i],1]<0):
                 outy[i]=1
-            if(t.points[simplex[i],2]>box[2] or t.points[simplex[i],2]<0):
+            if(triangulation.points[simplex[i],2]>box[2] or triangulation.points[simplex[i],2]<0):
                 outz[i]=1
         if(sum(outx)<=2 and sum(outy)<=2 and sum(outz)<=2):
             if(isUnique(tup,tHash)):

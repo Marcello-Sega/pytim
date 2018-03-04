@@ -88,7 +88,7 @@ long[:,::1] neighbors, float[:] box, long[:] extraids, long[:] isDense, cluster_
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def makeClustersFromInterfaces(long [:,::1] neighbors, interface):
+def makeClustersFromInterfaces(long [:,::1] neighbors, interface,int maxInterfaces):
     compactInterfaces=[]
     cdef double rij[3]
     cdef n=len(interface)
@@ -99,12 +99,12 @@ def makeClustersFromInterfaces(long [:,::1] neighbors, interface):
     for i in range(0,n):inCl[i]=-1
      
     for i in range(0,n):
+        if(len(compactInterfaces)>=maxInterfaces):break
         if(inCl[i]==-1):
             compactInterfaces.append([])
             nCl+=1
             compactInterfaces[nCl].append(i)
             inCl[i]=nCl
-            #for j in compactInterfaces[nCl]:
             jindex=0
             while jindex < len(compactInterfaces[nCl]):
                 j=compactInterfaces[nCl][jindex]

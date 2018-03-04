@@ -82,6 +82,7 @@ class USTI(Interface):
                  molecular=True,
                  max_layers=1,
                  max_interfaces=1,
+                 max_clusters=10,
                  radii_dict=None,
                  cluster_cut=None,
                  cluster_threshold_density=None,
@@ -111,6 +112,7 @@ class USTI(Interface):
 
         self.cluster_threshold_density = cluster_threshold_density
         self._clusters=[]
+        self.max_clusters=max_clusters
         self.max_layers = max_layers
         self.max_interfaces = max_interfaces
         self._layers = np.empty([max_layers], dtype=type(universe.atoms))
@@ -222,6 +224,7 @@ class USTI(Interface):
     def findInterfaces(self,tInCl,clusters,tNeighbors,simplices):
         interfaces=[]#np.empty((len(clusters),),dtype=object)
         for i in range(0,len(clusters)):
+            if(i>=self.max_clusters):break
             interfaces.append([])
             for item in clusters[i].tetrahedrons:
                 if((tNeighbors[item][0]<0) or i!=tInCl[tNeighbors[item][0]]):
@@ -267,6 +270,38 @@ class USTI(Interface):
                         neighborsCount[j]+=1
         return neighbors
     
+    def findNeighboringTriangles2(self,interface,extraids):
+        neighbors=np.ones((len(interface),27),dtype=np.int)*(-1)
+        neighborsCount=np.zeros(len(interface),dtype=np.int)
+        nHash={}
+        tup=tuple()
+        tup1=tuple()
+        tup2=tuple()
+        tup3=tuple()
+        index=0
+        for i in range(0,len(interface)):
+            tup1=tuple(sorted((extraids[interface[i].A],extraids[interface[i].B])))
+            tup2=tuple(sorted((extraids[interface[i].B],extraids[interface[i].C])))
+            tup3=tuple(sorted((extraids[interface[i].A],extraids[interface[i].C])))
+            for tup in (tup1,tup2,tup3):
+                if(tup not in nHash):
+                    nHash[tup]=[]
+                    nHash[tup].append(i)
+                else:
+                    for index in nHash[tup]:
+                        if(i==index):continue
+                        if(not index in neighbors[i]):
+                            neighbors[i][neighborsCount[i]]=index
+                            neighborsCount[i]+=1
+                        if(not i in neighbors[index]):
+                            neighbors[index][neighborsCount[index]]=i
+                            neighborsCount[index]+=1
+                    if(i not in nHash[tup]):
+                        nHash[tup].append(i)
+        
+        return neighbors
+    
+    
     
     def makeClustersFromInterfaces(self,neighbors,interface):
         compactInterfaces=[]
@@ -290,14 +325,13 @@ class USTI(Interface):
         return compactInterfaces
    
     def getInterfaces(self,tInCl,clusters,tNeighbors,tetrahedrons,extraids):
-
         interfaces=[]
         interface=self.findInterfaces(tInCl,clusters,tNeighbors,tetrahedrons)
         if self.info:
             print('findInterfaces done')
         for i in range(0,len(interface)):
-            neighbors=self.findNeighboringTriangles(interface[i],extraids)
-            interfaces.append(cythonUtilities.makeClustersFromInterfaces(neighbors,interface[i]))
+            neighbors=self.findNeighboringTriangles2(interface[i],extraids)
+            interfaces.append(cythonUtilities.makeClustersFromInterfaces(neighbors,interface[i],self.max_interfaces))
         return [interface,interfaces]
 
     def findLayers(self,cluster,clusterInterface,individualInterface,extraids): 
@@ -383,11 +417,12 @@ class USTI(Interface):
             print("PBC smoothing: ",t3-t2)
         isDense=self.assignTetrahedrons(tetrahedrons,alpha) #assigns tetrahedrons to the dilute or dense phase
         [self._clusters,tInCl]=cythonUtilities.makeClusters(self.triangulation.points, alpha,tetrahedrons,neighbors,box,extraids,isDense,self.cluster_group,Cluster)
-        #[self._clusters,tInCl]=self.makeClusters(alpha,tetrahedrons,neighbors,box,extraids)
+      #  self._clusters= sorted(self._clusters, key=lambda x: len(x.tetrahedrons),reverse=True)[0:self.max_clusters]
+        self._clusters=self._clusters[0:self.max_clusters]
         if self.info:
             t4 = datetime.datetime.now()
             print("clusters: ",t4-t3)
-        print(len(self.clusters[0].tetrahedrons))
+        print(len(self.clusters))
        # exit()
         [interface,interfaces]=self.getInterfaces(tInCl,self._clusters,neighbors,tetrahedrons,extraids)
         if self.info:
@@ -395,7 +430,7 @@ class USTI(Interface):
             print("interfaces: ",t5-t4)
         if(len(interface)==1 and len(interface[0])==0):
             raise RuntimeError("No interfaces found! Please check the value of threshold parameter!")
-
+        #exit()
         layers=self.getLayers(self._clusters,interface,interfaces,extraids)
         if self.info:
             t6 = datetime.datetime.now()
@@ -404,12 +439,13 @@ class USTI(Interface):
         i=0
         maxvalue=0
         for c in self._clusters:
-             c.interfaces=interfaces[i]
-             c.interface=interface[i]
-             if(len(c.tetrahedrons)>maxvalue):
-                maxvalue=len(c.tetrahedrons)
-                self.largestCluster=i
-             i+=1
+            if(i>=self.max_clusters):break
+            c.interfaces=interfaces[i]
+            c.interface=interface[i]
+            if(len(c.tetrahedrons)>maxvalue):
+               maxvalue=len(c.tetrahedrons)
+               self.largestCluster=i
+            i+=1
         
         return layers
 
