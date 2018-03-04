@@ -174,10 +174,10 @@ class Correlator(object):
             :parameter bool continuous: applies only when a reference group has
                                         been specified: if True (default) the
                                         contribution of a particle at time lag
-                                        $\\tau=t_1-t_0$ is considered only if
-                                        the particle did not leave the
-                                        reference group between $t_0$ and
-                                        $t_1$. If False, the intermittent
+                                        :math:`\\tau=t_1-t_0` is considered
+                                        only if the particle did not leave the
+                                        reference group between :math:`t_0` and
+                                        :math:`t_1`. If False, the intermittent
                                         correlation is calculated, and the
                                         above restriction is released.
 
@@ -218,10 +218,11 @@ class Correlator(object):
             >>>
 
             Note that the average of  the characteristic function
-            $h(t)$ is done over all trajectories, including those
-            that start with h=0. The correlation $< h(t) h(0) >$
-            is divided by the average $<h>$ computed over all
-            trajectores that extend up to a time lag $t$. The
+            :math:`h(t)` is done over all trajectories, including those
+            that start with h=0.
+            The correlation :math:`\\langle h(t)h(0) \\rangle` is divided
+            by the average :math:`\\langle h \\rangle` computed over all
+            trajectores that extend up to a time lag :math:`t`. The
             `normalize` switch has no effect.
 
             >>> # normalized, continuous
@@ -235,11 +236,11 @@ class Correlator(object):
 
             The autocorrelation functions are calculated by taking
             into account in the average only those trajectory that
-            start with $h=1$ (i.e., which start within the reference
+            start with :math:`h=1` (i.e., which start within the reference
             group). The normalization is done by dividing the
-            correlation at time lag $t$ by its value at time lag 0
+            correlation at time lag :math:`t` by its value at time lag 0
             computed over all trajectories that extend up to time
-            lag $t$ and do not start with $h=0$.
+            lag :math:`t` and do not start with :math:`h=0`.
 
             >>> # not normalizd, intermittent
             >>> corr = vv.correlation(normalized=False,continuous=False)
