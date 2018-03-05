@@ -162,7 +162,7 @@ class QuasiTriangulation():
             return True
         return False
     
-    def makeListOfIncidents(self,index):
+    def makeListOfIncidents_old(self,index):
         incidents=[]
         dist=0
         for i in range(0,len(self.simplices)):
@@ -170,7 +170,15 @@ class QuasiTriangulation():
             if((dist-self.weights[index])<self.touchingRadii[i]):
                 incidents.append(i)
         return incidents
-    
+
+    def makeListOfIncidents(self,index):
+        size = len(self.simplices)
+        vect = self.points[index] - self.touchingCenter[:size]
+        dist = np.linalg.norm(vect,axis=1)
+        cond = dist-self.weights[index] < self.touchingRadii[:size]
+        # the list of incidents
+        return list(np.where(cond)[0])
+
     def initialize(self):
         listOfRadii=[]
         self.CoM=np.zeros(3)
