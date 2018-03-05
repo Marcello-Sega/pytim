@@ -42,18 +42,13 @@ pytim_dbscan = Extension(
     language="c++",
     include_dirs=[numpy.get_include()])
 
-cythonUtilities = Extension(
-    "cythonUtilities", ["pytim/cythonUtilities.pyx"],
-    language="c++",
-    include_dirs=[numpy.get_include()])
-
 gtools = Extension("gtools",
     sources=[ "pytim/gtools.pyx", "pytim/gtools/gtools.cpp"],
     language="c++",
     include_dirs=[numpy.get_include(),'pytim/gtools/'],
     extra_compile_args=["-O3" ])
 
-extensions = [pytim_dbscan, cythonUtilities, gtools]
+extensions = [pytim_dbscan, gtools]
     
 
 here = os.path.abspath(os.path.dirname(__file__))
