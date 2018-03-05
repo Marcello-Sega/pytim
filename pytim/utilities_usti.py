@@ -39,14 +39,7 @@ def generate_periodic_border_for_usti(points, box, delta,periodicity):
             extraids = np.append(extraids, np.where(selection)[0])
     return extrapoints, extraids
 
-
-def PBC(vector,box):
-    cond = np.where(vector<-box/2.)
-    vector[cond]+=box[cond]
-    cond = np.where(vector>box/2.)
-    vector[cond]-=box[cond]
-    
-def PBC2(vector, box):
+def PBC(vector, box):
     if(vector[0]<-box[0]/2.0):vector[0]+=box[0]
     if(vector[0]>box[0]/2.0):vector[0]-=box[0]
     if(vector[1]<-box[1]/2.0):vector[1]+=box[1]
@@ -59,25 +52,6 @@ def squareDistancePBC(r1,r2,box):
     PBC(rij, box)
     return sum(rij[:]**2)
 
-def isTooLarge(a,b,c,d,box):
-    d1=squareDistancePBC(a,b,box)
-    d2=squareDistancePBC(a,c,box)
-    d3=squareDistancePBC(a,d,box)
-    d4=squareDistancePBC(b,c,box)
-    d5=squareDistancePBC(b,d,box)
-    d6=squareDistancePBC(c,d,box)
-    boxx2=(box[0]/2.0)**2
-    boxy2=(box[1]/2.0)**2
-    boxz2=(box[2]/2.0)**2
-    
-    sqd =  np.array([d1,d2,d3,d4,d5,d6])
-    if np.any(sqd > boxx2):
-        return True
-    if np.any(sqd > boxy2):
-        return True
-    if np.any(sqd > boxz2):
-        return True
-    return False
 def isUnique(indices,tHash):
     if(indices in tHash):
         return False
@@ -146,3 +120,138 @@ def clearPBCtriangulation(triangulation,extrapoints,extraids,box):
     neighbors=findPBCNeighboringSimplices(triangulation,originalIndex,finalSimplices,tHash,extraids)
     finalSimplices=np.asarray(finalSimplices,dtype=np.int)
     return [finalSimplices,neighbors]
+
+class Cluster():
+    def __init__(self,clusterGroup,box):
+        self.tetrahedrons=[]
+        self.atomIndices=[]
+        self.neighboringAtoms={}
+        self.vertices={}
+        self.__interfaces=[]
+        self._interface=[]
+        self.__layers=[]
+        self.clusterGroup=clusterGroup
+        self._volume=0
+        self._surfaces=[]
+        self.box=box
+
+    def appendTetrahedron(self,index,tetrahedron,extraids,points):
+        self.tetrahedrons.append(index)
+        self.vertices[index]=(points[extraids[tetrahedron[0]]],points[extraids[tetrahedron[1]]],points[extraids[tetrahedron[2]]],points[extraids[tetrahedron[3]]])
+        for i in range(0,4):
+            index1=extraids[tetrahedron[i]]
+            if(not index1 in self.neighboringAtoms):
+                self.atomIndices.append(index1)
+                self.neighboringAtoms[index1]=[]
+            self.appendAtomNeighbors(index1,(extraids[tetrahedron[0]],extraids[tetrahedron[1]],extraids[tetrahedron[2]],extraids[tetrahedron[3]]))
+                    
+    def appendAtomNeighbors(self,index1,index2):
+        for i in index2:
+            if i==index1:
+                continue
+            if(not i in self.neighboringAtoms[index1]):
+                self.neighboringAtoms[index1].append(i)
+                
+    def computeVolumeOfCluster(self):
+        volume=0
+        vec1=np.zeros(3)
+        vec2=np.zeros(3)
+        vec3=np.zeros(3)
+        
+        for t in self.tetrahedrons:
+            vec1[0]=self.vertices[t][0][0]-self.vertices[t][3][0];vec1[1]=self.vertices[t][0][1]-self.vertices[t][3][1];vec1[2]=self.vertices[t][0][2]-self.vertices[t][3][2]
+            vec2[0]=self.vertices[t][1][0]-self.vertices[t][3][0];vec2[1]=self.vertices[t][1][1]-self.vertices[t][3][1];vec2[2]=self.vertices[t][1][2]-self.vertices[t][3][2]
+            vec3[0]=self.vertices[t][2][0]-self.vertices[t][3][0];vec3[1]=self.vertices[t][2][1]-self.vertices[t][3][1];vec3[2]=self.vertices[t][2][2]-self.vertices[t][3][2]
+        
+            utilities.PBC(vec1,self.box);
+            utilities.PBC(vec2,self.box);
+            utilities.PBC(vec3,self.box);
+        
+            vec2=np.cross(vec2,vec3);
+            volume+=abs(np.dot(vec1,vec2))/6.0;
+        
+        return volume
+    
+    def computeSurfaceOfCluster(self,interfaceIndex):
+        surface=0
+        try:
+            for t in self.__interfaces[interfaceIndex]:
+                surface+=self.interface[t].surface(self.box) 
+            return surface
+        except ValueError:
+            print ("There is no interface with index: ",interfaceIndex)
+            return 0
+
+    @property
+    def clusterDimension(self):
+        return self._clusterDimension
+    
+    @clusterDimension.setter
+    def clusterDimension(self,dimension):
+        self._clusterDimension=dimension
+        
+    @property
+    def clusterDensity(self):
+        return self._clusterDensity
+    
+    @clusterDensity.setter
+    def clusterDensity(self,_density):
+        self._clusterDensity=_density
+        
+    @property
+    def interfaces(self):
+        return self.__interfaces
+    
+    @interfaces.setter
+    def interfaces(self,value):
+        for i in value:
+            self.__interfaces.append(i)
+    
+    @property
+    def interface(self):
+        return self._interface
+    
+    @interface.setter
+    def interface(self,value):
+        self._interface=value
+    
+    @property
+    def layers(self):
+        return self.__layers
+    
+    @layers.setter
+    def layers(self,value):
+        for i in value: #loop over interfaces
+            self.__layers.append(i)
+        
+class Triangle():
+    def __init__(self,A,B,C,pointA,pointB,pointC):
+        self.A=A
+        self.B=B
+        self.C=C
+        self.pointA=pointA
+        self.pointB=pointB
+        self.pointC=pointC
+        
+    def isNeighborOf(self,triangle,extraids):
+        if(int(extraids[self.A]==extraids[triangle.A] or extraids[self.A]==extraids[triangle.B] or extraids[self.A]==extraids[triangle.C])+
+            int(extraids[self.B]==extraids[triangle.A] or extraids[self.B]==extraids[triangle.B] or extraids[self.B]==extraids[triangle.C])+
+            int(extraids[self.C]==extraids[triangle.A] or extraids[self.C]==extraids[triangle.B] or extraids[self.C]==extraids[triangle.C])==2):
+            return True
+        return False
+    
+    def surface(self,box):
+        rij1=np.zeros(3)
+        rij2=np.zeros(3)
+        vec=np.zeros(3)
+        surface=0
+        
+        rij1[:]=self.pointB[:]-self.pointA[:]
+        rij2[:]=self.pointC[:]-self.pointA[:]
+    
+        utilities.PBC(rij1,box)
+        utilities.PBC(rij2,box)
+    
+        vec=np.cross(rij1,rij2)
+        return 0.5*math.sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2])
+        

@@ -11,7 +11,9 @@ class QuasiTriangulation():
     def __init__(self,points,weights,box):
         self.points=points
         self.weights=weights#np.zeros(len(weights))
-        self.neighbors=np.ones((1,8),dtype=np.int)*(-2) #neighbors could be on 8 diferent positions due to quasi-triangulation anomalies
+        # neighbors could be on 8 diferent positions due to 
+        # quasi-triangulation anomalies
+        self.neighbors=np.ones((1,8),dtype=np.int)*(-2)
         self.tmpNeighbors=[]
         self.simplices=np.zeros((1,4),dtype=np.int)
         self.touchingRadii=np.zeros((1),dtype=np.int)
@@ -22,48 +24,26 @@ class QuasiTriangulation():
         self.maxxyz=np.zeros(3)
         self.auxiliarySimplices=[]
         self.auxiliaryDistances=[]
-        
         self.triangulation()
-        
-        
+
     def triangulation(self):
-        #1) Sorting atoms over distances and weights
-        #2) making of first tehtrahedron containing whole system
-        #3) incremental insertion of weightet points
-        #4) looking for incidenty -> added point intersect touching sphere of some tetrahedron in triangulation
+        # 1) Sorting atoms over distances and weights
+        # 2) making of first tehtrahedron containing whole system
+        # 3) incremental insertion of weightet points
+        # 4) looking for incidenty -> added point intersect touching sphere of
+        #    some tetrahedron in triangulation
         sortedListOdRadii=self.initialize()
-        center=np.zeros(3)
-        #return
-        face=np.zeros(3)
-        facetmp=np.zeros(3)
-        shared=[]
-        incidentFaces=[]
-        buffersize=0
-        #file3=open("test3.txt",'wt',buffersize) #OLNY LINEAR CURVE IS CORRECT!!!
-        index=0
-        incidents=[]
+        center, face, facetmp = [ np.zeros(3) ] * 3
+        shared, incidentFaces, incidents =[ [] ] * 3
+        index , faceIndex, counter, cellIndex = [ 0 ] * 4
         used=False
-        faceIndex=0
-        counter=0
-        cellIndex=0
-        indexx=0
-        indexy=0
-        indexz=0
-        maxdist=0
-        
+
         for pi in sortedListOdRadii:
-            #print("step: ",counter, 'z',len(sortedListOdRadii))
-            #file3.write(str(counter)+' '+str(len(self.simplices))+'\n')
             counter+=1
             incidentFaces=[]
             shared=[]
             index=pi[0]
             incidents=self.makeListOfIncidents(index)
-            #print('incidents',incidents)
-            #if(counter%500==0):
-            #    self.writeTriangulation()
-                
-            #return
             for incident in incidents: #find hull of incident
                 for i1 in range(0,2):
                     for i2 in range(i1+1,3):
@@ -78,11 +58,14 @@ class QuasiTriangulation():
                                 facetmp=np.sort(face2)
                                 if(np.array_equal(face,facetmp)):
                                     used=True
-                                    shared[faceIndex]=True #face id shared -> is'nt part of hull
+                                    # face id shared -> isn't part of hull
+                                    shared[faceIndex]=True
                                     break
                                 faceIndex+=1
                             if(not used):
-                                incidentFaces.append(np.array(face)) # face is unique at this moment -> candidate for hull
+                                # face is unique at this moment ->
+                                # candidate for hull
+                                incidentFaces.append(np.array(face))
                                 shared.append(False)
             self.simplices=np.delete(self.simplices,incidents,0)
             offset=0
@@ -90,7 +73,7 @@ class QuasiTriangulation():
             incidents.sort()
             self.touchingCenter=np.delete(self.touchingCenter,incidents,0)
             self.touchingRadii=np.delete(self.touchingRadii,incidents,0)
-            #create new simplices -> connect hull faces with new point
+            # create new simplices -> connect hull faces with new point
             i=0
             newSimplices=0
             for face in incidentFaces:
@@ -106,12 +89,10 @@ class QuasiTriangulation():
                 newSimplices+=1
 
         self.removeRedundantTetrahedrons()
-        self.findNeighbors2()
-        self.writeTriangulation()
-        #file3.close()
-    
-    
-    def findNeighbors2(self):
+        self.findNeighbors()
+        #self.writeTriangulation()
+
+    def findNeighbors(self):
         neighborHash={}
         indices=[]
         counter=0
@@ -123,18 +104,18 @@ class QuasiTriangulation():
                     for i2 in range(i1+1,3):
                         for i3 in range(i2+1,4):
                             face=(self.simplices[i,i1],self.simplices[i,i2],self.simplices[i,i3])
-                            face=tuple(sorted(face))    
+                            face=tuple(sorted(face))
                             if face not in neighborHash:
                                 neighborHash[face]=[]
                             neighborHash[face].append(i)
-        
+
         for i in range(0,len(self.simplices)):
             del indices[:]
             for i1 in range(0,2):
                     for i2 in range(i1+1,3):
                         for i3 in range(i2+1,4):
                             face=(self.simplices[i,i1],self.simplices[i,i2],self.simplices[i,i3])
-                            face=tuple(sorted(face)) 
+                            face=tuple(sorted(face))
                             if(face in neighborHash):
                                 for j in neighborHash[face]:
                                     if(j not in self.tmpNeighbors[i] and j != i):
@@ -146,12 +127,12 @@ class QuasiTriangulation():
                                             if((i3-i2-i1) in indices):indices.append(i3-i2-i1+4)
                                             else: indices.append(i3-i2-i1)
                                 if(len(self.tmpNeighbors[i])>maxNeighbors):maxNeighbors=len(self.tmpNeighbors[i])
-            
+
             self.neighbors=np.append(self.neighbors,[np.array([-2,-2,-2,-2,-2,-2,-2,-2],dtype=np.int)],axis=0)
             self.neighbors[i][indices]=self.tmpNeighbors[i][:]
             if(-2 in self.neighbors[i][0:4]):
-                self.neighbors[i][0:4][self.neighbors[i][0:4]==-2]=-1                
-    
+                self.neighbors[i][0:4][self.neighbors[i][0:4]==-2]=-1
+
     def areNeighbors(self,simplex1,simplex2):
         vertexCounter=0
         if(simplex1[0] in simplex2):vertexCounter+=1
@@ -161,8 +142,8 @@ class QuasiTriangulation():
         if(vertexCounter==3):
             return True
         return False
-    
-    def makeListOfIncidents(self,index):
+
+    def makeListOfIncidents_(self,index):
         incidents=[]
         dist=0
         for i in range(0,len(self.simplices)):
@@ -170,7 +151,14 @@ class QuasiTriangulation():
             if((dist-self.weights[index])<self.touchingRadii[i]):
                 incidents.append(i)
         return incidents
-    
+
+    def makeListOfIncidents(self,index):
+        vect = self.points[index] - self.touchingCenter
+        dist = np.linalg.norm(vect,axis=1)
+        cond = dist-self.weights[index] < self.touchingRadii
+        # the list of incidents
+        return list(np.where(cond)[0])
+
     def initialize(self):
         listOfRadii=[]
         self.CoM=np.zeros(3)
@@ -190,18 +178,19 @@ class QuasiTriangulation():
                 self.maxxyz[1]=self.points[i,1]
             if(self.points[i,2]>self.minxyz[2]):
                 self.maxxyz[2]=self.points[i,2]
-                
+
         self.CoM/=len(self.points)
-        for i in range(0,len(self.weights)): 
-            self.weights[i]=self.weights[i]/10.0 #MDAnalyses gives radii in nm but position in Angstroem !!!
+        for i in range(0,len(self.weights)):
+            # MDAnalyses gives radii in nm but position in Angstroem !!!
+            self.weights[i]=self.weights[i]/10.0
             listOfRadii.append([i,self.weights[i],sum((self.points[i]-self.CoM)**2)])
         listOfRadii.sort(key=lambda tup: tup[2])
         listOfRadii.sort(key=lambda tup: tup[1])
-        
+
         self.generateFirstTetrahedron(self.CoM)
-        
+
         return listOfRadii
-    
+
     def generateFirstTetrahedron(self,CoM):
         #adding of initial points
         tetraCoM=np.zeros(3)
@@ -210,21 +199,21 @@ class QuasiTriangulation():
         tetraPoints[1]=[-1.0,0,-1.0/(2.0)**0.5]
         tetraPoints[2]=[0,+1.0,1.0/(2.0)**0.5]
         tetraPoints[3]=[0,-1.0,1.0/(2.0)**0.5]
-        
+
         self.points=np.append(self.points,[np.array(tetraPoints[0])],axis=0)
         self.points=np.append(self.points,[np.array(tetraPoints[1])],axis=0)
         self.points=np.append(self.points,[np.array(tetraPoints[2])],axis=0)
         self.points=np.append(self.points,[np.array(tetraPoints[3])],axis=0)
-        
+
         self.weights=np.append(self.weights,np.zeros(4))
-        
+
         self.simplices[0,0]=len(self.points)-1
         self.simplices[0,1]=len(self.points)-2
         self.simplices[0,2]=len(self.points)-3
         self.simplices[0,3]=len(self.points)-4
-        
+
         #self.tmpNeighbors.append([])
-        
+
         isOutside=True
         while(isOutside):
             tetraCoM[:]=0
@@ -240,9 +229,9 @@ class QuasiTriangulation():
             tetraCoM/=4.0
             self.touchingRadii[0]=tsphere(self.simplices[0][0],self.simplices[0][1],self.simplices[0][2],self.simplices[0][3],
                                                 self.points, self.weights, self.touchingCenter[0])
-                
+
             self.auxiliarySimplices.append(0)
-            
+
             isOutside=False
             #time.sleep(1)
             for i in range(0,len(self.points)-5):
@@ -264,14 +253,12 @@ class QuasiTriangulation():
         self.simplices=np.delete(self.simplices,removable,0)
         self.touchingCenter=np.delete(self.touchingCenter,removable,0)
         self.touchingRadii=np.delete(self.touchingRadii,removable,0)
-        
-    
 
     def writeTriangulation(self):
-        file=open("test.txt",'wt')
+        file_=open("test.txt",'wt')
         for i in range(0,len(self.points)-4):
-            file.write(str(self.points[i,0])+' '+str(self.points[i,1])+' '+str(self.points[i,2])+'\n')
-        
+            file_.write(str(self.points[i,0])+' '+str(self.points[i,1])+' '+str(self.points[i,2])+'\n')
+
         file2=open("test2.txt",'wt')
         for i in range(0,len(self.simplices)):
             if(self.simplices[i,0]<len(self.points)-4 and self.simplices[i,1]<len(self.points)-4 and self.simplices[i,2]<len(self.points)-4 and self.simplices[i,3]<len(self.points)-4):
@@ -288,6 +275,5 @@ class QuasiTriangulation():
                 file2.write(str(self.points[self.simplices[i,2],0])+' '+str(self.points[self.simplices[i,2],1])+' '+str(self.points[self.simplices[i,2],2])+'\n')
                 file2.write(str(self.points[self.simplices[i,3],0])+' '+str(self.points[self.simplices[i,3],1])+' '+str(self.points[self.simplices[i,3],2])+'\n')
         file2.close
-        file.close
-        #print("zapsano")
-        
+        file_.close
+
