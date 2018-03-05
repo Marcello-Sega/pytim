@@ -6,9 +6,11 @@
 """
 from __future__ import print_function
 import numpy as np
-import datetime
+import time
 from scipy.spatial import distance
-from gtools import tsphere
+from gtools import tsphere, makeClusters
+from gtools import makeClustersFromInterfaces
+
 
 from . import utilities
 from .sanity_check import SanityCheck
@@ -23,7 +25,6 @@ from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 from . import quasiTriangulation
 
 import pytim_dbscan
-import cythonUtilities
 import math
 
 class USTI(Interface):
@@ -130,10 +131,10 @@ class USTI(Interface):
 
         PatchTrajectory(self.universe.trajectory, self)
 
-        if self.info: t1 = datetime.datetime.now()
+        if self.info: t1 = time.time()
         self._assign_layers()
         if self.info:
-            t2 = datetime.datetime.now()
+            t2 = time.time()
             print("time of USTI: ",t2-t1)
 
         self._layers=self._layers[0,0,0:self.max_layers]
@@ -331,7 +332,7 @@ class USTI(Interface):
             print('findInterfaces done')
         for i in range(0,len(interface)):
             neighbors=self.findNeighboringTriangles2(interface[i],extraids)
-            interfaces.append(cythonUtilities.makeClustersFromInterfaces(neighbors,interface[i],self.max_interfaces))
+            interfaces.append(makeClustersFromInterfaces(neighbors,interface[i],self.max_interfaces))
         return [interface,interfaces]
 
     def findLayers(self,cluster,clusterInterface,individualInterface,extraids): 
@@ -395,7 +396,7 @@ class USTI(Interface):
         extrapoints = np.asarray(extrapoints,dtype=np.float)
 
         if self.info:
-            t1 = datetime.datetime.now()
+            t1 = time.time()
         weights=np.zeros(len(extrapoints))
         if(self.trianType=="Delaunay"):
             self.triangulation = Delaunay(extrapoints)
@@ -409,30 +410,30 @@ class USTI(Interface):
 
         if self.info:
             print(len(self.triangulation.simplices))
-            t2 = datetime.datetime.now()
+            t2 = time.time()
             print("time of triangulation: ",t2-t1)
         [tetrahedrons,neighbors]=utilities.clearPBCtriangulation(self.triangulation,extrapoints,extraids,box)
         if self.info:
-            t3 = datetime.datetime.now()
+            t3 = time.time()
             print("PBC smoothing: ",t3-t2)
         isDense=self.assignTetrahedrons(tetrahedrons,alpha) #assigns tetrahedrons to the dilute or dense phase
-        [self._clusters,tInCl]=cythonUtilities.makeClusters(self.triangulation.points, alpha,tetrahedrons,neighbors,box,extraids,isDense,self.cluster_group,Cluster)
+        [self._clusters,tInCl]=makeClusters(self.triangulation.points, alpha,tetrahedrons,neighbors,box,extraids,isDense,self.cluster_group,Cluster)
       #  self._clusters= sorted(self._clusters, key=lambda x: len(x.tetrahedrons),reverse=True)[0:self.max_clusters]
         self._clusters=self._clusters[0:self.max_clusters]
         if self.info:
-            t4 = datetime.datetime.now()
+            t4 = time.time()
             print("clusters: ",t4-t3)
        # exit()
         [interface,interfaces]=self.getInterfaces(tInCl,self._clusters,neighbors,tetrahedrons,extraids)
         if self.info:
-            t5 = datetime.datetime.now()
+            t5 = time.time()
             print("interfaces: ",t5-t4)
         if(len(interface)==1 and len(interface[0])==0):
             raise RuntimeError("No interfaces found! Please check the value of threshold parameter!")
         #exit()
         layers=self.getLayers(self._clusters,interface,interfaces,extraids)
         if self.info:
-            t6 = datetime.datetime.now()
+            t6 = time.time()
             print("layers: ",t6-t5)
         self._layers = np.empty([len(self._clusters),self.max_interfaces, self.max_layers], dtype=type(self.universe.atoms))
         i=0

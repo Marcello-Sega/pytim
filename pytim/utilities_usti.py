@@ -40,13 +40,7 @@ def generate_periodic_border_for_usti(points, box, delta,periodicity):
     return extrapoints, extraids
 
 
-def PBC(vector,box):
-    cond = np.where(vector<-box/2.)
-    vector[cond]+=box[cond]
-    cond = np.where(vector>box/2.)
-    vector[cond]-=box[cond]
-    
-def PBC2(vector, box):
+def PBC(vector, box):
     if(vector[0]<-box[0]/2.0):vector[0]+=box[0]
     if(vector[0]>box[0]/2.0):vector[0]-=box[0]
     if(vector[1]<-box[1]/2.0):vector[1]+=box[1]
