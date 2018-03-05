@@ -124,17 +124,21 @@ class QuasiTriangulation():
             #create new simplices -> connect hull faces with new point
             i=0
             newSimplices=0
+            simplices_list, centers_list , radii_list  = [] , [], []
             for face in incidentFaces:
                 if(shared[i]):
                     i+=1
                     continue
-                self.simplices=np.append(self.simplices,[np.array([face[0],face[1],face[2],index],dtype=np.int)],axis=0)
+                simplices_list.append([face[0],face[1],face[2],index])
                 cellIndex=len(self.simplices)-1
                 radius=tsphere(face[0],face[1],face[2],index, self.points, self.weights, center)
-                self.touchingCenter=np.append(self.touchingCenter,[center],axis=0)
-                self.touchingRadii=np.append(self.touchingRadii,radius)
+                centers_list.append(list(center))
+                radii_list.append(radius)
                 i+=1
                 newSimplices+=1
+            self.simplices = np.append(self.simplices, np.asarray(simplices_list,dtype=int),axis=0)
+            self.touchingCenter=np.append(self.touchingCenter,np.asarray(centers_list),axis=0)
+            self.touchingRadii=np.append(self.touchingRadii,radii_list)
 
         self.removeRedundantTetrahedrons()
         self.findNeighbors2()
