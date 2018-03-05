@@ -11,7 +11,7 @@ class QuasiTriangulation():
     def __init__(self,points,weights,box):
         self.points=points
         self.weights=weights#np.zeros(len(weights))
-        # neighbors could be on 8 diferent positions due to 
+        # neighbors could be on 8 diferent positions due to
         # quasi-triangulation anomalies
         self.neighbors=np.ones((1,8),dtype=np.int)*(-2)
         self.tmpNeighbors=[]
@@ -25,6 +25,53 @@ class QuasiTriangulation():
         self.auxiliarySimplices=[]
         self.auxiliaryDistances=[]
         self.triangulation()
+
+    @staticmethod
+    def _find_shared_old(simplices,incidents):
+        face = np.zeros(3,dtype=int)
+        incidentFaces, shared = [],[]
+        for incident in incidents: #find hull of incident
+            for i1 in range(0,2):
+                for i2 in range(i1+1,3):
+                    for i3 in range(i2+1,4):
+                        face[0]=simplices[incident,i1]
+                        face[1]=simplices[incident,i2]
+                        face[2]=simplices[incident,i3]
+                        face=np.sort(face)
+                        used=False
+                        faceIndex=0
+                        for face2 in incidentFaces:
+                            facetmp=np.sort(face2)
+                            if(np.array_equal(face,facetmp)):
+                                used=True
+                                # face id shared -> isn't part of hull
+                                shared[faceIndex]=True
+                                break
+                            faceIndex+=1
+                        if(not used):
+                            # face is unique at this moment ->
+                            # candidate for hull
+                            incidentFaces.append(np.array(face))
+                            shared.append(False)
+        return incidentFaces, shared
+
+    @staticmethod
+    def _find_shared(simplices, incidents):
+        # we first sort everything
+        sorted_simplices = np.sort(simplices[incidents],axis=1)
+        # we create a (X,3) array with all X triangles in simplices
+        perm = sorted_simplices[:,[0,1,2]]
+        perm = np.append(perm,sorted_simplices[:,[0,1,3]],axis=0)
+        perm = np.append(perm,sorted_simplices[:,[0,2,3]],axis=0)
+        perm = np.append(perm,sorted_simplices[:,[1,2,3]],axis=0)
+        # now we select only those who are unique
+        unique_triangles, counts = np.unique(perm,axis=0,return_counts=True)
+        shared = np.zeros(len(unique_triangles),dtype=bool)
+        cond = np.where(counts>1)
+        shared[cond] = True
+        # we return lists to keep consistency with the other functions
+        # TODO: move to numpy arrays where possible
+        return list(unique_triangles), list(shared)
 
     def triangulation(self):
         # 1) Sorting atoms over distances and weights
@@ -43,30 +90,11 @@ class QuasiTriangulation():
             incidentFaces=[]
             shared=[]
             index=pi[0]
+            t1 = time.time()
             incidents=self.makeListOfIncidents(index)
-            for incident in incidents: #find hull of incident
-                for i1 in range(0,2):
-                    for i2 in range(i1+1,3):
-                        for i3 in range(i2+1,4):
-                            face[0]=self.simplices[incident,i1]
-                            face[1]=self.simplices[incident,i2]
-                            face[2]=self.simplices[incident,i3]
-                            face=np.sort(face)
-                            used=False
-                            faceIndex=0
-                            for face2 in incidentFaces:
-                                facetmp=np.sort(face2)
-                                if(np.array_equal(face,facetmp)):
-                                    used=True
-                                    # face id shared -> isn't part of hull
-                                    shared[faceIndex]=True
-                                    break
-                                faceIndex+=1
-                            if(not used):
-                                # face is unique at this moment ->
-                                # candidate for hull
-                                incidentFaces.append(np.array(face))
-                                shared.append(False)
+            t1 = time.time()
+            incidentFaces, shared = self._find_shared(self.simplices,incidents)
+            # TODO: should avoid manipulating by hand the output of Delaunay(), could lead to unexpected behaviour
             self.simplices=np.delete(self.simplices,incidents,0)
             offset=0
             dist=0
@@ -143,7 +171,7 @@ class QuasiTriangulation():
             return True
         return False
 
-    def makeListOfIncidents_(self,index):
+    def makeListOfIncidents_old(self,index):
         incidents=[]
         dist=0
         for i in range(0,len(self.simplices)):
@@ -153,9 +181,10 @@ class QuasiTriangulation():
         return incidents
 
     def makeListOfIncidents(self,index):
-        vect = self.points[index] - self.touchingCenter
+        size = len(self.simplices)
+        vect = self.points[index] - self.touchingCenter[:size]
         dist = np.linalg.norm(vect,axis=1)
-        cond = dist-self.weights[index] < self.touchingRadii
+        cond = dist-self.weights[index] < self.touchingRadii[:size]
         # the list of incidents
         return list(np.where(cond)[0])
 
