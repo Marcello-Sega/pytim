@@ -422,7 +422,6 @@ class USTI(Interface):
         if self.info:
             t4 = datetime.datetime.now()
             print("clusters: ",t4-t3)
-        print(len(self.clusters))
        # exit()
         [interface,interfaces]=self.getInterfaces(tInCl,self._clusters,neighbors,tetrahedrons,extraids)
         if self.info:

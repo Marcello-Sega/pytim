@@ -163,6 +163,7 @@ class QuasiTriangulation():
                                 neighborHash[face]=[]
                             neighborHash[face].append(i)
 
+        self.neighbors = -2 * np.ones( 8 * len(self.simplices),dtype=int).reshape(len(self.simplices),8)
         for i in range(0,len(self.simplices)):
             del indices[:]
             for i1 in range(0,2):
@@ -182,7 +183,6 @@ class QuasiTriangulation():
                                             else: indices.append(i3-i2-i1)
                                 if(len(self.tmpNeighbors[i])>maxNeighbors):maxNeighbors=len(self.tmpNeighbors[i])
 
-            self.neighbors=np.append(self.neighbors,[np.array([-2,-2,-2,-2,-2,-2,-2,-2],dtype=np.int)],axis=0)
             self.neighbors[i][indices]=self.tmpNeighbors[i][:]
             if(-2 in self.neighbors[i][0:4]):
                 self.neighbors[i][0:4][self.neighbors[i][0:4]==-2]=-1
