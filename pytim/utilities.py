@@ -32,6 +32,7 @@ from .utilities_usti import PBC, squareDistancePBC, isUnique
 from .utilities_usti import findPBCNeighboringSimplices, clearPBCtriangulation
 from .utilities_usti import generate_periodic_border_for_usti, Cluster, Triangle
 
+
 def lap(show=False):
     """ Timer function
 

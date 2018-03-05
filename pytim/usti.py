@@ -27,6 +27,7 @@ from . import quasiTriangulation
 import pytim_dbscan
 import math
 
+
 class USTI(Interface):
     """ Identifies interfacial molecules at curved interfaces using
         the method TODO add description
@@ -75,29 +76,30 @@ class USTI(Interface):
         :param str triangulation_type:       Type of triangulation: Delaunay, regular, quasi
     """
 
-    def __init__(self,
-                 universe,
-                 group=None,
-                 alpha=2.0,
-                 normal='guess',
-                 molecular=True,
-                 max_layers=1,
-                 max_interfaces=1,
-                 max_clusters=10,
-                 radii_dict=None,
-                 cluster_cut=None,
-                 cluster_threshold_density=None,
-                 extra_cluster_groups=None,
-                 biggest_cluster_only=False,
-                 symmetry='generic',
-                 centered=False,
-                 info=False,
-                 warnings=False,
-                 autoassign=True,
-                 _noextrapoints=False,
-                 periodicity=np.ones(3),
-                 triangulation_type='Delaunay', #'quasi', 'regular'
-                 **kargs):
+    def __init__(
+            self,
+            universe,
+            group=None,
+            alpha=2.0,
+            normal='guess',
+            molecular=True,
+            max_layers=1,
+            max_interfaces=1,
+            max_clusters=10,
+            radii_dict=None,
+            cluster_cut=None,
+            cluster_threshold_density=None,
+            extra_cluster_groups=None,
+            biggest_cluster_only=False,
+            symmetry='generic',
+            centered=False,
+            info=False,
+            warnings=False,
+            autoassign=True,
+            _noextrapoints=False,
+            periodicity=np.ones(3),
+            triangulation_type='Delaunay',  #'quasi', 'regular'
+            **kargs):
 
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
@@ -112,13 +114,13 @@ class USTI(Interface):
         sanity.assign_alpha(alpha)
 
         self.cluster_threshold_density = cluster_threshold_density
-        self._clusters=[]
-        self.max_clusters=max_clusters
+        self._clusters = []
+        self.max_clusters = max_clusters
         self.max_layers = max_layers
         self.max_interfaces = max_interfaces
         self._layers = np.empty([max_layers], dtype=type(universe.atoms))
-        self.trianType=triangulation_type
-        self.periodicity=periodicity
+        self.trianType = triangulation_type
+        self.periodicity = periodicity
         self.info = info
         self.normal = None
         self.PDB = {}
@@ -138,152 +140,212 @@ class USTI(Interface):
 
         if self.info:
             t2 = time.time()
-            print("time for running USTI: "+repr(t2-t1))
+            print("time for running USTI: " + repr(t2 - t1))
 
-        self._layers=self._layers[0,0,0:self.max_layers]
-
+        self._layers = self._layers[0, 0, 0:self.max_layers]
 
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
 
         """
 
-    def assignTetrahedrons(self,tetrahedrons,alpha):
-        isDense=np.zeros(len(tetrahedrons),dtype=int)
-        center=np.zeros(3)
-        weights=np.zeros(len(self.triangulation.points))
-        i=0
+    def assignTetrahedrons(self, tetrahedrons, alpha):
+        isDense = np.zeros(len(tetrahedrons), dtype=int)
+        center = np.zeros(3)
+        weights = np.zeros(len(self.triangulation.points))
+        i = 0
         for simplex in tetrahedrons:
-            if(self.trianType=='quasi'):
-                isDense[i]=1 if self.triangulation.touchingRadii[i]< alpha else 0
-            elif(self.trianType=='Delaunay'):
-                isDense[i]=1 if tsphere(simplex[0],simplex[1],simplex[2],simplex[3], self.triangulation.points, weights, center)<alpha else 0
-            elif(self.trianType=='regular'):
-                weights=self.triangulation.weights
-                isDense[i]=1 if tsphere(simplex[0],simplex[1],simplex[2],simplex[3], self.triangulation.points, weights, center)<alpha else 0
-            i+=1
+            if (self.trianType == 'quasi'):
+                isDense[
+                    i] = 1 if self.triangulation.touchingRadii[i] < alpha else 0
+            elif (self.trianType == 'Delaunay'):
+                isDense[i] = 1 if tsphere(
+                    simplex[0], simplex[1], simplex[2], simplex[3],
+                    self.triangulation.points, weights, center) < alpha else 0
+            elif (self.trianType == 'regular'):
+                weights = self.triangulation.weights
+                isDense[i] = 1 if tsphere(
+                    simplex[0], simplex[1], simplex[2], simplex[3],
+                    self.triangulation.points, weights, center) < alpha else 0
+            i += 1
         return isDense
 
-
-    def findInterfaces(self,tInCl,clusters,tNeighbors,simplices):
-        interfaces=[]#np.empty((len(clusters),),dtype=object)
-        for i in range(0,len(clusters)):
-            if(i>=self.max_clusters):break
+    def findInterfaces(self, tInCl, clusters, tNeighbors, simplices):
+        interfaces = []  #np.empty((len(clusters),),dtype=object)
+        for i in range(0, len(clusters)):
+            if (i >= self.max_clusters): break
             interfaces.append([])
             for item in clusters[i].tetrahedrons:
-                if((tNeighbors[item][0]<0) or i!=tInCl[tNeighbors[item][0]]):
-                    interfaces[i].append(Triangle(simplices[item][1],simplices[item][2],simplices[item][3],self.triangulation.points[simplices[item][1]],
-                                         self.triangulation.points[simplices[item][2]],self.triangulation.points[simplices[item][3]]))
-                if(tNeighbors[item][1]<0 or i!=tInCl[tNeighbors[item][1]]):
-                    interfaces[i].append(Triangle(simplices[item][0],simplices[item][2],simplices[item][3],self.triangulation.points[simplices[item][0]],
-                                         self.triangulation.points[simplices[item][2]],self.triangulation.points[simplices[item][3]]))
-                if(tNeighbors[item][2]<0 or i!=tInCl[tNeighbors[item][2]]):
-                    interfaces[i].append(Triangle(simplices[item][0],simplices[item][1],simplices[item][3],self.triangulation.points[simplices[item][0]],
-                                         self.triangulation.points[simplices[item][1]],self.triangulation.points[simplices[item][3]]))
-                if(tNeighbors[item][3]<0 or i!=tInCl[tNeighbors[item][3]]):
-                    interfaces[i].append(Triangle(simplices[item][0],simplices[item][1],simplices[item][2],self.triangulation.points[simplices[item][0]],
-                                         self.triangulation.points[simplices[item][1]],self.triangulation.points[simplices[item][2]]))
+                if ((tNeighbors[item][0] < 0)
+                        or i != tInCl[tNeighbors[item][0]]):
+                    interfaces[i].append(
+                        Triangle(
+                            simplices[item][1], simplices[item][2],
+                            simplices[item][3],
+                            self.triangulation.points[simplices[item][1]],
+                            self.triangulation.points[simplices[item][2]],
+                            self.triangulation.points[simplices[item][3]]))
+                if (tNeighbors[item][1] < 0
+                        or i != tInCl[tNeighbors[item][1]]):
+                    interfaces[i].append(
+                        Triangle(
+                            simplices[item][0], simplices[item][2],
+                            simplices[item][3],
+                            self.triangulation.points[simplices[item][0]],
+                            self.triangulation.points[simplices[item][2]],
+                            self.triangulation.points[simplices[item][3]]))
+                if (tNeighbors[item][2] < 0
+                        or i != tInCl[tNeighbors[item][2]]):
+                    interfaces[i].append(
+                        Triangle(
+                            simplices[item][0], simplices[item][1],
+                            simplices[item][3],
+                            self.triangulation.points[simplices[item][0]],
+                            self.triangulation.points[simplices[item][1]],
+                            self.triangulation.points[simplices[item][3]]))
+                if (tNeighbors[item][3] < 0
+                        or i != tInCl[tNeighbors[item][3]]):
+                    interfaces[i].append(
+                        Triangle(
+                            simplices[item][0], simplices[item][1],
+                            simplices[item][2],
+                            self.triangulation.points[simplices[item][0]],
+                            self.triangulation.points[simplices[item][1]],
+                            self.triangulation.points[simplices[item][2]]))
 
-                if(len(tNeighbors[item])>4):
-                    if((tNeighbors[item][4]>-2) and i!=tInCl[tNeighbors[item][4]]):
-                        interfaces[i].append(Triangle(simplices[item][1],simplices[item][2],simplices[item][3],self.triangulation.points[simplices[item][1]],
-                                         self.triangulation.points[simplices[item][2]],self.triangulation.points[simplices[item][3]]))
-                    if(tNeighbors[item][5]>-2 and i!=tInCl[tNeighbors[item][5]]):
-                        interfaces[i].append(Triangle(simplices[item][0],simplices[item][2],simplices[item][3],self.triangulation.points[simplices[item][0]],
-                                         self.triangulation.points[simplices[item][2]],self.triangulation.points[simplices[item][3]]))
-                    if(tNeighbors[item][6]>-2 and i!=tInCl[tNeighbors[item][6]]):
-                        interfaces[i].append(Triangle(simplices[item][0],simplices[item][1],simplices[item][3],self.triangulation.points[simplices[item][0]],
-                                         self.triangulation.points[simplices[item][1]],self.triangulation.points[simplices[item][3]]))
-                    if(tNeighbors[item][7]>-2 and i!=tInCl[tNeighbors[item][7]]):
-                        interfaces[i].append(Triangle(simplices[item][0],simplices[item][1],simplices[item][2],self.triangulation.points[simplices[item][0]],
-                                         self.triangulation.points[simplices[item][1]],self.triangulation.points[simplices[item][2]]))
+                if (len(tNeighbors[item]) > 4):
+                    if ((tNeighbors[item][4] > -2)
+                            and i != tInCl[tNeighbors[item][4]]):
+                        interfaces[i].append(
+                            Triangle(
+                                simplices[item][1], simplices[item][2],
+                                simplices[item][3],
+                                self.triangulation.points[simplices[item][1]],
+                                self.triangulation.points[simplices[item][2]],
+                                self.triangulation.points[simplices[item][3]]))
+                    if (tNeighbors[item][5] > -2
+                            and i != tInCl[tNeighbors[item][5]]):
+                        interfaces[i].append(
+                            Triangle(
+                                simplices[item][0], simplices[item][2],
+                                simplices[item][3],
+                                self.triangulation.points[simplices[item][0]],
+                                self.triangulation.points[simplices[item][2]],
+                                self.triangulation.points[simplices[item][3]]))
+                    if (tNeighbors[item][6] > -2
+                            and i != tInCl[tNeighbors[item][6]]):
+                        interfaces[i].append(
+                            Triangle(
+                                simplices[item][0], simplices[item][1],
+                                simplices[item][3],
+                                self.triangulation.points[simplices[item][0]],
+                                self.triangulation.points[simplices[item][1]],
+                                self.triangulation.points[simplices[item][3]]))
+                    if (tNeighbors[item][7] > -2
+                            and i != tInCl[tNeighbors[item][7]]):
+                        interfaces[i].append(
+                            Triangle(
+                                simplices[item][0], simplices[item][1],
+                                simplices[item][2],
+                                self.triangulation.points[simplices[item][0]],
+                                self.triangulation.points[simplices[item][1]],
+                                self.triangulation.points[simplices[item][2]]))
         return interfaces
 
-    def findNeighboringTriangles(self,interface,extraids):
-        neighbors=np.ones((len(interface),27),dtype=np.int)*(-1)
-        neighborsCount=np.zeros(len(interface),dtype=np.int)
-        nHash={}
-        tup=tuple()
-        tup1=tuple()
-        tup2=tuple()
-        tup3=tuple()
-        index=0
-        for i in range(0,len(interface)):
-            tup1=tuple(sorted((extraids[interface[i].A],extraids[interface[i].B])))
-            tup2=tuple(sorted((extraids[interface[i].B],extraids[interface[i].C])))
-            tup3=tuple(sorted((extraids[interface[i].A],extraids[interface[i].C])))
-            for tup in (tup1,tup2,tup3):
-                if(tup not in nHash):
-                    nHash[tup]=[]
+    def findNeighboringTriangles(self, interface, extraids):
+        neighbors = np.ones((len(interface), 27), dtype=np.int) * (-1)
+        neighborsCount = np.zeros(len(interface), dtype=np.int)
+        nHash = {}
+        tup = tuple()
+        tup1 = tuple()
+        tup2 = tuple()
+        tup3 = tuple()
+        index = 0
+        for i in range(0, len(interface)):
+            tup1 = tuple(
+                sorted((extraids[interface[i].A], extraids[interface[i].B])))
+            tup2 = tuple(
+                sorted((extraids[interface[i].B], extraids[interface[i].C])))
+            tup3 = tuple(
+                sorted((extraids[interface[i].A], extraids[interface[i].C])))
+            for tup in (tup1, tup2, tup3):
+                if (tup not in nHash):
+                    nHash[tup] = []
                     nHash[tup].append(i)
                 else:
                     for index in nHash[tup]:
-                        if(i==index):continue
-                        if(not index in neighbors[i]):
-                            neighbors[i][neighborsCount[i]]=index
-                            neighborsCount[i]+=1
-                        if(not i in neighbors[index]):
-                            neighbors[index][neighborsCount[index]]=i
-                            neighborsCount[index]+=1
-                    if(i not in nHash[tup]):
+                        if (i == index): continue
+                        if (not index in neighbors[i]):
+                            neighbors[i][neighborsCount[i]] = index
+                            neighborsCount[i] += 1
+                        if (not i in neighbors[index]):
+                            neighbors[index][neighborsCount[index]] = i
+                            neighborsCount[index] += 1
+                    if (i not in nHash[tup]):
                         nHash[tup].append(i)
 
         return neighbors
 
-    def getInterfaces(self,tInCl,clusters,tNeighbors,tetrahedrons,extraids):
-        interfaces=[]
-        interface=self.findInterfaces(tInCl,clusters,tNeighbors,tetrahedrons)
+    def getInterfaces(self, tInCl, clusters, tNeighbors, tetrahedrons,
+                      extraids):
+        interfaces = []
+        interface = self.findInterfaces(tInCl, clusters, tNeighbors,
+                                        tetrahedrons)
         if self.info:
             print('findInterfaces done')
-        for i in range(0,len(interface)):
-            neighbors=self.findNeighboringTriangles(interface[i],extraids)
-            interfaces.append(makeClustersFromInterfaces(neighbors,interface[i],self.max_interfaces))
-        return [interface,interfaces]
+        for i in range(0, len(interface)):
+            neighbors = self.findNeighboringTriangles(interface[i], extraids)
+            interfaces.append(
+                makeClustersFromInterfaces(neighbors, interface[i],
+                                           self.max_interfaces))
+        return [interface, interfaces]
 
-    def findLayers(self,cluster,clusterInterface,individualInterface,extraids):
+    def findLayers(self, cluster, clusterInterface, individualInterface,
+                   extraids):
         """ return list of indices of molecules in individual layers for the required cluster
         """
-        layers=[]
+        layers = []
         layers.append([])
-        isUsed={}
-        index1=0
-        next=False
+        isUsed = {}
+        index1 = 0
+        next = False
         for intf in individualInterface:
-            index1=extraids[clusterInterface[intf].A]
-            if(not index1 in isUsed):
+            index1 = extraids[clusterInterface[intf].A]
+            if (not index1 in isUsed):
                 layers[0].append(index1)
-                isUsed[index1]=0
-            index1=extraids[clusterInterface[intf].B]
-            if(not index1 in isUsed):
+                isUsed[index1] = 0
+            index1 = extraids[clusterInterface[intf].B]
+            if (not index1 in isUsed):
                 layers[0].append(index1)
-                isUsed[index1]=0
-            index1=extraids[clusterInterface[intf].C]
-            if(not index1 in isUsed):
+                isUsed[index1] = 0
+            index1 = extraids[clusterInterface[intf].C]
+            if (not index1 in isUsed):
                 layers[0].append(index1)
-                isUsed[index1]=0
-        i=0
+                isUsed[index1] = 0
+        i = 0
         for lay in layers:
-            next=False
+            next = False
             for item in lay:
-                if(not next):
+                if (not next):
                     layers.append([])
-                    next=True
+                    next = True
                 for n in cluster.neighboringAtoms[item]:
-                    if(not n in isUsed):
-                        layers[i+1].append(n)
-                        isUsed[n]=i+1
-            i+=1
+                    if (not n in isUsed):
+                        layers[i + 1].append(n)
+                        isUsed[n] = i + 1
+            i += 1
 
-        return layers[0:i-1]
+        return layers[0:i - 1]
 
-    def getLayers(self,clusters,interface,interfaces,extraids):
+    def getLayers(self, clusters, interface, interfaces, extraids):
         """ collect layers from each interfaces in each cluster
         """
-        layers=[]
-        for i in range(0,len(interface)):
+        layers = []
+        for i in range(0, len(interface)):
             layers.append([])
             for infc in interfaces[i]:
-                layers[i].append(self.findLayers(clusters[i],interface[i],infc,extraids))
+                layers[i].append(
+                    self.findLayers(clusters[i], interface[i], infc, extraids))
         return layers
 
     def alpha_shape(self, alpha):
@@ -295,62 +357,75 @@ class USTI(Interface):
         gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
         if self._noextrapoints == False:
             extrapoints, extraids = utilities.generate_periodic_border_for_usti(
-                points, box, delta,self.periodicity)
+                points, box, delta, self.periodicity)
 
-        extrapoints = np.asarray(extrapoints,dtype=np.float)
+        extrapoints = np.asarray(extrapoints, dtype=np.float)
 
         if self.info:
             t1 = time.time()
-        weights=np.zeros(len(extrapoints))
-        if(self.trianType=="Delaunay"):
+        weights = np.zeros(len(extrapoints))
+        if (self.trianType == "Delaunay"):
             self.triangulation = Delaunay(extrapoints)
         else:
-            for i in range(0,len(extrapoints)):
-                weights[i]=self.cluster_group.radii[extraids[i]]
-            if(self.trianType=='quasi'):
-                self.triangulation=quasiTriangulation.QuasiTriangulation(extrapoints,weights,box+2.0*delta)
-            elif(self.trianType=='regular'):
-                self.triangulation = Delaunay(extrapoints,weights=weights)
+            for i in range(0, len(extrapoints)):
+                weights[i] = self.cluster_group.radii[extraids[i]]
+            if (self.trianType == 'quasi'):
+                self.triangulation = quasiTriangulation.QuasiTriangulation(
+                    extrapoints, weights, box + 2.0 * delta)
+            elif (self.trianType == 'regular'):
+                self.triangulation = Delaunay(extrapoints, weights=weights)
 
         if self.info:
             print(len(self.triangulation.simplices))
             t2 = time.time()
-            print("time of triangulation: ",t2-t1)
-        [tetrahedrons,neighbors]=utilities.clearPBCtriangulation(self.triangulation,extrapoints,extraids,box)
+            print("time of triangulation: ", t2 - t1)
+        [tetrahedrons, neighbors] = utilities.clearPBCtriangulation(
+            self.triangulation, extrapoints, extraids, box)
         if self.info:
             t3 = time.time()
-            print("PBC smoothing: ",t3-t2)
-        isDense=self.assignTetrahedrons(tetrahedrons,alpha) #assigns tetrahedrons to the dilute or dense phase
-        [self._clusters,tInCl]=makeClusters(self.triangulation.points, alpha,tetrahedrons,neighbors,box,extraids,isDense,self.cluster_group,Cluster)
-      #  self._clusters= sorted(self._clusters, key=lambda x: len(x.tetrahedrons),reverse=True)[0:self.max_clusters]
-        self._clusters=self._clusters[0:self.max_clusters]
+            print("PBC smoothing: ", t3 - t2)
+        isDense = self.assignTetrahedrons(
+            tetrahedrons,
+            alpha)  #assigns tetrahedrons to the dilute or dense phase
+        [self._clusters, tInCl] = makeClusters(
+            self.triangulation.points, alpha, tetrahedrons, neighbors, box,
+            extraids, isDense, self.cluster_group, Cluster)
+        #  self._clusters= sorted(self._clusters, key=lambda x: len(x.tetrahedrons),reverse=True)[0:self.max_clusters]
+        self._clusters = self._clusters[0:self.max_clusters]
         if self.info:
             t4 = time.time()
-            print("clusters: "+repr(t4-t3))
-            print('# of clusters:'+repr(len(self.clusters)))
-       # exit()
-        [interface,interfaces]=self.getInterfaces(tInCl,self._clusters,neighbors,tetrahedrons,extraids)
+            print("clusters: " + repr(t4 - t3))
+            print('# of clusters:' + repr(len(self.clusters)))
+
+    # exit()
+        [interface, interfaces] = self.getInterfaces(
+            tInCl, self._clusters, neighbors, tetrahedrons, extraids)
         if self.info:
             t5 = time.time()
-            print("interfaces: "+repr(t5-t4))
-        if(len(interface)==1 and len(interface[0])==0):
-            raise RuntimeError("No interfaces found! Please check the value of threshold parameter!")
+            print("interfaces: " + repr(t5 - t4))
+        if (len(interface) == 1 and len(interface[0]) == 0):
+            raise RuntimeError(
+                "No interfaces found! Please check the value of threshold parameter!"
+            )
         #exit()
-        layers=self.getLayers(self._clusters,interface,interfaces,extraids)
+        layers = self.getLayers(self._clusters, interface, interfaces,
+                                extraids)
         if self.info:
             t6 = time.time()
-            print("layers: ",t6-t5)
-        self._layers = np.empty([len(self._clusters),self.max_interfaces, self.max_layers], dtype=type(self.universe.atoms))
-        i=0
-        maxvalue=0
+            print("layers: ", t6 - t5)
+        self._layers = np.empty(
+            [len(self._clusters), self.max_interfaces, self.max_layers],
+            dtype=type(self.universe.atoms))
+        i = 0
+        maxvalue = 0
         for c in self._clusters:
-            if(i>=self.max_clusters):break
-            c.interfaces=interfaces[i]
-            c.interface=interface[i]
-            if(len(c.tetrahedrons)>maxvalue):
-               maxvalue=len(c.tetrahedrons)
-               self.largestCluster=i
-            i+=1
+            if (i >= self.max_clusters): break
+            c.interfaces = interfaces[i]
+            c.interface = interface[i]
+            if (len(c.tetrahedrons) > maxvalue):
+                maxvalue = len(c.tetrahedrons)
+                self.largestCluster = i
+            i += 1
 
         return layers
 
@@ -375,36 +450,40 @@ class USTI(Interface):
         size = len(self.cluster_group.positions)
         alpha_ids = self.alpha_shape(self.alpha)
 
-        max_usedLayers=0
+        max_usedLayers = 0
 
         #for each cluster "c" and its each interface "i" asign layer "l"
-        for c in range(0,len(alpha_ids)):
-            for i in range(0,len(alpha_ids[c])):
-                if(i<len(alpha_ids[c])and i<self.max_interfaces):
-                    for l in range(0,len(alpha_ids[c][i])):
-                        if(l<len(alpha_ids[c][i]) and l<self.max_layers):
+        for c in range(0, len(alpha_ids)):
+            for i in range(0, len(alpha_ids[c])):
+                if (i < len(alpha_ids[c]) and i < self.max_interfaces):
+                    for l in range(0, len(alpha_ids[c][i])):
+                        if (l < len(alpha_ids[c][i]) and l < self.max_layers):
                             if self.molecular:
-                                self._layers[c,i,l] = self.cluster_group[alpha_ids[c][i][l]].residues.atoms
+                                self._layers[c, i, l] = self.cluster_group[
+                                    alpha_ids[c][i][l]].residues.atoms
                             else:
-                                self._layers[c,i,l] = self.cluster_group[alpha_ids[c][i][l]]
-                            if(c==0 and i==0 and self._layers[c,i,l] is not None):
-                                max_usedLayers+=1
+                                self._layers[c, i, l] = self.cluster_group[
+                                    alpha_ids[c][i][l]]
+                            if (c == 0 and i == 0
+                                    and self._layers[c, i, l] is not None):
+                                max_usedLayers += 1
 
-        for c in range(0,len(alpha_ids)):
-            for i in range(0,len(alpha_ids[c])):
-                if(i<len(alpha_ids[c])and i<self.max_interfaces):
-                    for l in range(0,len(alpha_ids[c][i])):
-                        if(l<len(alpha_ids[c][i]) and l<self.max_layers):
+        for c in range(0, len(alpha_ids)):
+            for i in range(0, len(alpha_ids[c])):
+                if (i < len(alpha_ids[c]) and i < self.max_interfaces):
+                    for l in range(0, len(alpha_ids[c][i])):
+                        if (l < len(alpha_ids[c][i]) and l < self.max_layers):
                             #self.label_group(self._layers[c,i,l], str(c)+'00'+str(i+1+l/10.0))
-                            self.label_group(self._layers[c,i,l], beta=1. * (l + 1), layer=(l + 1))
-            self.clusters[c].layers=self.layers[c]
+                            self.label_group(
+                                self._layers[c, i, l],
+                                beta=1. * (l + 1),
+                                layer=(l + 1))
+            self.clusters[c].layers = self.layers[c]
 
-
-        if(max_usedLayers<self.max_layers):
+        if (max_usedLayers < self.max_layers):
             print("Warning: the system contains fewer layers than required")
-            print("requiered: ", self.max_layers, " found: ",max_usedLayers)
-            self.max_layers=max_usedLayers
-
+            print("requiered: ", self.max_layers, " found: ", max_usedLayers)
+            self.max_layers = max_usedLayers
 
     @property
     def layers(self):

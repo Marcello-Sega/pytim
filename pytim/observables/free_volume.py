@@ -82,8 +82,7 @@ class FreeVolume(object):
         for radius in radii:
             where = np.where(np.isclose(inp.radii, radius))
             lst = [
-                e
-                for l in tree.query_ball_point(inp.positions[where], radius)
+                e for l in tree.query_ball_point(inp.positions[where], radius)
                 for e in l
             ]
             res = np.append(res, lst)

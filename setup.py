@@ -52,14 +52,14 @@ pytim_dbscan = Extension(
     language="c++",
     include_dirs=[numpy.get_include()])
 
-gtools = Extension("gtools",
-    sources=[ "pytim/gtools.pyx", "pytim/gtools/gtools.cpp"],
+gtools = Extension(
+    "gtools",
+    sources=["pytim/gtools.pyx", "pytim/gtools/gtools.cpp"],
     language="c++",
-    include_dirs=[numpy.get_include(),'pytim/gtools/'],
-    extra_compile_args=["-O3" ])
+    include_dirs=[numpy.get_include(), 'pytim/gtools/'],
+    extra_compile_args=["-O3"])
 
 extensions = [pytim_dbscan, gtools]
-    
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -78,9 +78,11 @@ with open("pytim/version.py") as fp:
 
 setup(
     name='pytim',
-    ext_modules= extensions,
-    cmdclass={'build_ext': build_ext,
-              'test': NoseTestCommand},
+    ext_modules=extensions,
+    cmdclass={
+        'build_ext': build_ext,
+        'test': NoseTestCommand
+    },
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
