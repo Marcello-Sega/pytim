@@ -10,8 +10,9 @@ from gtools import tsphere
 class QuasiTriangulation():
     def __init__(self,points,weights,box):
         self.points=points
-        self.weights=weights#np.zeros(len(weights))
-        self.neighbors=np.ones((1,8),dtype=np.int)*(-2) #neighbors could be on 8 diferent positions due to quasi-triangulation anomalies
+        self.weights=weights
+        # neighbors could be on 8 diferent positions due to quasi-triangulation anomalies
+        self.neighbors=np.ones((1,8),dtype=np.int)*(-2)
         self.tmpNeighbors=[]
         self.simplices=np.zeros((1,4),dtype=np.int)
         self.touchingRadii=np.zeros((1),dtype=np.int)
@@ -24,35 +25,6 @@ class QuasiTriangulation():
         self.auxiliaryDistances=[]
 
         self.triangulation()
-
-    @staticmethod
-    def _find_shared_old(simplices,incidents):
-        face = np.zeros(3,dtype=int)
-        incidentFaces, shared = [],[]
-        for incident in incidents: #find hull of incident
-            for i1 in range(0,2):
-                for i2 in range(i1+1,3):
-                    for i3 in range(i2+1,4):
-                        face[0]=simplices[incident,i1]
-                        face[1]=simplices[incident,i2]
-                        face[2]=simplices[incident,i3]
-                        face=np.sort(face)
-                        used=False
-                        faceIndex=0
-                        for face2 in incidentFaces:
-                            facetmp=np.sort(face2)
-                            if(np.array_equal(face,facetmp)):
-                                used=True
-                                # face id shared -> isn't part of hull
-                                shared[faceIndex]=True
-                                break
-                            faceIndex+=1
-                        if(not used):
-                            # face is unique at this moment ->
-                            # candidate for hull
-                            incidentFaces.append(np.array(face))
-                            shared.append(False)
-        return incidentFaces, shared
 
     @staticmethod
     def _find_shared(simplices, incidents):
@@ -81,19 +53,17 @@ class QuasiTriangulation():
         return list(unique_triangles), list(shared)
 
     def triangulation(self):
-        #1) Sorting atoms over distances and weights
-        #2) making of first tehtrahedron containing whole system
-        #3) incremental insertion of weightet points
-        #4) looking for incidenty -> added point intersect touching sphere of some tetrahedron in triangulation
+        # 1) Sorting atoms over distances and weights
+        # 2) making of first tehtrahedron containing whole system
+        # 3) incremental insertion of weightet points
+        # 4) looking for incidenty -> added point intersect touching sphere of some tetrahedron in triangulation
         sortedListOdRadii=self.initialize()
         center=np.zeros(3)
-        #return
         face=np.zeros(3)
         facetmp=np.zeros(3)
         shared=[]
         incidentFaces=[]
         buffersize=0
-        #file3=open("test3.txt",'wt',buffersize) #OLNY LINEAR CURVE IS CORRECT!!!
         index=0
         incidents=[]
         used=False
@@ -106,8 +76,6 @@ class QuasiTriangulation():
         maxdist=0
 
         for pi in sortedListOdRadii:
-            #print("step: ",counter, 'z',len(sortedListOdRadii))
-            #file3.write(str(counter)+' '+str(len(self.simplices))+'\n')
             counter+=1
             incidentFaces=[]
             shared=[]
@@ -121,7 +89,7 @@ class QuasiTriangulation():
             incidents.sort()
             self.touchingCenter=np.delete(self.touchingCenter,incidents,0)
             self.touchingRadii=np.delete(self.touchingRadii,incidents,0)
-            #create new simplices -> connect hull faces with new point
+            # create new simplices -> connect hull faces with new point
             i=0
             newSimplices=0
             simplices_list, centers_list , radii_list  = [] , [], []
@@ -142,8 +110,6 @@ class QuasiTriangulation():
 
         self.removeRedundantTetrahedrons()
         self.findNeighbors2()
-        #self.writeTriangulation()
-        #file3.close()
 
 
     def findNeighbors2(self):
@@ -175,7 +141,7 @@ class QuasiTriangulation():
                                 for j in neighborHash[face]:
                                     if(j not in self.tmpNeighbors[i] and j != i):
                                         self.tmpNeighbors[i].append(j)
-                                        if(i3==2): #get index of face
+                                        if(i3==2): # get index of face
                                             if(3 in indices):indices.append(7)
                                             else:indices.append(3)
                                         else:
@@ -197,14 +163,6 @@ class QuasiTriangulation():
             return True
         return False
 
-    def makeListOfIncidents_old(self,index):
-        incidents=[]
-        dist=0
-        for i in range(0,len(self.simplices)):
-            dist=math.sqrt((sum((self.points[index]-self.touchingCenter[i])**2)))
-            if((dist-self.weights[index])<self.touchingRadii[i]):
-                incidents.append(i)
-        return incidents
 
     def makeListOfIncidents(self,index):
         size = len(self.simplices)
@@ -216,27 +174,14 @@ class QuasiTriangulation():
 
     def initialize(self):
         listOfRadii=[]
-        self.CoM=np.zeros(3)
-        self.minxyz[:]=1.7976931348623157e+308
-        self.maxxyz[:]=-1.7976931348623157e+308
+        self.CoM = np.mean(self.points,axis=0)
+        self.minxyz = np.min(self.points,axis=0)
+        self.maxxyz = np.max(self.points,axis=0)
+        # MDAnalyses gives radii in nm but position in Angstroem !!!
+        # TODO check the radii dimensions
+        self.weights/=10.0
+        dR2 = np.sum((self.points-self.CoM)**2,axis=1)
         for i in range(0,len(self.weights)):
-            self.CoM+=self.points[i]
-            if(self.points[i,0]<self.minxyz[0]):
-                self.minxyz[0]=self.points[i,0]
-            if(self.points[i,1]<self.minxyz[1]):
-                self.minxyz[1]=self.points[i,1]
-            if(self.points[i,2]<self.minxyz[2]):
-                self.minxyz[2]=self.points[i,2]
-            if(self.points[i,0]>self.maxxyz[0]):
-                self.maxxyz[0]=self.points[i,0]
-            if(self.points[i,1]>self.minxyz[1]):
-                self.maxxyz[1]=self.points[i,1]
-            if(self.points[i,2]>self.minxyz[2]):
-                self.maxxyz[2]=self.points[i,2]
-
-        self.CoM/=len(self.points)
-        for i in range(0,len(self.weights)):
-            self.weights[i]=self.weights[i]/10.0 #MDAnalyses gives radii in nm but position in Angstroem !!!
             listOfRadii.append([i,self.weights[i],sum((self.points[i]-self.CoM)**2)])
         listOfRadii.sort(key=lambda tup: tup[2])
         listOfRadii.sort(key=lambda tup: tup[1])
@@ -246,7 +191,7 @@ class QuasiTriangulation():
         return listOfRadii
 
     def generateFirstTetrahedron(self,CoM):
-        #adding of initial points
+        # adding initial points
         tetraCoM=np.zeros(3)
         tetraPoints=np.zeros((4,3),dtype=np.float)
         tetraPoints[0]=[1.0,0,-1.0/(2.0)**0.5]
@@ -254,50 +199,32 @@ class QuasiTriangulation():
         tetraPoints[2]=[0,+1.0,1.0/(2.0)**0.5]
         tetraPoints[3]=[0,-1.0,1.0/(2.0)**0.5]
 
-        self.points=np.append(self.points,[np.array(tetraPoints[0])],axis=0)
-        self.points=np.append(self.points,[np.array(tetraPoints[1])],axis=0)
-        self.points=np.append(self.points,[np.array(tetraPoints[2])],axis=0)
-        self.points=np.append(self.points,[np.array(tetraPoints[3])],axis=0)
+        tet = [t for t in tetraPoints]
+        self.points=np.append(self.points,np.array(tet),axis=0)
 
         self.weights=np.append(self.weights,np.zeros(4))
-
-        self.simplices[0,0]=len(self.points)-1
-        self.simplices[0,1]=len(self.points)-2
-        self.simplices[0,2]=len(self.points)-3
-        self.simplices[0,3]=len(self.points)-4
-
-        #self.tmpNeighbors.append([])
+        for i in range(4):
+            self.simplices[0,i]=len(self.points)-i-1
 
         isOutside=True
         while(isOutside):
             tetraCoM[:]=0
-            self.points[len(self.points)-1,:]*=1.05
-            self.points[len(self.points)-2,:]*=1.05
-            self.points[len(self.points)-3,:]*=1.05
-            self.points[len(self.points)-4,:]*=1.05
-            self.points[len(self.points)-1,:]+=CoM
-            self.points[len(self.points)-2,:]+=CoM
-            self.points[len(self.points)-3,:]+=CoM
-            self.points[len(self.points)-4,:]+=CoM
-            tetraCoM=self.points[len(self.points)-4,:]+self.points[len(self.points)-3,:]+self.points[len(self.points)-2,:]+self.points[len(self.points)-1,:]
-            tetraCoM/=4.0
-            self.touchingRadii[0]=tsphere(self.simplices[0][0],self.simplices[0][1],self.simplices[0][2],self.simplices[0][3],
-                                                self.points, self.weights, self.touchingCenter[0])
+            self.points[-4:,:]*=1.05
+            self.points[-4:,:]+=CoM
+            tetraCoM=np.mean(self.points[-4:,:],axis=0)
+            s = self.simplices[0]
+            self.touchingRadii[0]=tsphere(s[0],s[1],s[2],s[3],
+                self.points, self.weights, self.touchingCenter[0])
 
             self.auxiliarySimplices.append(0)
 
             isOutside=False
-            #time.sleep(1)
             for i in range(0,len(self.points)-5):
                 dist=(sum((self.points[i]-tetraCoM)**2))**0.5
                 if(dist-self.weights[i]>0.3*self.touchingRadii[0]):
                     isOutside=True
-                    self.points[len(self.points)-1,:]-=CoM
-                    self.points[len(self.points)-2,:]-=CoM
-                    self.points[len(self.points)-3,:]-=CoM
-                    self.points[len(self.points)-4,:]-=CoM
+                    self.points[-4:,:]-=CoM
                     break
-        #return tetrahedron
 
     def removeRedundantTetrahedrons(self):
         removable=[]
@@ -308,12 +235,10 @@ class QuasiTriangulation():
         self.touchingCenter=np.delete(self.touchingCenter,removable,0)
         self.touchingRadii=np.delete(self.touchingRadii,removable,0)
 
-
-
     def writeTriangulation(self):
-        file=open("test.txt",'wt')
+        file_=open("test.txt",'wt')
         for i in range(0,len(self.points)-4):
-            file.write(str(self.points[i,0])+' '+str(self.points[i,1])+' '+str(self.points[i,2])+'\n')
+            file_.write(str(self.points[i,0])+' '+str(self.points[i,1])+' '+str(self.points[i,2])+'\n')
 
         file2=open("test2.txt",'wt')
         for i in range(0,len(self.simplices)):
@@ -331,6 +256,5 @@ class QuasiTriangulation():
                 file2.write(str(self.points[self.simplices[i,2],0])+' '+str(self.points[self.simplices[i,2],1])+' '+str(self.points[self.simplices[i,2],2])+'\n')
                 file2.write(str(self.points[self.simplices[i,3],0])+' '+str(self.points[self.simplices[i,3],1])+' '+str(self.points[self.simplices[i,3],2])+'\n')
         file2.close
-        file.close
-        #print("zapsano")
+        file_.close
 
