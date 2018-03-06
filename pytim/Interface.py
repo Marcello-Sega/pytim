@@ -378,9 +378,10 @@ class Interface(object):
 
             >>> interface.writepdb('layers.pdb',centered='no')
 
-            Note that if :mod:`~pytim.gitim.GITIM` is used, and the :obj:`symmetry`
-            option is different from :obj:`'planar'`, the :obj:`centered='origin'`
-            option is equivalent to :obj:`centered='middle'`.
+            Note that if :mod:`~pytim.gitim.GITIM` is used, and the
+            :obj:`symmetry`option is different from :obj:`'planar'`,
+            the :obj:`centered='origin'` option is equivalent to
+            :obj:`centered='middle'`.
         """
 
         _writepdb(
