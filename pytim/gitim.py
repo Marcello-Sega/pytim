@@ -19,6 +19,7 @@ except ImportError:
 
 from .Interface import Interface
 from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+from circumradius import circumradius
 
 
 class GITIM(Interface):
@@ -191,13 +192,8 @@ J. Chem. Phys. 138, 044110, 2013)*
             for simplex in t.simplices
         ])]
 
-    def circumradius(self, simplex, layer):
+    def circumradius_(self, points, radii, simplex):
 
-        try:
-            points = self.triangulation[layer].points
-            radii = self.triangulation[layer].radii
-        except IndexError:
-            raise IndexError("alpha_shape called using a wrong layer")
         R = []
         r_i = points[simplex]
         rad_i = radii[simplex]
@@ -230,8 +226,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         C = u2 - 1
         R.append((A + B) / C)
         R.append((A - B) / C)
-        r_i = np.roll(r_i, 1)
-        rad_i = np.roll(rad_i, 1)
+        # r_i = np.roll(r_i, 1)
+        # rad_i = np.roll(rad_i, 1)
 
         R = np.array(R)
         if R[0] < 0 and R[1] < 0:
@@ -276,10 +272,14 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         prefiltered = triangulation.simplices  # == skip prefiltering
 
-        a_shape = prefiltered[np.array([
-            self.circumradius(simplex, layer) >= self.alpha
-            for simplex in prefiltered
-        ])]
+        try:
+            points = self.triangulation[layer].points
+            radii = self.triangulation[layer].radii
+        except IndexError:
+            raise IndexError("alpha_shape called using a wrong layer")
+        
+        cr = circumradius(points, radii, prefiltered)
+        a_shape = prefiltered [ cr >= self.alpha ] 
         _ids = np.unique(a_shape.flatten())
         # remove the indices corresponding to the 8 additional points, which
         # have extraid==-1

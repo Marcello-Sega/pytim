@@ -37,7 +37,12 @@ class NoseTestCommand(TestCommand):
 
 
 pytim_dbscan = Extension(
-    "pytim_dbscan", ["pytim/_dbscan_inner.pyx"],
+    "pytim_dbscan", ["pytim/dbscan_inner.pyx"],
+    language="c++",
+    include_dirs=[numpy.get_include()])
+
+circumradius = Extension(
+    "circumradius", ["pytim/circumradius.pyx"],
     language="c++",
     include_dirs=[numpy.get_include()])
 
@@ -58,7 +63,7 @@ with open("pytim/version.py") as fp:
 
 setup(
     name='pytim',
-    ext_modules=[pytim_dbscan],
+    ext_modules=[pytim_dbscan, circumradius],
     cmdclass={'build_ext': build_ext,
               'test': NoseTestCommand},
     # Versions should comply with PEP440.  For a discussion on single-sourcing
