@@ -378,9 +378,10 @@ class Interface(object):
 
             >>> interface.writepdb('layers.pdb',centered='no')
 
-            Note that if GITIM is used, and the :obj:`symmetry` option is
-            different from :obj:`'planar'`, the :obj:`centered='origin'` option is
-            equivalent to :obj:`centered='middle'`.
+            Note that if :mod:`~pytim.gitim.GITIM` is used, and the
+            :obj:`symmetry`option is different from :obj:`'planar'`,
+            the :obj:`centered='origin'` option is equivalent to
+            :obj:`centered='middle'`.
         """
 
         _writepdb(
@@ -397,7 +398,7 @@ class Interface(object):
         This is a collection of basic tests to check
         that code is running -- no test on the correctness
         of the output is performed here.
-        
+
         >>> # TEST:0 loading the module
         >>> import pytim
         >>> pytim.ITIM._() ; # coverage
@@ -406,8 +407,8 @@ class Interface(object):
         >>> import MDAnalysis as mda
         >>> import pytim
         >>> from pytim.datafiles import *
-        >>> u         = mda.Universe(WATER_GRO)
-        >>> oxygens   = u.select_atoms("name OW")
+        >>> u = mda.Universe(WATER_GRO)
+        >>> oxygens = u.select_atoms("name OW")
         >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4)
         >>> print (len(interface.layers[0,0]))
         786
@@ -431,22 +432,22 @@ class Interface(object):
         Exception: Wrong Universe passed to ITIM class
 
         >>> # TEST:3 large probe sphere radius
-        >>> u         = mda.Universe(WATER_GRO)
+        >>> u = mda.Universe(WATER_GRO)
         >>> interface = pytim.ITIM(u, alpha=100000.0, max_layers=1,multiproc=False)
         Traceback (most recent call last):
             ...
         ValueError: parameter alpha must be smaller than the smaller box side
 
         >>> # TEST:3b no surface atoms
-        >>> u         = mda.Universe(GLUCOSE_PDB)
-        >>> g         = u.select_atoms('type C or name OW')
+        >>> u = mda.Universe(GLUCOSE_PDB)
+        >>> g = u.select_atoms('type C or name OW')
         >>> interface = pytim.GITIM(u,group=g, alpha=4.0)
         >>> print(interface.atoms)
         <AtomGroup []>
 
         >>> # TEST:4 interchangeability of Universe/AtomGroup
-        >>> u         = mda.Universe(WATER_GRO)
-        >>> oxygens   = u.select_atoms("name OW")
+        >>> u = mda.Universe(WATER_GRO)
+        >>> oxygens = u.select_atoms("name OW")
         >>> interface = pytim.ITIM(u, alpha=1.5,group=oxygens, max_layers=1,multiproc=False,molecular=False)
         >>> print (len(interface.layers[0,0]))
         262
@@ -459,8 +460,8 @@ class Interface(object):
         >>> import MDAnalysis as mda
         >>> import pytim
         >>> from pytim.datafiles import WATER_GRO
-        >>> u         = mda.Universe(WATER_GRO)
-        >>> oxygens   = u.select_atoms("name OW")
+        >>> u = mda.Universe(WATER_GRO)
+        >>> oxygens = u.select_atoms("name OW")
         >>> interface = pytim.ITIM(u, alpha=1.5, max_layers=4,molecular=True)
         >>> interface.writepdb('test.pdb',centered=False)
         >>> PDB =open('test.pdb','r').readlines()
@@ -513,7 +514,7 @@ class Interface(object):
         >>> import pytim
         >>> from   pytim.datafiles import GLUCOSE_PDB
         >>>
-        >>> u       = mda.Universe(GLUCOSE_PDB)
+        >>> u = mda.Universe(GLUCOSE_PDB)
         >>> solvent = u.select_atoms('name OW')
         >>> inter = pytim.GITIM(u, group=solvent, biggest_cluster_only=True)
         Warning: the option biggest_cluster_only has no effect without setting cluster_cut, ignoring it
@@ -558,7 +559,7 @@ class Interface(object):
         This is a collection of test to check
         that the algorithms are behaving properly if
         the interface is rotated in space.
-    
+
         >>> # TEST:1, ITIM+GITIM, flat interface
         >>> import MDAnalysis as mda
         >>> import pytim
@@ -573,8 +574,8 @@ class Interface(object):
         ...     interface = method(u,group=oxygens,molecular=False,alpha=2.5,_noextrapoints=True)
         ...     #interface.writepdb(method.__name__+'.ref.pdb') ; # debug
         ...     ref_box = np.copy(u.dimensions)
-        ...     ref_ind   = np.sort(np.copy(interface.atoms.indices))
-        ...     ref_pos   = np.copy(interface.atoms.positions)
+        ...     ref_ind = np.sort(np.copy(interface.atoms.indices))
+        ...     ref_pos = np.copy(interface.atoms.positions)
         ...
         ...     u.atoms.positions = np.copy(np.roll(positions,1,axis=1))
         ...     box = np.roll(ref_box[:3],1)
@@ -593,10 +594,10 @@ class Interface(object):
         ...             print (miss1+miss2)
         ...             print ( " differences in indices in method",)
         ...             print ( method.__name__, " == ",percent," %")
-    
+
         >>> del interface
         >>> del u
-    
+
         >>> # TEST:2, GITIM, micelle
         >>> import MDAnalysis as mda
         >>> import pytim
@@ -610,8 +611,8 @@ class Interface(object):
         ...     interface = method(u,group=DPC,molecular=False,alpha=2.5,_noextrapoints=True)
         ...     #interface.writepdb(method.__name__+'.ref.pdb') ; # debug
         ...     ref_box = np.copy(u.dimensions)
-        ...     ref_ind   = np.sort(np.copy(interface.atoms.indices))
-        ...     ref_pos   = np.copy(interface.atoms.positions)
+        ...     ref_ind = np.sort(np.copy(interface.atoms.indices))
+        ...     ref_pos = np.copy(interface.atoms.positions)
         ...
         ...     u.atoms.positions = np.copy(np.roll(positions,1,axis=1))
         ...     box = np.roll(ref_box[:3],1)
@@ -629,10 +630,10 @@ class Interface(object):
         ...             print (miss1+miss2)
         ...             print ( " differences in indices in method",)
         ...             print ( method.__name__, " == ",percent," %")
-    
+
         >>> del interface
         >>> del u
-    
+
         """
         pass
 

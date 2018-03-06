@@ -116,8 +116,8 @@ class WillardChandler(Interface):
 
         *(Willard, A. P.; Chandler, D. J. Phys. Chem. B 2010, 114, 1954–1958)*
 
-        :param Object universe:   The MDAnalysis Universe, MDTraj trajectory
-                                  or OpenMM Simulation objects.
+        :param Object universe:   The MDAnalysis_ Universe, MDTraj_ trajectory
+                                  or OpenMM_ Simulation objects.
         :param Object group:      An AtomGroup, or an array-like object with
                                   the indices of the atoms in the group.
                                   Will identify the interfacial molecules from
@@ -167,6 +167,9 @@ class WillardChandler(Interface):
         >>> print ("Radius={:.3f}".format(R))
         Radius=19.383
 
+        .. _MDAnalysis: http://www.mdanalysis.org/
+        .. _MDTraj: http://www.mdtraj.org/
+        .. _OpenMM: http://www.openmm.org/
     """
 
     _surface = None

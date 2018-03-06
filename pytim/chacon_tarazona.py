@@ -20,7 +20,7 @@ class ChaconTarazona(Interface):
         *(Chacón, E.; Tarazona, P. Phys. Rev. Lett. 91, 166103, 2003)*
         *(Tarazona, P.; Chacón, E. Phys. Rev. B 70, 235407, 2004)*
 
-        :param Universe universe: The MDAnalysis universe
+        :param Universe universe: The MDAnalysis_ universe
         :param float alpha:       Molecular scale cutoff
         :param float tau:         Particles within this distance form the
                                   surface will be added during the
@@ -47,6 +47,7 @@ class ChaconTarazona(Interface):
         array([[<AtomGroup with 175 atoms>],
                [<AtomGroup with 159 atoms>]], dtype=object)
 
+        .. _MDAnalysis: http://www.mdanalysis.org/
     """
     _surface = None
 
