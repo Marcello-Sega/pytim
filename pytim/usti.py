@@ -152,8 +152,12 @@ class USTI(Interface):
         i = 0
         for simplex in tetrahedrons:
             if (self.trianType == 'quasi'):
-                isDense[
-                    i] = 1 if self.triangulation.touchingRadii[i] < alpha else 0
+                weights = self.triangulation.weights
+                isDense[i] = 1 if tsphere(
+                    simplex[0], simplex[1], simplex[2], simplex[3],
+                    self.triangulation.points, weights, center) < alpha else 0
+                #isDense[
+                #    i] = 1 if self.triangulation.touchingRadii[i] < alpha else 0
             elif (self.trianType == 'Delaunay'):
                 isDense[i] = 1 if tsphere(
                     simplex[0], simplex[1], simplex[2], simplex[3],
