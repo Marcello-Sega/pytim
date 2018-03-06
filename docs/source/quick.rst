@@ -44,7 +44,7 @@ The above lines are doing the following:
    then initialize the MDAnalysis_ universe in the usual way, using
    as an input file one of the structures provided by the package, in
    this case a water/vapor interface in a gromos file format (the
-   variable WATER_GRO is made available by the :mod:`~pytim.datafiles` module).
+   variable :file:`WATER_GRO` is made available by the :mod:`~pytim.datafiles` module).
 2. The interfacial analysis is then initialized using the
    :class:`~pytim.itim.ITIM` class, and the molecular layers are
    calculated automatically.
