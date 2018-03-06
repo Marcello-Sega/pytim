@@ -81,8 +81,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         <AtomGroup with 793 atoms>
 
 
-        Successive layers can be identified with :mod:`~pytim.gitim.GITIM` as well.
-        In this example we identify two solvation shells of glucose:
+        Successive layers can be identified with :mod:`~pytim.gitim.GITIM` 
+        as well. In this example we identify two solvation shells of glucose:
 
 
         >>> import MDAnalysis as mda
