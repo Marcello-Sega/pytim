@@ -188,9 +188,6 @@ class QuasiTriangulation():
         self.CoM = np.mean(self.points, axis=0)
         self.minxyz = np.min(self.points, axis=0)
         self.maxxyz = np.max(self.points, axis=0)
-        # MDAnalyses gives radii in nm but position in Angstroem !!!
-        # TODO check the radii dimensions
-        self.weights /= 10.0
         dR2 = np.sum((self.points - self.CoM)**2, axis=1)
         for i in range(0, len(self.weights)):
             listOfRadii.append(

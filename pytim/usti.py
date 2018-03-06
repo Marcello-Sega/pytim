@@ -45,11 +45,12 @@ class USTI(Interface):
         :param bool molecular:      Switches between search of interfacial
                                     molecules / atoms (default: True)
         :param int max_layers:      The number of layers to be identified
-        :param int max_interfaces:  The maximal number of interfaces to be identified
+        :param int max_interfaces:  The maximal number of interfaces to be
+                                    identified
         :param dict radii_dict:     Dictionary with the atomic radii of the
                                     elements in the group. If None is supplied,
                                     the default one (from GROMOS 43a1) will be
-                                    used.
+                                    used
         :param float cluster_cut:   Cutoff used for neighbors or density-based
                                     cluster search (default: None disables the
                                     cluster analysis)
@@ -71,8 +72,21 @@ class USTI(Interface):
         :param bool warnings:       Print warnings
         :param bool autoassign:     If true (default) detect the interface
                                     every time a new frame is selected.
-        :param np.array boolean periodicity: specify in which dimensions PBC will be applyied
-        :param str trianType:       Type of triangulation: Delaunay, regular, quasi
+        :param np.array boolean periodicity: specify in which dimensions PBC
+                                    will be applyied
+        :param str triangulation_type: Type of triangulation: 'Delaunay',
+                                    'regular', 'quasi' (default)
+
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import MICELLE_PDB
+        >>>
+        >>> u = mda.Universe(MICELLE_PDB)
+        >>> micelle = u.select_atoms('resname DPC')
+        >>> inter = pytim.USTI(u, group=micelle, max_layers=3,molecular=False)
+
     """
 
     def __init__(
@@ -97,7 +111,7 @@ class USTI(Interface):
             autoassign=True,
             _noextrapoints=False,
             periodicity=np.ones(3),
-            trianType='Delaunay',  #'quasi', 'regular'
+            triangulation_type='quasi',  # 'Delaunay', 'regular'
             **kargs):
 
         # this is just for debugging/testing
@@ -118,7 +132,11 @@ class USTI(Interface):
         self.max_layers = max_layers
         self.max_interfaces = max_interfaces
         self._layers = np.empty([max_layers], dtype=type(universe.atoms))
-        self.trianType = trianType
+        try: # for compatibility
+            self.trianType = kwargs['trianType']
+        except:
+            pass
+        self.trianType = triangulation_type
         self.periodicity = periodicity
         self.info = info
         self.normal = None
@@ -136,7 +154,7 @@ class USTI(Interface):
         self._assign_layers()
         if self.info:
             t2 = time.time()
-            print("time of USTI: ", t2 - t1)
+            print("time to assign layers: ", t2 - t1)
 
         self._layers = self._layers[0, 0, 0:self.max_layers]
 
@@ -173,7 +191,8 @@ class USTI(Interface):
     def makeClusters(self, alpha, tetrahedrons, neighbors, box, extraids):
         isDense = self.assignTetrahedrons(
             tetrahedrons,
-            alpha)  #assigns tetrahedrons to the dilute or dense phase
+            alpha)
+        """   assigns tetrahedra to the dilute or dense phase """
         t = self.triangulation
         n = len(tetrahedrons)
         clusters = []
@@ -189,7 +208,7 @@ class USTI(Interface):
         dim = 0
 
         for i in range(0, n):
-            if (inCl[i] == -1):  #i-th tetrahedron isn't used in any cluster
+            if (inCl[i] == -1):  # i-th tetrahedron isn't used in any cluster
                 nCl += 1
                 clusters.append(Cluster(self.cluster_group))
                 clusters[nCl].clusterDensity = isDense[i]
@@ -203,11 +222,12 @@ class USTI(Interface):
                 tInCl[i] = nCl
                 rInCl[i, :] = t.points[extraids[tetrahedrons[i][0]], :]
                 for j in clusters[
-                        nCl].tetrahedrons:  #loop over tetrahedra already added to the cluster
+                        # loop over tetrahedra already added to the cluster
+                        nCl].tetrahedrons:
                     for k in neighbors[j]:
                         if k < 0: continue
                         rij[:] = t.points[extraids[tetrahedrons[k]
-                                                   [0]], :] - rInCl[j, :]  #t.points[extraids[tetrahedrons[j][0]],:]
+                                                   [0]], :] - rInCl[j, :]
                         utilities.PBC(rij, box)
                         rij[:] += rInCl[j, :]
                         if (inCl[k] == -1 and isDense[k] == isDense[i]):
@@ -239,7 +259,7 @@ class USTI(Interface):
         return [clusters, tInCl]
 
     def findInterfaces(self, tInCl, clusters, tNeighbors, simplices):
-        interfaces = []  #np.empty((len(clusters),),dtype=object)
+        interfaces = []
         for i in range(0, len(clusters)):
             if (i >= self.max_clusters): break
             interfaces.append([])
@@ -405,7 +425,8 @@ class USTI(Interface):
 
     def findLayers(self, cluster, clusterInterface, individualInterface,
                    extraids):
-        """ return list of indices of molecules in individual layers for the required cluster
+        """ return list of indices of molecules in individual layers
+            for the required cluster
         """
         layers = []
         layers.append([])
@@ -465,6 +486,7 @@ class USTI(Interface):
 
         extrapoints = np.asarray(extrapoints, dtype=np.float)
 
+        print(np.sort(np.unique(self.cluster_group.radii)))
         if self.info:
             t1 = time.time()
         weights = np.zeros(len(extrapoints))
@@ -482,7 +504,7 @@ class USTI(Interface):
         if self.info:
             print(len(self.triangulation.simplices))
             t2 = time.time()
-            print("time of triangulation: ", t2 - t1)
+            print("time for triangulation: ", t2 - t1)
         [tetrahedrons, neighbors] = utilities.clearPBCtriangulation(
             self.triangulation, extrapoints, extraids, box)
         if self.info:
@@ -490,17 +512,15 @@ class USTI(Interface):
             print("PBC smoothing: ", t3 - t2)
         isDense = self.assignTetrahedrons(
             tetrahedrons,
-            alpha)  #assigns tetrahedrons to the dilute or dense phase
+            alpha)  # assigns tetrahedrons to the dilute or dense phase
         [self._clusters, tInCl] = makeClusters(
             self.triangulation.points, alpha, tetrahedrons, neighbors, box,
             extraids, isDense, self.cluster_group, Cluster)
-        #  self._clusters= sorted(self._clusters, key=lambda x: len(x.tetrahedrons),reverse=True)[0:self.max_clusters]
         self._clusters = self._clusters[0:self.max_clusters]
         if self.info:
             t4 = time.time()
             print("clusters: ", t4 - t3)
 
-    # exit()
         [interface, interfaces] = self.getInterfaces(
             tInCl, self._clusters, neighbors, tetrahedrons, extraids)
         if self.info:
@@ -510,7 +530,6 @@ class USTI(Interface):
             raise RuntimeError(
                 "No interfaces found! Please check the value of threshold parameter!"
             )
-        #exit()
         layers = self.getLayers(self._clusters, interface, interfaces,
                                 extraids)
         if self.info:
@@ -533,7 +552,7 @@ class USTI(Interface):
         return layers
 
     def _assign_layers(self):
-        """Determine the USTI layers."""
+        """ Determine the USTI layers """
         self.reset_labels()
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])
@@ -555,7 +574,7 @@ class USTI(Interface):
 
         max_usedLayers = 0
 
-        #for each cluster "c" and its each interface "i" asign layer "l"
+        # for each cluster "c" and its each interface "i" asign layer "l"
         for c in range(0, len(alpha_ids)):
             for i in range(0, len(alpha_ids[c])):
                 if (i < len(alpha_ids[c]) and i < self.max_interfaces):
@@ -576,7 +595,6 @@ class USTI(Interface):
                 if (i < len(alpha_ids[c]) and i < self.max_interfaces):
                     for l in range(0, len(alpha_ids[c][i])):
                         if (l < len(alpha_ids[c][i]) and l < self.max_layers):
-                            #self.label_group(self._layers[c,i,l], str(c)+'00'+str(i+1+l/10.0))
                             self.label_group(
                                 self._layers[c, i, l],
                                 beta=1. * (l + 1),
@@ -593,21 +611,7 @@ class USTI(Interface):
         """Access the layers as numpy arrays of AtomGroups.
 
         The object can be sliced as usual with numpy arrays.
-        Differently from ITIM, there are no sides. Example:
-        TODO: check this example
-
-        >>> import MDAnalysis as mda
-        >>> import pytim
-        >>> from pytim.datafiles import MICELLE_PDB
-        >>>
-        >>> u = mda.Universe(MICELLE_PDB)
-        >>> micelle = u.select_atoms('resname DPC')
-        >>> inter = pytim.USTI(u, group=micelle, max_layers=3,molecular=False)
-        >>> inter.layers  #all layers
-        array([<AtomGroup with 909 atoms>, <AtomGroup with 301 atoms>,
-               <AtomGroup with 164 atoms>], dtype=object)
-        >>> inter.layers[0]  # first layer (0)
-        <AtomGroup with 909 atoms>
+        Differently from ITIM, there are no sides.
 
         """
         return self._layers
@@ -728,7 +732,7 @@ class Cluster():
 
     @layers.setter
     def layers(self, value):
-        for i in value:  #loop over interfaces
+        for i in value:  # loop over interfaces
             self.__layers.append(i)
 
 
