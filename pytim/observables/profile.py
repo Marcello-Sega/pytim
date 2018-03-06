@@ -81,7 +81,7 @@ class Profile(object):
     >>> import numpy as np
     >>> import MDAnalysis as mda
     >>> import pytim
-    >>> from   pytim.datafiles import LJ_GRO
+    >>> from   pytim.datafiles import LJ_GRO, LJ_SHORT_XTC
     >>> from   pytim.observables import Profile
 
     >>> u = mda.Universe(LJ_GRO,LJ_SHORT_XTC)
