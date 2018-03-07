@@ -113,7 +113,8 @@ class Profile(object):
                  observable=None,
                  interface=None,
                  symmetry='default',
-                 MCnorm=True):
+                 MCnorm=True,
+                 **kargs):
 
         _dir = {'x': 0, 'y': 1, 'z': 2}
         if direction is None:
@@ -125,6 +126,7 @@ class Profile(object):
             self._dir = _dir[direction]
         self.interface = interface
         self._MCnorm = MCnorm
+        self.kargs = kargs
         if symmetry == 'default' and interface is not None:
             self.symmetry = self.interface.symmetry
         else:

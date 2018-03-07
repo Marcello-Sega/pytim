@@ -21,6 +21,7 @@
     >>> for config in sorted(pytim_data.config):
     ...     print("{:20s} {:s}".format(config,pytim_data.description[config]))
     CCL4_WATER_GRO       Carbon tetrachloride/TIP4p water interface
+    DPPC_GRO             DPPC bilayer
     FULLERENE_PDB        fullerene
     GLUCOSE_PDB          solvated beta-d-glucose
     LJ_GRO               Lennard-Jones liquid/vapour interface
@@ -76,6 +77,7 @@ __all__ = [
     "LJ_SHORT_XTC",  # Lennard-Jones liquid/vapour interface trajectory
     "MICELLE_PDB",  # PDB of dodecylphosphocholine micelle in water
     "FULLERENE_PDB",  # PDB of C60
+    "DPPC_GRO",  # GROMACS single frame of a dppc bilayer
     "GLUCOSE_PDB",  # PDB of solvated beta-d-glucose
     "WATER_XTC",  # GROMACS trajectory, 100 frames, water/vapour interface
     "G43A1_TOP",  # GROMOS 43a1 nonbonded parameters, from the gromacs distribution
@@ -259,6 +261,9 @@ pytim_data.add('MICELLE_PDB', 'config', 'GRO', 'DPC micelle')
 
 FULLERENE_PDB = resource_filename('pytim', 'data/fullerene.pdb')
 pytim_data.add('FULLERENE_PDB', 'config', 'PDB', 'fullerene')
+
+DPPC_GRO = resource_filename('pytim', 'data/dppc.gro')
+pytim_data.add('DPPC_GRO', 'config', 'GRO', 'DPPC bilayer')
 
 GLUCOSE_PDB = resource_filename('pytim', 'data/glucose.pdb')
 pytim_data.add('GLUCOSE_PDB', 'config', 'PDB', 'solvated beta-d-glucose')
