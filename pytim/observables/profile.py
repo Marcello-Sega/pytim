@@ -280,7 +280,7 @@ class Profile(object):
         >>> inter = pytim.ITIM(u,cluster_cut=3.5,alpha=2.5)
         >>> print(inter.normal)
         2
-
+        >>> np.set_printoptions(precision=8)
         >>> np.random.seed(1) # for the MC normalization
         >>> stdprof = pytim.observables.Profile()
         >>> stdprof.sample(u.atoms)
