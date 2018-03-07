@@ -144,7 +144,7 @@ class Profile(object):
         self._counts = 0
         self._totvol = []
 
-    def _determine_range(self,box):
+    def _determine_range(self, box):
         if self._dir is None:
             if self._MCnorm:
                 r = np.max(box)
@@ -153,7 +153,6 @@ class Profile(object):
             return np.array([0., r])
         else:
             return np.array([0., box[self._dir]])
-
 
     def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
@@ -204,7 +203,11 @@ class Profile(object):
 
         values = self.observable.compute(group)
         accum, bins, _ = stats.binned_statistic(
-            pos, values, range=tuple(self._range), statistic='sum', bins=self._nbins)
+            pos,
+            values,
+            range=tuple(self._range),
+            statistic='sum',
+            bins=self._nbins)
         accum[~np.isfinite(accum)] = 0.0
         if self.interface is not None:
             accum[deltabin] = np.inf
