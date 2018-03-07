@@ -288,7 +288,7 @@ class Profile(object):
         >>> prof = pytim.observables.Profile(interface=inter)
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=0.5)[2]
-        >>> print(vals[len(vals)/2-3:len(vals)/2+3])
+        >>> print(vals[len(vals)//2-3:len(vals)//2+3])
         [0.02866114 0.0335671  0.01859101        inf 0.         0.        ]
 
         >>> sv = prof.sampled_values
@@ -324,7 +324,7 @@ class Profile(object):
         >>> prof = pytim.observables.Profile(interface=inter)
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=1.0)[2]
-        >>> print(vals[len(vals)/2-4:len(vals)/2+2])
+        >>> print(vals[len(vals)//2-4:len(vals)//2+2])
         [0.0674883  0.05689783 0.03296544 0.                inf 0.        ]
 
         """
