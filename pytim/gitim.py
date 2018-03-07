@@ -231,9 +231,9 @@ J. Chem. Phys. 138, 044110, 2013)*
             radii = self.triangulation[layer].radii
         except IndexError:
             raise IndexError("alpha_shape called using a wrong layer")
-        
+
         cr = circumradius(points, radii, prefiltered)
-        a_shape = prefiltered [ cr >= self.alpha ] 
+        a_shape = prefiltered[cr >= self.alpha]
         _ids = np.unique(a_shape.flatten())
         # remove the indices corresponding to the 8 additional points, which
         # have extraid==-1

@@ -64,8 +64,10 @@ with open("pytim/version.py") as fp:
 setup(
     name='pytim',
     ext_modules=[pytim_dbscan, circumradius],
-    cmdclass={'build_ext': build_ext,
-              'test': NoseTestCommand},
+    cmdclass={
+        'build_ext': build_ext,
+        'test': NoseTestCommand
+    },
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
