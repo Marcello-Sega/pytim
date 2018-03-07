@@ -697,5 +697,5 @@ class SimpleInterface(Interface):
 
             
     def _assign_layers(self):
-        print ('uo!')
+        pass
 #
