@@ -129,7 +129,6 @@ class Profile(object):
             self.symmetry = self.interface.symmetry
         else:
             self.symmetry = symmetry
-
         if observable is None:
             self.observable = Number()
         else:
@@ -137,12 +136,21 @@ class Profile(object):
         self.binsize = 0.01  # this is used for internal calculations, the
         # output binsize can be specified in
         # self.get_values()
-
         self.sampled_bins = None
         self.sampled_values = None
         self._range = None
         self._counts = 0
         self._totvol = []
+
+    def _determine_range(self, box):
+        if self._dir is None:
+            if self._MCnorm:
+                r = np.max(box)
+            else:
+                r = np.min(box)
+            return np.array([0., r])
+        else:
+            return np.array([0., box[self._dir]])
 
     def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
@@ -153,8 +161,8 @@ class Profile(object):
 
         box = group.universe.trajectory.ts.dimensions[:3]
         if self._range is None:
-            _range = [0., box[self._dir]]
-            nbins = int(box[self._dir] / self.binsize)
+            _range = self._determine_range(box)
+            nbins = int(_range[1] / self.binsize)
             # we need to make sure that the number of bins is odd, so that the
             # central one encompasses zero (to make the delta-function
             # contribution appear always in this bin)
@@ -162,7 +170,7 @@ class Profile(object):
                 nbins += 1
             self._nbins = nbins
             if self.interface is not None:
-                _range -= box[self._dir] / 2.
+                _range -= _range[1] / 2.
             self._range = _range
         v = np.prod(box)
         self._totvol.append(v)
@@ -193,7 +201,11 @@ class Profile(object):
 
         values = self.observable.compute(group)
         accum, bins, _ = stats.binned_statistic(
-            pos, values, range=self._range, statistic='sum', bins=self._nbins)
+            pos,
+            values,
+            range=tuple(self._range),
+            statistic='sum',
+            bins=self._nbins)
         accum[~np.isfinite(accum)] = 0.0
         if self.interface is not None:
             accum[deltabin] = np.inf
@@ -254,7 +266,8 @@ class Profile(object):
     def _():
         """
         >>> # this doctest checks that the same profile is
-        >>> # obtained after rotating the system
+        >>> # obtained after rotating the system, and that
+        >>> # it is consistent through versions
         >>> import MDAnalysis as mda
         >>> import numpy as np
         >>> import pytim
@@ -265,10 +278,21 @@ class Profile(object):
         >>> inter = pytim.ITIM(u,cluster_cut=3.5,alpha=2.5)
         >>> print(inter.normal)
         2
+        >>> np.set_printoptions(precision=8)
+        >>> np.random.seed(1) # for the MC normalization
+        >>> stdprof = pytim.observables.Profile()
+        >>> stdprof.sample(u.atoms)
+        >>> print(stdprof.get_values(binwidth=0.5)[2][:6])
+        [0.09229169 0.10959639 0.08075523 0.10959639 0.09805993 0.09805993]
 
         >>> prof = pytim.observables.Profile(interface=inter)
         >>> prof.sample(u.atoms)
+        >>> vals = prof.get_values(binwidth=0.5)[2]
+        >>> print(vals[len(vals)//2-3:len(vals)//2+3])
+        [0.02866114 0.0335671  0.01859101        inf 0.         0.        ]
+
         >>> sv = prof.sampled_values
+
         >>> u.atoms.positions=np.roll(u.atoms.positions,1,axis=1)
         >>> box = u.dimensions[:]
         >>> box[0]=box[2]
@@ -284,5 +308,25 @@ class Profile(object):
         >>> print(np.all(sv==sv2))
         True
 
+        >>> # We check now the profile computed with GITIM
+        >>> u = mda.Universe(WATERSMALL_GRO)
+        >>> g = u.select_atoms('name OW')
+        >>> inter = pytim.GITIM(u,group=g,alpha=2.5)
+        >>> print(inter.normal)
+        None
+
+        >>> np.random.seed(1) # for the MC normalization
+        >>> stdprof = pytim.observables.Profile()
+        >>> stdprof.sample(u.atoms)
+        >>> print(stdprof.get_values(binwidth=0.5)[2][:6])
+        [0.09229169 0.10959639 0.08075523 0.10959639 0.09805993 0.09805993]
+
+        >>> prof = pytim.observables.Profile(interface=inter)
+        >>> prof.sample(u.atoms)
+        >>> vals = prof.get_values(binwidth=1.0)[2]
+        >>> print(vals[len(vals)//2-4:len(vals)//2+2])
+        [0.0674883  0.05689783 0.03296544 0.                inf 0.        ]
+
         """
+
         pass
