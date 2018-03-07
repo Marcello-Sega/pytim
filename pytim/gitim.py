@@ -158,17 +158,13 @@ J. Chem. Phys. 138, 044110, 2013)*
                 max_layers, dtype=type(SurfaceFlatInterface))
             for nlayer in range(max_layers):
                 self._surfaces[nlayer] = SurfaceFlatInterface(
-                    self, options={
-                        'layer': nlayer
-                    })
+                    self, options={'layer': nlayer})
         else:  # generic
             self._surfaces = np.empty(
                 max_layers, dtype=type(SurfaceGenericInterface))
             for nlayer in range(max_layers):
                 self._surfaces[nlayer] = SurfaceGenericInterface(
-                    self, options={
-                        'layer': nlayer
-                    })
+                    self, options={'layer': nlayer})
 
         PatchTrajectory(self.universe.trajectory, self)
 
@@ -186,8 +182,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         return t.simplices[np.array([
             np.max(
                 distance.cdist(t.points[simplex], t.points[simplex],
-                               'euclidean'))
-            >= threshold + 2. * np.min(t.radii[simplex])
+                               'euclidean')) >=
+            threshold + 2. * np.min(t.radii[simplex])
             for simplex in t.simplices
         ])]
 
