@@ -192,48 +192,6 @@ J. Chem. Phys. 138, 044110, 2013)*
             for simplex in t.simplices
         ])]
 
-    def circumradius_(self, points, radii, simplex):
-
-        R = []
-        r_i = points[simplex]
-        rad_i = radii[simplex]
-
-        d = (rad_i[0] - rad_i[1:])
-        M = (r_i[0] - r_i[1:])
-
-        r_i2 = np.sum(r_i**2, axis=1)
-        rad_i2 = rad_i**2
-        s = (r_i2[0] - r_i2[1:] - rad_i2[0] + rad_i2[1:]) / 2.
-        try:
-            invM = np.linalg.inv(M)
-            u = np.dot(invM, d)
-            v = r_i[0] - np.dot(invM, s)
-        except np.linalg.linalg.LinAlgError:
-            if self.warnings is True:
-                print("Warning, singular matrix for ", r_i)
-                # TODO is this correct? The singular matrix most likely comes
-                # out of points alinged in the plane
-            return 0
-
-        u2 = np.sum(u**2)
-        v2 = np.sum(v**2)
-        uv = np.sum(u * v)
-        A = (rad_i[0] - uv)
-        arg = (rad_i[0] - uv)**2 - (u2 - 1) * (v2 - rad_i2[0])
-        if arg < 0:
-            return 0.0
-        B = np.sqrt(arg)
-        C = u2 - 1
-        R.append((A + B) / C)
-        R.append((A - B) / C)
-        # r_i = np.roll(r_i, 1)
-        # rad_i = np.roll(rad_i, 1)
-
-        R = np.array(R)
-        if R[0] < 0 and R[1] < 0:
-            return 0.0
-        return np.min(R[R >= 0])
-
     def alpha_shape(self, alpha, group, layer):
         box = self.universe.dimensions[:3]
         delta = 2.1 * self.alpha + 1e-6
