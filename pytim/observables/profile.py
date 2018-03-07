@@ -129,7 +129,6 @@ class Profile(object):
             self.symmetry = self.interface.symmetry
         else:
             self.symmetry = symmetry
-
         if observable is None:
             self.observable = Number()
         else:
@@ -137,7 +136,6 @@ class Profile(object):
         self.binsize = 0.01  # this is used for internal calculations, the
         # output binsize can be specified in
         # self.get_values()
-
         self.sampled_bins = None
         self.sampled_values = None
         self._range = None
@@ -268,7 +266,7 @@ class Profile(object):
     def _():
         """
         >>> # this doctest checks that the same profile is
-        >>> # obtained after rotating the system, and that 
+        >>> # obtained after rotating the system, and that
         >>> # it is consistent through versions
         >>> import MDAnalysis as mda
         >>> import numpy as np
@@ -312,7 +310,7 @@ class Profile(object):
 
         >>> # We check now the profile computed with GITIM
         >>> u = mda.Universe(WATERSMALL_GRO)
-	    >>> g = u.select_atoms('name OW')
+        >>> g = u.select_atoms('name OW')
         >>> inter = pytim.GITIM(u,group=g,alpha=2.5)
         >>> print(inter.normal)
         None
