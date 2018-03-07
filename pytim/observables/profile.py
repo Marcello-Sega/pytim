@@ -112,8 +112,10 @@ class Profile(object):
                  direction=None,
                  observable=None,
                  interface=None,
+                 distance_function=None,
                  symmetry='default',
-                 MCnorm=True):
+                 MCnorm=True,
+                 **kargs):
 
         _dir = {'x': 0, 'y': 1, 'z': 2}
         if direction is None:
@@ -125,6 +127,7 @@ class Profile(object):
             self._dir = _dir[direction]
         self.interface = interface
         self._MCnorm = MCnorm
+        self.kargs = kargs
         if symmetry == 'default' and interface is not None:
             self.symmetry = self.interface.symmetry
         else:
@@ -176,7 +179,10 @@ class Profile(object):
         self._totvol.append(v)
 
         if self.interface is None:
-            pos = group.positions[::, self._dir]
+            if self.distance_function is None:
+                pos = group.positions[::, self._dir]
+            else:
+                pos = self.distance_function(group,self.kargs)
         else:
             deltabin = 1 + (self._nbins - 1) // 2
             pos = IntrinsicDistance(
