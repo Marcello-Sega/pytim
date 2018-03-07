@@ -637,9 +637,11 @@ class Interface(object):
         """
         pass
 
+
 from .sanity_check import SanityCheck
 from .surface import SurfaceFlatInterface
 from .surface import SurfaceGenericInterface
+
 
 class SimpleInterface(Interface):
     """ This simple interface is designed to allow the user to define
@@ -707,55 +709,56 @@ class SimpleInterface(Interface):
     
     """
 
-    def __init__(self, 
-                 universe, 
-                 group=None, 
-                 alpha=1.5, 
-                 symmetry='generic', 
-                 normal='z', 
-                 upper=None, 
+    def __init__(self,
+                 universe,
+                 group=None,
+                 alpha=1.5,
+                 symmetry='generic',
+                 normal='z',
+                 upper=None,
                  lower=None):
 
         self.symmetry = symmetry
         self.universe = universe
         self.group = group
-        self.alpha = alpha 
-        self.upper = upper 
-        self.lower = lower 
+        self.alpha = alpha
+        self.upper = upper
+        self.lower = lower
         emptyg = universe.atoms[0:0]
-        if self.group is None: 
+        if self.group is None:
             self.group = universe.atoms
 
         sanity = SanityCheck(self)
-        sanity.assign_universe(
-            universe, radii_dict=None, warnings=False)
+        sanity.assign_universe(universe, radii_dict=None, warnings=False)
         sanity.assign_alpha(alpha)
         sanity.assign_radii()
-        if normal in [0,1,2]:
+        if normal in [0, 1, 2]:
             self.normal = normal
-        else:  
-            dirdict = {'x': 0, 'y': 1, 'z': 2, 'X' : 0, 'Y' : 1, 'Z' : 2}
+        else:
+            dirdict = {'x': 0, 'y': 1, 'z': 2, 'X': 0, 'Y': 1, 'Z': 2}
             self.normal = dirdict[normal]
-        
+
         if self.symmetry == 'planar':
             if self.upper is None or self.lower is None:
-                raise RuntimeError('cannot initialize a planar surface'+ 
+                raise RuntimeError('cannot initialize a planar surface' +
                                    'without both the upper and lower groups')
             self._layers = [[self.upper], [self.lower]]
-            for uplow in [0,1]:
-                self.label_group( self._layers[uplow][0], beta=1., layer=1)
+            for uplow in [0, 1]:
+                self.label_group(self._layers[uplow][0], beta=1., layer=1)
             self.label_planar_sides()
             self._surfaces = np.empty(1, dtype=type(SurfaceFlatInterface))
-            self._surfaces[0] = SurfaceFlatInterface(self, 
-                                    options={'layer': 0})
+            self._surfaces[0] = SurfaceFlatInterface(
+                self, options={'layer': 0})
 
         else:
             self._layers = [self.group]
-            self.label_group( self._layers[0], beta=1., layer=1)
+            self.label_group(self._layers[0], beta=1., layer=1)
             self._surfaces = np.empty(1, dtype=type(SurfaceGenericInterface))
             self._surfaces[0] = SurfaceGenericInterface(
-                    self, options={'layer': 0})
-        
+                self, options={'layer': 0})
+
     def _assign_layers(self):
         pass
+
+
 #

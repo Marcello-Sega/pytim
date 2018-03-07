@@ -182,7 +182,7 @@ class Profile(object):
             if self.distance_function is None:
                 pos = group.positions[::, self._dir]
             else:
-                pos = self.distance_function(group,self.kargs)
+                pos = self.distance_function(group, self.kargs)
         else:
             deltabin = 1 + (self._nbins - 1) // 2
             pos = IntrinsicDistance(
