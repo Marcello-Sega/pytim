@@ -212,7 +212,6 @@ J. Comp. Chem. 29, 945, 2008)*
 
         self.grid = None
         self.use_threads = False
-        self.use_kdtree = True
 
         PatchTrajectory(self.universe.trajectory, self)
 
@@ -232,15 +231,15 @@ J. Comp. Chem. 29, 945, 2008)*
         self.mesh_ny = n[1]
         self.mesh_dx = d[0]
         self.mesh_dy = d[1]
-        if (self.use_kdtree is True):
-            _x = np.linspace(0, box[0], num=self.mesh_nx, endpoint=False)
-            _y = np.linspace(0, box[1], num=self.mesh_ny, endpoint=False)
-            _X, _Y = np.meshgrid(_x, _y)
-            self.meshpoints = list(builtin_zip(_X.ravel(), _Y.ravel()))
-            # cKDTree requires a box vetor with length double the dimension,
-            _box = np.zeros(4)
-            _box[:2] = box[:2]
-            self.meshtree = cKDTree(self.meshpoints, boxsize=_box[:2])
+
+        _x = np.linspace(0, box[0], num=self.mesh_nx, endpoint=False)
+        _y = np.linspace(0, box[1], num=self.mesh_ny, endpoint=False)
+        _X, _Y = np.meshgrid(_x, _y)
+        self.meshpoints = np.array([ _X.ravel(), _Y.ravel()]).T
+        # cKDTree requires a box vetor with length double the dimension,
+        _box = np.zeros(4)
+        _box[:2] = box[:2]
+        self.meshtree = cKDTree(self.meshpoints, boxsize=_box[:2])
 
     def _touched_lines(self, atom, _x, _y, _z, _radius):
         return self.meshtree.query_ball_point([_x[atom], _y[atom]],
