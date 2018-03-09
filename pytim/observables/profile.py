@@ -189,7 +189,7 @@ class Profile(object):
 
             else:
                 rnd_accum = np.array(0)
-                size = 5 * len(group.universe.atoms)
+                size = 10 * len(group.universe.atoms)
                 rnd = np.random.random((size, 3))
                 rnd *= self.interface.universe.dimensions[:3]
                 rnd_pos = IntrinsicDistance(
@@ -242,18 +242,7 @@ class Profile(object):
             nbins += 1
 
         vals = self.sampled_values.copy()
-
-        if self.interface is not None:
-            _vol = self.sampled_rnd_values * np.average(self._totvol)
-            _vol /= np.sum(self.sampled_rnd_values)
-            deltabin = np.where(~np.isfinite(vals))[0]
-            vals[deltabin] = 0.0
-            vals[_vol > 0] /= _vol[_vol > 0]
-            vals[_vol <= 0] *= 0.0
-            vals[deltabin] = np.inf
-        else:
-            vals /= (np.average(self._totvol) / self._nbins)
-
+        vals /= (np.average(self._totvol) / self._nbins)
         vals /= self._counts
 
         avg, bins, _ = stats.binned_statistic(
@@ -262,6 +251,20 @@ class Profile(object):
             range=self._range,
             statistic='mean',
             bins=nbins)
+
+        if self.interface is not None:
+            _vol = self.sampled_rnd_values * self._nbins
+            _vol /= np.sum(self.sampled_rnd_values)
+            deltabin = np.where(~np.isfinite(vals))[0]
+            avgV, binsV, _ = stats.binned_statistic(
+                self.sampled_bins,
+                _vol,
+                range=self._range, 
+                statistic='mean',
+                bins=nbins)    
+            avg[avgV>0.0] /= avgV[avgV>0.0]
+            avg[avgV<=0.0] = 0.0
+
         return [bins[0:-1], bins[1:], avg]
 
     @staticmethod
@@ -291,7 +294,7 @@ class Profile(object):
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=0.5)[2]
         >>> print(vals[len(vals)//2-3:len(vals)//2+3])
-        [0.02866114 0.0335671  0.01859101        inf 0.         0.        ]
+        [0.07134825 0.04204617 0.02790814        inf 0.         0.        ]
 
         >>> sv = prof.sampled_values
 
@@ -327,7 +330,7 @@ class Profile(object):
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=1.0)[2]
         >>> print(vals[len(vals)//2-4:len(vals)//2+2])
-        [0.0674883  0.05689783 0.03296544 0.                inf 0.        ]
+        [0.09532977 0.09818532 0.05432869 0.                inf 0.        ]
 
         """
 
