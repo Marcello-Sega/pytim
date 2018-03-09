@@ -1,13 +1,6 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
-from abc import ABCMeta, abstractmethod
 import numpy as np
-from .properties import _create_property
-from .pdb import _writepdb
-from . import messages
-from . import utilities
-
-
 from .interface import Interface
 from .sanity_check import SanityCheck
 from .surface import SurfaceFlatInterface
