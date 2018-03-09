@@ -25,6 +25,7 @@
     GITIM
     WillardChandler
     ChaconTarazona
+    SimpleInterface
     observables
     datafiles
     utilities
