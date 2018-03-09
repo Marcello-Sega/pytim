@@ -235,7 +235,7 @@ J. Comp. Chem. 29, 945, 2008)*
         _x = np.linspace(0, box[0], num=self.mesh_nx, endpoint=False)
         _y = np.linspace(0, box[1], num=self.mesh_ny, endpoint=False)
         _X, _Y = np.meshgrid(_x, _y)
-        self.meshpoints = np.array([ _X.ravel(), _Y.ravel()]).T
+        self.meshpoints = np.array([_X.ravel(), _Y.ravel()]).T
         # cKDTree requires a box vetor with length double the dimension,
         _box = np.zeros(4)
         _box[:2] = box[:2]
