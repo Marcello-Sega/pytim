@@ -108,7 +108,10 @@ class SimpleInterface(Interface):
             if self.upper is None or self.lower is None:
                 raise RuntimeError('cannot initialize a planar surface' +
                                    'without both the upper and lower groups')
-            self._layers = [[self.upper], [self.lower]]
+            self._layers = np.empty(
+                [2, 1], dtype=self.universe.atoms[0].__class__)
+            self._layers[0, 0] = self.upper
+            self._layers[1, 0] = self.lower
             for uplow in [0, 1]:
                 self.label_group(self._layers[uplow][0], beta=1., layer=1)
             self.label_planar_sides()
@@ -117,7 +120,9 @@ class SimpleInterface(Interface):
                 self, options={'layer': 0})
 
         else:
-            self._layers = [self.group]
+            self._layers = np.empty(
+                [1, 1], dtype=self.universe.atoms[0].__class__)
+            self._layers[0, 0] = self.group
             self.label_group(self._layers[0], beta=1., layer=1)
             self._surfaces = np.empty(1, dtype=type(SurfaceGenericInterface))
             self._surfaces[0] = SurfaceGenericInterface(
