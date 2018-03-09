@@ -71,6 +71,8 @@ class SimpleInterface(Interface):
         >>> print (av2[64:70])
         [0.04292889 0.04287077 0.04278019        inf 0.0447655  0.05189449]
 
+        .. _MDAnalysis: http://www.mdanalysis.org/
+
     """
 
     def __init__(self,
