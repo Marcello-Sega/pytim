@@ -6,18 +6,11 @@
 from __future__ import print_function
 import numpy as np
 from scipy.stats import gaussian_kde
+from scipy.spatial import cKDTree
 
 
 class gaussian_kde_pbc(gaussian_kde):
     # note that here "points" are those on the grid
-
-    @staticmethod
-    def search(p, grid, d):
-        cond = []
-        for n in [0, 1, 2]:
-            cond.append(np.logical_and(grid[n] > p[n] - d, grid[n] < p[n] + d))
-        condition = np.logical_and(cond[2], np.logical_and(cond[0], cond[1]))
-        return np.where(condition)
 
     def evaluate_pbc_fast(self, points):
         grid = points
@@ -25,28 +18,20 @@ class gaussian_kde_pbc(gaussian_kde):
         box = self.box
         d = self.sigma * 2.5
         results = np.zeros(grid.shape[1], dtype=float)
-        periodic = np.copy(pos)
-
-        for side, condition in enumerate([pos > box - d, pos < d]):
-            pos_ = pos.copy()
-            where = np.where(condition)
-            if side == 0:
-                pos_[where] -= box[where[1]]
-                periodic = np.copy(pos_[np.any(condition, axis=1)])
-            else:
-                pos_[where] += box[where[1]]
-                periodic = np.append(
-                    periodic, pos_[np.any(condition, axis=1)], axis=0)
-            periodic = np.append(pos, periodic, axis=0)
-
-        for p in periodic:
-            ind = self.search(p, grid, d)[0]
-
-            x = grid[0][ind] - p[0]
-            y = grid[1][ind] - p[1]
-            z = grid[2][ind] - p[2]
-            results[ind] += np.exp(-(x**2 + y**2 + z**2) / self.sigma**2 / 2.)
-
+        gridT = grid.T[:]
+        tree = cKDTree(gridT,boxsize=box)
+        # the indices of grid elements within distane d from each of the pos
+        scale  = 2.*self.sigma**2
+        indlist  = tree.query_ball_point(pos,d)
+        for n,ind in enumerate(indlist):
+            dr = gridT[ind,:] - pos[n]
+            cond = np.where(dr > box/2.)
+            dr [cond] -= box[cond[1]]
+            cond = np.where(dr < -box/2.)
+            dr [cond] += box[cond[1]]
+            dens = np.exp( - np.sum(dr*dr,axis=1) / scale )
+            results[ind] += dens
+        
         return results
 
     def evaluate_pbc(self, points):

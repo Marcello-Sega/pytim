@@ -22,9 +22,9 @@ def generate_grid_in_box(box, npoints, order='zxy'):
 
     """
 
-    x_ = np.linspace(0., box[0], npoints[0])
-    y_ = np.linspace(0., box[1], npoints[1])
-    z_ = np.linspace(0., box[2], npoints[2])
+    x_ = np.linspace(0., box[0]-box[0]/npoints[0], npoints[0])
+    y_ = np.linspace(0., box[1]-box[1]/npoints[1], npoints[1])
+    z_ = np.linspace(0., box[2]-box[2]/npoints[2], npoints[2])
     if order == 'zyx':
         z, y, x = np.meshgrid(z_, y_, x_, indexing='ij')
     else:
