@@ -13,7 +13,7 @@ from . import messages
 from . import utilities, vtk, cube, wavefront_obj
 from .sanity_check import SanityCheck
 
-from .Interface import Interface
+from .interface import Interface
 from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
 

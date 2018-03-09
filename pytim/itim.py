@@ -19,7 +19,7 @@ from . import utilities
 from .surface import SurfaceFlatInterface as Surface
 from .sanity_check import SanityCheck
 
-from .Interface import Interface
+from .interface import Interface
 from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
 
