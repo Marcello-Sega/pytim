@@ -39,6 +39,7 @@ The value of :py:obj:`atoms.layers` can be either -1 (atom not in any of the lay
     >>> g = u.select_atoms('name OW')
     >>> inter = pytim.ITIM(u,group=g,max_layers=3)
     >>> print np.unique(u.atoms.layers)
+    [-1  1  2  3]
 
 This property can be used to select a particular subset of atoms, e.g.
 
@@ -65,7 +66,7 @@ according to the cluster they belong when calling:
     >>> import numpy as np
     >>> u = mda.Universe(ILBENZENE_GRO)
     >>> g = u.select_atoms('resname LIG')
-    >>> inter = pytim.ITIM(u,group=g,cluster_cut=7.5,cluster_threshold_density='auto')
+    >>> inter = pytim.ITIM(u,group=g,cluster_cut=7.5,cluster_threshold_density='auto',normal=2)
     >>> np.sum(g.clusters==0)
     19200
     >>> np.sum(g.clusters==1)
