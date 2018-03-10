@@ -246,8 +246,7 @@ J. Comp. Chem. 29, 945, 2008)*
                                               _radius[atom] + self.alpha)
 
     def _append_layers(self, uplow, layer, layers):
-        inlayer_indices = np.flatnonzero(
-            self._seen[uplow] == layer + 1)
+        inlayer_indices = np.flatnonzero(self._seen[uplow] == layer + 1)
         inlayer_group = self.cluster_group[inlayer_indices]
 
         if self.molecular is True:
@@ -307,7 +306,7 @@ J. Comp. Chem. 29, 945, 2008)*
                 # 3) if all lines have been touched, create a group that
                 # includes all atoms in this layer
                 if np.sum(mask) == len(mask):
-                    self._append_layers(uplow,layer,layers)
+                    self._append_layers(uplow, layer, layers)
                     break
         if (queue is None):
             return layers
