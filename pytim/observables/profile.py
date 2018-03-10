@@ -265,6 +265,7 @@ class Profile(object):
                 bins=nbins)
             avg[avgV > 0.0] /= avgV[avgV > 0.0]
             avg[avgV <= 0.0] = 0.0
+            avg[deltabin] = np.inf
 
         return [bins[0:-1], bins[1:], avg]
 
