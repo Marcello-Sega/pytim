@@ -165,7 +165,6 @@ class Profile(object):
             r -= r[1] / 2.
         self._range = r
 
-
     def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
@@ -260,11 +259,11 @@ class Profile(object):
             avgV, binsV, _ = stats.binned_statistic(
                 self.sampled_bins,
                 _vol,
-                range=self._range, 
+                range=self._range,
                 statistic='mean',
-                bins=nbins)    
-            avg[avgV>0.0] /= avgV[avgV>0.0]
-            avg[avgV<=0.0] = 0.0
+                bins=nbins)
+            avg[avgV > 0.0] /= avgV[avgV > 0.0]
+            avg[avgV <= 0.0] = 0.0
 
         return [bins[0:-1], bins[1:], avg]
 
