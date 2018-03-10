@@ -157,7 +157,7 @@ class Profile(object):
         self._range = r
 
     def _determine_bins(self):
-        nbins = int((self._range[1]-self._range[0]) / self.binsize)
+        nbins = int((self._range[1] - self._range[0]) / self.binsize)
         # we need to make sure that the number of bins is odd, so that the
         # central one encompasses zero (to make the delta-function
         # contribution appear always in this bin)
