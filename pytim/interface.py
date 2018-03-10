@@ -298,7 +298,7 @@ class Interface(object):
                 raise ValueError(messages.CENTERING_FAILURE)
             _pos_group += shift
 
-            self._attempt_shift(group, _pos_group, direction, halfbox_shift,
+            Interface._attempt_shift(group, _pos_group, direction, halfbox_shift,
                                 _dir)
 
             histo, _ = np.histogram(
