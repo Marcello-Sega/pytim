@@ -245,6 +245,34 @@ J. Comp. Chem. 29, 945, 2008)*
         return self.meshtree.query_ball_point([_x[atom], _y[atom]],
                                               _radius[atom] + self.alpha)
 
+    def _append_layers(self, uplow, layer, layers):
+        inlayer_indices = np.flatnonzero(
+            self._seen[uplow] == layer + 1)
+        inlayer_group = self.cluster_group[inlayer_indices]
+
+        if self.molecular is True:
+            # we first select the (unique) residues corresponding
+            # to inlayer_group, and then we create  group of the
+            # atoms belonging to them, with
+            # inlayer_group.residues.atoms
+            inlayer_group = inlayer_group.residues.atoms
+
+            # now we need the indices within the cluster_group,
+            # of the atoms in the molecular layer group;
+            # NOTE that from MDAnalysis 0.16, .ids runs from 1->N
+            # (was 0->N-1 in 0.15), we use now .indices
+            indices = np.flatnonzero(
+                np.in1d(self.cluster_group.atoms.indices,
+                        inlayer_group.atoms.indices))
+            # and update the tagged, sorted atoms
+            self._seen[uplow][indices] = layer + 1
+
+        # one of the two layers (upper,lower) or both are empty
+        if not inlayer_group:
+            raise Exception(messages.EMPTY_LAYER)
+
+        layers.append(inlayer_group)
+
     def _assign_one_side(self,
                          uplow,
                          sorted_atoms,
@@ -253,7 +281,7 @@ J. Comp. Chem. 29, 945, 2008)*
                          _z,
                          _radius,
                          queue=None):
-        _layers = []
+        layers = []
         for layer in range(0, self.max_layers):
             # this mask tells which lines have been touched.
             mask = self.mask[uplow][layer]
@@ -270,50 +298,21 @@ J. Comp. Chem. 29, 945, 2008)*
                     # no new contact, let's move to the next atom
                     continue
 
-                # let's mark now:
-                # 1) the touched lines
+                # let's mark now:  1) the touched lines
                 mask[touched_lines] = 1
 
-                # 2) the sorted atom
-                # start counting from 1, 0 will be
+                # 2) the sorted atoms.
                 self._seen[uplow][atom] = layer + 1
 
                 # 3) if all lines have been touched, create a group that
                 # includes all atoms in this layer
-                # NOTE that checking len(mask[mask==0])==0 is slower.
                 if np.sum(mask) == len(mask):
-                    _inlayer_indices = np.flatnonzero(
-                        self._seen[uplow] == layer + 1)
-                    _inlayer_group = self.cluster_group[_inlayer_indices]
-
-                    if self.molecular is True:
-                        # we first select the (unique) residues corresponding
-                        # to _inlayer_group, and then we create  group of the
-                        # atoms belonging to them, with
-                        # _inlayer_group.residues.atoms
-                        _tmp = _inlayer_group.residues.atoms
-                        # and we copy it back to _inlayer_group
-                        _inlayer_group = _tmp
-                        # now we need the indices within the cluster_group,
-                        # of the atoms in the molecular layer group;
-                        # NOTE that from MDAnalysis 0.16, .ids runs from 1->N
-                        # (was 0->N-1 in 0.15), we use now .indices
-                        _indices = np.flatnonzero(
-                            np.in1d(self.cluster_group.atoms.indices,
-                                    _inlayer_group.atoms.indices))
-                        # and update the tagged, sorted atoms
-                        self._seen[uplow][_indices] = layer + 1
-
-                    # one of the two layers (upper,lower) or both are empty
-                    if not _inlayer_group:
-                        raise Exception(messages.EMPTY_LAYER)
-
-                    _layers.append(_inlayer_group)
+                    self._append_layers(uplow,layer,layers)
                     break
         if (queue is None):
-            return _layers
+            return layers
         else:
-            queue.put(_layers)
+            queue.put(layers)
 
     def _prepare_layers_assignment(self):
         self._assign_mesh()
