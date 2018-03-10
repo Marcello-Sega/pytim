@@ -33,4 +33,3 @@ class gaussian_kde_pbc(gaussian_kde):
             results[ind] += dens
 
         return results
-

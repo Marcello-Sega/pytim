@@ -25,7 +25,7 @@ class Writevtk(object):
         """ Save the particles n a vtk file named consecutively using the frame
             number.
         """
-        radii, types  = group.radii, group.types
+        radii, types = group.radii, group.types
         color = [(utilities.atoms_maps[element])['color'] for element in types]
         color = (np.array(color) / 256.).tolist()
         vtk.write_atomgroup(filename, group, color=color, radius=radii)
@@ -99,7 +99,7 @@ class Writevtk(object):
             >>> inter.writevtk.surface('surf.vtk',sequence=True) # surf.<n>.vtk
         """
         inter = self.interface
-        vertices, faces, normals  = list(inter.triangulated_surface[0:3])
+        vertices, faces, normals = list(inter.triangulated_surface[0:3])
         if sequence is True:
             filename = vtk.consecutive_filename(inter.universe, filename)
         vtk.write_triangulation(filename, vertices[::, ::-1], faces, normals)
@@ -202,7 +202,7 @@ class WillardChandler(Interface):
 
         if mesh <= 0:
             raise ValueError(messages.MESH_NEGATIVE)
-        self.mesh, self.spacing, self.ngrid, self.PDB  = mesh, None, None, {}
+        self.mesh, self.spacing, self.ngrid, self.PDB = mesh, None, None, {}
 
         sanity.assign_radii()
 
@@ -278,7 +278,7 @@ class WillardChandler(Interface):
         self.label_group(
             self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
         # we assign an empty group for consistency
-        self._layers, self.normal  = self.universe.atoms[:0], None
+        self._layers, self.normal = self.universe.atoms[:0], None
 
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])
