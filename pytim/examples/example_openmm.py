@@ -26,9 +26,9 @@ simulation.context.setPositions(pdb.positions)
 
 # just pass the openmm Simulation object to pytim
 inter = pytim.ITIM(simulation)
-print repr(inter.atoms)
+print(repr(inter.atoms))
 
 # the new interfacial atoms will be computed at the end
 # of the integration cycle
 simulation.step(10)
-print repr(inter.atoms)
+print(repr(inter.atoms))

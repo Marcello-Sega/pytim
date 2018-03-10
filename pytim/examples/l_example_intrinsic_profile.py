@@ -17,10 +17,8 @@ profile = observables.Profile(
     group=oxygens, observable=number, interface=interface)
 
 for t in u.trajectory[::]:
-    print t.frame,
     profile.sample()
 
-print ""
 
 low, up, avg = profile.get_values(binwidth=0.1)
 bins = (low + up) / 2.
@@ -46,10 +44,10 @@ try:
         plt.xlabel(r'$\xi/\AA$')
         plt.ylabel(r'$\rho  \AA^3$')
     except Exception:
-        print "not able to use latex"
+        print("not able to use latex")
 
     plt.savefig("intrinsic.pdf")
     print("Intrinsic profile saved in intrinsic.pdf")
     plt.show()
 except Exception:
-    print "this is not run for code coverage"
+    print("this is not run for code coverage")

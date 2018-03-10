@@ -15,7 +15,7 @@ number = observables.Number()
 profile = observables.Profile(group=g, observable=number, interface=inter)
 profile.sample()
 
-print inter.layers[:]
+print(inter.layers[:])
 low, up, avg = profile.get_values(binwidth=0.1)
 bins = (low + up) / 2.
 np.savetxt('intrdist.dat', list(zip(bins, avg)), fmt=['%.5f', '%e'])

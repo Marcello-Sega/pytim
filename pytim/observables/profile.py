@@ -147,12 +147,24 @@ class Profile(object):
     def _determine_range(self, box):
         if self._dir is None:
             if self._MCnorm:
-                r = np.max(box)
+                upper = np.max(box)
             else:
-                r = np.min(box)
-            return np.array([0., r])
+                upper = np.min(box)
+            r = np.array([0., upper])
         else:
-            return np.array([0., box[self._dir]])
+            r = np.array([0., box[self._dir]])
+
+        nbins = int(r[1] / self.binsize)
+        # we need to make sure that the number of bins is odd, so that the
+        # central one encompasses zero (to make the delta-function
+        # contribution appear always in this bin)
+        if (nbins % 2 > 0):
+            nbins += 1
+        self._nbins = nbins
+        if self.interface is not None:
+            r -= r[1] / 2.
+        self._range = r
+
 
     def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
@@ -160,20 +172,9 @@ class Profile(object):
         if not isinstance(group, AtomGroup):
             raise TypeError("The first argument passed to "
                             "Profile.sample() must be an AtomGroup.")
-
         box = group.universe.trajectory.ts.dimensions[:3]
         if self._range is None:
-            _range = self._determine_range(box)
-            nbins = int(_range[1] / self.binsize)
-            # we need to make sure that the number of bins is odd, so that the
-            # central one encompasses zero (to make the delta-function
-            # contribution appear always in this bin)
-            if (nbins % 2 > 0):
-                nbins += 1
-            self._nbins = nbins
-            if self.interface is not None:
-                _range -= _range[1] / 2.
-            self._range = _range
+            self._determine_range(box)
         v = np.prod(box)
         self._totvol.append(v)
 
