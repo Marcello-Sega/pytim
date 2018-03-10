@@ -256,7 +256,6 @@ class Profile(object):
         if self.interface is not None:
             _vol = self.sampled_rnd_values * self._nbins
             _vol /= np.sum(self.sampled_rnd_values)
-            deltabin = np.where(~np.isfinite(vals))[0]
             avgV, binsV, _ = stats.binned_statistic(
                 self.sampled_bins,
                 _vol,
@@ -265,7 +264,6 @@ class Profile(object):
                 bins=nbins)
             avg[avgV > 0.0] /= avgV[avgV > 0.0]
             avg[avgV <= 0.0] = 0.0
-            avg[deltabin] = np.inf
 
         return [bins[0:-1], bins[1:], avg]
 
