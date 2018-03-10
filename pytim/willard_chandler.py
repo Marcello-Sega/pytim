@@ -25,8 +25,7 @@ class Writevtk(object):
         """ Save the particles n a vtk file named consecutively using the frame
             number.
         """
-        radii = group.radii
-        types = group.types
+        radii, types  = group.radii, group.types
         color = [(utilities.atoms_maps[element])['color'] for element in types]
         color = (np.array(color) / 256.).tolist()
         vtk.write_atomgroup(filename, group, color=color, radius=radii)
@@ -100,9 +99,7 @@ class Writevtk(object):
             >>> inter.writevtk.surface('surf.vtk',sequence=True) # surf.<n>.vtk
         """
         inter = self.interface
-        vertices = inter.triangulated_surface[0]
-        faces = inter.triangulated_surface[1]
-        normals = inter.triangulated_surface[2]
+        vertices, faces, normals  = list(inter.triangulated_surface[0:3])
         if sequence is True:
             filename = vtk.consecutive_filename(inter.universe, filename)
         vtk.write_triangulation(filename, vertices[::, ::-1], faces, normals)
@@ -141,9 +138,6 @@ class WillardChandler(Interface):
                                   mixed interfaces
         :param bool centered:     Center the  :py:obj:`group`
         :param bool warnings:     Print warnings
-        :param bool fast:         Use a faster version with truncated
-                                  Gaussians (default: True)
-
 
         Example:
 
@@ -156,11 +150,6 @@ class WillardChandler(Interface):
         >>>
         >>> radii = pytim_data.vdwradii(G43A1_TOP)
         >>>
-        >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, fast=False)
-        >>> R, _, _, _ = pytim.utilities.fit_sphere(inter.triangulated_surface[0])
-        >>> print ("Radius={:.3f}".format(R))
-        Radius=19.984
-        >>> # the fast kernel gives a slightly (<0.1 Angstrom) different result
         >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, fast=True)
         >>> R, _, _, _ = pytim.utilities.fit_sphere(inter.triangulated_surface[0])
         >>> print ("Radius={:.3f}".format(R))
@@ -203,11 +192,9 @@ class WillardChandler(Interface):
                  centered=False,
                  warnings=False,
                  autoassign=True,
-                 fast=True,
                  **kargs):
 
-        self.autoassign = autoassign
-        self.do_center = centered
+        self.autoassign, self.do_center = autoassign, centered
         sanity = SanityCheck(self)
         sanity.assign_universe(
             universe, radii_dict=radii_dict, warnings=warnings)
@@ -215,18 +202,13 @@ class WillardChandler(Interface):
 
         if mesh <= 0:
             raise ValueError(messages.MESH_NEGATIVE)
-        self.mesh = mesh
-        self.spacing = None
-        self.ngrid = None
-        self.PDB = {}
+        self.mesh, self.spacing, self.ngrid, self.PDB  = mesh, None, None, {}
 
         sanity.assign_radii()
 
         sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
 
         self._assign_symmetry(symmetry)
-
-        self.fast = fast
 
         PatchTrajectory(self.universe.trajectory, self)
         self._assign_layers()
@@ -283,8 +265,7 @@ class WillardChandler(Interface):
             filename = wavefront_obj.consecutive_filename(
                 self.universe, filename)
 
-        vert = self.triangulated_surface[0]
-        surf = self.triangulated_surface[1]
+        vert, surf = list(self.triangulated_surface[0:2])
         wavefront_obj.write_file(filename, vert, surf)
 
     def _assign_layers(self):
@@ -297,9 +278,7 @@ class WillardChandler(Interface):
         self.label_group(
             self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
         # we assign an empty group for consistency
-        self._layers = self.universe.atoms[:0]
-
-        self.normal = None
+        self._layers, self.normal  = self.universe.atoms[:0], None
 
         # this can be used later to shift back to the original shift
         self.original_positions = np.copy(self.universe.atoms.positions[:])
@@ -316,16 +295,12 @@ class WillardChandler(Interface):
 
         ngrid, spacing = utilities.compute_compatible_mesh_params(
             self.mesh, box)
-        self.spacing = spacing
-        self.ngrid = ngrid
+        self.spacing, self.ngrid = spacing, ngrid
         grid = utilities.generate_grid_in_box(box, ngrid, order='zyx')
         kernel, _ = utilities.density_map(pos, grid, self.alpha, box)
 
-        if self.fast is True:
-            kernel.pos = pos.copy()
-            self.density_field = kernel.evaluate_pbc_fast(grid)
-        else:
-            self.density_field = kernel.evaluate_pbc(grid)
+        kernel.pos = pos.copy()
+        self.density_field = kernel.evaluate_pbc_fast(grid)
 
         # Thomas Lewiner, Helio Lopes, Antonio Wilson Vieira and Geovan
         # Tavares. Efficient implementation of Marching Cubes’ cases with
