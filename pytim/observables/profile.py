@@ -154,16 +154,18 @@ class Profile(object):
         else:
             r = np.array([0., box[self._dir]])
 
-        nbins = int(r[1] / self.binsize)
+        if self.interface is not None:
+            r -= r[1] / 2.
+        self._range = r
+
+    def _determine_bins(self):
+        nbins = int((self._range[1]-self._range[0]) / self.binsize)
         # we need to make sure that the number of bins is odd, so that the
         # central one encompasses zero (to make the delta-function
         # contribution appear always in this bin)
         if (nbins % 2 > 0):
             nbins += 1
         self._nbins = nbins
-        if self.interface is not None:
-            r -= r[1] / 2.
-        self._range = r
 
     def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
@@ -174,6 +176,7 @@ class Profile(object):
         box = group.universe.trajectory.ts.dimensions[:3]
         if self._range is None:
             self._determine_range(box)
+            self._determine_bins()
         v = np.prod(box)
         self._totvol.append(v)
 
