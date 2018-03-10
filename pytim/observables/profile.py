@@ -145,13 +145,11 @@ class Profile(object):
         self._totvol = []
 
     def _determine_range(self, box):
-        if self._dir is None:
-            if self._MCnorm:
-                upper = np.max(box)
-            else:
-                upper = np.min(box)
+        upper = np.min(box)
+        if self._MCnorm:
+            upper = np.max(box)
             r = np.array([0., upper])
-        else:
+        if self._dir is not None:
             r = np.array([0., box[self._dir]])
 
         if self.interface is not None:
