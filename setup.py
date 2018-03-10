@@ -125,7 +125,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        'MDAnalysis>=0.16', 'PyWavelets>=0.5.2', 'numpy>=1.14.0', 'scipy>=1.0',
+        'MDAnalysis>=0.17', 'PyWavelets>=0.5.2', 'numpy>=1.14.0', 'scipy>=1.0',
         'scikit-image>=0.13.0', 'cython>=0.24.1', 'sphinx>=1.4.3',
         'matplotlib', 'pytest'
     ],
