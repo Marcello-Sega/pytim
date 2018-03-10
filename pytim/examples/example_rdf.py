@@ -28,6 +28,6 @@ for ts in u.trajectory[::sampling_frequency]:
 
 rdf.rdf[0] = 0.0
 np.savetxt('RDF.dat', np.column_stack((rdf.bins, rdf.rdf)))
-print 'RDF saved to RDF.dat'
+print('RDF saved to RDF.dat')
 if sampling_frequency > 1:
-    print 'set sampling_frequency  = 1 in order to sample each frame in the trajectory'
+    print('set sampling_frequency  = 1 in order to sample each frame in the trajectory')

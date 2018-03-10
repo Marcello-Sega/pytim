@@ -10,6 +10,6 @@ u = mda.Universe(WATER_GRO)
 #radii = pytim_data.vdwradii(G43A1_TOP)
 interface = pytim.ITIM(u, alpha=2., max_layers=4, molecular=True)
 layer = interface.layers[0, 0]  # first layer, upper side
-print repr(interface.layers[0, 0])
+print(repr(interface.layers[0, 0]))
 
 interface.writepdb('layers.pdb', centered=False)

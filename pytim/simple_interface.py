@@ -69,7 +69,7 @@ class SimpleInterface(Interface):
         >>> lo,up,av2 = profile2.get_values(binwidth=.5)
         >>> np.set_printoptions(8)
         >>> print (av2[64:70])
-        [0.04292889 0.04287077 0.04278019        inf 0.0447655  0.05189449]
+        [0.04159977 0.04035566 0.04028829        inf 0.04518664 0.05085284]
 
         .. _MDAnalysis: http://www.mdanalysis.org/
 

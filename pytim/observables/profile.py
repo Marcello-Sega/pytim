@@ -145,14 +145,25 @@ class Profile(object):
         self._totvol = []
 
     def _determine_range(self, box):
-        if self._dir is None:
-            if self._MCnorm:
-                r = np.max(box)
-            else:
-                r = np.min(box)
-            return np.array([0., r])
-        else:
-            return np.array([0., box[self._dir]])
+        upper = np.min(box)
+        if self._MCnorm:
+            upper = np.max(box)
+            r = np.array([0., upper])
+        if self._dir is not None:
+            r = np.array([0., box[self._dir]])
+
+        if self.interface is not None:
+            r -= r[1] / 2.
+        self._range = r
+
+    def _determine_bins(self):
+        nbins = int((self._range[1] - self._range[0]) / self.binsize)
+        # we need to make sure that the number of bins is odd, so that the
+        # central one encompasses zero (to make the delta-function
+        # contribution appear always in this bin)
+        if (nbins % 2 > 0):
+            nbins += 1
+        self._nbins = nbins
 
     def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
@@ -160,20 +171,10 @@ class Profile(object):
         if not isinstance(group, AtomGroup):
             raise TypeError("The first argument passed to "
                             "Profile.sample() must be an AtomGroup.")
-
         box = group.universe.trajectory.ts.dimensions[:3]
         if self._range is None:
-            _range = self._determine_range(box)
-            nbins = int(_range[1] / self.binsize)
-            # we need to make sure that the number of bins is odd, so that the
-            # central one encompasses zero (to make the delta-function
-            # contribution appear always in this bin)
-            if (nbins % 2 > 0):
-                nbins += 1
-            self._nbins = nbins
-            if self.interface is not None:
-                _range -= _range[1] / 2.
-            self._range = _range
+            self._determine_range(box)
+            self._determine_bins()
         v = np.prod(box)
         self._totvol.append(v)
 
@@ -189,7 +190,7 @@ class Profile(object):
 
             else:
                 rnd_accum = np.array(0)
-                size = 5 * len(group.universe.atoms)
+                size = 10 * len(group.universe.atoms)
                 rnd = np.random.random((size, 3))
                 rnd *= self.interface.universe.dimensions[:3]
                 rnd_pos = IntrinsicDistance(
@@ -242,18 +243,7 @@ class Profile(object):
             nbins += 1
 
         vals = self.sampled_values.copy()
-
-        if self.interface is not None:
-            _vol = self.sampled_rnd_values * np.average(self._totvol)
-            _vol /= np.sum(self.sampled_rnd_values)
-            deltabin = np.where(~np.isfinite(vals))[0]
-            vals[deltabin] = 0.0
-            vals[_vol > 0] /= _vol[_vol > 0]
-            vals[_vol <= 0] *= 0.0
-            vals[deltabin] = np.inf
-        else:
-            vals /= (np.average(self._totvol) / self._nbins)
-
+        vals /= (np.average(self._totvol) / self._nbins)
         vals /= self._counts
 
         avg, bins, _ = stats.binned_statistic(
@@ -262,6 +252,19 @@ class Profile(object):
             range=self._range,
             statistic='mean',
             bins=nbins)
+
+        if self.interface is not None:
+            _vol = self.sampled_rnd_values * self._nbins
+            _vol /= np.sum(self.sampled_rnd_values)
+            avgV, binsV, _ = stats.binned_statistic(
+                self.sampled_bins,
+                _vol,
+                range=self._range,
+                statistic='mean',
+                bins=nbins)
+            avg[avgV > 0.0] /= avgV[avgV > 0.0]
+            avg[avgV <= 0.0] = 0.0
+
         return [bins[0:-1], bins[1:], avg]
 
     @staticmethod
@@ -291,7 +294,7 @@ class Profile(object):
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=0.5)[2]
         >>> print(vals[len(vals)//2-3:len(vals)//2+3])
-        [0.02866114 0.0335671  0.01859101        inf 0.         0.        ]
+        [0.07134825 0.04204617 0.02790814        inf 0.         0.        ]
 
         >>> sv = prof.sampled_values
 
@@ -327,7 +330,7 @@ class Profile(object):
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=1.0)[2]
         >>> print(vals[len(vals)//2-4:len(vals)//2+2])
-        [0.0674883  0.05689783 0.03296544 0.                inf 0.        ]
+        [0.09532977 0.09818532 0.05432869 0.                inf 0.        ]
 
         """
 

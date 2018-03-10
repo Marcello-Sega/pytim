@@ -12,6 +12,6 @@ interface = pytim.GITIM(u, group=g, molecular=True, symmetry='planar',
                         alpha=2.5, cluster_cut=3.5, cluster_threshold_density='auto')
 
 layers = interface.layers[:]
-print repr(layers)
+print(repr(layers))
 
 interface.writepdb('gitim_flat.pdb', centered='middle')

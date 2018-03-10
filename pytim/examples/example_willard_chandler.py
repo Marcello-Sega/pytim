@@ -20,4 +20,4 @@ interface.writeobj('surface.obj')  # isodensity surface in wavefront obj format
 interface.writevtk.surface('surface.vtk')  # isodensity surface in vtk format
 
 R, _, _, _ = pytim.utilities.fit_sphere(interface.triangulated_surface[0])
-print "Radius={:.3f}".format(R)
+print("Radius={:.3f}".format(R))
