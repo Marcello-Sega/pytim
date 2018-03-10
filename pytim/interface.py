@@ -220,6 +220,27 @@ class Interface(object):
             self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
 
     @staticmethod
+    def _attempt_shift(group, _pos_group, direction, halfbox_shift, _dir):
+        if _dir == 'x':
+            utilities.centerbox(
+                group.universe,
+                x=_pos_group,
+                center_direction=direction,
+                halfbox_shift=halfbox_shift)
+        if _dir == 'y':
+            utilities.centerbox(
+                group.universe,
+                y=_pos_group,
+                center_direction=direction,
+                halfbox_shift=halfbox_shift)
+        if _dir == 'z':
+            utilities.centerbox(
+                group.universe,
+                z=_pos_group,
+                center_direction=direction,
+                halfbox_shift=halfbox_shift)
+
+    @staticmethod
     def _center(group, direction, halfbox_shift=False):
         """
         Centers the liquid slab in the simulation box.
@@ -276,24 +297,10 @@ class Interface(object):
             if total_shift >= dim[direction]:
                 raise ValueError(messages.CENTERING_FAILURE)
             _pos_group += shift
-            if _dir == 'x':
-                utilities.centerbox(
-                    group.universe,
-                    x=_pos_group,
-                    center_direction=direction,
-                    halfbox_shift=halfbox_shift)
-            if _dir == 'y':
-                utilities.centerbox(
-                    group.universe,
-                    y=_pos_group,
-                    center_direction=direction,
-                    halfbox_shift=halfbox_shift)
-            if _dir == 'z':
-                utilities.centerbox(
-                    group.universe,
-                    z=_pos_group,
-                    center_direction=direction,
-                    halfbox_shift=halfbox_shift)
+
+            self._attempt_shift(group, _pos_group, direction, halfbox_shift,
+                _dir)
+
             histo, _ = np.histogram(
                 _pos_group, bins=10, range=_range, density=True)
 
