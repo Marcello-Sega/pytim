@@ -24,7 +24,7 @@ msg = 'The total triangulated surface has an area of {:04.1f} Angstrom^2'
 print(msg.format(stats[0]))
 
 if use_matplotlib == False:
-    print "set use_matplotlib = True to display the triangulated surface"
+    print("set use_matplotlib = True to display the triangulated surface")
 
 if use_matplotlib:
     # plot the triangulation using matplotlib
@@ -58,7 +58,7 @@ if use_matplotlib:
         ax.set_ylabel(r'$y/\AA$')
         ax.set_zlabel(r'$z/\AA$')
     except Exception:
-        print "not able to use latex"
+        print("not able to use latex")
 
     # save to pdf and visualize interactively
     plt.savefig("surfaces.pdf")
