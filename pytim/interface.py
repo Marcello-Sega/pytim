@@ -299,7 +299,7 @@ class Interface(object):
             _pos_group += shift
 
             self._attempt_shift(group, _pos_group, direction, halfbox_shift,
-                _dir)
+                                _dir)
 
             histo, _ = np.histogram(
                 _pos_group, bins=10, range=_range, density=True)
