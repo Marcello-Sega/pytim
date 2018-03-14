@@ -8,3 +8,8 @@ from .willard_chandler import WillardChandler
 from .chacon_tarazona import ChaconTarazona
 from . import observables, utilities, datafiles
 from .version import __version__
+
+import warnings
+warnings.filterwarnings(
+    "ignore",
+    'Failed to guess the mass for the following*')  # To ignore warnings in MDA
