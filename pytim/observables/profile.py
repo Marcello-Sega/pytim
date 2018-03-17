@@ -30,12 +30,11 @@ class Profile(object):
                                     if provided.
     :param bool       MCnorm:       if True (default) use a simple Monte Carlo
                                     estimate the effective volumes of the bins.
-                                    
+
     :Keyword Arguments:
         * MCpoints (int) --
           number of points used for MC normalization (default, 10x the number
           of atoms in the universe)
-        
 
     Example (non-intrinsic, total profile + first 4 layers ):
 
