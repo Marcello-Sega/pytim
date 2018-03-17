@@ -12,7 +12,7 @@ from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
 
 class Profile(object):
-    """Calculates the profile (normal, or intrinsic) of a given observable
+    r"""Calculates the profile (normal, or intrinsic) of a given observable
     across the simulation box.
 
     :param Observable observable:   :class:`Number <pytim.observables.Number>`,
@@ -30,6 +30,11 @@ class Profile(object):
                                     if provided.
     :param bool       MCnorm:       if True (default) use a simple Monte Carlo
                                     estimate the effective volumes of the bins.
+
+    :Keyword Arguments:
+        * MCpoints (int) --
+          number of points used for MC normalization (default, 10x the number
+          of atoms in the universe)
 
     Example (non-intrinsic, total profile + first 4 layers ):
 
@@ -190,7 +195,12 @@ class Profile(object):
 
             else:
                 rnd_accum = np.array(0)
-                size = 10 * len(group.universe.atoms)
+                try:
+                    size = kargs['MCpoints']
+                except:
+                    # assume atomic volumes of ~ 30 A^3 and sample 
+                    # 10 points per atomic volue as a rule of thumb
+                    size = np.prod(box) / 3.
                 rnd = np.random.random((size, 3))
                 rnd *= self.interface.universe.dimensions[:3]
                 rnd_pos = IntrinsicDistance(
