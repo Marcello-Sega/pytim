@@ -7,10 +7,8 @@ from pytim.datafiles import *
 u = mda.Universe(MICELLE_PDB)
 g = u.select_atoms('resname DPC')
 
-radii = pytim_data.vdwradii(G43A1_TOP)
-
 interface = pytim.GITIM(u, group=g, molecular=False,
-                        symmetry='spherical', alpha=2.5,)
+                        symmetry='spherical', alpha=2.0,)
 
 layer = interface.layers[0]
 
