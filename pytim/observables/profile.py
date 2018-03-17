@@ -198,7 +198,9 @@ class Profile(object):
                 try:
                     size = kargs['MCpoints']
                 except:
-                    size = 10 * len(group.universe.atoms)
+                    # assume atomic volumes of ~ 30 A^3 and sample 
+                    # 10 points per atomic volue as a rule of thumb
+                    size = np.prod(box) / 3.
                 rnd = np.random.random((size, 3))
                 rnd *= self.interface.universe.dimensions[:3]
                 rnd_pos = IntrinsicDistance(
