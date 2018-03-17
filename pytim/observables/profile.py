@@ -30,6 +30,8 @@ class Profile(object):
                                     if provided.
     :param bool       MCnorm:       if True (default) use a simple Monte Carlo
                                     estimate the effective volumes of the bins.
+    :param int        npoints:      number of Monte Carlo sampling points
+                                    (default: 10x the number of atoms in the universe)
 
     Example (non-intrinsic, total profile + first 4 layers ):
 
@@ -114,6 +116,7 @@ class Profile(object):
                  interface=None,
                  symmetry='default',
                  MCnorm=True,
+                 npoints=None,
                  **kargs):
 
         _dir = {'x': 0, 'y': 1, 'z': 2}
@@ -126,6 +129,7 @@ class Profile(object):
             self._dir = _dir[direction]
         self.interface = interface
         self._MCnorm = MCnorm
+        self.npoints = npoints
         self.kargs = kargs
         if symmetry == 'default' and interface is not None:
             self.symmetry = self.interface.symmetry
@@ -190,7 +194,9 @@ class Profile(object):
 
             else:
                 rnd_accum = np.array(0)
-                size = 10 * len(group.universe.atoms)
+                if self.npoints is None:
+                    self.npoints = 10 * len(group.universe.atoms)
+                size = self.npoints
                 rnd = np.random.random((size, 3))
                 rnd *= self.interface.universe.dimensions[:3]
                 rnd_pos = IntrinsicDistance(
