@@ -182,8 +182,8 @@ J. Chem. Phys. 138, 044110, 2013)*
 
     def alpha_shape(self, alpha, group, layer):
         box = self.universe.dimensions[:3]
-        delta = np.array([ self._buffer_factor * self.alpha ] * 3)
-        delta = np.min([delta,box/2.],axis=0)
+        delta = np.array([self._buffer_factor * self.alpha] * 3)
+        delta = np.min([delta, box / 2.], axis=0)
 
         points = group.positions[:]
         nrealpoints = len(points)
@@ -206,7 +206,7 @@ J. Chem. Phys. 138, 044110, 2013)*
             for dim, vertex in enumerate(cube_vertices):
                 # added to prevent coplanar points
                 cond = np.where(vertex < 0.5)[0]
-                vertex = vertex * box + 2*delta + gitter[dim]
+                vertex = vertex * box + 2 * delta + gitter[dim]
                 vertex[cond] -= 4 * delta[cond]
                 vertex = np.reshape(vertex, (1, 3))
                 extrapoints = np.append(extrapoints, vertex, axis=0)
@@ -231,14 +231,13 @@ J. Chem. Phys. 138, 044110, 2013)*
         except IndexError:
             raise IndexError("alpha_shape called using a wrong layer")
 
-
         np.random.set_state(state)
 
         cr = circumradius(_points, radii, simplices)
         # we filter first according to the touching sphere radius
         a_shape = simplices[cr >= self.alpha]
         # then we remove all simplices involving the 8 outer points, if any
-        cond = np.where(np.all(a_shape<len(_points)-n_cube,axis=1))[0]
+        cond = np.where(np.all(a_shape < len(_points) - n_cube, axis=1))[0]
         a_shape = a_shape[np.unique(cond)]
         # finally, we select only the ids of atoms in the basic cell.
         return np.unique(a_shape[np.where(a_shape < nrealpoints)])
@@ -356,4 +355,6 @@ J. Chem. Phys. 138, 044110, 2013)*
 
 
         """
+
+
 #
