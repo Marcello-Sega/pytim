@@ -90,13 +90,12 @@ class Profile(object):
     >>> from   pytim.observables import Profile
 
     >>> u = mda.Universe(LJ_GRO,LJ_SHORT_XTC)
-    >>> g = u.select_atoms('all')
     >>>
     >>> inter = pytim.ITIM(u,alpha=2.5,cluster_cut=4.5)
     >>> profile = Profile(interface=inter)
     >>>
     >>> for ts in u.trajectory:
-    ...     profile.sample(g)
+    ...     profile.sample(u.atoms)
     >>>
     >>> low, up, avg = profile.get_values(binwidth=0.5)
     >>> np.savetxt('profile.dat',list(zip(low,up,avg)))
@@ -200,7 +199,10 @@ class Profile(object):
                 except:
                     # assume atomic volumes of ~ 30 A^3 and sample 
                     # 10 points per atomic volue as a rule of thumb
-                    size = np.prod(box) / 3.
+                    size1 = int(np.prod(box) / 3.)
+                    # just in case 'unphysical' densities are used:
+                    size2 = 10 * len(group.universe.atoms)
+                    size = np.max([size1,size2])
                 rnd = np.random.random((size, 3))
                 rnd *= self.interface.universe.dimensions[:3]
                 rnd_pos = IntrinsicDistance(
@@ -304,7 +306,8 @@ class Profile(object):
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=0.5)[2]
         >>> print(vals[len(vals)//2-3:len(vals)//2+3])
-        [0.07134825 0.04204617 0.02790814        inf 0.         0.        ]
+        [0.07313351 0.04282756 0.02791797        inf 0.         0.        ]
+
 
         >>> sv = prof.sampled_values
 
@@ -340,7 +343,8 @@ class Profile(object):
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=1.0)[2]
         >>> print(vals[len(vals)//2-4:len(vals)//2+2])
-        [0.09532977 0.09818532 0.05432869 0.                inf 0.        ]
+        [0.09554818 0.09796541 0.05555127 0.                inf 0.        ]
+
 
         """
 
