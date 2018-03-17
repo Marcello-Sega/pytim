@@ -75,11 +75,11 @@ J. Chem. Phys. 138, 044110, 2013)*
         >>> u = mda.Universe(MICELLE_PDB)
         >>> g = u.select_atoms('resname DPC')
         >>>
-        >>> interface =pytim.GITIM(u,group=g,molecular=False, alpha=2.5)
+        >>> interface =pytim.GITIM(u,group=g,molecular=False, alpha=2.0)
         >>> layer = interface.layers[0]
         >>> interface.writepdb('gitim.pdb',centered=False)
         >>> print (repr(layer))
-        <AtomGroup with 793 atoms>
+        <AtomGroup with 909 atoms>
 
 
         Successive layers can be identified with :mod:`~pytim.gitim.GITIM`
@@ -152,6 +152,10 @@ J. Chem. Phys. 138, 044110, 2013)*
         sanity.assign_radii()
 
         self._assign_symmetry(symmetry)
+        try:
+            self._buffer_factor = kargs['buffer_factor']
+        except:
+            self._buffer_factor = 3.5
 
         if (self.symmetry == 'planar'):
             sanity.assign_normal(normal)
@@ -176,23 +180,14 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         """
 
-    @staticmethod
-    def alpha_prefilter(triangulation, alpha):
-        t = triangulation
-        threshold = 2.0 * alpha
-        return t.simplices[np.array([
-            np.max(
-                distance.cdist(t.points[simplex], t.points[simplex],
-                               'euclidean')) >=
-            threshold + 2. * np.min(t.radii[simplex])
-            for simplex in t.simplices
-        ])]
-
     def alpha_shape(self, alpha, group, layer):
         box = self.universe.dimensions[:3]
-        delta = 2.1 * self.alpha + 1e-6
+        delta = np.array([self._buffer_factor * self.alpha] * 3)
+        delta = np.min([delta, box / 2.], axis=0)
+
         points = group.positions[:]
         nrealpoints = len(points)
+        state = np.random.get_state()
         np.random.seed(0)  # pseudo-random for reproducibility
         gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
         if self._noextrapoints is False:
@@ -207,13 +202,17 @@ J. Chem. Phys. 138, 044110, 2013)*
         ], [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], [1.0, 1.0, 0.0],
                                   [1.0, 1.0, 1.0]])
         if self._noextrapoints is False:
+            n_cube = 8
             for dim, vertex in enumerate(cube_vertices):
                 # added to prevent coplanar points
-                vertex = vertex * box + delta + gitter[dim]
-                vertex[vertex < box / 2.] -= 2 * delta
+                cond = np.where(vertex < 0.5)[0]
+                vertex = vertex * box + 2 * delta + gitter[dim]
+                vertex[cond] -= 4 * delta[cond]
                 vertex = np.reshape(vertex, (1, 3))
                 extrapoints = np.append(extrapoints, vertex, axis=0)
                 extraids = np.append(extraids, -1)
+        else:
+            n_cube = 0
         if layer == 0:
             self.triangulation = []
         self.triangulation.append(Delaunay(extrapoints))
@@ -224,22 +223,24 @@ J. Chem. Phys. 138, 044110, 2013)*
         triangulation.radii = np.append(group.radii[extraids[extraids >= 0]],
                                         np.zeros(8))
 
-        prefiltered = triangulation.simplices  # == skip prefiltering
+        simplices = triangulation.simplices
 
         try:
-            points = self.triangulation[layer].points
+            _points = self.triangulation[layer].points
             radii = self.triangulation[layer].radii
         except IndexError:
             raise IndexError("alpha_shape called using a wrong layer")
 
-        cr = circumradius(points, radii, prefiltered)
-        a_shape = prefiltered[cr >= self.alpha]
-        _ids = np.unique(a_shape.flatten())
-        # remove the indices corresponding to the 8 additional points, which
-        # have extraid==-1
-        ids = _ids[np.logical_and(_ids >= 0, _ids < nrealpoints)]
+        np.random.set_state(state)
 
-        return ids
+        cr = circumradius(_points, radii, simplices)
+        # we filter first according to the touching sphere radius
+        a_shape = simplices[cr >= self.alpha]
+        # then we remove all simplices involving the 8 outer points, if any
+        cond = np.where(np.all(a_shape < len(_points) - n_cube, axis=1))[0]
+        a_shape = a_shape[np.unique(cond)]
+        # finally, we select only the ids of atoms in the basic cell.
+        return np.unique(a_shape[np.where(a_shape < nrealpoints)])
 
     def _assign_layers(self):
         """Determine the GITIM layers."""
@@ -319,6 +320,41 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         """
         return self._layers
+
+    def _():
+        """ additional tests
+
+        >>> from circumradius import circumradius
+        >>> from scipy.spatial import Delaunay
+        >>> p = [0.,0,0,0,1,0,0,1,1,0,0,1,1,0,0,1,1,0,1,1,1,1,0,1]
+        >>> r = np.array(p).reshape(8,3)
+        >>> tri = Delaunay(r)
+        >>> radius = circumradius(r,np.ones(8)*0.5,tri.simplices)[0]
+        >>> print(np.isclose(radius, (np.sqrt(3)-1.)/2))
+        True
+
+        >>> import pytim
+        >>> import numpy as np
+        >>> from pytim.datafiles import _TEST_BCC_GRO
+        >>> import MDAnalysis as mda
+        >>> u= mda.Universe(_TEST_BCC_GRO)
+        >>> # we use a minimal system with one atom in the group
+        >>> # this will represent a cubic lattice, and test also PBCs
+        >>> u.atoms[0:1].positions = np.array([0., 0., 0.])
+        >>> u.dimensions = np.array([1., 1., 1., 90., 90., 90.])
+        >>> g = u.atoms[0:1]
+        >>> # the maximum value is (np.sqrt(3)-1.)/2)  ~=  0.366025403
+        >>> inter = pytim.GITIM(u,group=g,radii_dict={'A':0.5},alpha=0.3660254)
+        >>> print(repr(inter.atoms))
+        <AtomGroup with 1 atom>
+
+        >>> # with alpha > (np.sqrt(3)-1.)/2) no atom is found as surface one
+        >>> inter = pytim.GITIM(u,group=g,radii_dict={'A':0.5},alpha=0.3660255)
+        >>> print(repr(inter.atoms))
+        <AtomGroup with 0 atoms>
+
+
+        """
 
 
 #
