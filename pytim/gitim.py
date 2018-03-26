@@ -324,6 +324,7 @@ J. Chem. Phys. 138, 044110, 2013)*
     def _():
         """ additional tests
 
+        >>> import numpy as np
         >>> from circumradius import circumradius
         >>> from scipy.spatial import Delaunay
         >>> p = [0.,0,0,0,1,0,0,1,1,0,0,1,1,0,0,1,1,0,1,1,1,1,0,1]

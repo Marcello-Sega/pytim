@@ -145,6 +145,7 @@ class Interface(object):
             self.symmetry = symmetry
 
     def _define_cluster_group(self):
+        self.universe.atoms.pack_into_box()
         self.cluster_group = self.universe.atoms[:0]  # empty
         if (self.cluster_cut is not None):
             # we start by adding the atoms in the smaller clusters
