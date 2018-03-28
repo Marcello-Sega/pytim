@@ -16,6 +16,7 @@ from .sanity_check import SanityCheck
 from .interface import Interface
 from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
+
 class Writevtk(object):
     def __init__(self, interface):
         self.interface = interface
@@ -24,7 +25,7 @@ class Writevtk(object):
         """ Save the particles n a vtk file named consecutively using the frame
             number.
         """
-        radii, types, color  = group.radii, group.types, []
+        radii, types, color = group.radii, group.types, []
         for element in types:
             try:
                 c = (utilities.atoms_maps[element])['color']
