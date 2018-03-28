@@ -30,7 +30,7 @@ class Writevtk(object):
         for element in types:
             try:
                 c = (utilities.atoms_maps[element])['color']
-            except KeyError: # defaults to Carbon
+            except KeyError:  # defaults to Carbon
                 c = (utilities.atoms_maps['C'])['color']
             color.append(c)
         color = (np.array(color) / 256.).tolist()
@@ -109,6 +109,7 @@ class Writevtk(object):
         if sequence is True:
             filename = vtk.consecutive_filename(inter.universe, filename)
         vtk.write_triangulation(filename, vertices[::, ::-1], faces, normals)
+
 
 class WillardChandler(Interface):
     """ Identifies the dividing surface using the Willard-Chandler method

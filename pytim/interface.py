@@ -154,8 +154,8 @@ class Interface(object):
             if (self.extra_cluster_groups is not None):
                 for extra in self.extra_cluster_groups:
                     x_labels, x_counts, _ = utilities.do_cluster_analysis_dbscan(
-                        extra, cluster_cut,
-                        self.cluster_threshold_density, self.molecular)
+                        extra, cluster_cut, self.cluster_threshold_density,
+                        self.molecular)
                     x_labels = np.array(x_labels)
                     x_label_max = np.argmax(x_counts)
                     x_ids_other = np.where(x_labels != x_label_max)[0]
