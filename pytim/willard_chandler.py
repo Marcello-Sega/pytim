@@ -25,8 +25,13 @@ class Writevtk(object):
         """ Save the particles n a vtk file named consecutively using the frame
             number.
         """
-        radii, types = group.radii, group.types
-        color = [(utilities.atoms_maps[element])['color'] for element in types]
+        radii, types, color = group.radii, group.types, []
+        for element in types:
+            try:
+                c = (utilities.atoms_maps[element])['color']
+            except KeyError:  # defaults to Carbon
+                c = (utilities.atoms_maps['C'])['color']
+            color.append(c)
         color = (np.array(color) / 256.).tolist()
         vtk.write_atomgroup(filename, group, color=color, radius=radii)
 
@@ -103,9 +108,6 @@ class Writevtk(object):
         if sequence is True:
             filename = vtk.consecutive_filename(inter.universe, filename)
         vtk.write_triangulation(filename, vertices[::, ::-1], faces, normals)
-
-
-#
 
 
 class WillardChandler(Interface):
@@ -296,7 +298,7 @@ class WillardChandler(Interface):
         ngrid, spacing = utilities.compute_compatible_mesh_params(
             self.mesh, box)
         self.spacing, self.ngrid = spacing, ngrid
-        grid = utilities.generate_grid_in_box(box, ngrid, order='zyx')
+        grid = utilities.generate_grid_in_box(box, ngrid, order='xyz')
         kernel, _ = utilities.density_map(pos, grid, self.alpha, box)
 
         kernel.pos = pos.copy()
