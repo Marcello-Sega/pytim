@@ -148,12 +148,13 @@ class Interface(object):
         self.universe.atoms.pack_into_box()
         self.cluster_group = self.universe.atoms[:0]  # empty
         if (self.cluster_cut is not None):
+            cluster_cut = float(self.cluster_cut[0])
             # we start by adding the atoms in the smaller clusters
             # of the opposit phase, if extra_cluster_groups are provided
             if (self.extra_cluster_groups is not None):
                 for extra in self.extra_cluster_groups:
                     x_labels, x_counts, _ = utilities.do_cluster_analysis_dbscan(
-                        extra, self.cluster_cut[0],
+                        extra, cluster_cut,
                         self.cluster_threshold_density, self.molecular)
                     x_labels = np.array(x_labels)
                     x_label_max = np.argmax(x_counts)
@@ -168,7 +169,7 @@ class Interface(object):
             # self.cluster_group at this stage is composed of itim_group +
             # the smaller clusters of the other phase
             labels, counts, neighbors = utilities.do_cluster_analysis_dbscan(
-                self.cluster_group, self.cluster_cut[0],
+                self.cluster_group, cluster_cut,
                 self.cluster_threshold_density, self.molecular)
             labels = np.array(labels)
 

@@ -18,7 +18,7 @@ class gaussian_kde_pbc(gaussian_kde):
         box = self.box
         d = self.sigma * 2.5
         results = np.zeros(grid.shape[1], dtype=float)
-        gridT = grid.T[:]
+        gridT = grid[::-1].T[:]
         tree = cKDTree(gridT, boxsize=box)
         # the indices of grid elements within distane d from each of the pos
         scale = 2. * self.sigma**2

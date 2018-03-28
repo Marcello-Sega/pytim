@@ -203,7 +203,7 @@ class SanityCheck(object):
         if self.interface.itim_group is None:
             self.interface.itim_group = self.wrap_group(itim_group)
 
-        self.interface.cluster_cut = self.wrap_group(cluster_cut)
+        self.interface.cluster_cut = cluster_cut
 
         self.interface.extra_cluster_groups = extra_cluster_groups
 
