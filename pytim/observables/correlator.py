@@ -16,7 +16,7 @@ class Correlator(object):
     :param Observable observable: compute the autocorrelation of this observable.
                                   If the observable is None and the reference
                                   is not, the survival probability is computed.
-    :param bool normalize: normalize the correlation to 1 at t=0
+    :param bool normalize: normalize the correlation to 1 at :math:`t=0`
     :param AtomGroup reference: if the group passed to the sample() function
                                 changes its composition along the trajectory
                                 (such as a layer group), a reference group that
@@ -219,7 +219,7 @@ class Correlator(object):
 
             Note that the average of  the characteristic function
             :math:`h(t)` is done over all trajectories, including those
-            that start with h=0.
+            that start with :math:`h=0`.
             The correlation :math:`\\langle h(t)h(0) \\rangle` is divided
             by the average :math:`\\langle h \\rangle` computed over all
             trajectores that extend up to a time lag :math:`t`. The
