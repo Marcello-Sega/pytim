@@ -183,7 +183,8 @@ class Curvature(Observable):
             self.refgroup_warning = kwarg['warning']
         except:
             self.refgroup_warning = True
-        self.local_frame = LocalReferenceFrame(cutoff=self.cutoff,warning=self.refgroup_warning)
+        self.local_frame = LocalReferenceFrame(
+            cutoff=self.cutoff, warning=self.refgroup_warning)
 
     def compute(self, inp, kargs=None):
         # TODO write a version that does not depend on passing an AtomGroup
@@ -226,7 +227,7 @@ class Curvature(Observable):
         here we generate a paraboloid (x^2+y^2) and a hyperbolic paraboloid 
         (x^2-y^2) to check that the curvature code gives the right answers for 
         the Gaussian (4, -4) and mean (2, 0) curvatures 
-        
+
         >>> import pytim
         >>> x,y=np.mgrid[-5:5,-5:5.]/2.
         >>> p = np.array(zip(x.flatten(),y.flatten()))
