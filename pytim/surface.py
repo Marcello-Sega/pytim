@@ -47,7 +47,7 @@ class Surface(object):
         return utilities.extract_positions(inp)
 
     @abstractproperty
-    def distance(self, inp, *kargs):
+    def distance(self, inp, *args, **kargs):
         """ returns distance from the surface """
         positions = utilities.extract_positions(inp)
         distance_array = positions[::, 2]
@@ -256,7 +256,7 @@ class Surface(object):
 
 
 class SurfaceFlatInterface(Surface):
-    def distance(self, inp, *args):
+    def distance(self, inp, *args, **kargs):
         positions = utilities.extract_positions(inp)
         return self._distance_flat(positions)
 
