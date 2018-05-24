@@ -105,7 +105,7 @@ class Observable(object):
         This is a collection of basic tests to check
         that the observables are yelding the expected
         result.
-    
+
         >>> # OBSERVABLES TEST: 1
         >>> import MDAnalysis as mda
         >>> import pytim
@@ -116,12 +116,12 @@ class Observable(object):
         >>> u = mda.Universe(_TEST_ORIENTATION_GRO)
         >>> o = observables.Orientation(u,options='molecular')
         >>> np.set_printoptions(precision=3)
-    
+
         >>> print(o.compute(u.atoms).flatten())
         [ 1.     0.     0.     0.     1.     0.     0.    -0.707 -0.707]
-    
+
         >>> np.set_printoptions()
-    
+
         >>> # OBSERVABLES TEST: 2
         >>> u=mda.Universe(_TEST_PROFILE_GRO)
         >>> o=observables.Number()
@@ -132,7 +132,7 @@ class Observable(object):
         [0. 1. 2.]
         >>> print(avg[0:3])
         [0.01 0.02 0.03]
-    
+
         >>> # CORRELATOR TEST
         >>> from pytim.utilities import correlate
         >>> a = np.array([1.,0.,1.,0.,1.])
@@ -140,12 +140,12 @@ class Observable(object):
         >>> corr = correlate(b,a)
         >>> ['{:.2f}'.format(i) for i in corr]
         ['-0.00', '0.75', '0.00', '0.75', '0.00']
-    
-    
+
+
         >>> corr = correlate(b)
         >>> ['{:.2f}'.format(i) for i in corr]
         ['1.00', '0.00', '0.67', '-0.00', '0.00']
-    
+
         >>> # PROFILE EXTENDED TEST: checks trajectory averaging
         >>> # and consistency in summing up layers  contributions
         >>> import numpy as np
@@ -172,14 +172,14 @@ class Observable(object):
         >>> for L in Layers:
         ...     Val.append(L.get_values(binwidth=2.0)[2])
         >>>
-    
+
         >>> print (np.round(np.sum(np.array(Val[0]) * np.prod(u.dimensions[:3])) / len(Val[0]),decimals=0))
         4000.0
-    
+
         >>> # the sum of the layers' contribution is expected to add up only close
         >>> # to the surface
         >>> print (not np.sum(np.abs(np.sum(Val[1:],axis=0)[47:] - Val[0][47:])>1e-15))
         True
-    
+
         """
         pass

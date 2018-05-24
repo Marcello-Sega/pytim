@@ -9,7 +9,7 @@ from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 from .observable import Observable
 from .basic_observables import Position, Velocity, Force
 from .basic_observables import Number, Mass, Charge, NumberOfResidues
-from .local_frame import LocalReferenceFrame,Curvature
+from .local_frame import LocalReferenceFrame, Curvature
 
 from .intrinsic_distance import IntrinsicDistance
 from .profile import Profile

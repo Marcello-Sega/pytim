@@ -189,7 +189,7 @@ class Profile(object):
         else:
             deltabin = 1 + (self._nbins - 1) // 2
             pos = IntrinsicDistance(
-                self.interface, symmetry=self.symmetry,mode=self.mode).compute(group)
+                self.interface, symmetry=self.symmetry, mode=self.mode).compute(group)
 
             if self._MCnorm is False:
                 rnd_accum = np.ones(self._nbins)

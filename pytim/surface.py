@@ -176,7 +176,6 @@ class Surface(object):
                                                        reference_pos, box)
         return np.average(local_env, axis=1)
 
-
     def _distance_generic(self, inp, symmetry):
 
         inter = self.interface
@@ -298,7 +297,7 @@ class SurfaceFlatInterface(Surface):
 
 
 class SurfaceGenericInterface(Surface):
-    def distance(self, inp, *args,**kargs):
+    def distance(self, inp, *args, **kargs):
         symmetry = args[0]
         try:
             mode = kargs['mode']

@@ -34,7 +34,7 @@ class IntrinsicDistance(Observable):
 
     """
 
-    def __init__(self, interface, symmetry='default',mode='default'):
+    def __init__(self, interface, symmetry='default', mode='default'):
         Observable.__init__(self, interface.universe)
         self.interface = interface
         self.mode = mode
@@ -51,4 +51,4 @@ class IntrinsicDistance(Observable):
                                   of points
         """
         # see pytim/surface.py
-        return self.interface._surfaces[0].distance(inp, self.symmetry,mode=self.mode)
+        return self.interface._surfaces[0].distance(inp, self.symmetry, mode=self.mode)
