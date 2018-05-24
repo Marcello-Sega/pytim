@@ -17,6 +17,43 @@ class LocalReferenceFrame(Observable):
         S. O. Yesylevskyy and C. Ramsey, Phys.Chem.Chem.Phys., 2014, 16, 17052
         modified to include a guess for the surface normal direction 
 
+
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import WATER_GRO
+        >>> import numpy as np
+        >>> g=mda.Universe(WATER_GRO).select_atoms('name OW')
+        >>> inter = pytim.ITIM(g,molecular=False)
+        >>> frame = pytim.observables.LocalReferenceFrame().compute(g)
+        >>> print(frame)
+        [[[-0.33038264  0.74091275 -0.5847184 ]
+          [-0.93761874 -0.32868871  0.11329094]
+          [ 0.10825164 -0.58567229 -0.80328672]]
+        <BLANKLINE>
+         [[-0.98614017  0.16490351  0.01828644]
+          [-0.14614815 -0.81119166 -0.56622329]
+          [ 0.07853841  0.56104806 -0.82404902]]
+        <BLANKLINE>
+         [[-0.92181645 -0.28798001 -0.25946474]
+          [ 0.18238429 -0.91287521  0.36523256]
+          [ 0.3420386  -0.28935509 -0.89402641]]
+        <BLANKLINE>
+         ...
+        <BLANKLINE>
+         [[-0.7401371  -0.55769455  0.3757311 ]
+          [ 0.36940366  0.12969243  0.92017434]
+          [-0.56190569  0.81985161  0.11002423]]
+        <BLANKLINE>
+         [[-0.19825565 -0.72409255  0.66059419]
+          [ 0.64636999 -0.60323796 -0.46723634]
+          [-0.73681785 -0.33435601 -0.58762702]]
+        <BLANKLINE>
+         [[ 0.2682568  -0.33789274 -0.90214566]
+          [ 0.23393259 -0.88559102  0.40125315]
+          [-0.93451262 -0.31868015 -0.15852169]]]
+
     """
 
     def __init__(self, *arg, **kwarg):
@@ -25,9 +62,14 @@ class LocalReferenceFrame(Observable):
             self.cutoff = kwarg['cutoff']
         except:
             self.cutoff = 4.0
-        self.refgroup_warning = True
+        try:
+            self.refgroup_warning = kwarg['warning']
+        except:
+            self.refgroup_warning = True
 
     def remove_pbc(self, p, box):
+        if box is None:
+            return p
         cond = np.where(p - p[0] > box / 2.)
         p[cond] -= box[cond[1]]
         cond = np.where(p - p[0] < -box / 2.)
@@ -43,8 +85,12 @@ class LocalReferenceFrame(Observable):
                                    the normal vectors
         """
 
-        if not isinstance(inp, AtomGroup):
-            raise RuntimeError("This observable requires an atomgroup")
+        if isinstance(inp, AtomGroup):
+            box = inp.universe.dimensions[:3]
+            pos = inp.positions
+        if isinstance(inp, np.ndarray):
+            box = None
+            pos = inp
         try:
             refgroup = inp.universe.trajectory.interface.cluster_group
         except:
@@ -55,17 +101,16 @@ class LocalReferenceFrame(Observable):
                     print("Warning: without having a PYTIM interface or passing")
                     print("a refgroup, the surface normal will be meaningless")
                     self.refgroup_warning = False
-        self.tree = cKDTree(inp.positions, boxsize=inp.universe.dimensions[:3])
+        self.tree = cKDTree(pos, boxsize=box)
         self.patches = self.tree.query_ball_tree(self.tree, self.cutoff)
         try:
             self.reftree = cKDTree(
-                refgroup.positions, boxsize=inp.universe.dimensions[:3])
+                refgroup.positions, boxsize=box)
             self.refpatches = self.tree.query_ball_tree(
                 self.reftree, self.cutoff)
         except:
             pass
         local_coords = []
-        box = inp.universe.dimensions[:3]
         for i, patch in enumerate(self.patches):
             p = self.tree.data[patch].copy()
             p = self.remove_pbc(p, box)
@@ -111,6 +156,21 @@ class Curvature(Observable):
         :param float cutoff:  use particles within this range
                               to determine the local environment
 
+
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import WATER_GRO
+        >>> import numpy as np
+        >>> g=mda.Universe(WATER_GRO).select_atoms('name OW')
+        >>> inter = pytim.ITIM(g,molecular=False)
+        >>> gaussian_curv = pytim.observables.Curvature().compute(g)[:,0]
+        >>> print(gaussian_curv)
+        [-0.03757279 -0.17209243 -0.44452747 ... -0.0934606  -0.05947267
+          0.08940589]
+
+
     """
 
     def __init__(self, *arg, **kwarg):
@@ -119,7 +179,11 @@ class Curvature(Observable):
             self.cutoff = kwarg['cutoff']
         except:
             self.cutoff = 4.0
-        self.local_frame = LocalReferenceFrame(cutoff=self.cutoff)
+        try:
+            self.refgroup_warning = kwarg['warning']
+        except:
+            self.refgroup_warning = True
+        self.local_frame = LocalReferenceFrame(cutoff=self.cutoff,warning=self.refgroup_warning)
 
     def compute(self, inp, kargs=None):
         # TODO write a version that does not depend on passing an AtomGroup
@@ -130,12 +194,13 @@ class Curvature(Observable):
                                    and mean curvature for each of the atoms in
                                    the input group inp
         """
-        if not isinstance(inp, AtomGroup):
-            raise RuntimeError("This observable requires an atomgroup")
+        if isinstance(inp, AtomGroup):
+            box = inp.universe.dimensions[:3]
+        if isinstance(inp, np.ndarray):
+            box = None
         local_basis = self.local_frame.compute(inp)
         tree = self.local_frame.tree
         patches = self.local_frame.patches
-        box = inp.universe.dimensions[:3]
         GC, MC = [], []
         for i, patch in enumerate(patches):
             p = self.local_frame.tree.data[patch].copy()
@@ -154,3 +219,28 @@ class Curvature(Observable):
             GC.append((L * N - M**2) / (E * G - F**2))
             MC.append(0.5 * (E * N - 2 * F * M + G * L) / (E * G - F**2))
         return np.array(zip(GC, MC))
+
+    def _():
+        """ additional tests
+
+        here we generate a paraboloid (x^2+y^2) and a hyperbolic paraboloid 
+        (x^2-y^2) to check that the curvature code gives the right answers for 
+        the Gaussian (4, -4) and mean (2, 0) curvatures 
+        
+        >>> import pytim
+        >>> x,y=np.mgrid[-5:5,-5:5.]/2.
+        >>> p = np.array(zip(x.flatten(),y.flatten()))
+        >>> z1 = p[:,0]**2+p[:,1]**2
+        >>> z2 = p[:,0]**2-p[:,1]**2
+        >>> 
+        >>> for z in [z1, z2]:
+        ...     pp = np.array(zip(x.flatten()+5,y.flatten()+5,z))
+        ...     curv = pytim.observables.Curvature(cutoff=1.,warning=False).compute(pp)
+        ...     val =  (curv[np.logical_and(p[:,0]==0,p[:,1]==0)])
+        ...     print(np.array_str(val, precision=2, suppress_small=True))
+        [[4. 2.]]
+        [[-4. -0.]]
+
+
+        """
+#
