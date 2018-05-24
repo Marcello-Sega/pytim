@@ -117,6 +117,7 @@ class Profile(object):
                  observable=None,
                  interface=None,
                  symmetry='default',
+                 mode='default',
                  MCnorm=True,
                  **kargs):
 
@@ -128,6 +129,7 @@ class Profile(object):
                 self._dir = 2
         else:
             self._dir = _dir[direction]
+        self.mode = mode
         self.interface = interface
         self._MCnorm = MCnorm
         self.kargs = kargs
@@ -187,7 +189,7 @@ class Profile(object):
         else:
             deltabin = 1 + (self._nbins - 1) // 2
             pos = IntrinsicDistance(
-                self.interface, symmetry=self.symmetry).compute(group)
+                self.interface, symmetry=self.symmetry,mode=self.mode).compute(group)
 
             if self._MCnorm is False:
                 rnd_accum = np.ones(self._nbins)

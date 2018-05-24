@@ -6,6 +6,7 @@ from .properties import _create_property
 from .pdb import _writepdb
 from . import messages
 from . import utilities
+from scipy.spatial import cKDTree
 
 
 class Interface(object):
@@ -216,6 +217,21 @@ class Interface(object):
             self.cluster_group = self.itim_group
             self.label_group(self.itim_group, cluster=1)
             self.label_group(self.cluster_group, cluster=0)
+
+    def is_buried(self,pos):
+        """ Checks wether an array of positions are located below 
+            the first interfacial layer """
+        inter = self
+        box = inter.universe.dimensions[:3]
+        nonsurface = inter.cluster_group - inter.atoms[inter.atoms.layers == 1]
+        # there are no inner atoms, distance is always > 0
+        if len(nonsurface) == 0:
+            return np.asarray([True]*len(pos))
+        tree = cKDTree(nonsurface.positions, boxsize=box)
+        neighs = tree.query_ball_point(pos, inter.alpha)
+        condition = np.array([len(el) != 0 for el in neighs])
+        return condition
+
 
     def reset_labels(self):
         self.label_group(
