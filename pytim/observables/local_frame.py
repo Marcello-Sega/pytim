@@ -27,6 +27,7 @@ class LocalReferenceFrame(Observable):
         >>> g=mda.Universe(WATER_GRO).select_atoms('name OW')
         >>> inter = pytim.ITIM(g,molecular=False)
         >>> frame = pytim.observables.LocalReferenceFrame().compute(g)
+        >>> np.set_printoptions(precision=None,threshold=None,suppress=None)
         >>> print(frame)
         [[[-0.33038264  0.74091275 -0.5847184 ]
           [-0.93761874 -0.32868871  0.11329094]
@@ -165,7 +166,7 @@ class Curvature(Observable):
         >>> import numpy as np
         >>> g=mda.Universe(WATER_GRO).select_atoms('name OW')
         >>> inter = pytim.ITIM(g,molecular=False)
-        >>> gaussian_curv = pytim.observables.Curvature().compute(g)[:,0]
+        >>> curv = pytim.observables.Curvature().compute(g)
         >>> print(np.array_str((curv[:10,0]),precision=2,suppress_small=True))
         [-0.04 -0.17 -0.44 -0.15 -0.31  0.06  0.08 -0.22  0.08 -0.27]
 
@@ -237,9 +238,10 @@ class Curvature(Observable):
         ...     pp = np.array(zip(x.flatten()+5,y.flatten()+5,z))
         ...     curv = pytim.observables.Curvature(cutoff=1.,warning=False).compute(pp)
         ...     val =  (curv[np.logical_and(p[:,0]==0,p[:,1]==0)])
+        ...     # add and subtract 1e3 to be sure to have -0 -> 0
         ...     print(np.array_str((val+1e3)-1e3, precision=2, suppress_small=True))
         [[4. 2.]]
-        [[-4. 0.]]
+        [[-4.  0.]]
 
 
         """
