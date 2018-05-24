@@ -166,9 +166,8 @@ class Curvature(Observable):
         >>> g=mda.Universe(WATER_GRO).select_atoms('name OW')
         >>> inter = pytim.ITIM(g,molecular=False)
         >>> gaussian_curv = pytim.observables.Curvature().compute(g)[:,0]
-        >>> print(gaussian_curv)
-        [-0.03757279 -0.17209243 -0.44452747 ... -0.0934606  -0.05947267
-          0.08940589]
+        >>> print(np.array_str((curv[:10,0]),precision=2,suppress_small=True))
+        [-0.04 -0.17 -0.44 -0.15 -0.31  0.06  0.08 -0.22  0.08 -0.27]
 
 
     """
@@ -238,9 +237,9 @@ class Curvature(Observable):
         ...     pp = np.array(zip(x.flatten()+5,y.flatten()+5,z))
         ...     curv = pytim.observables.Curvature(cutoff=1.,warning=False).compute(pp)
         ...     val =  (curv[np.logical_and(p[:,0]==0,p[:,1]==0)])
-        ...     print(np.array_str(val, precision=2, suppress_small=True))
+        ...     print(np.array_str((val+1e3)-1e3, precision=2, suppress_small=True))
         [[4. 2.]]
-        [[-4. -0.]]
+        [[-4. 0.]]
 
 
         """
