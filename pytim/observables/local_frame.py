@@ -15,7 +15,7 @@ from .observable import Observable
 class LocalReferenceFrame(Observable):
     """ Compute the local surface using a definition based on that of
         S. O. Yesylevskyy and C. Ramsey, Phys.Chem.Chem.Phys., 2014, 16, 17052
-        modified to include a guess for the surface normal direction 
+        modified to include a guess for the surface normal direction
 
 
         Example:
@@ -78,6 +78,39 @@ class LocalReferenceFrame(Observable):
         p[cond] += box[cond[1]]
         return p
 
+    def _compute_local_coords(self, box):
+        local_coords = []
+        for i, patch in enumerate(self.patches):
+            p = self.tree.data[patch].copy()
+            p = self.remove_pbc(p, box)
+            cm = np.mean(p, axis=0)
+
+            try:
+                refp = self.reftree.data[self.refpatches[i]].copy()
+                refp = self.remove_pbc(refp, box)
+                # note that refp includes also surface atoms.
+                # here we try to remove their contribution.
+                if (len(refp) - len(p)):
+                    refcm = (np.sum(refp, axis=0) - np.sum(p, axis=0)
+                             ) / (len(refp) - len(p))
+                else:
+                    refcm = np.mean(refp)
+                dcm = cm - refcm
+            except AttributeError:
+                dcm = np.zeros(3)
+
+            dr = (p - cm)
+            # compute the 'inertia' tensor
+            I = -np.tensordot(dr[:], dr[:], axes=(0, 0)) + \
+                np.diag([np.sum(dr**2) / len(dr)] * 3)
+            U, S, V = np.linalg.svd(I)
+            z = np.argmin(S)
+            UU = np.roll(U, 2 - z, axis=-1).T
+            # flip normal if cm on the same side of normal
+            UU[2] *= ((np.dot(UU[2], dcm) <= 0) * 2. - 1.)
+            local_coords.append(UU.T)
+        return np.array(local_coords)
+
     def compute(self, inp, kargs=None):
         """ Compute the local reference frame
 
@@ -112,48 +145,19 @@ class LocalReferenceFrame(Observable):
                 self.reftree, self.cutoff)
         except:
             pass
-        local_coords = []
-        for i, patch in enumerate(self.patches):
-            p = self.tree.data[patch].copy()
-            p = self.remove_pbc(p, box)
-            cm = np.mean(p, axis=0)
 
-            try:
-                refp = self.reftree.data[self.refpatches[i]].copy()
-                refp = self.remove_pbc(refp, box)
-                # note that refp includes also surface atoms.
-                # here we try to remove their contribution.
-                if (len(refp) - len(p)):
-                    refcm = (np.sum(refp, axis=0) - np.sum(p, axis=0)
-                             ) / (len(refp) - len(p))
-                else:
-                    refcm = np.mean(refp)
-                dcm = cm - refcm
-            except AttributeError:
-                dcm = np.zeros(3)
-
-            dr = (p - cm)
-            # compute the 'inertia' tensor
-            I = -np.tensordot(dr[:], dr[:], axes=(0, 0)) + \
-                np.diag([np.sum(dr**2) / len(dr)] * 3)
-            U, S, V = np.linalg.svd(I)
-            z = np.argmin(S)
-            UU = np.roll(U, 2 - z, axis=-1).T
-            # flip normal if cm on the same side of normal
-            UU[2] *= ((np.dot(UU[2], dcm) <= 0) * 2. - 1.)
-            local_coords.append(UU.T)
-        return np.array(local_coords)
+        return self._compute_local_coords(box)
 
 
 class Curvature(Observable):
     """ Gaussian and mean curvature
 
         Compute the two curvatures in the local reference frame
-        defined using the particle distribution within a given 
+        defined using the particle distribution within a given
         cutoff. Note that the mean curvature is not necessarily
         meaningful, as the local normal is not well defined. The
         Gaussian curvature, instead, as an intrinsic property,
-        is well defined. 
+        is well defined.
 
         :param float cutoff:  use particles within this range
                               to determine the local environment
@@ -192,7 +196,7 @@ class Curvature(Observable):
         """ Compute the two curvatures
 
             :param AtomGroup inp:  the group of atoms that define the surface
-            :returns:              a (len(inp),2) array with the Gaussian 
+            :returns:              a (len(inp),2) array with the Gaussian
                                    and mean curvature for each of the atoms in
                                    the input group inp
         """
@@ -225,16 +229,16 @@ class Curvature(Observable):
     def _():
         """ additional tests
 
-        here we generate a paraboloid (x^2+y^2) and a hyperbolic paraboloid 
-        (x^2-y^2) to check that the curvature code gives the right answers for 
-        the Gaussian (4, -4) and mean (2, 0) curvatures 
+        here we generate a paraboloid (x^2+y^2) and a hyperbolic paraboloid
+        (x^2-y^2) to check that the curvature code gives the right answers for
+        the Gaussian (4, -4) and mean (2, 0) curvatures
 
         >>> import pytim
         >>> x,y=np.mgrid[-5:5,-5:5.]/2.
         >>> p = np.asarray(list(zip(x.flatten(),y.flatten())))
         >>> z1 = p[:,0]**2+p[:,1]**2
         >>> z2 = p[:,0]**2-p[:,1]**2
-        >>> 
+        >>>
         >>> for z in [z1, z2]:
         ...     pp = np.asarray(list(zip(x.flatten()+5,y.flatten()+5,z)))
         ...     curv = pytim.observables.Curvature(cutoff=1.,warning=False).compute(pp)
