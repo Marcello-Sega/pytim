@@ -268,8 +268,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         dbs = utilities.do_cluster_analysis_dbscan
         return alpha_group, dbs
 
-
-    def _assign_layers_postprocess(self,dbs,group,alpha_group,layer):
+    def _assign_layers_postprocess(self, dbs, group, alpha_group, layer):
         if self.biggest_cluster_only is True:
             # apply the same clustering algorith as set at init
             l, c, _ = dbs(
@@ -292,8 +291,6 @@ J. Chem. Phys. 138, 044110, 2013)*
             self._layers[layer], beta=1. * (layer + 1), layer=(layer + 1))
         return alpha_group
 
-
-
     def _assign_layers(self):
         """Determine the GITIM layers."""
 
@@ -305,7 +302,8 @@ J. Chem. Phys. 138, 044110, 2013)*
 
             group = alpha_group[alpha_ids]
 
-            alpha_group = self._assign_layers_postprocess(dbs,group,alpha_group,layer)
+            alpha_group = self._assign_layers_postprocess(
+                dbs, group, alpha_group, layer)
 
         # reset the interpolator
         self._interpolator = None

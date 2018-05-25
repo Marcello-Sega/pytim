@@ -171,7 +171,7 @@ class Profile(object):
             nbins += 1
         self._nbins = nbins
 
-    def _sample_random_distribution(self,group):
+    def _sample_random_distribution(self, group):
         box = group.universe.dimensions[:3]
         rnd_accum = np.array(0)
         try:
@@ -193,8 +193,7 @@ class Profile(object):
             range=self._range,
             statistic='sum',
             bins=self._nbins)
-        return rnd_accum,bins
-
+        return rnd_accum, bins
 
     def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
