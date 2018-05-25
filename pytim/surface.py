@@ -8,7 +8,7 @@ from scipy.spatial import Delaunay, cKDTree
 from scipy.interpolate import LinearNDInterpolator
 from . import utilities
 from . import messages
-from observables import LocalReferenceFrame as LocalReferenceFrame
+from .observables import LocalReferenceFrame as LocalReferenceFrame
 
 
 class Surface(object):

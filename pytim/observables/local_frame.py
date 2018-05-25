@@ -55,7 +55,7 @@ class LocalReferenceFrame(Observable):
           [ 0.233933 -0.885591  0.401253]
           [-0.934513 -0.31868  -0.158522]]]
 
-        >>> np.set_printoptions(precision=None,threshold=None,suppress=None)
+        >>> np.set_printoptions()
     """
 
     def __init__(self, *arg, **kwarg):
@@ -220,7 +220,7 @@ class Curvature(Observable):
             # Gaussian and mean curvature
             GC.append((L * N - M**2) / (E * G - F**2))
             MC.append(0.5 * (E * N - 2 * F * M + G * L) / (E * G - F**2))
-        return np.array(zip(GC, MC))
+        return np.asarray(list(zip(GC, MC)))
 
     def _():
         """ additional tests
@@ -231,12 +231,12 @@ class Curvature(Observable):
 
         >>> import pytim
         >>> x,y=np.mgrid[-5:5,-5:5.]/2.
-        >>> p = np.array(zip(x.flatten(),y.flatten()))
+        >>> p = np.asarray(list(zip(x.flatten(),y.flatten())))
         >>> z1 = p[:,0]**2+p[:,1]**2
         >>> z2 = p[:,0]**2-p[:,1]**2
         >>> 
         >>> for z in [z1, z2]:
-        ...     pp = np.array(zip(x.flatten()+5,y.flatten()+5,z))
+        ...     pp = np.asarray(list(zip(x.flatten()+5,y.flatten()+5,z)))
         ...     curv = pytim.observables.Curvature(cutoff=1.,warning=False).compute(pp)
         ...     val =  (curv[np.logical_and(p[:,0]==0,p[:,1]==0)])
         ...     # add and subtract 1e3 to be sure to have -0 -> 0

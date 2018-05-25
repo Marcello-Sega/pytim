@@ -115,7 +115,7 @@ class Observable(object):
         >>> import numpy as np
         >>> u = mda.Universe(_TEST_ORIENTATION_GRO)
         >>> o = observables.Orientation(u,options='molecular')
-        >>> np.set_printoptions(precision=3)
+        >>> np.set_printoptions(precision=3,threshold=10)
 
         >>> print(o.compute(u.atoms).flatten())
         [ 1.     0.     0.     0.     1.     0.     0.    -0.707 -0.707]
