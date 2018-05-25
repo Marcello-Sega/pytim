@@ -71,7 +71,7 @@ def correlate(a1, a2=None, _normalize=True):
       ...     size.append(len(inter.layers[0,0]))
       >>>
       >>> # we need to subtract the average value
-      >>> np.set_printoptions(precision=3)
+      >>> np.set_printoptions(precision=3,threshold=1000)
       >>> corr = pytim.utilities.correlate(size-np.mean(size))
       >>> corr = corr/corr[0] # normalize to 1
       >>> print (corr)
