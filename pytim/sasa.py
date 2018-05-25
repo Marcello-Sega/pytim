@@ -236,25 +236,8 @@ class SASA(GITIM):
 
     def _assign_layers(self):
         """Determine the SASA layers."""
-        self.reset_labels()
-        # this can be used later to shift back to the original shift
-        self.original_positions = np.copy(self.universe.atoms.positions[:])
-        self.universe.atoms.pack_into_box()
 
-        self._define_cluster_group()
-
-        self.centered_positions = None
-        if self.do_center:
-            self.center()
-
-        # first we label all atoms in group to be in the gas phase
-        self.label_group(self.itim_group.atoms, beta=0.5)
-        # then all atoms in the larges group are labelled as liquid-like
-        self.label_group(self.cluster_group.atoms, beta=0.0)
-
-        alpha_group = self.cluster_group[:]
-
-        dbs = utilities.do_cluster_analysis_dbscan
+        alpha_group, dbs = self._assign_layers_setup()
 
         for layer in range(0, self.max_layers):
 
@@ -262,26 +245,7 @@ class SASA(GITIM):
 
             group = alpha_group[alpha_ids]
 
-            if self.biggest_cluster_only is True:
-                # apply the same clustering algorith as set at init
-                l, c, _ = dbs(
-                    group,
-                    self.cluster_cut[0],
-                    threshold_density=self.cluster_threshold_density,
-                    molecular=self.molecular)
-                group = group[np.where(np.array(l) == np.argmax(c))[0]]
-
-            alpha_group = alpha_group[:] - group[:]
-            if len(group) > 0:
-                if self.molecular:
-                    self._layers[layer] = group.residues.atoms
-                else:
-                    self._layers[layer] = group
-            else:
-                self._layers[layer] = group.universe.atoms[:0]
-
-            self.label_group(
-                self._layers[layer], beta=1. * (layer + 1), layer=(layer + 1))
+            alpha_group = self._assign_layers_postprocess(dbs,group,alpha_group,layer)
 
         # reset the interpolator
         self._interpolator = None
