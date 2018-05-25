@@ -8,6 +8,7 @@ from scipy.spatial import Delaunay, cKDTree
 from scipy.interpolate import LinearNDInterpolator
 from . import utilities
 from . import messages
+from .observables import LocalReferenceFrame as LocalReferenceFrame
 
 
 class Surface(object):
@@ -46,7 +47,7 @@ class Surface(object):
         return utilities.extract_positions(inp)
 
     @abstractproperty
-    def distance(self, inp, *kargs):
+    def distance(self, inp, *args, **kargs):
         """ returns distance from the surface """
         positions = utilities.extract_positions(inp)
         distance_array = positions[::, 2]
@@ -177,13 +178,13 @@ class Surface(object):
 
     def _distance_generic(self, inp, symmetry):
 
-        intr = self.interface
+        inter = self.interface
         pos = utilities.extract_positions(inp)
 
         if len(pos) == 0:
             raise ValueError("empty group")
-        box = intr.universe.dimensions[:3]
-        l1centers = intr.atoms.positions[intr.atoms.layers == 1]
+        box = inter.universe.dimensions[:3]
+        l1centers = inter.atoms.positions[inter.atoms.layers == 1]
         # tree of the surface triangles' centers
         tree = cKDTree(l1centers, boxsize=box)
 
@@ -202,17 +203,9 @@ class Surface(object):
                 raise RuntimeError(
                     "Wrong parameter passed to _distance_generic")
         l1centers_ = l1centers[ind]
-
-        nonsurface = intr.cluster_group - intr.atoms[intr.atoms.layers == 1]
-        # there are no inner atoms, distance is always > 0
-        if len(nonsurface) == 0:
-            return dist
-        tree = cKDTree(nonsurface.positions, boxsize=box)
-        neighs = tree.query_ball_point(pos, intr.alpha)
-        condition = np.array([len(el) != 0 for el in neighs])
-
+        buried = inter.is_buried(pos)
         sign = np.ones(dist.shape[0])
-        sign[np.where(condition)[0]] = -1.0
+        sign[np.where(buried)[0]] = -1.0
         return sign * dist
 
         raise ValueError("Incorrect symmetry used for distance calculation")
@@ -263,7 +256,7 @@ class Surface(object):
 
 
 class SurfaceFlatInterface(Surface):
-    def distance(self, inp, *args):
+    def distance(self, inp, *args, **kargs):
         positions = utilities.extract_positions(inp)
         return self._distance_flat(positions)
 
@@ -304,9 +297,15 @@ class SurfaceFlatInterface(Surface):
 
 
 class SurfaceGenericInterface(Surface):
-    def distance(self, inp, *args):
+    def distance(self, inp, *args, **kargs):
         symmetry = args[0]
-        return self._distance_generic(inp, symmetry)
+        try:
+            mode = kargs['mode']
+        except:
+            mode = 'default'
+
+        if mode == 'default':
+            return self._distance_generic(inp, symmetry)
 
     def interpolation(self, inp):
         pass

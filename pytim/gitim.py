@@ -200,7 +200,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [
             0.0, 1.0, 0.0
         ], [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], [1.0, 1.0, 0.0],
-                                  [1.0, 1.0, 1.0]])
+            [1.0, 1.0, 1.0]])
         if self._noextrapoints is False:
             n_cube = 8
             for dim, vertex in enumerate(cube_vertices):

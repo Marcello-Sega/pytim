@@ -34,9 +34,10 @@ class IntrinsicDistance(Observable):
 
     """
 
-    def __init__(self, interface, symmetry='default'):
+    def __init__(self, interface, symmetry='default', mode='default'):
         Observable.__init__(self, interface.universe)
         self.interface = interface
+        self.mode = mode
         if symmetry == 'default':
             self.symmetry = self.interface.symmetry
         else:
@@ -49,4 +50,5 @@ class IntrinsicDistance(Observable):
         :param ndarray positions: compute the intrinsic distance for this set
                                   of points
         """
-        return self.interface._surfaces[0].distance(inp, self.symmetry)
+        # see pytim/surface.py
+        return self.interface._surfaces[0].distance(inp, self.symmetry, mode=self.mode)
