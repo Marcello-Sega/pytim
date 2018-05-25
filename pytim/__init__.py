@@ -4,6 +4,7 @@
 from .simple_interface import SimpleInterface
 from .itim import ITIM
 from .gitim import GITIM
+from .sasa import SASA
 from .willard_chandler import WillardChandler
 from .chacon_tarazona import ChaconTarazona
 from . import observables, utilities, datafiles
