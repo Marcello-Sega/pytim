@@ -171,6 +171,30 @@ class Profile(object):
             nbins += 1
         self._nbins = nbins
 
+    def _sample_random_distribution(self, group):
+        box = group.universe.dimensions[:3]
+        rnd_accum = np.array(0)
+        try:
+            size = kargs['MCpoints']
+        except:
+            # assume atomic volumes of ~ 30 A^3 and sample
+            # 10 points per atomic volue as a rule of thumb
+            size1 = int(np.prod(box) / 3.)
+            # just in case 'unphysical' densities are used:
+            size2 = 10 * len(group.universe.atoms)
+            size = np.max([size1, size2])
+        rnd = np.random.random((size, 3))
+        rnd *= self.interface.universe.dimensions[:3]
+        rnd_pos = IntrinsicDistance(
+            self.interface, symmetry=self.symmetry).compute(rnd)
+        rnd_accum, bins, _ = stats.binned_statistic(
+            rnd_pos,
+            np.ones(len(rnd_pos)),
+            range=self._range,
+            statistic='sum',
+            bins=self._nbins)
+        return rnd_accum, bins
+
     def sample(self, group):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
@@ -195,26 +219,7 @@ class Profile(object):
                 rnd_accum = np.ones(self._nbins)
 
             else:
-                rnd_accum = np.array(0)
-                try:
-                    size = kargs['MCpoints']
-                except:
-                    # assume atomic volumes of ~ 30 A^3 and sample
-                    # 10 points per atomic volue as a rule of thumb
-                    size1 = int(np.prod(box) / 3.)
-                    # just in case 'unphysical' densities are used:
-                    size2 = 10 * len(group.universe.atoms)
-                    size = np.max([size1, size2])
-                rnd = np.random.random((size, 3))
-                rnd *= self.interface.universe.dimensions[:3]
-                rnd_pos = IntrinsicDistance(
-                    self.interface, symmetry=self.symmetry).compute(rnd)
-                rnd_accum, bins, _ = stats.binned_statistic(
-                    rnd_pos,
-                    np.ones(len(rnd_pos)),
-                    range=self._range,
-                    statistic='sum',
-                    bins=self._nbins)
+                rnd_accum, bins = self._sample_random_distribution(group)
 
         values = self.observable.compute(group)
         accum, bins, _ = stats.binned_statistic(
