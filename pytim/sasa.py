@@ -17,7 +17,7 @@ from .surface import SurfaceGenericInterface
 from .interface import Interface
 from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 from circumradius import circumradius
-from gitim import GITIM
+from .gitim import GITIM
 from scipy.spatial import cKDTree
 
 
@@ -173,7 +173,7 @@ class SASA(GITIM):
             arc = np.zeros(self.nangles)
             alpha, beta = self._overlap(index, neighbors, dzi, group)
             if len(alpha) > 0:
-                N = np.array(zip(beta - alpha / 2., beta + alpha / 2.))
+                N = np.asarray(list(zip(beta - alpha / 2., beta + alpha / 2.)))
                 N = np.asarray(N * self.nangles / 2 / np.pi, dtype=int)
                 N = N % self.nangles
                 for n in N:
