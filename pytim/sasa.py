@@ -22,8 +22,8 @@ from scipy.spatial import cKDTree
 
 
 class SASA(GITIM):
-    """ Identifies interfacial molecules at curved interfaces using the 
-        Lee-Richards SASA algorithm (Lee, B; Richards, FM. J Mol Biol. 
+    """ Identifies interfacial molecules at curved interfaces using the
+        Lee-Richards SASA algorithm (Lee, B; Richards, FM. J Mol Biol.
         55, 379–400, 1971)
 
         :param Object universe:   The MDAnalysis_ Universe, MDTraj_ trajectory
@@ -114,98 +114,97 @@ class SASA(GITIM):
     def alpha_shape(self, alpha, group, layer):
         raise AttributeError('alpha_shape does not work in SASA ')
 
-
-    def _overlap(self,index,neighbors,dzi,group):
+    def _overlap(self, index, neighbors, dzi, group):
         box = group.universe.dimensions[:3]
         Ri = group.radii[index] + self.alpha
         Rj = group.radii[neighbors] + self.alpha
         pi = group.positions[index]
         pj = group.positions[neighbors]
         pij = pj - pi
-    
-        cond = np.where(pij > box/2.)
-        pij[cond]-=box[cond[1]]
-        cond = np.where(pij < -box/2.)
-        pij[cond]+=box[cond[1]]
-    
-        dzj = pij[:,2] - dzi
-    
+
+        cond = np.where(pij > box / 2.)
+        pij[cond] -= box[cond[1]]
+        cond = np.where(pij < -box / 2.)
+        pij[cond] += box[cond[1]]
+
+        dzj = pij[:, 2] - dzi
+
         ri2 = Ri**2 - dzi**2
         rj2 = Rj**2 - dzj**2
-    
-        cond = np.where(rj2>=0.0)[0]
+
+        cond = np.where(rj2 >= 0.0)[0]
         if len(cond) == 0:
-            return [],[]
+            return [], []
         rj2 = rj2[cond]
         pij = pij[cond]
-    
+
         ri, rj = np.sqrt(ri2), np.sqrt(rj2)
         pij2 = pij**2
-        dij2 = pij2[:,0]+pij2[:,1]
+        dij2 = pij2[:, 0] + pij2[:, 1]
         dij = np.sqrt(dij2)
-    
+
         # slice within neighboring one
         if np.any(dij <= rj - ri):
-            return np.array([2.*np.pi]),np.array([0.0])
-        
-        # c1 => no overlap; c2 => neighboring slice enclosed
-        c1 , c2 = dij < ri+rj, dij > ri-rj
-        cond = np.where(np.logical_and(c1,c2))[0]
-        if len(cond) == 0:
-            return [],[]
+            return np.array([2. * np.pi]), np.array([0.0])
 
-        arg = ( ri2  +  dij2 - rj2 ) / (ri * dij * 2.)
-        alpha = 2.* np.arccos(arg[cond])
-        argx, argy = pij[:,0]/dij, pij[:,1]/dij
-        beta  = np.arctan2(argx[cond],argy[cond])
-        return alpha,beta
-        
+        # c1 => no overlap; c2 => neighboring slice enclosed
+        c1, c2 = dij < ri + rj, dij > ri - rj
+        cond = np.where(np.logical_and(c1, c2))[0]
+        if len(cond) == 0:
+            return [], []
+
+        arg = (ri2 + dij2 - rj2) / (ri * dij * 2.)
+        alpha = 2. * np.arccos(arg[cond])
+        argx, argy = pij[:, 0] / dij, pij[:, 1] / dij
+        beta = np.arctan2(argx[cond], argy[cond])
+        return alpha, beta
+
     def _atom_coverage(self, index):
         group = self.sasa_group
         R = group.radii[index]
-        cutoff = R + self.Rmax + 2.* self.alpha
+        cutoff = R + self.Rmax + 2. * self.alpha
         neighbors = self.tree.query_ball_point(group.positions[index], cutoff)
         neighbors = np.asarray(list(set(neighbors) - set([index])))
-        covered_slices,exposed_area=0,4.*np.pi*R**2
+        covered_slices, exposed_area = 0, 4. * np.pi * R**2
         buried = False
-        delta = R+self.alpha-1e-3
-        slices = np.arange(-delta,delta,2.*delta / self.nslices)
+        delta = R + self.alpha - 1e-3
+        slices = np.arange(-delta, delta, 2. * delta / self.nslices)
         for dzi in slices:
             arc = np.zeros(self.nangles)
-            alpha,beta = self._overlap(index,neighbors,dzi,group)
+            alpha, beta = self._overlap(index, neighbors, dzi, group)
             if len(alpha) > 0:
-                N = np.array(zip(beta-alpha/2., beta+alpha/2.))
-                N = np.asarray(N*self.nangles/2/np.pi,dtype=int)
+                N = np.array(zip(beta - alpha / 2., beta + alpha / 2.))
+                N = np.asarray(N * self.nangles / 2 / np.pi, dtype=int)
                 N = N % self.nangles
                 for n in N:
-                    if n[1]>n[0]:# ! not >=
+                    if n[1] > n[0]:  # ! not >=
                         arc[n[0]:n[1]] = 1.0
                     else:
                         arc[n[0]:] = 1.0
                         arc[:n[1]] = 1.0
-    
+
                 if np.sum(arc) == len(arc):
-                    covered_slices+=1
-                A = (np.sum(arc)/self.nangles) * 2. * np.pi
-                exposed_area -= 2.*R**2/self.nslices * A
+                    covered_slices += 1
+                A = (np.sum(arc) / self.nangles) * 2. * np.pi
+                exposed_area -= 2. * R**2 / self.nslices * A
         if covered_slices >= len(slices):
             buried = True
-        return buried,exposed_area
+        return buried, exposed_area
 
-    def _atomlist_coverage(self,indices, queue=None):
-        res=[],[]
+    def _atomlist_coverage(self, indices, queue=None):
+        res = [], []
         for index in indices:
-            b,a = self._atom_coverage(index) 
-            res[0].append(b),res[1].append(a)
+            b, a = self._atom_coverage(index)
+            res[0].append(b), res[1].append(a)
         if queue is None:
             return res
         else:
-            queue.put(res) 
+            queue.put(res)
 
-    def compute_sasa(self,group):
-        box= group.universe.dimensions[:3]
+    def compute_sasa(self, group):
+        box = group.universe.dimensions[:3]
         self.Rmax = np.max(group.radii)
-        self.tree = cKDTree(group.positions,boxsize=box)
+        self.tree = cKDTree(group.positions, boxsize=box)
         self.sasa_group = group
         try:
             self.ncpu
@@ -213,28 +212,27 @@ class SASA(GITIM):
             self.ncpu = cpu_count()
 
         indices = range(len(group.atoms))
-        exposed = [False]*len(group.atoms)
+        exposed = [False] * len(group.atoms)
         area = [0.0] * len(group.atoms)
-        queue,proc = [],[]
- 
+        queue, proc = [], []
+
         for c in range(self.ncpu):
             queue.append(Queue())
-            proc.append ( Process(
-                target=self._atomlist_coverage, 
-                args=(indices[c::self.ncpu],queue[c])))
+            proc.append(Process(
+                target=self._atomlist_coverage,
+                args=(indices[c::self.ncpu], queue[c])))
             proc[c].start()
 
         for c in range(self.ncpu):
-            sl = slice(c,len(indices),self.ncpu)
+            sl = slice(c, len(indices), self.ncpu)
             res = queue[c].get()
             # in some cases zero atoms are assinged to some of the processes
-            if len(res[0]) > 0 : 
-                exposed[sl] =  (~np.asarray(res[0]))
+            if len(res[0]) > 0:
+                exposed[sl] = (~np.asarray(res[0]))
                 area[sl] = res[1]
 
         self.area = np.array(area)
         return np.where(exposed)[0]
-            
 
     def _assign_layers(self):
         """Determine the SASA layers."""
@@ -255,7 +253,6 @@ class SASA(GITIM):
         self.label_group(self.cluster_group.atoms, beta=0.0)
 
         alpha_group = self.cluster_group[:]
-
 
         dbs = utilities.do_cluster_analysis_dbscan
 
@@ -323,7 +320,7 @@ class SASA(GITIM):
         >>> g.radii=np.array([1.0,0.5])
         >>> inter = pytim.SASA(u,group=g,molecular=False)
         >>> print (np.all(np.isclose(inter.area,[4.*np.pi,0.0])))
-        True 
+        True
 
 
         """
