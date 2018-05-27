@@ -65,42 +65,15 @@ class SASA(GITIM):
 
         >>> import MDAnalysis as mda
         >>> import pytim
-        >>> from   pytim.datafiles import *
+        >>> from pytim.datafiles import MICELLE_PDB
         >>>
         >>> u = mda.Universe(MICELLE_PDB)
-        >>> g = u.select_atoms('resname DPC')
-        >>>
-        >>> interface =pytim.GITIM(u,group=g,molecular=False, alpha=2.0)
-        >>> layer = interface.layers[0]
-        >>> interface.writepdb('gitim.pdb',centered=False)
-        >>> print (repr(layer))
-        <AtomGroup with 909 atoms>
+        >>> micelle = u.select_atoms('resname DPC')
+        >>> inter = pytim.SASA(u, group=micelle, molecular=False)
+        >>> inter.atoms
+        <AtomGroup with 619 atoms>
 
 
-        Successive layers can be identified with :mod:`~pytim.gitim.GITIM`
-        as well. In this example we identify two solvation shells of glucose:
-
-
-        >>> import MDAnalysis as mda
-        >>> import pytim
-        >>> from   pytim.datafiles import *
-        >>>
-        >>> u = mda.Universe(GLUCOSE_PDB)
-        >>> g = u.select_atoms('name OW')
-        >>> # it is faster to consider only oxygens.
-        >>> # Hydrogen atoms are anyway within Oxygen's radius,
-        >>> # in SPC* models.
-        >>> interface =pytim.GITIM(u, group=g, alpha=2.0, max_layers=2)
-        >>>
-        >>> interface.writepdb('glucose_shells.pdb')
-        >>> print (repr(interface.layers[0]))
-        <AtomGroup with 54 atoms>
-        >>> print (repr(interface.layers[1]))
-        <AtomGroup with 117 atoms>
-
-        .. _MDAnalysis: http://www.mdanalysis.org/
-        .. _MDTraj: http://www.mdtraj.org/
-        .. _OpenMM: http://www.openmm.org/
     """
     nslices = 10
     nangles = 100
@@ -253,17 +226,7 @@ class SASA(GITIM):
         """Access the layers as numpy arrays of AtomGroups.
 
         The object can be sliced as usual with numpy arrays.
-        Differently from :mod:`~pytim.itim.ITIM`, there are no sides. Example:
-
-        >>> import MDAnalysis as mda
-        >>> import pytim
-        >>> from pytim.datafiles import MICELLE_PDB
-        >>>
-        >>> u = mda.Universe(MICELLE_PDB)
-        >>> micelle = u.select_atoms('resname DPC')
-        >>> inter = pytim.SASA(u, group=micelle, molecular=False)
-        >>> inter.atoms
-        <AtomGroup with 619 atoms>
+        Differently from :mod:`~pytim.itim.ITIM`, there are no sides. 
 
         """
         return self._layers
