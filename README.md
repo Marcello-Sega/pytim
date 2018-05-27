@@ -21,6 +21,7 @@ So far the following interface/phase identification methods have been implemente
 
 * ITIM
 * GITIM 
+* SASA
 * Willard Chandler
 * Chacon Tarazona
 * DBSCAN filtering
