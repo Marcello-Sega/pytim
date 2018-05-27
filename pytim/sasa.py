@@ -157,10 +157,10 @@ class SASA(GITIM):
         buried = False
         delta = R + self.alpha - 1e-3
         slices = np.arange(-delta, delta, 2. * delta / self.nslices)
-        Ri, Rj  = group.radii[index] , group.radii[neighbors]
+        Ri, Rj = group.radii[index], group.radii[neighbors]
         Ri += self.alpha
         Rj += self.alpha
-        pi,pj = group.positions[index], group.positions[neighbors]
+        pi, pj = group.positions[index], group.positions[neighbors]
         pij = pj - pi
         cond = np.where(pij > box / 2.)
         pij[cond] -= box[cond[1]]
@@ -168,7 +168,7 @@ class SASA(GITIM):
         pij[cond] += box[cond[1]]
         for dzi in slices:
             arc = np.zeros(self.nangles)
-            alpha, beta = self._overlap(Ri,Rj,pij,dzi)
+            alpha, beta = self._overlap(Ri, Rj, pij, dzi)
             if len(alpha) > 0:
                 N = np.asarray(list(zip(beta - alpha / 2., beta + alpha / 2.)))
                 N = np.asarray(N * self.nangles / 2 / np.pi, dtype=int)
