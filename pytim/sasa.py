@@ -114,21 +114,8 @@ class SASA(GITIM):
     def alpha_shape(self, alpha, group, layer):
         raise AttributeError('alpha_shape does not work in SASA ')
 
-    def _overlap(self, index, neighbors, dzi, group):
-        box = group.universe.dimensions[:3]
-        Ri = group.radii[index] + self.alpha
-        Rj = group.radii[neighbors] + self.alpha
-        pi = group.positions[index]
-        pj = group.positions[neighbors]
-        pij = pj - pi
-
-        cond = np.where(pij > box / 2.)
-        pij[cond] -= box[cond[1]]
-        cond = np.where(pij < -box / 2.)
-        pij[cond] += box[cond[1]]
-
+    def _overlap(self, Ri, Rj, pij, dzi):
         dzj = pij[:, 2] - dzi
-
         ri2 = Ri**2 - dzi**2
         rj2 = Rj**2 - dzj**2
 
@@ -161,6 +148,7 @@ class SASA(GITIM):
 
     def _atom_coverage(self, index):
         group = self.sasa_group
+        box = group.universe.dimensions[:3]
         R = group.radii[index]
         cutoff = R + self.Rmax + 2. * self.alpha
         neighbors = self.tree.query_ball_point(group.positions[index], cutoff)
@@ -169,9 +157,18 @@ class SASA(GITIM):
         buried = False
         delta = R + self.alpha - 1e-3
         slices = np.arange(-delta, delta, 2. * delta / self.nslices)
+        Ri, Rj  = group.radii[index] , group.radii[neighbors]
+        Ri += self.alpha
+        Rj += self.alpha
+        pi,pj = group.positions[index], group.positions[neighbors]
+        pij = pj - pi
+        cond = np.where(pij > box / 2.)
+        pij[cond] -= box[cond[1]]
+        cond = np.where(pij < -box / 2.)
+        pij[cond] += box[cond[1]]
         for dzi in slices:
             arc = np.zeros(self.nangles)
-            alpha, beta = self._overlap(index, neighbors, dzi, group)
+            alpha, beta = self._overlap(Ri,Rj,pij,dzi)
             if len(alpha) > 0:
                 N = np.asarray(list(zip(beta - alpha / 2., beta + alpha / 2.)))
                 N = np.asarray(N * self.nangles / 2 / np.pi, dtype=int)
