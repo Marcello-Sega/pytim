@@ -175,7 +175,7 @@ class Profile(object):
         box = group.universe.dimensions[:3]
         rnd_accum = np.array(0)
         try:
-            size = kargs['MCpoints']
+            size = self.kargs['MCpoints']
         except:
             # assume atomic volumes of ~ 30 A^3 and sample
             # 10 points per atomic volue as a rule of thumb
