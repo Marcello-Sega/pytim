@@ -281,8 +281,8 @@ class SurfaceFlatInterface(Surface):
         d2[np.where(d2 < -box / 2.)] += box
 
         cond = np.where(np.abs(d1) <= np.abs(d2))[0]
-        distance = lower_interp - positions[:, self.z]
-        distance[cond] = positions[cond][:, self.z] - upper_interp[cond]
+        distance = d2
+        distance[cond] = d1[cond]
 
         return distance
 
