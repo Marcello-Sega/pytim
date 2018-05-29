@@ -137,13 +137,13 @@ class SimpleInterface(Interface):
         >>> import MDAnalysis as mda
         >>> u = mda.Universe(WATER_GRO)
         >>>
-        >>> u.atoms[:8].positions=np.array([[0.,0,5],[0,1,5],[1,0,5],[1,1,5],
+        >>> u.atoms[:8].positions=np.array([[0.,0,5],[0,1,5],[1,0,5],[1,1,5],\
                 [0.,0.,-5.],[0,1,-5],[1,0,-5],[1,1,-5]])
         >>> upper,lower=u.atoms[:4],u.atoms[4:8]
-        >>> inter = pytim.SimpleInterface(u,symmetry='planar', upper=upper,
+        >>> inter = pytim.SimpleInterface(u,symmetry='planar', upper=upper,\
                 lower=lower,alpha=5.)
         >>> g = u.atoms[8:12]
-        >>> g.atoms.positions=np.asarray([[.5,.5,6],[.5,.5,4],[.5,.5,-4],
+        >>> g.atoms.positions=np.asarray([[.5,.5,6],[.5,.5,4],[.5,.5,-4],\
                 [.5,.5,-6]])
         >>> print(pytim.observables.IntrinsicDistance(inter).compute(g))
         [ 1. -1. -1.  1.]
