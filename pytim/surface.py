@@ -282,7 +282,7 @@ class SurfaceFlatInterface(Surface):
 
         cond = np.where(np.abs(d1) <= np.abs(d2))[0]
         distance = d2
-        distance[cond] = d1[cond]
+        distance[cond] = -d1[cond]
 
         return distance
 

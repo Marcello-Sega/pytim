@@ -21,6 +21,7 @@ class IntrinsicDistance(Observable):
 
     >>> import MDAnalysis as mda
     >>> import pytim
+    >>> import numpy as np
     >>> from pytim import observables
     >>> from pytim.datafiles import MICELLE_PDB
     >>> u = mda.Universe(MICELLE_PDB)
@@ -29,9 +30,11 @@ class IntrinsicDistance(Observable):
     >>> inter = pytim.GITIM(u,group=micelle, molecular=False, alpha=2.0)
     >>> dist  = observables.IntrinsicDistance(interface=inter)
     >>> d = dist.compute(waterox)
+    >>> np.set_printoptions(precision=3,threshold=10)
     >>> print(d)
     [25.733  8.579  8.852 ... 18.566 13.709  9.876]
 
+    >>> np.set_printoptions(precision=None,threshold=None)
     """
 
     def __init__(self, interface, symmetry='default', mode='default'):

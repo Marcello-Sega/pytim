@@ -313,7 +313,8 @@ class Profile(object):
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=0.5)[2]
         >>> print(vals[len(vals)//2-3:len(vals)//2+3])
-        [0.07313351 0.04282756 0.02791797        inf 0.         0.        ]
+        [0.07344066 0.04300743 0.02803522        inf 0.         0.        ]
+
 
 
         >>> sv = prof.sampled_values
