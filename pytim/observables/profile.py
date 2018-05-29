@@ -201,7 +201,7 @@ class Profile(object):
         if not isinstance(group, AtomGroup):
             raise TypeError("The first argument passed to "
                             "Profile.sample() must be an AtomGroup.")
-        box = group.universe.trajectory.ts.dimensions[:3]
+        box = group.universe.dimensions[:3]
         if self._range is None:
             self._determine_range(box)
             self._determine_bins()
@@ -313,7 +313,7 @@ class Profile(object):
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=0.5)[2]
         >>> print(vals[len(vals)//2-3:len(vals)//2+3])
-        [0.07313351 0.04282756 0.02791797        inf 0.         0.        ]
+        [0.07344066 0.04300743 0.02803522        inf 0.         0.        ]
 
 
         >>> sv = prof.sampled_values

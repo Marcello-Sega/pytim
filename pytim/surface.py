@@ -229,6 +229,7 @@ class Surface(object):
 
         pos = np.copy(positions)
 
+        # putting everything back in the box in XY
         cond = np.where(pos[:, 0:2] > box[0:2])
         pos[cond] -= box[cond[1]]
         cond = np.where(pos[:, 0:2] < 0 * box[0:2])
@@ -272,17 +273,19 @@ class SurfaceFlatInterface(Surface):
             upper_interp = self._interpolator[0](positions[:, self.xy])
             lower_interp = self._interpolator[1](positions[:, self.xy])
 
-        d1 = upper_interp - positions[:, self.z]
-        d1[np.where(d1 > box / 2.)] -= box
-        d1[np.where(d1 < -box / 2.)] += box
+        d1 = positions[:, self.z] - upper_interp
+        # enforce pbc
+        d1[d1 >  box / 2.] -= box
+        d1[d1 < -box / 2.] += box
 
         d2 = lower_interp - positions[:, self.z]
-        d2[np.where(d2 > box / 2.)] -= box
-        d2[np.where(d2 < -box / 2.)] += box
+        # enforce pbc
+        d2[d2 >  box / 2.] -= box
+        d2[d2 < -box / 2.] += box
 
-        cond = np.where(np.abs(d1) <= np.abs(d2))[0]
-        distance = lower_interp - positions[:, self.z]
-        distance[cond] = positions[cond][:, self.z] - upper_interp[cond]
+        cond = np.abs(d1) <= np.abs(d2)
+        distance = d2
+        distance[cond] = d1[cond]
 
         return distance
 
