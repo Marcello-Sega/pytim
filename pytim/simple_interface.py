@@ -69,7 +69,8 @@ class SimpleInterface(Interface):
         >>> lo,up,av2 = profile2.get_values(binwidth=.5)
         >>> np.set_printoptions(8)
         >>> print (av2[64:70])
-        [0.04159977 0.04035566 0.04028829        inf 0.04518664 0.05085284]
+        [0.04282182 0.04154116 0.04147182        inf 0.04651406 0.05234671]
+
 
         .. _MDAnalysis: http://www.mdanalysis.org/
 
@@ -127,6 +128,29 @@ class SimpleInterface(Interface):
             self._surfaces = np.empty(1, dtype=type(SurfaceGenericInterface))
             self._surfaces[0] = SurfaceGenericInterface(
                 self, options={'layer': 0})
+
+    def _(self):
+        """ additional tests
+        >>> import pytim
+        >>> import numpy as np
+        >>> from pytim.datafiles import WATER_GRO
+        >>> import MDAnalysis as mda
+        >>> u = mda.Universe(WATER_GRO)
+        >>>
+        >>> u.atoms[:8].positions=np.array([[0.,0,5],[0,1,5],[1,0,5],[1,1,5],\
+                [0.,0.,-5.],[0,1,-5],[1,0,-5],[1,1,-5]])
+        >>> upper,lower=u.atoms[:4],u.atoms[4:8]
+        >>> inter = pytim.SimpleInterface(u,symmetry='planar', upper=upper,\
+                lower=lower,alpha=5.)
+        >>> g = u.atoms[8:12]
+        >>> g.atoms.positions=np.asarray([[.5,.5,6],[.5,.5,4],[.5,.5,-4],\
+                [.5,.5,-6]])
+        >>> print(pytim.observables.IntrinsicDistance(inter).compute(g))
+        [ 1. -1. -1.  1.]
+
+
+
+        """
 
     def _assign_layers(self):
         pass
