@@ -3,7 +3,7 @@
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from .properties import _create_property
-from .pdb import _writepdb
+from .writepdb import _writepdb
 from . import messages
 from . import utilities
 from scipy.spatial import cKDTree
@@ -219,7 +219,7 @@ class Interface(object):
             self.label_group(self.cluster_group, cluster=0)
 
     def is_buried(self, pos):
-        """ Checks wether an array of positions are located below 
+        """ Checks wether an array of positions are located below
             the first interfacial layer """
         inter = self
         box = inter.universe.dimensions[:3]
