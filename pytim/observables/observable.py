@@ -138,13 +138,15 @@ class Observable(object):
         >>> a = np.array([1.,0.,1.,0.,1.])
         >>> b = np.array([0.,2.,0.,1.,0.])
         >>> corr = correlate(b,a)
+        >>> corr[np.abs(corr)<1e-12] = 0.0
         >>> ['{:.2f}'.format(i) for i in corr]
-        ['-0.00', '0.75', '0.00', '0.75', '0.00']
+        ['0.00', '0.75', '0.00', '0.75', '0.00']
 
 
         >>> corr = correlate(b)
+        >>> corr[np.abs(corr)<1e-12] = 0.0
         >>> ['{:.2f}'.format(i) for i in corr]
-        ['1.00', '0.00', '0.67', '-0.00', '0.00']
+        ['1.00', '0.00', '0.67', '0.00', '0.00']
 
         >>> # PROFILE EXTENDED TEST: checks trajectory averaging
         >>> # and consistency in summing up layers  contributions
