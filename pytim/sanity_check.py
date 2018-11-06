@@ -4,7 +4,7 @@ from __future__ import print_function
 from distutils.version import LooseVersion
 import numpy as np
 import MDAnalysis
-import version
+from . import version
 from . import datafiles
 from . import utilities
 from . import messages
