@@ -146,7 +146,10 @@ class Interface(object):
             self.symmetry = symmetry
 
     def _define_cluster_group(self):
-        self.universe.atoms.pack_into_box()
+        try:
+            self.universe.atoms.pack_into_box(self.universe.dimensions[:3])
+        except ValueError:
+            self.universe.atoms.pack_into_box(self.universe.dimensions)
         self.cluster_group = self.universe.atoms[:0]  # empty
         if (self.cluster_cut is not None):
             cluster_cut = float(self.cluster_cut[0])
@@ -338,11 +341,11 @@ class Interface(object):
         translation = [0, 0, 0]
         translation[normal] = box / 2.
         universe.atoms.positions += np.array(translation)
-        try:  # older MDAnalysis versions
+        try:
             universe.atoms.pack_into_box(universe.dimensions[:3])
         except ValueError:
-            universe.atoms.pack_into_box()
-
+            universe.atoms.pack_into_box(universe.dimensions)
+            
     def _shift_positions_to_middle(self):
         Interface.shift_positions_to_middle(self.universe, self.normal)
 
@@ -360,7 +363,10 @@ class Interface(object):
                     Interface._center(group, xyz, halfbox_shift=False)
                 except ValueError:
                     pass
-            group.universe.atoms.pack_into_box(group.universe.dimensions[:3])
+            try:
+                group.universe.atoms.pack_into_box(group.universe.dimensions[:3])
+            except ValueError:
+                group.universe.atoms.pack_into_box(group.universe.dimensions)
 
     def center(self, planar_to_origin=False):
         Interface.center_system(
