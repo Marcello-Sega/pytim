@@ -16,7 +16,6 @@ class SanityCheck(object):
 
         self.interface = interface
         self.interface._MDAversion = MDAnalysis.__version__
-        self.V016 = LooseVersion('0.16')
 
     def assign_radii(self):
         try:
