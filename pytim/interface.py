@@ -338,7 +338,7 @@ class Interface(object):
         translation = [0, 0, 0]
         translation[normal] = box / 2.
         universe.atoms.positions += np.array(translation)
-        try: # older MDAnalysis versions
+        try:  # older MDAnalysis versions
             universe.atoms.pack_into_box(universe.dimensions[:3])
         except ValueError:
             universe.atoms.pack_into_box()
