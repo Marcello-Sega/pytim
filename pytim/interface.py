@@ -338,7 +338,7 @@ class Interface(object):
         translation = [0, 0, 0]
         translation[normal] = box / 2.
         universe.atoms.positions += np.array(translation)
-        universe.atoms.pack_into_box(universe.dimensions[:3])
+        universe.atoms.pack_into_box()
 
     def _shift_positions_to_middle(self):
         Interface.shift_positions_to_middle(self.universe, self.normal)
