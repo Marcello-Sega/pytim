@@ -8,7 +8,7 @@
 from __future__ import print_function
 from skimage import measure
 import numpy as np
-np.set_printoptions(legacy=False) # fixes problem with skimage
+np.set_printoptions(legacy=False)  # fixes problem with skimage
 
 try:
     marching_cubes = measure.marching_cubes
