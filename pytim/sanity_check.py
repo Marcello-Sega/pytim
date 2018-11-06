@@ -4,7 +4,6 @@ from __future__ import print_function
 from distutils.version import LooseVersion
 import numpy as np
 import MDAnalysis
-from . import version
 from . import datafiles
 from . import utilities
 from . import messages
@@ -17,7 +16,6 @@ class SanityCheck(object):
 
         self.interface = interface
         self.interface._MDAversion = MDAnalysis.__version__
-        self.version = LooseVersion(version.__version__)
 
     def assign_radii(self):
         try:
