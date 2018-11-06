@@ -6,8 +6,10 @@
 """
 
 from __future__ import print_function
-import numpy as np
 from skimage import measure
+import numpy as np
+np.set_printoptions(legacy=False) # fixes problem with skimage
+
 try:
     marching_cubes = measure.marching_cubes
 except AttributeError:
