@@ -11,7 +11,7 @@
 
 <sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. We will keep rolling out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on GitHub and/or make a pull request. </sub>
 
- <sub>**News**: the paper about pytim has been published on J. Comp. Chem. It is open access and you can [download the pdf](https://onlinelibrary.wiley.com/doi/epdf/10.1002/jcc.25384) from Wiley <img  src="https://licensebuttons.net/l/by-nc/4.0/80x15.png"> (see also the [references](#refs))
+ <sub>**News**: The paper about pytim has been published on J. Comput. Chem. It is open access and you can [download the pdf](https://onlinelibrary.wiley.com/doi/epdf/10.1002/jcc.25384) from Wiley <img  src="https://licensebuttons.net/l/by-nc/4.0/80x15.png"> (see also the [references](#refs))
 
 # What is Pytim
 
