@@ -9,7 +9,9 @@
 [![Code Climate](https://codeclimate.com/github/Marcello-Sega/pytim/badges/gpa.svg)](https://codeclimate.com/github/Marcello-Sega/pytim)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-<sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. The interface has almost converged to its final form, but changes could still be introduced. In the next period, we will roll out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on GitHub and/or make a pull request. </sub>
+<sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. We will keep rolling out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on GitHub and/or make a pull request. </sub>
+
+ <sub>**News**: the paper about pytim has been published on J. Comp. Chem. It is open access and you can [download the pdf](https://onlinelibrary.wiley.com/doi/epdf/10.1002/jcc.25384) from Wiley <img  src="https://licensebuttons.net/l/by-nc/4.0/80x15.png"> (see also the [references](#refs))
 
 # What is Pytim
 
@@ -451,15 +453,32 @@ Some of the most common issues are the following:
 
 ---------------------------
 
-# References  <img src="https://raw.githubusercontent.com/Marcello-Sega/gitim/ITIM/media/soot1small.png" width="180" align="right" style="z-index:999;">
+# References  <img src="https://raw.githubusercontent.com/Marcello-Sega/gitim/ITIM/media/soot1small.png" width="180" align="right" style="z-index:999;"> <a name="refs">
+
+The [pytim paper is avaliable](https://onlinelibrary.wiley.com/doi/epdf/10.1002/jcc.25384)  (under the terms of the Creative Commons BY-NC 4.0 licence) from Wiley. Please cite it if you use pytim for your research:
+
+[M. Sega, S. G. Hantal, B. Fabian and P. Jedlovszky, _J. Comp. Chem._ **39**, 2118-2125 (2018)](http://dx.doi.org/10.1002/jcc.25384) Pytim: A python package for the interfacial analysis of molecular simulations
 
 
-We plan to submit soon a manuscript to report on the features/improvements of pytim with respect to the previously available code. In the meanwhile, if you use pytim, please cite this web page, and read and cite the papers corresponding to the method you are using:
+```
+@article{sega2018pytim,
+  title={Pytim: A python package for the interfacial analysis of molecular simulations},
+  author={Sega, M. and Hantal, G. and F{\'a}bi{\'a}n, B. and Jedlovszky, P.},
+  journal={J. Comput. Chem.},
+  pages={2118--2125},
+  volume={39},
+  year={2018},
+  publisher={Wiley Online Library}
+}
+```
 
+Depending on which algorithm you are using, you might also want to cite the following: 
 
-[M. Sega, S. S. Kantorovich P. Jedlovszky and M. Jorge, _J. Chem. Phys._ **138**, 044110 (2013)](http://dx.doi.org/10.1063/1.4776196) The generalized identification of truly interfacial molecules (ITIM) algorithm for nonplanar interfaces.
+[M. Sega, S. S. Kantorovich, P. Jedlovszky and M. Jorge, _J. Chem. Phys._ **138**, 044110 (2013)](http://dx.doi.org/10.1063/1.4776196) The generalized identification of truly interfacial molecules (ITIM) algorithm for nonplanar interfaces.
 
 [L. B. Pártay, G. Hantal, P. Jedlovszky, Á. Vincze and G. Horvai, _J. Comp. Chem._ **29**, 945 (2008)](http://dx.doi.org/10.1002/jcc.20852) A new method for determining the interfacial molecules and characterizing the surface roughness in computer simulations. Application to the liquid–vapor interface of water
+
+[M. Sega and G. Hantal._Phys. Chem. Chem. Phys._ **29**, 18968-18974 (2017)](https://doi.org/10.1039/C7CP02918G) Phase and interface determination in computer simulations of liquid mixtures with high partial miscibility.
 
 [E. Chacón, P. Tarazona, Phys. Rev. Lett. **91**, 166103 (2003)](http://dx.doi.org/10.1103/PhysRevLett.91.166103) Intrinsic profiles beyond the capillary wave theory: A Monte Carlo study.
 
