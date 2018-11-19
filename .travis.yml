@@ -68,3 +68,13 @@ after_script:
   if ([ "$TRAVIS_OS_NAME" == "linux" ] && [ "$MDAv" == "0.16" ]) ; then
         pip install codecov; pip install pytest-cov ; py.test --cov=pytim pytim/*py pytim/observables/*py pytim/datafiles/*py --doctest-modules --cov-report xml ;  ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT ; codecov ; fi
 
+
+deploy:
+  provider: pypi
+  user: marcello.sega
+  password: 
+    secure: Ack2blYVxuXTp0kCnmPwEX3mRsZxCniXqSK1oMRZZ92BdCMdrDSucyrgwjkCvzRIcBcojGzz9daouNqN0Z731cHDyG54nUgi0BDXQ67l2j5IitL6psRxg9WR4V8rMqexlviAcevIqJ4fsq2Q24W+19kpW2xoU8j65TyBBtPOzRl9g/RzZYD0AJnmSX8pcDhVloMKjbdryaxrUNKM83xqENo93qfboRyIkiWdhqcff9Ad6OGBJ8nIOKQpquhxPZZLW7G0tIlNmfa07jg3IgFEy71FTRFEBPqPJYpmcW2n28IXNc2i2iJAruZZtDKWTcY93O+GEEMO4r55AtxROEPIUVbzPFOsUufkYOQTG1EIgnsG7yY3lktgOwNbi4hKGZVtOuWXuZgCBnhARVG4K2MOTGTka+CEAITi1VYj3WyVT/zDCNKB5ubvmAuSBbRoRMFhH97Ooeomp9TSYJbtNpfzioYsw4QTdW4kBh13b89NAPxQWnX4WJW2pVFuPYw4bV0ZDsQQ1edlY0hJQit/Q37YwTPaHZSowzk20dzv21jK+0H0QzkA9rV1crR6+dcD7KuSXFSF3BnG/TBYpR2CFfSpQrVutHqhiYIRIrzE7fedmFqxnmJGqdkghyVJ4XpwBUh7s7IXW5ejQoq0AqZyKNu62oTak2ZBIKoTP5GRhYs4HKg=
+  on:
+    tags: true
+    branch: master
+
