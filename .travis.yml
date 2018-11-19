@@ -20,8 +20,9 @@ matrix:
         - os: linux
           sudo: required
           python: 3.6
-          env: MDAv=0.19
-          env: coverage=1
+          env: 
+            - MDAv=0.19
+            - coverage=1
 
 
 
