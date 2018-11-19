@@ -208,7 +208,7 @@ class SanityCheck(object):
 
         self._define_groups()
         if (len(self.interface.itim_group) == 0):
-            raise StandardError(messages.UNDEFINED_ITIM_GROUP)
+            raise RuntimeError(messages.UNDEFINED_ITIM_GROUP)
         interface = self.interface
 
         if (interface.cluster_cut is not None):
@@ -217,7 +217,7 @@ class SanityCheck(object):
             extraelements = len(interface.extra_cluster_groups)
 
         if not (elements == 1 or elements == 1 + extraelements):
-            raise StandardError(messages.MISMATCH_CLUSTER_SEARCH)
+            raise RuntimeError(messages.MISMATCH_CLUSTER_SEARCH)
 
         return True
 
