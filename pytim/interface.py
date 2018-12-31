@@ -215,7 +215,6 @@ class Interface(object):
             self.n_neighbors = neighbors
         else:
             self.cluster_group = self.itim_group
-            self.label_group(self.itim_group, cluster=1)
             self.label_group(self.cluster_group, cluster=0)
 
     def is_buried(self, pos):

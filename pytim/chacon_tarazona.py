@@ -150,7 +150,6 @@ class ChaconTarazona(Interface):
         """
         # TODO add successive layers
         box = self.universe.dimensions[:3]
-        #        surf = self._surfaces[0]
 
         if side == 0:
             sorted_ind = self.sorted_indices[::-1]
@@ -197,7 +196,7 @@ class ChaconTarazona(Interface):
         # TODO parallelize
 
         # this can be used later to shift back to the original shift
-        self.original_positions = np.copy(self.universe.atoms.positions[:])
+        self.original_positions = np.copy(self.universe.atoms.positions)
         self.universe.atoms.pack_into_box()
 
         # groups have been checked already in _sanity_checks()
