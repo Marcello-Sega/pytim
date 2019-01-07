@@ -8,13 +8,6 @@
 from __future__ import print_function
 from skimage import measure
 import numpy as np
-np.set_printoptions(legacy=False)  # fixes problem with skimage
-
-try:
-    marching_cubes = measure.marching_cubes
-except AttributeError:
-    marching_cubes =  measure.marching_cubes_lewiner
-
 
 from . import messages
 from . import utilities, cube, wavefront_obj
@@ -23,6 +16,13 @@ from .vtk import Writevtk
 
 from .interface import Interface
 from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+
+np.set_printoptions(legacy=False)  # fixes problem with skimage
+
+try:
+    marching_cubes = measure.marching_cubes
+except AttributeError:
+    marching_cubes =  measure.marching_cubes_lewiner
 
 
 class WillardChandler(Interface):
