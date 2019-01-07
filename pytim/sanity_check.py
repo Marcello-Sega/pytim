@@ -17,16 +17,9 @@ class SanityCheck(object):
         self.interface._MDAversion = MDAnalysis.__version__
         self.interface.warnings = warnings
 
-    def assign_universe(self, universe, analysis_group, radii_dict=None):
-        """ Tweak the details of the universe:
-
-            - Compare input_obj against the possible classes. This
-              makes possible the use of an AtomGroup in place of a
-              Universe.
-            - Load the radii from file or from radii_dict
-            - Check for missing attributes
+    def assign_universe(self, universe, analysis_group):
+        """ Assign the universe and the analysis_group
         """
-
         self.interface._mode = self._check_universe(universe)
         if self.interface._mode is None:
             raise Exception(messages.WRONG_UNIVERSE)
@@ -48,15 +41,6 @@ class SanityCheck(object):
         if (len(self.interface.analysis_group) == 0):
             raise RuntimeError(messages.UNDEFINED_ANALYSIS_GROUP)
 
-        if radii_dict is not None:
-            self.interface.radii_dict = radii_dict.copy()
-        else:
-            self.interface.radii_dict = datafiles.pytim_data.vdwradii(
-                datafiles.G43A1_TOP).copy()
-            self.patch_radii_dict()
-
-        _missing_attributes(self.interface, self.interface.universe)
-
     def _check_universe(self, input_obj):
         """ Check whether instead of a universe,
             the input_obj is one of the following,
@@ -66,7 +50,6 @@ class SanityCheck(object):
             - mdtraj.core.trajectory.Trajectory
             - simtk.openmm.app.simulation.Simulation
         """
-
         if isinstance(input_obj, MDAnalysis.core.universe.Universe):
             self.interface.universe = input_obj
             self.interface.analysis_group = None
@@ -116,13 +99,7 @@ class SanityCheck(object):
             pass
         return None
 
-    def patch_radii_dict(self):
-        """ Fix here by hand common problems with radii assignment """
-        self.interface.radii_dict['D'] = 0.0
-        self.interface.radii_dict['M'] = 0.0
-        self.interface.radii_dict['HW'] = 0.0
-        self.interface.radii_dict['Me'] = self.interface.radii_dict['CMet']
-
+    #TODO: rename
     def assign_groups(self, cluster_cut, extra_cluster_groups):
         elements = 0
         extraelements = -1
@@ -150,7 +127,17 @@ class SanityCheck(object):
         if not (elements == 1 or elements == 1 + extraelements):
             raise RuntimeError(messages.MISMATCH_CLUSTER_SEARCH)
 
-    def assign_radii(self):
+    def assign_radii(self, radii_dict=None):
+
+        if radii_dict is not None:
+            self.interface.radii_dict = radii_dict.copy()
+        else:
+            self.interface.radii_dict = datafiles.pytim_data.vdwradii(
+                datafiles.G43A1_TOP).copy()
+            self.patch_radii_dict()
+
+        _missing_attributes(self.interface, self.interface.universe)
+
         try:
             groups = [g for g in self.interface.extra_cluster_groups[:]]
         except BaseException:
@@ -182,6 +169,13 @@ class SanityCheck(object):
                 print(gr.keys()[0] + "':1.2 , ... } )")
         except BaseException:
             pass
+
+    def patch_radii_dict(self):
+        """ Fix here by hand common problems with radii assignment """
+        self.interface.radii_dict['D'] = 0.0
+        self.interface.radii_dict['M'] = 0.0
+        self.interface.radii_dict['HW'] = 0.0
+        self.interface.radii_dict['Me'] = self.interface.radii_dict['CMet']
 
     def assign_mesh(self, mesh):
         interface = self.interface

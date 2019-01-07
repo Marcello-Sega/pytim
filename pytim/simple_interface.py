@@ -96,9 +96,9 @@ class SimpleInterface(Interface):
             self.group = universe.atoms
 
         sanity = SanityCheck(self, warnings=False)
-        sanity.assign_universe(universe, group, radii_dict=None)
+        sanity.assign_universe(universe, group)
         sanity.assign_alpha(alpha)
-        sanity.assign_radii()
+        sanity.assign_radii(radii_dict=None)
         if normal in [0, 1, 2]:
             self.normal = normal
         else:

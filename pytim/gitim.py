@@ -136,7 +136,7 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         self.biggest_cluster_only = biggest_cluster_only
         sanity = SanityCheck(self, warnings=warnings)
-        sanity.assign_universe(universe, group, radii_dict=radii_dict)
+        sanity.assign_universe(universe, group)
         sanity.assign_alpha(alpha)
 
         self.cluster_threshold_density = cluster_threshold_density
@@ -148,7 +148,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         self.molecular = molecular
         sanity.assign_groups(cluster_cut, extra_cluster_groups)
         sanity.check_multiple_layers_options()
-        sanity.assign_radii()
+        sanity.assign_radii(radii_dict=radii_dict)
 
         self._assign_symmetry(symmetry)
         try:
