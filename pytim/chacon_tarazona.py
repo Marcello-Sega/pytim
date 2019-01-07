@@ -75,9 +75,8 @@ class ChaconTarazona(Interface):
         self.symmetry = 'planar'
         self.do_center = centered
 
-        sanity = SanityCheck(self)
-        sanity.assign_universe(
-            universe, radii_dict=radii_dict, warnings=warnings)
+        sanity = SanityCheck(self,warnings=warnings)
+        sanity.assign_universe(universe, radii_dict=radii_dict)
 
         self.target_mesh = mesh
         if mesh is not None:

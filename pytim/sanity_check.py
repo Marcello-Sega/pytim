@@ -11,10 +11,11 @@ from .properties import guess_radii, _missing_attributes
 
 
 class SanityCheck(object):
-    def __init__(self, interface):
+    def __init__(self, interface, warnings=False):
 
         self.interface = interface
         self.interface._MDAversion = MDAnalysis.__version__
+        self.interface.warnings = warnings
 
     def assign_radii(self):
         try:
@@ -152,7 +153,7 @@ class SanityCheck(object):
             pass
         return None
 
-    def assign_universe(self, input_obj, radii_dict=None, warnings=False):
+    def assign_universe(self, input_obj, radii_dict=None):
         """ Tweak the details of the universe:
 
             - Compare input_obj against the possible classes. This
@@ -161,8 +162,6 @@ class SanityCheck(object):
             - Load the radii from file or from radii_dict
             - Check for missing attributes
         """
-
-        self.interface.warnings = warnings
 
         self.interface._mode = self._check_group(input_obj)
         if self.interface._mode is None:
