@@ -135,9 +135,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         self.do_center = centered
 
         self.biggest_cluster_only = biggest_cluster_only
-        sanity = SanityCheck(self)
-        sanity.assign_universe(
-            universe, radii_dict=radii_dict, warnings=warnings)
+        sanity = SanityCheck(self, warnings=warnings)
+        sanity.assign_universe(universe, radii_dict=radii_dict)
         sanity.assign_alpha(alpha)
 
         self.cluster_threshold_density = cluster_threshold_density

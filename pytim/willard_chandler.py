@@ -112,9 +112,8 @@ class WillardChandler(Interface):
                  **kargs):
 
         self.autoassign, self.do_center = autoassign, centered
-        sanity = SanityCheck(self)
-        sanity.assign_universe(
-            universe, radii_dict=radii_dict, warnings=warnings)
+        sanity = SanityCheck(self, warnings=warnings)
+        sanity.assign_universe(universe, radii_dict=radii_dict)
         sanity.assign_alpha(alpha)
 
         if mesh <= 0:
