@@ -91,15 +91,21 @@ class SanityCheck(object):
         # same with extra_cluster_groups
         if not isinstance(self.interface.extra_cluster_groups,
                           (list, tuple, np.ndarray, type(None))):
-            self.interface.extra_cluster_groups = [
-                self.interface.extra_cluster_groups
-            ]
+            self.interface.extra_cluster_groups = \
+                [ self.interface.extra_cluster_groups ]
 
         # fallback for analysis_group
         if self.interface.analysis_group is None:
             self.interface.analysis_group = self.interface.all_atoms
 
-    def _apply_patches(self, input_obj):
+    def _check_group(self, input_obj):
+        """ Check whether input_obj is one of the following,
+            and act accordingly:
+            - MDAnalysis.core.universe.Universe
+            - MDAnalysis.core.groups.AtomGroup
+            - mdtraj.core.trajectory.Trajectory
+            - simtk.openmm.app.simulation.Simulation
+        """
 
         if isinstance(input_obj, MDAnalysis.core.universe.Universe):
             self.interface.universe = input_obj
@@ -151,24 +157,32 @@ class SanityCheck(object):
         return None
 
     def assign_universe(self, input_obj, radii_dict=None, warnings=False):
+        """ Tweak the details of the universe:
 
-        self.interface._mode = self._apply_patches(input_obj)
+            - Compare input_obj against the possible classes.
+            - Load the radii from file or from radii_dict
+            - Check for missing attributes
+        """
+
+        self.interface.warnings = warnings
+
+        self.interface._mode = self._check_group(input_obj)
         if self.interface._mode is None:
             raise Exception(messages.WRONG_UNIVERSE)
 
         self.interface.all_atoms = self.interface.universe.select_atoms('all')
 
-        self.interface.radii_dict = datafiles.pytim_data.vdwradii(
-            datafiles.G43A1_TOP).copy()
-        self.patch_radii_dict()
-        self.interface.warnings = warnings
         if radii_dict is not None:
             self.interface.radii_dict = radii_dict.copy()
+        else:
+            self.interface.radii_dict = datafiles.pytim_data.vdwradii(
+                datafiles.G43A1_TOP).copy()
+            self.patch_radii_dict()
 
         _missing_attributes(self.interface, self.interface.universe)
 
     def patch_radii_dict(self):
-        # fix here by hand common problems with radii assignment
+        """ Fix here by hand common problems with radii assignment """
         self.interface.radii_dict['D'] = 0.0
         self.interface.radii_dict['M'] = 0.0
         self.interface.radii_dict['HW'] = 0.0
