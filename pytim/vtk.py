@@ -5,6 +5,99 @@ from . import utilities
 import numpy as np
 
 
+class Writevtk(object):
+    def __init__(self, interface):
+        self.interface = interface
+
+    def _dump_group(self, group, filename):
+        """ Save the particles n a vtk file named consecutively using the frame
+            number.
+        """
+        radii, types, color = group.radii, group.types, []
+        for element in types:
+            try:
+                c = (utilities.atoms_maps[element])['color']
+            except KeyError:  # defaults to Carbon
+                c = (utilities.atoms_maps['C'])['color']
+            color.append(c)
+        color = (np.array(color) / 256.).tolist()
+        write_atomgroup(filename, group, color=color, radius=radii)
+
+    def density(self, filename='pytim_dens.vtk', sequence=False):
+        """ Write to vtk files the volumetric density.
+
+            :param str filename:  the file name
+            :param bool sequence: if true writes a sequence of files adding
+                                  the frame to the filename
+
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> from pytim.datafiles import MICELLE_PDB
+            >>> u = mda.Universe(MICELLE_PDB)
+            >>> g = u.select_atoms('resname DPC')
+            >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
+
+            >>> inter.writevtk.density('dens.vtk') # writes on dens.vtk
+            >>> inter.writevtk.density('dens.vtk',sequence=True) # dens.<n>.vtk
+
+        """
+        inter = self.interface
+        if sequence is True:
+            filename = consecutive_filename(inter.universe, filename)
+        write_scalar_grid(filename, inter.ngrid, inter.spacing,
+                          inter.density_field)
+
+    def particles(self, filename='pytim_part.vtk', group=None, sequence=False):
+        """ Write to vtk files the particles in a group.
+
+            :param str filename:    the file name
+            :param bool sequence:   if true writes a sequence of files adding
+                                    the frame to the filename
+            :param AtomGroup group: if None, writes the whole universe
+
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> from pytim.datafiles import MICELLE_PDB
+            >>> u = mda.Universe(MICELLE_PDB)
+            >>> g = u.select_atoms('resname DPC')
+            >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
+
+            >>> # writes on part.vtk
+            >>> inter.writevtk.particles('part.vtk')
+            >>> # writes on part.<frame>.vtk
+            >>> inter.writevtk.particles('part.vtk',sequence=True)
+        """
+
+        inter = self.interface
+        if sequence is True:
+            filename = consecutive_filename(inter.universe, filename)
+        if group is None:
+            group = inter.universe.atoms
+        self._dump_group(group, filename)
+
+    def surface(self, filename='pytim_surf.vtk', sequence=False):
+        """ Write to vtk files the triangulated surface.
+
+            :param str filename:  the file name
+            :param bool sequence: if true writes a sequence of files adding
+                                  the frame to the filename
+
+            >>> import MDAnalysis as mda
+            >>> import pytim
+            >>> from pytim.datafiles import MICELLE_PDB
+            >>> u = mda.Universe(MICELLE_PDB)
+            >>> g = u.select_atoms('resname DPC')
+            >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, mesh=2.0)
+            >>> inter.writevtk.surface('surf.vtk') # writes on surf.vtk
+            >>> inter.writevtk.surface('surf.vtk',sequence=True) # surf.<n>.vtk
+        """
+        inter = self.interface
+        vertices, faces, normals = list(inter.triangulated_surface[0:3])
+        if sequence is True:
+            filename = consecutive_filename(inter.universe, filename)
+        write_triangulation(filename, vertices[::, ::-1], faces, normals)
+
+
 def _format_vector(vector, format_str="{:f}"):
     formatted = ''
     for element in vector:

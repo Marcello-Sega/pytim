@@ -178,8 +178,7 @@ class ChaconTarazona(Interface):
                 self.modes[side] = modes
                 _inlayer_group = self.cluster_group[pivot]
                 if self.molecular is True:
-                    _tmp = _inlayer_group.residues.atoms
-                    _inlayer_group = _tmp
+                    _inlayer_group = _inlayer_group.residues.atoms
                 return _inlayer_group
 
             else:
