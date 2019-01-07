@@ -76,7 +76,7 @@ class ChaconTarazona(Interface):
         self.do_center = centered
 
         sanity = SanityCheck(self,warnings=warnings)
-        sanity.assign_universe(universe, radii_dict=radii_dict)
+        sanity.assign_universe(universe,group,radii_dict=radii_dict)
 
         self.target_mesh = mesh
         if mesh is not None:
@@ -96,7 +96,7 @@ class ChaconTarazona(Interface):
         self.molecular = molecular
 
         # TODO implement cluster group
-        sanity.assign_groups(group, None, None)
+        sanity.assign_groups(None, None)
         sanity.assign_normal(normal)
         sanity.assign_radii()
 
