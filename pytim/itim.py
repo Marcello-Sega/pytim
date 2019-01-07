@@ -191,7 +191,7 @@ J. Comp. Chem. 29, 945, 2008)*
         self.do_center = centered
 
         sanity = SanityCheck(self, warnings=warnings)
-        sanity.assign_universe(universe, radii_dict=radii_dict)
+        sanity.assign_universe(universe, group, radii_dict=radii_dict)
         sanity.assign_alpha(alpha)
         sanity.assign_mesh(mesh)
 
@@ -205,7 +205,7 @@ J. Comp. Chem. 29, 945, 2008)*
         self.PDB = {}
         self.molecular = molecular
 
-        sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
+        sanity.assign_groups(cluster_cut, extra_cluster_groups)
         sanity.assign_normal(normal)
         sanity.assign_radii()
 

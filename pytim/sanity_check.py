@@ -95,6 +95,7 @@ class SanityCheck(object):
             self.interface.extra_cluster_groups = \
                 [ self.interface.extra_cluster_groups ]
 
+    #TODO: rename
     def _check_group(self, input_obj):
         """ Check whether input_obj is one of the following,
             and act accordingly:
@@ -153,7 +154,7 @@ class SanityCheck(object):
             pass
         return None
 
-    def assign_universe(self, input_obj, radii_dict=None):
+    def assign_universe(self, universe, analysis_group, radii_dict=None):
         """ Tweak the details of the universe:
 
             - Compare input_obj against the possible classes. This
@@ -163,11 +164,26 @@ class SanityCheck(object):
             - Check for missing attributes
         """
 
-        self.interface._mode = self._check_group(input_obj)
+        self.interface._mode = self._check_group(universe)
         if self.interface._mode is None:
             raise Exception(messages.WRONG_UNIVERSE)
 
         self.interface.all_atoms = self.interface.universe.select_atoms('all')
+
+        ag = analysis_group
+        if self.interface.analysis_group is None:
+            if ag is None:
+                self.interface.analysis_group = self.interface.all_atoms
+            elif isinstance(ag, int):
+                self.interface.analysis_group = self.interface.universe.atoms[ag:ag + 1]
+            elif isinstance(ag, list) or isinstance(ag, np.ndarray):
+                self.interface.analysis_group = self.interface.universe.atoms[ag]
+            else:
+                self.interface.analysis_group = ag
+
+        if (len(self.interface.analysis_group) == 0):
+            raise RuntimeError(messages.UNDEFINED_ANALYSIS_GROUP)
+
 
         if radii_dict is not None:
             self.interface.radii_dict = radii_dict.copy()
@@ -196,23 +212,10 @@ class SanityCheck(object):
             raise ValueError(messages.ALPHA_LARGE)
         self.interface.alpha = alpha
 
-    def assign_groups(self, analysis_group, cluster_cut, extra_cluster_groups):
+    #TODO: rename
+    def assign_groups(self, cluster_cut, extra_cluster_groups):
         elements = 0
         extraelements = -1
-        ag = analysis_group
-
-        if self.interface.analysis_group is None:
-            if ag is None:
-                self.interface.analysis_group = self.interface.all_atoms
-            elif isinstance(ag, int):
-                self.interface.analysis_group = self.interface.universe.atoms[ag:ag + 1]
-            elif isinstance(ag, list) or isinstance(ag, np.ndarray):
-                self.interface.analysis_group = self.interface.universe.atoms[ag]
-            else:
-                self.interface.analysis_group = ag
-
-        if (len(self.interface.analysis_group) == 0):
-            raise RuntimeError(messages.UNDEFINED_ANALYSIS_GROUP)
 
         self.interface.cluster_cut = cluster_cut
 

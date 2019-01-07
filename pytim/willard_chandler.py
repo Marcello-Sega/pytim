@@ -113,7 +113,7 @@ class WillardChandler(Interface):
 
         self.autoassign, self.do_center = autoassign, centered
         sanity = SanityCheck(self, warnings=warnings)
-        sanity.assign_universe(universe, radii_dict=radii_dict)
+        sanity.assign_universe(universe, group, radii_dict=radii_dict)
         sanity.assign_alpha(alpha)
 
         if mesh <= 0:
@@ -122,7 +122,7 @@ class WillardChandler(Interface):
 
         sanity.assign_radii()
 
-        sanity.assign_groups(group, cluster_cut, extra_cluster_groups)
+        sanity.assign_groups(cluster_cut, extra_cluster_groups)
 
         self._assign_symmetry(symmetry)
 
