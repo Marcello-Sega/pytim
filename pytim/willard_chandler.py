@@ -22,7 +22,7 @@ np.set_printoptions(legacy=False)  # fixes problem with skimage
 try:
     marching_cubes = measure.marching_cubes
 except AttributeError:
-    marching_cubes =  measure.marching_cubes_lewiner
+    marching_cubes = measure.marching_cubes_lewiner
 
 
 class WillardChandler(Interface):
