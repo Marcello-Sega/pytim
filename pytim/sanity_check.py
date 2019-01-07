@@ -21,7 +21,7 @@ class SanityCheck(object):
             groups = [g for g in self.interface.extra_cluster_groups[:]]
         except BaseException:
             groups = []
-        groups.append(self.interface.itim_group)
+        groups.append(self.interface.analysis_group)
         total = self.interface.universe.atoms[0:0]  # empty group
         for g in groups:
             if g is not None:
@@ -72,11 +72,11 @@ class SanityCheck(object):
         interface = self.interface
         if not (interface.symmetry == 'planar'):
             raise ValueError(" wrong symmetry for normal assignement")
-        if interface.itim_group is None:
-            raise TypeError(messages.UNDEFINED_ITIM_GROUP)
+        if interface.analysis_group is None:
+            raise TypeError(messages.UNDEFINED_ANALYSIS_GROUP)
         if normal == 'guess':
             interface.normal = utilities.guess_normal(interface.universe,
-                                                      interface.itim_group)
+                                                      interface.analysis_group)
         else:
             dirdict = {'x': 0, 'y': 1, 'z': 2}
             if not (normal in interface.directions_dict):
@@ -95,20 +95,20 @@ class SanityCheck(object):
                 self.interface.extra_cluster_groups
             ]
 
-        # fallback for itim_group
-        if self.interface.itim_group is None:
-            self.interface.itim_group = self.interface.all_atoms
+        # fallback for analysis_group
+        if self.interface.analysis_group is None:
+            self.interface.analysis_group = self.interface.all_atoms
 
     def _apply_patches(self, input_obj):
 
         if isinstance(input_obj, MDAnalysis.core.universe.Universe):
             self.interface.universe = input_obj
-            self.interface.itim_group = None
+            self.interface.analysis_group = None
             return 'MDAnalysis'
 
         if isinstance(input_obj, MDAnalysis.core.groups.AtomGroup):
             self.interface.universe = input_obj.universe
-            self.interface.itim_group = input_obj
+            self.interface.analysis_group = input_obj
             return 'MDAnalysis'
 
         try:
@@ -194,20 +194,20 @@ class SanityCheck(object):
             return self.interface.universe.atoms[inp]
         return inp
 
-    def assign_groups(self, itim_group, cluster_cut, extra_cluster_groups):
+    def assign_groups(self, analysis_group, cluster_cut, extra_cluster_groups):
         elements = 0
         extraelements = -1
 
-        if self.interface.itim_group is None:
-            self.interface.itim_group = self.wrap_group(itim_group)
+        if self.interface.analysis_group is None:
+            self.interface.analysis_group = self.wrap_group(analysis_group)
 
         self.interface.cluster_cut = cluster_cut
 
         self.interface.extra_cluster_groups = extra_cluster_groups
 
         self._define_groups()
-        if (len(self.interface.itim_group) == 0):
-            raise RuntimeError(messages.UNDEFINED_ITIM_GROUP)
+        if (len(self.interface.analysis_group) == 0):
+            raise RuntimeError(messages.UNDEFINED_ANALYSIS_GROUP)
         interface = self.interface
 
         if (interface.cluster_cut is not None):

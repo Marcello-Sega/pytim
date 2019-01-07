@@ -255,7 +255,7 @@ J. Chem. Phys. 138, 044110, 2013)*
             self.center()
 
         # first we label all atoms in group to be in the gas phase
-        self.label_group(self.itim_group.atoms, beta=0.5)
+        self.label_group(self.analysis_group.atoms, beta=0.5)
         # then all atoms in the larges group are labelled as liquid-like
         self.label_group(self.cluster_group.atoms, beta=0.0)
 
