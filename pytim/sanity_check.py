@@ -196,24 +196,21 @@ class SanityCheck(object):
             raise ValueError(messages.ALPHA_LARGE)
         self.interface.alpha = alpha
 
-    def wrap_group(self, inp):
-        if inp is None:
-            return None
-        if isinstance(inp, int):
-            return self.interface.universe.atoms[inp:inp + 1]
-        if isinstance(inp, list) or isinstance(inp, np.ndarray):
-            return self.interface.universe.atoms[inp]
-        return inp
-
     def assign_groups(self, analysis_group, cluster_cut, extra_cluster_groups):
         elements = 0
         extraelements = -1
+        ag = analysis_group
 
         if self.interface.analysis_group is None:
-            self.interface.analysis_group = self.wrap_group(analysis_group)
-        # fallback for analysis_group
-        if self.interface.analysis_group is None:
-            self.interface.analysis_group = self.interface.all_atoms
+            if ag is None:
+                self.interface.analysis_group = self.interface.all_atoms
+            elif isinstance(ag, int):
+                self.interface.analysis_group = self.interface.universe.atoms[ag:ag + 1]
+            elif isinstance(ag, list) or isinstance(ag, np.ndarray):
+                self.interface.analysis_group = self.interface.universe.atoms[ag]
+            else:
+                self.interface.analysis_group = ag
+
         if (len(self.interface.analysis_group) == 0):
             raise RuntimeError(messages.UNDEFINED_ANALYSIS_GROUP)
 
@@ -231,8 +228,6 @@ class SanityCheck(object):
 
         if not (elements == 1 or elements == 1 + extraelements):
             raise RuntimeError(messages.MISMATCH_CLUSTER_SEARCH)
-
-        return True
 
     def check_multiple_layers_options(self):
         try:
