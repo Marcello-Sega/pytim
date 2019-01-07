@@ -43,8 +43,8 @@ class Interface(object):
         _create_property('alpha', "(float) real space cutoff")
     layers, _layers =\
         _create_property('layers', "AtomGroups of atoms in layers")
-    itim_group, _itim_group =\
-        _create_property('itim_group', "(AtomGroup) the group, "
+    analysis_group, _analysis_group =\
+        _create_property('analysis_group', "(AtomGroup) the group, "
                          "the surface of which should be computed")
     cluster_cut, _cluster_cut =\
         _create_property('cluster_cut', "(real) cutoff for phase "
@@ -136,8 +136,8 @@ class Interface(object):
             _group.clusters = cluster
 
     def _assign_symmetry(self, symmetry):
-        if self.itim_group is None:
-            raise TypeError(messages.UNDEFINED_ITIM_GROUP)
+        if self.analysis_group is None:
+            raise TypeError(messages.UNDEFINED_ANALYSIS_GROUP)
         if symmetry == 'guess':
             raise ValueError("symmetry 'guess' To be implemented")
         else:
@@ -164,10 +164,10 @@ class Interface(object):
                     self.cluster_group += extra[x_ids_other]
 
             # next, we add the atoms belonging to the main phase
-            self.cluster_group += self.itim_group
+            self.cluster_group += self.analysis_group
 
             # groups have been checked already in _sanity_checks()
-            # self.cluster_group at this stage is composed of itim_group +
+            # self.cluster_group at this stage is composed of analysis_group +
             # the smaller clusters of the other phase
             labels, counts, neighbors = utilities.do_cluster_analysis_dbscan(
                 self.cluster_group, cluster_cut,
@@ -214,7 +214,7 @@ class Interface(object):
             self.cluster_group = self.cluster_group[ids_max]
             self.n_neighbors = neighbors
         else:
-            self.cluster_group = self.itim_group
+            self.cluster_group = self.analysis_group
             self.label_group(self.cluster_group, cluster=0)
 
     def is_buried(self, pos):
