@@ -45,7 +45,7 @@ class Writevtk(object):
         if sequence is True:
             filename = consecutive_filename(inter.universe, filename)
         write_scalar_grid(filename, inter.ngrid, inter.spacing,
-                              inter.density_field)
+                          inter.density_field)
 
     def particles(self, filename='pytim_part.vtk', group=None, sequence=False):
         """ Write to vtk files the particles in a group.
