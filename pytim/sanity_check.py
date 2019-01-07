@@ -94,10 +94,6 @@ class SanityCheck(object):
             self.interface.extra_cluster_groups = \
                 [ self.interface.extra_cluster_groups ]
 
-        # fallback for analysis_group
-        if self.interface.analysis_group is None:
-            self.interface.analysis_group = self.interface.all_atoms
-
     def _check_group(self, input_obj):
         """ Check whether input_obj is one of the following,
             and act accordingly:
@@ -159,7 +155,9 @@ class SanityCheck(object):
     def assign_universe(self, input_obj, radii_dict=None, warnings=False):
         """ Tweak the details of the universe:
 
-            - Compare input_obj against the possible classes.
+            - Compare input_obj against the possible classes. This
+              makes possible the use of an AtomGroup in place of a
+              Universe.
             - Load the radii from file or from radii_dict
             - Check for missing attributes
         """
@@ -214,14 +212,17 @@ class SanityCheck(object):
 
         if self.interface.analysis_group is None:
             self.interface.analysis_group = self.wrap_group(analysis_group)
+        # fallback for analysis_group
+        if self.interface.analysis_group is None:
+            self.interface.analysis_group = self.interface.all_atoms
+        if (len(self.interface.analysis_group) == 0):
+            raise RuntimeError(messages.UNDEFINED_ANALYSIS_GROUP)
 
         self.interface.cluster_cut = cluster_cut
 
         self.interface.extra_cluster_groups = extra_cluster_groups
 
         self._define_groups()
-        if (len(self.interface.analysis_group) == 0):
-            raise RuntimeError(messages.UNDEFINED_ANALYSIS_GROUP)
         interface = self.interface
 
         if (interface.cluster_cut is not None):
