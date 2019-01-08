@@ -232,6 +232,7 @@ class Interface(object):
         return condition
 
     def reset_labels(self):
+        """ Reset labels before interfacial analysis"""
         self.label_group(
             self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
 
@@ -255,6 +256,14 @@ class Interface(object):
                 z=_pos_group,
                 center_direction=direction,
                 halfbox_shift=halfbox_shift)
+
+    def prepare_box(self):
+        """ Before the analysis, pack every molecule into the box.
+            Keep the original positions for latter use.
+        """
+        self.original_positions = np.copy(self.universe.atoms.positions[:])
+        self.universe.atoms.pack_into_box()
+
 
     @staticmethod
     def _center(group, direction, halfbox_shift=False):
