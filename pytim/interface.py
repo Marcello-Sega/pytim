@@ -264,7 +264,6 @@ class Interface(object):
         self.original_positions = np.copy(self.universe.atoms.positions[:])
         self.universe.atoms.pack_into_box()
 
-
     @staticmethod
     def _center(group, direction, halfbox_shift=False):
         """

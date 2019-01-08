@@ -315,7 +315,6 @@ J. Comp. Chem. 29, 945, 2008)*
         self.mask = np.zeros(size, dtype=int)
         self.prepare_box()
 
-
     def _prelabel_groups(self):
         # first we label all atoms in group to be in the gas phase
         self.label_group(self.analysis_group.atoms, beta=0.5)
