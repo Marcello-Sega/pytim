@@ -100,9 +100,14 @@ class SanityCheck(object):
         return None
 
     #TODO: rename
-    def assign_groups(self, cluster_cut, extra_cluster_groups):
+    def assign_groups(self,
+                      cluster_cut,
+                      cluster_threshold_density,
+                      extra_cluster_groups):
         elements = 0
         extraelements = -1
+
+        self.interface.cluster_threshold_density = cluster_threshold_density
 
         # we first make sure cluster_cut is either None, or an array
         if isinstance(cluster_cut, (int, float)):

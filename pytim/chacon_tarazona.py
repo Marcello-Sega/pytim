@@ -96,7 +96,7 @@ class ChaconTarazona(Interface):
         self.molecular = molecular
 
         # TODO implement cluster group
-        sanity.assign_groups(None, None)
+        sanity.assign_groups(None, None, None)
         sanity.assign_normal(normal)
         sanity.assign_radii(radii_dict=radii_dict)
 

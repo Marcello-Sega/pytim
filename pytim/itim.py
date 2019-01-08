@@ -195,7 +195,6 @@ J. Comp. Chem. 29, 945, 2008)*
         sanity.assign_alpha(alpha)
         sanity.assign_mesh(mesh)
 
-        self.cluster_threshold_density = cluster_threshold_density
         self.max_layers = max_layers
         self._layers = np.empty(
             [2, max_layers], dtype=self.universe.atoms[0].__class__)
@@ -205,7 +204,8 @@ J. Comp. Chem. 29, 945, 2008)*
         self.PDB = {}
         self.molecular = molecular
 
-        sanity.assign_groups(cluster_cut, extra_cluster_groups)
+        sanity.assign_groups(cluster_cut,
+                cluster_threshold_density, extra_cluster_groups)
         sanity.assign_normal(normal)
         sanity.assign_radii(radii_dict=radii_dict)
 

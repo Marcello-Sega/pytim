@@ -139,14 +139,14 @@ J. Chem. Phys. 138, 044110, 2013)*
         sanity.assign_universe(universe, group)
         sanity.assign_alpha(alpha)
 
-        self.cluster_threshold_density = cluster_threshold_density
         self.max_layers = max_layers
         self._layers = np.empty([max_layers], dtype=type(universe.atoms))
         self.info = info
         self.normal = None
         self.PDB = {}
         self.molecular = molecular
-        sanity.assign_groups(cluster_cut, extra_cluster_groups)
+        sanity.assign_groups(cluster_cut,
+                cluster_threshold_density, extra_cluster_groups)
         sanity.check_multiple_layers_options()
         sanity.assign_radii(radii_dict=radii_dict)
 
