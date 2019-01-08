@@ -32,7 +32,7 @@ class SanityCheck(object):
                 _group = self.interface.all_atoms
             elif isinstance(ag, int):
                 _group = self.interface.universe.atoms[ag:ag + 1]
-            elif isinstance(ag, list) or isinstance(ag, np.ndarray):
+            elif isinstance(ag, (list,np.ndarray)):
                 _group = self.interface.universe.atoms[ag]
             else:
                 _group = ag
@@ -104,18 +104,18 @@ class SanityCheck(object):
         elements = 0
         extraelements = -1
 
-        self.interface.cluster_cut = cluster_cut
         # we first make sure cluster_cut is either None, or an array
-        if isinstance(self.interface.cluster_cut, (int, float)):
-            self.interface.cluster_cut = np.array(
-                [float(self.interface.cluster_cut)])
+        if isinstance(cluster_cut, (int, float)):
+            self.interface.cluster_cut = np.array([float(cluster_cut)])
+        else:
+            self.interface.cluster_cut = cluster_cut
 
-        self.interface.extra_cluster_groups = extra_cluster_groups
         # same with extra_cluster_groups
-        if not isinstance(self.interface.extra_cluster_groups,
+        if not isinstance(extra_cluster_groups,
                           (list, tuple, np.ndarray, type(None))):
-            self.interface.extra_cluster_groups = \
-                [ self.interface.extra_cluster_groups ]
+            self.interface.extra_cluster_groups = [extra_cluster_groups]
+        else:
+            self.interface.extra_cluster_groups = extra_cluster_groups
 
         interface = self.interface
 
