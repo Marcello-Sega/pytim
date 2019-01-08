@@ -122,7 +122,8 @@ class WillardChandler(Interface):
 
         sanity.assign_radii(radii_dict=radii_dict)
 
-        sanity.assign_groups(cluster_cut, extra_cluster_groups)
+        sanity.assign_groups(cluster_cut,
+                cluster_threshold_density, extra_cluster_groups)
 
         self._assign_symmetry(symmetry)
 
