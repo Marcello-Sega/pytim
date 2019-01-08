@@ -9,6 +9,7 @@ from scipy.interpolate import LinearNDInterpolator
 from . import utilities
 from . import messages
 from .observables import LocalReferenceFrame as LocalReferenceFrame
+import weakref
 
 
 class Surface(object):
@@ -26,7 +27,7 @@ class Surface(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, interface, options=None):
-        self.interface = interface
+        self.interface = weakref.ref(interface)
         self.normal = interface.normal
         self.alpha = interface.alpha
         self.options = options
