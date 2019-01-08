@@ -100,10 +100,10 @@ class SanityCheck(object):
         return None
 
     #TODO: rename
-    def assign_groups(self,
-                      cluster_cut,
-                      cluster_threshold_density,
-                      extra_cluster_groups):
+    def assign_cluster_params(self,
+                              cluster_cut,
+                              cluster_threshold_density,
+                              extra_cluster_groups):
         elements = 0
         extraelements = -1
 
