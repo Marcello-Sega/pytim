@@ -216,7 +216,7 @@ J. Comp. Chem. 29, 945, 2008)*
 
         self._assign_layers()
 
-    def _assign_mesh(self):
+    def _create_mesh(self):
         """ Mesh assignment method
 
             Based on a target value, determine a mesh size for the testlines
@@ -310,21 +310,11 @@ J. Comp. Chem. 29, 945, 2008)*
             queue.put(layers)
 
     def _prepare_layers_assignment(self):
-        self._assign_mesh()
+        self._create_mesh()
         size = (2, int(self.max_layers), int(self.mesh_nx) * int(self.mesh_ny))
         self.mask = np.zeros(size, dtype=int)
+        self.prepare_box()
 
-        # this can be used later to shift back to the original shift
-        self.original_positions = np.copy(self.universe.atoms.positions[:])
-
-        self.universe.atoms.pack_into_box()
-        # in some rare cases, pack_into_box() returns some points which are
-        # at slightly negative position. We set this by hand to zero.
-        p = self.universe.atoms.positions.copy()
-        cond = np.logical_and(self.universe.atoms.positions < 0.0,
-                              self.universe.atoms.positions > -1e-5)
-        p[cond] *= 0.0
-        self.universe.atoms.positions = p
 
     def _prelabel_groups(self):
         # first we label all atoms in group to be in the gas phase

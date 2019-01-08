@@ -192,14 +192,11 @@ class WillardChandler(Interface):
             triangulated isosurface, the density and the particles.
 
         """
-        self.label_group(
-            self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
+        self.reset_labels()
         # we assign an empty group for consistency
         self._layers, self.normal = self.universe.atoms[:0], None
 
-        # this can be used later to shift back to the original shift
-        self.original_positions = np.copy(self.universe.atoms.positions[:])
-        self.universe.atoms.pack_into_box()
+        self.prepare_box()
 
         self._define_cluster_group()
 

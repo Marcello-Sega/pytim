@@ -243,9 +243,8 @@ J. Chem. Phys. 138, 044110, 2013)*
 
     def _assign_layers_setup(self):
         self.reset_labels()
-        # this can be used later to shift back to the original shift
-        self.original_positions = np.copy(self.universe.atoms.positions[:])
-        self.universe.atoms.pack_into_box()
+
+        self.prepare_box()
 
         self._define_cluster_group()
 

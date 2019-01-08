@@ -188,14 +188,10 @@ class ChaconTarazona(Interface):
             layers.
 
         """
-        self.label_group(
-            self.universe.atoms, beta=0.0, layer=-1, cluster=-1, side=-1)
+        self.reset_labels()
 
         # TODO parallelize
-
-        # this can be used later to shift back to the original shift
-        self.original_positions = np.copy(self.universe.atoms.positions)
-        self.universe.atoms.pack_into_box()
+        self.prepare_box()
 
         # groups have been checked already in _sanity_checks()
 
