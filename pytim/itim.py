@@ -204,7 +204,7 @@ J. Comp. Chem. 29, 945, 2008)*
         self.PDB = {}
         self.molecular = molecular
 
-        sanity.assign_groups(cluster_cut,
+        sanity.assign_cluster_params(cluster_cut,
                 cluster_threshold_density, extra_cluster_groups)
         sanity.assign_normal(normal)
         sanity.assign_radii(radii_dict=radii_dict)

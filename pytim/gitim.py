@@ -145,7 +145,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         self.normal = None
         self.PDB = {}
         self.molecular = molecular
-        sanity.assign_groups(cluster_cut,
+        sanity.assign_cluster_params(cluster_cut,
                 cluster_threshold_density, extra_cluster_groups)
         sanity.check_multiple_layers_options()
         sanity.assign_radii(radii_dict=radii_dict)
