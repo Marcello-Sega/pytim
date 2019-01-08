@@ -27,7 +27,7 @@ class Surface(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, interface, options=None):
-        self.interface = weakref.ref(interface)
+        self.interface = weakref.proxy(interface)
         self.normal = interface.normal
         self.alpha = interface.alpha
         self.options = options
