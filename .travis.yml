@@ -15,12 +15,12 @@ matrix:
         - os: linux
           sudo: required
           python: 2.7
-          env: MDAv=0.16.2
+          env: MDAv=0.17
 
         - os: linux
           sudo: required
           python: 2.7
-          env: MDAv=0.16
+          env: MDAv=0.17
 
         - os: linux
           sudo: required
