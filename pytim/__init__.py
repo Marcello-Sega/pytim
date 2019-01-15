@@ -2,15 +2,9 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 #from pytim.patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
-import numpy
+from . import patches
 
-try:
-    numpy.lib.arraypad._validate_lengths
-except:
-    def patch_validate_lengths(ar,crop_width):
-        return numpy.lib.arraypad._as_pairs(crop_width, ar.ndim, as_index=True)
-    numpy.lib.arraypad._validate_lengths = patch_validate_lengths
-
+patches.PatchNumpy()
 
 from .simple_interface import SimpleInterface
 from .itim import ITIM
