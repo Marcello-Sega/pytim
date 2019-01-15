@@ -2,9 +2,9 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 #from pytim.patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
 
-from . import patches
+from .patches import PatchNumpy
 
-patches.PatchNumpy()
+PatchNumpy()
 
 from .simple_interface import SimpleInterface
 from .itim import ITIM
