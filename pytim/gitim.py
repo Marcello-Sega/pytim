@@ -18,7 +18,7 @@ except ImportError:
     from scipy.spatial import Delaunay
 
 from .interface import Interface
-from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
 from circumradius import circumradius
 
 
@@ -146,7 +146,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         self.PDB = {}
         self.molecular = molecular
         sanity.assign_cluster_params(cluster_cut,
-                cluster_threshold_density, extra_cluster_groups)
+                                     cluster_threshold_density, extra_cluster_groups)
         sanity.check_multiple_layers_options()
         sanity.assign_radii(radii_dict=radii_dict)
 
@@ -170,7 +170,7 @@ J. Chem. Phys. 138, 044110, 2013)*
                 self._surfaces[nlayer] = SurfaceGenericInterface(
                     self, options={'layer': nlayer})
 
-        PatchTrajectory(self.universe.trajectory, self)
+        patchTrajectory(self.universe.trajectory, self)
 
         self._assign_layers()
 

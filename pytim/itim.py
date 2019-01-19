@@ -20,7 +20,7 @@ from .surface import SurfaceFlatInterface as Surface
 from .sanity_check import SanityCheck
 
 from .interface import Interface
-from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
 
 
 class ITIM(Interface):
@@ -205,14 +205,14 @@ J. Comp. Chem. 29, 945, 2008)*
         self.molecular = molecular
 
         sanity.assign_cluster_params(cluster_cut,
-                cluster_threshold_density, extra_cluster_groups)
+                                     cluster_threshold_density, extra_cluster_groups)
         sanity.assign_normal(normal)
         sanity.assign_radii(radii_dict=radii_dict)
 
         self.grid = None
         self.use_threads = False
 
-        PatchTrajectory(self.universe.trajectory, self)
+        patchTrajectory(self.universe.trajectory, self)
 
         self._assign_layers()
 

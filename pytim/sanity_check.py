@@ -32,7 +32,7 @@ class SanityCheck(object):
                 _group = self.interface.all_atoms
             elif isinstance(ag, int):
                 _group = self.interface.universe.atoms[ag:ag + 1]
-            elif isinstance(ag, (list,np.ndarray)):
+            elif isinstance(ag, (list, np.ndarray)):
                 _group = self.interface.universe.atoms[ag]
             else:
                 _group = ag
@@ -70,7 +70,7 @@ class SanityCheck(object):
                 _file.close()
                 input_obj[0].save_pdb(_file.name)
                 self.interface.universe = MDAnalysis.Universe(_file.name)
-                PatchMDTRAJ(input_obj, self.interface.universe)
+                patchMDTRAJ(input_obj, self.interface.universe)
                 os.remove(_file.name)
                 return 'mdtraj'
         except ImportError:
@@ -92,14 +92,14 @@ class SanityCheck(object):
                     topology=top, positions=pos, file=_file)
                 _file.close()
                 self.interface.universe = MDAnalysis.Universe(_file.name)
-                PatchOpenMM(input_obj, self.interface)
+                patchOpenMM(input_obj, self.interface)
                 os.remove(_file.name)
                 return 'openmm'
         except ImportError:
             pass
         return None
 
-    #TODO: rename
+    # TODO: rename
     def assign_cluster_params(self,
                               cluster_cut,
                               cluster_threshold_density,

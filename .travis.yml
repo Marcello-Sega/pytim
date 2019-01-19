@@ -15,17 +15,23 @@ matrix:
         - os: linux
           sudo: required
           python: 2.7
-          env: MDAv=0.16.2
+          env: MDAv=0.19
 
         - os: linux
           sudo: required
           python: 2.7
-          env: MDAv=0.16
+          env: MDAv=0.19.2
 
         - os: linux
           sudo: required
           python: 3.6
           env: MDAv=0.17
+
+        - os: linux
+          sudo: required
+          python: 3.6
+          env: MDAv=0.19.2
+
 
 
 
@@ -65,6 +71,6 @@ script: python setup.py test
 
 
 after_script:
-  if ([ "$TRAVIS_OS_NAME" == "linux" ] && [ "$MDAv" == "0.16" ]) ; then
+  if ([ "$TRAVIS_OS_NAME" == "linux" ] && [ "$MDAv" == "0.19" ]) ; then
         pip install codecov; pip install pytest-cov ; py.test --cov=pytim pytim/*py pytim/observables/*py pytim/datafiles/*py --doctest-modules --cov-report xml ;  ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT ; codecov ; fi
 

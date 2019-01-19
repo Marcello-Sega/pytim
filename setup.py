@@ -125,16 +125,16 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        'MDAnalysis>=0.19.1', 'PyWavelets>=0.5.2', 'numpy>=1.15.3',
-        'scipy>=1.1', 'scikit-image>=0.14.1', 'cython>=0.24.1',
-        'sphinx>=1.4.3', 'matplotlib', 'pytest'
+        'MDAnalysis>=0.19.2', 'PyWavelets>=0.5.2', 'numpy>=1.15.3',
+        'scipy>=1.1', 'scikit-image>=0.14.2', 'cython>=0.24.1',
+        'sphinx>=1.4.3', 'matplotlib', 'pytest', 'dask>=1.0'
     ],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
     # $ pip install -e .[dev,test]
-    tests_require=['nose', 'coverage'],
+    tests_require=['nose>=1.3.7', 'coverage'],
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.

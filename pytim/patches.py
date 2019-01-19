@@ -3,7 +3,19 @@
 from __future__ import print_function
 
 
-def PatchTrajectory(trajectory, interface):
+def patchNumpy():
+    # this try/except block patches numpy and provides _validate_lengths
+    # to skimage<=1.14.1
+    import numpy
+    try:
+        numpy.lib.arraypad._validate_lengths
+    except AttributeError:
+        def patch_validate_lengths(ar, crop_width):
+            return numpy.lib.arraypad._as_pairs(crop_width, ar.ndim, as_index=True)
+        numpy.lib.arraypad._validate_lengths = patch_validate_lengths
+
+
+def patchTrajectory(trajectory, interface):
     """ Patch the MDAnalysis trajectory class
 
         this patch makes the layer assignement being automatically
@@ -40,7 +52,7 @@ def PatchTrajectory(trajectory, interface):
         trajectory.__class__ = PatchedTrajectory
 
 
-def PatchOpenMM(simulation, interface):
+def patchOpenMM(simulation, interface):
     #       return _openmm.CompoundIntegrator_step(self, steps)
     """ Patch the Openmm Simulation class
 
@@ -70,7 +82,7 @@ def PatchOpenMM(simulation, interface):
         simulation.__class__ = PatchedOpenMMSimulation
 
 
-def PatchMDTRAJ(trajectory, universe):
+def patchMDTRAJ(trajectory, universe):
     """ Patch the mdtraj Trajectory class
 
         automates the data exchange between MDAnalysis and mdtraj classes
@@ -83,7 +95,7 @@ def PatchMDTRAJ(trajectory, universe):
         class PatchedMdtrajTrajectory(trajectory.__class__):
             def __getitem__(self, key):
                 slice_ = self.slice(key)
-                PatchMDTRAJ(slice_, universe)
+                patchMDTRAJ(slice_, universe)
                 if isinstance(key, int):
                     # mdtraj uses nm as distance unit, we need to convert to
                     # Angstrom for MDAnalysis

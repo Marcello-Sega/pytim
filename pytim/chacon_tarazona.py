@@ -11,7 +11,7 @@ from .surface import SurfaceFlatInterface as Surface
 from .sanity_check import SanityCheck
 
 from .interface import Interface
-from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
 
 
 class ChaconTarazona(Interface):
@@ -75,8 +75,8 @@ class ChaconTarazona(Interface):
         self.symmetry = 'planar'
         self.do_center = centered
 
-        sanity = SanityCheck(self,warnings=warnings)
-        sanity.assign_universe(universe,group)
+        sanity = SanityCheck(self, warnings=warnings)
+        sanity.assign_universe(universe, group)
 
         self.target_mesh = mesh
         if mesh is not None:
@@ -104,7 +104,7 @@ class ChaconTarazona(Interface):
         self.surf = None
         self.modes = [None, None]
 
-        PatchTrajectory(self.universe.trajectory, self)
+        patchTrajectory(self.universe.trajectory, self)
         self._assign_layers()
 
     def _points_next_to_surface(self, surf, modes, pivot):
