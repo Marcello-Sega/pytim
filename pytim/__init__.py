@@ -11,9 +11,9 @@ from .sasa import SASA
 from .gitim import GITIM
 from .itim import ITIM
 from .simple_interface import SimpleInterface
-from .patches import PatchNumpy
+from .patches import patchNumpy
 
-PatchNumpy()
+patchNumpy()
 
 
 warnings.filterwarnings(
