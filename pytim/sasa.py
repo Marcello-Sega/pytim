@@ -15,7 +15,7 @@ from .surface import SurfaceFlatInterface
 from .surface import SurfaceGenericInterface
 
 from .interface import Interface
-from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
 from circumradius import circumradius
 from .gitim import GITIM
 from scipy.spatial import cKDTree
@@ -226,7 +226,7 @@ class SASA(GITIM):
         """Access the layers as numpy arrays of AtomGroups.
 
         The object can be sliced as usual with numpy arrays.
-        Differently from :mod:`~pytim.itim.ITIM`, there are no sides. 
+        Differently from :mod:`~pytim.itim.ITIM`, there are no sides.
 
         """
         return self._layers

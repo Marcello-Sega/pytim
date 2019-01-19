@@ -15,7 +15,7 @@ from .sanity_check import SanityCheck
 from .vtk import Writevtk
 
 from .interface import Interface
-from .patches import PatchTrajectory, PatchOpenMM, PatchMDTRAJ
+from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
 
 np.set_printoptions(legacy=False)  # fixes problem with skimage
 
@@ -123,11 +123,11 @@ class WillardChandler(Interface):
         sanity.assign_radii(radii_dict=radii_dict)
 
         sanity.assign_cluster_params(cluster_cut,
-                cluster_threshold_density, extra_cluster_groups)
+                                     cluster_threshold_density, extra_cluster_groups)
 
         self._assign_symmetry(symmetry)
 
-        PatchTrajectory(self.universe.trajectory, self)
+        patchTrajectory(self.universe.trajectory, self)
         self._assign_layers()
         self._atoms = self._layers[:]  # this is an empty AtomGroup
         self.writevtk = Writevtk(self)
