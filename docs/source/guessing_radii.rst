@@ -38,10 +38,10 @@ MDAnalysis_, and deal with atomtypes only through the :doc:`Pytim <quick>` inter
 As there is no specific information in the gromos input file regarding atomic types,  these are
 assigned by MDAnalysis_ using the first letter of the atom name.
 
->>> print u.residues[0].atoms.types
+>>> print (u.residues[0].atoms.types)
 ['M' 'O' 'H']
 
->>> print u.residues[0].atoms.names
+>>> print (u.residues[0].atoms.names)
 ['Me1' 'O2' 'H3']
 
 When the interface is initialized, :doc:`Pytim <quick>` searches by default for the best
@@ -73,7 +73,7 @@ and the radii as values. This database will override the standard one (new behav
 >>> u = mda.Universe(METHANOL_GRO)
 >>> mydict    = {'Me':1.6, 'O':1.5, 'H':0.0}
 >>> interface = pytim.ITIM(u,radii_dict=mydict)
->>> print u.residues[0].atoms.radii
+>>> print (u.residues[0].atoms.radii)
 [1.6 1.5 0. ]
 
 **Case 3: overriding the default match**
@@ -85,8 +85,8 @@ using the :py:func:`pytim_data.vdwradii()`  function:
 >>> # Load the radii database from the G43A1 forcefield
 >>> gromos = pytim_data.vdwradii(G43A1_TOP)
 >>> # check which types are available
->>> print gromos.keys()
-['CU1+', 'CDmso', 'OWT3', 'CA2+', 'FE', 'BR', 'MG2+', 'HC', 'OWT4', 'CL-', 'NL', 'CCl4', 'CLCl4', 'CL', 'NE', 'SDmso', 'CH1', 'NZ', 'CH3', 'CH4', 'ODmso', 'NR', 'NT', 'C', 'HChl', 'DUM', 'F', 'H', 'CChl', 'CMet', 'CLChl', 'O', 'N', 'MW', 'P', 'S', 'AR', 'IW', 'CU2+', 'OM', 'CR1', 'MNH3', 'NA+', 'OA', 'SI', 'CH2', 'OW', 'ZN2+', 'OMet']
+>>> print (sorted(list(gromos.keys())))
+['AR', 'BR', 'C', 'CA2+', 'CChl', 'CCl4', 'CDmso', 'CH1', 'CH2', 'CH3', 'CH4', 'CL', 'CL-', 'CLChl', 'CLCl4', 'CMet', 'CR1', 'CU1+', 'CU2+', 'DUM', 'F', 'FE', 'H', 'HC', 'HChl', 'IW', 'MG2+', 'MNH3', 'MW', 'N', 'NA+', 'NE', 'NL', 'NR', 'NT', 'NZ', 'O', 'OA', 'ODmso', 'OM', 'OMet', 'OW', 'OWT3', 'OWT4', 'P', 'S', 'SDmso', 'SI', 'ZN2+']
 
 In some cases, the automated procedure does not yield the expected
 (or wanted) match.  To fix this one can just update the database

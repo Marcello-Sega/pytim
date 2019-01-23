@@ -38,7 +38,7 @@ The value of :py:obj:`atoms.layers` can be either -1 (atom not in any of the lay
     >>> u = mda.Universe(WATER_GRO)
     >>> g = u.select_atoms('name OW')
     >>> inter = pytim.ITIM(u,group=g,max_layers=3)
-    >>> print np.unique(u.atoms.layers)
+    >>> print (np.unique(u.atoms.layers))
     [-1  1  2  3]
 
 This property can be used to select a particular subset of atoms, e.g.
