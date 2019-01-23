@@ -88,7 +88,7 @@ We make here the example of multiple solvation layers around glucose:
     inter = pytim.GITIM(u, group=solvent, max_layers=3, alpha=2)
 
     for i in [0,1,2]:
-        print "Layer "+str(i),repr(inter.layers[i])
+        print ("Layer "+str(i),repr(inter.layers[i]))
 
     Layer 0 <AtomGroup with 54 atoms>
     Layer 1 <AtomGroup with 117 atoms>

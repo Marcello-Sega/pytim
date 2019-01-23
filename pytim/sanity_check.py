@@ -171,7 +171,7 @@ class SanityCheck(object):
                 print("You can override this by using, e.g.: pytim.", end='')
                 print(self.interface.__class__.__name__, end=' ')
                 print("(u,radii_dict={ '", end='')
-                print(gr.keys()[0] + "':1.2 , ... } )")
+                print(list(gr.keys())[0] + "':1.2 , ... } )")
         except BaseException:
             pass
 
