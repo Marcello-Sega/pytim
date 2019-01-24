@@ -82,6 +82,7 @@ class SimpleInterface(Interface):
                  alpha=1.5,
                  symmetry='generic',
                  normal='z',
+                 centered=False,
                  upper=None,
                  lower=None):
 
@@ -91,6 +92,8 @@ class SimpleInterface(Interface):
         self.alpha = alpha
         self.upper = upper
         self.lower = lower
+        self.PDB = {}
+        self.do_center = centered
         emptyg = universe.atoms[0:0]
         if self.group is None:
             self.group = universe.atoms
