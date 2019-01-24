@@ -94,14 +94,12 @@ class SimpleInterface(Interface):
         self.lower = lower
         self.PDB = {}
         self.do_center = centered
-        emptyg = universe.atoms[0:0]
-        if self.group is None:
-            self.group = universe.atoms
 
         sanity = SanityCheck(self, warnings=False)
         sanity.assign_universe(universe, group)
         sanity.assign_alpha(alpha)
         sanity.assign_radii(radii_dict=None)
+
         if normal in [0, 1, 2]:
             self.normal = normal
         else:
