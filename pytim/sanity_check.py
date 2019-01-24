@@ -99,7 +99,6 @@ class SanityCheck(object):
             pass
         return None
 
-    # TODO: rename
     def assign_cluster_params(self,
                               cluster_cut,
                               cluster_threshold_density,

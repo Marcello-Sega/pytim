@@ -167,7 +167,7 @@ class Profile(object):
         # we need to make sure that the number of bins is odd, so that the
         # central one encompasses zero (to make the delta-function
         # contribution appear always in this bin)
-        if (nbins % 2 > 0):
+        if (nbins % 2 == 0):
             nbins += 1
         self._nbins = nbins
 
@@ -211,7 +211,7 @@ class Profile(object):
         if self.interface is None:
             pos = group.positions[::, self._dir]
         else:
-            deltabin = 1 + (self._nbins - 1) // 2
+            deltabin = 1 + (self._nbins - 1) // 2 #center bin with the Delta-func
             pos = IntrinsicDistance(
                 self.interface, symmetry=self.symmetry, mode=self.mode).compute(group)
 
