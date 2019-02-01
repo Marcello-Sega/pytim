@@ -7,12 +7,14 @@ from pytim import utilities
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
 from .observable import Observable
-from .basic_observables import Position, Velocity, Force
+from .basic_observables import Position, RelativePosition, Velocity, Force
 from .basic_observables import Number, Mass, Charge, NumberOfResidues
+from .basic_observables import Distance
 from .local_frame import LocalReferenceFrame, Curvature
 
 from .intrinsic_distance import IntrinsicDistance
 from .profile import Profile
+from .distributionfunction import DistributionFunction
 from .rdf import RDF
 from .rdf2d import RDF2D
 from .free_volume import FreeVolume
