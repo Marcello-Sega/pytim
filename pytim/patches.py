@@ -23,8 +23,11 @@ def patchTrajectory(trajectory, interface):
     """
     try:
         trajectory.interface
+        trajectory.interface = interface
+
     except AttributeError:
         trajectory.interface = interface
+        trajectory.interface._frame = trajectory.frame
         trajectory.original_read_next_timestep = trajectory._read_next_timestep
 
         trajectory.original_read_frame_with_aux = trajectory._read_frame_with_aux
@@ -34,13 +37,16 @@ def patchTrajectory(trajectory, interface):
                 tmp = self.original_read_next_timestep(ts=ts)
                 if self.interface.autoassign is True:
                     self.interface._assign_layers()
+                    self.interface._frame = self.frame
                 return tmp
 
             def _read_frame_with_aux(self, frame):
                 if frame != self.frame:
                     tmp = self.original_read_frame_with_aux(frame)
                     if self.interface.autoassign is True:
-                        self.interface._assign_layers()
+                        if self.interface._frame != self.frame:
+                            self.interface._assign_layers()
+                            self.interface._frame = self.frame
                     return tmp
                 return self.ts
 
