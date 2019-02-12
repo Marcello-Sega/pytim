@@ -58,6 +58,8 @@ install:
 - pip install matplotlib
 - pip install cython
 - pip install MDAnalysis==$MDAv
+- pip install pandas
+- pip install mdtraj
 - pip install nose
 - pip install .
 # command to run tests

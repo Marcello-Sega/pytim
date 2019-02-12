@@ -125,6 +125,15 @@ J. Comp. Chem. 29, 945, 2008)*
         >>> for ts in u.trajectory[::50]:
         ... 	ts2 = u2.trajectory[ts.frame]
 
+
+        >>> # pytim can be used also on top of mdtraj (MDAnalysis must be present,though)
+        >>> import mdtraj
+        >>> import pytim
+        >>> from pytim.datafiles import WATER_GRO, WATER_XTC
+        >>> t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO)
+        >>> inter = pytim.ITIM(t)
+
+
         .. _MDAnalysis: http://www.mdanalysis.org/
         .. _MDTraj: http://www.mdtraj.org/
         .. _OpenMM: http://www.openmm.org/
