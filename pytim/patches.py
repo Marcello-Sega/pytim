@@ -92,7 +92,18 @@ def patchMDTRAJ(trajectory, universe):
     """ Patch the mdtraj Trajectory class
 
         automates the data exchange between MDAnalysis and mdtraj classes
+
+        Example:
+
+        >>> import mdtraj
+        >>> import pytim
+        >>> from pytim.datafiles import WATER_GRO, WATER_XTC
+        >>> t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO)
+        >>> inter = pytim.ITIM(t)
+
+
     """
+
     try:
         trajectory.universe
     except AttributeError:
