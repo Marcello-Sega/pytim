@@ -11,7 +11,7 @@ from .sasa import SASA
 from .gitim import GITIM
 from .itim import ITIM
 from .simple_interface import SimpleInterface
-from .patches import patchNumpy
+from .patches import patchNumpy, patchTrajectory, patchOpenMM, patchMDTRAJ
 
 patchNumpy()
 

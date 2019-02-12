@@ -8,6 +8,7 @@ from . import utilities
 from . import messages
 from .properties import Layers, Clusters, Sides, _create_property
 from .properties import guess_radii, _missing_attributes
+from .patches import patchMDTRAJ, patchOpenMM
 
 
 class SanityCheck(object):
