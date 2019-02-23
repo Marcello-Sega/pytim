@@ -124,6 +124,10 @@ class RDF(DistributionFunction):
                 kargs2 = kargs2)
 
     @property
+    def bins(self):
+        return 0.5 * (self.edges[0][:-1] + self.edges[0][1:])
+
+    @property
     def rdf(self):
         # Volume in each radial shell
         dr = (self.edges[0][1:] - self.edges[0][:-1])
