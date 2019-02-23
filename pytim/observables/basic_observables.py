@@ -124,14 +124,17 @@ class ReferenceFrame(Vector):
             Q[:, i] = q / la.norm(q)
         return Q
 
+
 class Distance(Observable):
     """ Distance between atoms in two groups. 
 
         >>> import MDAnalysis as mda
         >>> import pytim
+        >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
         >>> dist = pytim.observables.Distance()
-        >>> print(dist.compute(u.atoms[:2],u.atoms[:2]) )
-        [0.         0.99559099 0.99559099 0.        ]
+        >>> with np.printoptions(precision=3):
+        ...     print(dist.compute(u.atoms[:2],u.atoms[:2]) )
+        [0.    0.996 0.996 0.   ]
 
         The distance of the projections of the atoms position on 
         a plane can be computed by initializing the observable
@@ -141,8 +144,9 @@ class Distance(Observable):
         >>> import pytim
         >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
         >>> dist = pytim.observables.Distance('xy')
-        >>> print(dist.compute(u.atoms[:2],u.atoms[:2]) )
-        [0.         0.50159778 0.50159778 0.        ]
+        >>> with np.printoptions(precision=3):
+        ...     print(dist.compute(u.atoms[:2],u.atoms[:2]) )
+        [0.    0.502 0.502 0.   ]
 
 
         Notice that the Distance observable is equivalent to using 
@@ -155,12 +159,12 @@ class Distance(Observable):
         >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
         >>> d1 = pytim.observables.Distance().compute(u.atoms[:9],u.atoms[:9])
         >>> d2 = pytim.observables.RelativePosition(spherical=True).compute(u.atoms[:9],u.atoms[:9])[:,0]
-        >>> np.all(d1==d2)
+        >>> np.all(np.isclose(d1,d2))
         True
 
         >>> d1 = pytim.observables.Distance('xy').compute(u.atoms[:9],u.atoms[:9])
         >>> d2 = pytim.observables.RelativePosition('xy',spherical=True).compute(u.atoms[:9],u.atoms[:9])[:,0]
-        >>> np.all(d1==d2)
+        >>> np.all(np.isclose(d1,d2))
 
     """
 
@@ -168,10 +172,9 @@ class Distance(Observable):
         Observable.__init__(self, None)
         try:
             self.select_direction(arg[0])
-        except IndexError: # TODO move this logics within select_direction 
+        except IndexError:  # TODO move this logics within select_direction
                           # and pass here (and elsewhere) just arg
             self.select_direction('xyz')
-            
 
     def compute(self, inp, *args, **kwarg):
         # TODO generalise to set of points?
@@ -181,16 +184,14 @@ class Distance(Observable):
         :returns: atomic positions
 
         """
-        inp  = self._to_atomgroup(inp)
+        inp = self._to_atomgroup(inp)
         inp2 = self._to_atomgroup(args[0])
-        mask = np.asarray([0.,0.,0])
+        mask = np.asarray([0., 0., 0])
         mask[self.dirmask] = 1.0
         return distances.distance_array(
             inp.positions * mask,
             inp2.positions * mask,
             box=inp.universe.dimensions).ravel()
-
-
 
 
 class Position(Vector):
@@ -201,11 +202,12 @@ class Position(Vector):
         >>> import MDAnalysis as mda
         >>> import pytim
         >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
-        >>> proj = pytim.observable.Position('xz')
-        >>> print(proj.compute(u.residues[0].atoms) )
-        [[28.619999 11.37    ]
-        [28.42     10.51    ]
-        [29.61     11.51    ]]
+        >>> proj = pytim.observables.Position('xz')
+        >>> with np.printoptions(precision=3):
+        ...     print(proj.compute(u.residues[0].atoms) )
+        [[28.62 11.37]
+         [28.42 10.51]
+         [29.61 11.51]]
 
     """
     # TODO: add a flag to prevent recomputing the reference frame, in case
