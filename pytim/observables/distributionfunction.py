@@ -197,7 +197,8 @@ class DistributionFunction(object):
             self.range = np.append(-self.max_distance,
                                    self.max_distance).reshape(2, self.dimensions_out).T
         if self.spherical:
-            self.range = np.append(np.asarray([0.,0.,0.])[self.dirmask_out], self.max_distance).reshape(2, self.dimensions_out).T
+            self.range = np.append(np.asarray([0., 0., 0.])[
+                                   self.dirmask_out], self.max_distance).reshape(2, self.dimensions_out).T
         # process nbins
 
         if np.asarray(nbins).shape == ():  # a scalar
@@ -298,7 +299,7 @@ class DistributionFunction(object):
                     self.g1, self.g2)
 
         if len(_distances.shape) == 1:
-            _distances = _distances.reshape(_distances.shape[0],1)
+            _distances = _distances.reshape(_distances.shape[0], 1)
 
         count = np.histogramdd(
             _distances[:, self.dirmask_out], **self.settings)[0]
