@@ -2,6 +2,8 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 #from pytim.patches import patchTrajectory, patchOpenMM, patchMDTRAJ
 
+from .patches import patchNumpy
+patchNumpy()
 import warnings
 from .version import __version__
 from . import observables, utilities, datafiles
@@ -11,10 +13,6 @@ from .sasa import SASA
 from .gitim import GITIM
 from .itim import ITIM
 from .simple_interface import SimpleInterface
-from .patches import patchNumpy, patchTrajectory, patchOpenMM, patchMDTRAJ
-
-patchNumpy()
-
 
 warnings.filterwarnings(
     "ignore",

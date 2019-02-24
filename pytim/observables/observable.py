@@ -79,12 +79,12 @@ class Observable(object):
                     'z', arg):
                 RuntimeError(
                     "this observable accepts as argument a string like" +
-                    " 'xy', 'z', ... to select components")
+                    " 'xy', 'z', ... or a list like ['x','z'], to select components")
             directions = np.array([False, False, False])
             for key in _dirs.keys():
                 if _inarg(key, arg):
                     directions[_dirs[key]] = True
-
+        # TODO this is not a mask...should we change the name?
         self.dirmask = np.where(directions)[0]
 
     @staticmethod

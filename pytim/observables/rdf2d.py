@@ -6,7 +6,7 @@
 from __future__ import print_function
 import numpy as np
 from MDAnalysis.lib import distances
-from . import RDF
+from .rdf import RDF
 
 
 class RDF2D(RDF):
@@ -130,12 +130,12 @@ class RDF2D(RDF):
     @property
     def rdf(self):
         # Volume in each radial shell
-        dr = (self.edges[1:] - self.edges[:-1])
-        avr = (self.edges[1:] + self.edges[:-1]) / 2.
+        dr = (self.edges[0][1:] - self.edges[0][:-1])
+        avr = (self.edges[0][1:] + self.edges[0][:-1]) / 2.
         vol = 2. * np.pi * avr * dr
 
         # normalization
-        density = self.n_squared / self.volume
+        density = self.n_normalize / self.volume
 
         self._rdf = self.count / (density * vol * self.n_frames)
 
