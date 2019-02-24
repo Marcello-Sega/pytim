@@ -135,7 +135,7 @@ class RDF2D(RDF):
         vol = 2. * np.pi * avr * dr
 
         # normalization
-        density = self.n_squared / self.volume
+        density = self.n_normalize / self.volume
 
         self._rdf = self.count / (density * vol * self.n_frames)
 
