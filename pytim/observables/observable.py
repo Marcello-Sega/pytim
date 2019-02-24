@@ -73,8 +73,6 @@ class Observable(object):
         def _inarg(string, inp):
             return np.any([string in e for e in inp])
 
-        
-
         directions = np.array([True, True, True])
         if len(arg) > 0:
             if not _inarg('x', arg) or not _inarg('y', arg) or not _inarg(
@@ -86,7 +84,8 @@ class Observable(object):
             for key in _dirs.keys():
                 if _inarg(key, arg):
                     directions[_dirs[key]] = True
-        self.dirmask = np.where(directions)[0] # TODO this is not a mask...should we change the name?
+        # TODO this is not a mask...should we change the name?
+        self.dirmask = np.where(directions)[0]
 
     @staticmethod
     def _to_atomgroup(inp):
