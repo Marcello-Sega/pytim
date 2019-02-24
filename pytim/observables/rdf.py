@@ -85,43 +85,43 @@ class RDF(DistributionFunction):
                  observable=None,
                  observable2=None,
                  **kargs):
-        try: 
+        try:
             max_distance = kargs['max_radius']
         except:
             pass
 
         if max_distance is 'full':
-            max_distance = np.min(universe.dimensions[:3])/2.
+            max_distance = np.min(universe.dimensions[:3]) / 2.
 
         self._distance = Distance()
 
         DistributionFunction.__init__(
-                 self,
-                 universe,
-                 order=2,
-                 nbins=nbins,
-                 start=start,
-                 stop=stop,
-                 step=step,
-                 generalized_coordinate = self._distance,
-                 generalized_coordinate2 = self._distance,
-                 observable=observable,
-                 observable2=observable2,
-                 max_distance=max_distance,
-                 coords_in=['x','y','z'],
-                 coords_out=['r'],
-                 kargs1=None,
-                 kargs2=None)
+            self,
+            universe,
+            order=2,
+            nbins=nbins,
+            start=start,
+            stop=stop,
+            step=step,
+            generalized_coordinate=self._distance,
+            generalized_coordinate2=self._distance,
+            observable=observable,
+            observable2=observable2,
+            max_distance=max_distance,
+            coords_in=['x', 'y', 'z'],
+            coords_out=['r'],
+            kargs1=None,
+            kargs2=None)
 
     def sample(self, g1=None, g2=None, kargs1=None, kargs2=None):
         if g2 is None:
             g2 = g1
         DistributionFunction.sample(
-                self,
-                g1 = g1,
-                g2 = g2,
-                kargs1 = kargs1,
-                kargs2 = kargs2)
+            self,
+            g1=g1,
+            g2=g2,
+            kargs1=kargs1,
+            kargs2=kargs2)
 
     @property
     def bins(self):
@@ -140,8 +140,6 @@ class RDF(DistributionFunction):
         self._rdf = self.count / (density * vol * self.n_frames)
 
         return self._rdf
-
-
 
 
 class oldRDF(object):
@@ -224,7 +222,7 @@ class oldRDF(object):
         kargs1 = kargs1 or {}
         kargs2 = kargs2 or {}
         if max_radius is 'full':
-            self.max_radius = np.min(universe.dimensions[:3])/2.
+            self.max_radius = np.min(universe.dimensions[:3]) / 2.
         else:
             self.max_radius = max_radius
         self.rdf_settings = {'bins': nbins, 'range': (0., self.max_radius)}
