@@ -169,13 +169,9 @@ class Distance(Observable):
 
     """
 
-    def __init__(self, *arg, **kwarg):
+    def __init__(self, arg='xyz', **kwarg):
         Observable.__init__(self, None)
-        try:
-            self.select_direction(arg[0])
-        except IndexError:  # TODO move this logics within select_direction
-                          # and pass here (and elsewhere) just arg
-            self.select_direction('xyz')
+        self.select_direction(arg)
 
     def compute(self, inp, *args, **kwarg):
         # TODO generalise to set of points?
@@ -214,7 +210,7 @@ class Position(Vector):
     # TODO: add a flag to prevent recomputing the reference frame, in case
     # it's constant
 
-    def __init__(self, *arg, **kwarg):
+    def __init__(self, arg='xyz', **kwarg):
         Vector.__init__(self, arg, kwarg)
         try:
             self.folded = kwarg['folded']
@@ -266,8 +262,8 @@ class Position(Vector):
 
 class RelativePosition(Position):
 
-    def __init__(self, *arg, **kwarg):
-        return Position.__init__(self, *arg, **kwarg)
+    def __init__(self, arg='xyz', **kwarg):
+        return Position.__init__(self, arg, **kwarg)
 
     def compute(self, inp1, inp2, reference_frame=None):
         # by adding a new axis we allow take the difference of positions
@@ -308,8 +304,8 @@ class RelativePosition(Position):
 class Velocity(Vector):
     """Atomic velocities"""
 
-    def __init__(self, *arg, **kwarg):
-        Vector.__init__(self, *arg)
+    def __init__(self, arg='xyz', **kwarg):
+        Vector.__init__(self, arg)
 
     def compute(self, inp, kargs=None):
         """Compute the observable.
@@ -326,7 +322,7 @@ class Velocity(Vector):
 class Force(Vector):
     """Atomic forces"""
 
-    def __init__(self, *arg, **kwarg):
+    def __init__(self, arg='xyz', **kwarg):
         Vector.__init__(self, None)
 
     def compute(self, inp, kargs=None):

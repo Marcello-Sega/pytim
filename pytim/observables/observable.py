@@ -73,6 +73,8 @@ class Observable(object):
         def _inarg(string, inp):
             return np.any([string in e for e in inp])
 
+        
+
         directions = np.array([True, True, True])
         if len(arg) > 0:
             if not _inarg('x', arg) or not _inarg('y', arg) or not _inarg(
