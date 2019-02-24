@@ -5,7 +5,6 @@
 """
 from __future__ import print_function
 import numpy as np
-from MDAnalysis.lib import distances
 from . import Position, RelativePosition
 
 
@@ -241,7 +240,7 @@ class DistributionFunction(object):
         else:
             raise Exception("Error, shape of the observable output not handled"
                             "in RDF")
-        return weights
+        return weights.ravel()
 
     def sample(self, g1=None, g2=None, kargs1=None, kargs2=None):
         kargs1 = kargs1 or {}

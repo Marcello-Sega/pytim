@@ -165,6 +165,7 @@ class Distance(Observable):
         >>> d1 = pytim.observables.Distance('xy').compute(u.atoms[:9],u.atoms[:9])
         >>> d2 = pytim.observables.RelativePosition('xy',spherical=True).compute(u.atoms[:9],u.atoms[:9])[:,0]
         >>> np.all(np.isclose(d1,d2))
+        True
 
     """
 
