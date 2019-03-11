@@ -140,7 +140,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         sanity.assign_alpha(alpha)
 
         self.max_layers = max_layers
-        self._layers = np.empty([max_layers], dtype=type(universe.atoms))
+        self._layers = np.empty([max_layers], dtype=self.universe.atoms[0].__class__)
         self.info = info
         self.normal = None
         self.PDB = {}
