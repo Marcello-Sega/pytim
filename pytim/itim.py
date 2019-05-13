@@ -240,8 +240,8 @@ J. Comp. Chem. 29, 945, 2008)*
         self.mesh_dx = d[0]
         self.mesh_dy = d[1]
 
-        _x = np.linspace(0, box[0], num=self.mesh_nx, endpoint=False)
-        _y = np.linspace(0, box[1], num=self.mesh_ny, endpoint=False)
+        _x = np.linspace(0, box[0], num=int(self.mesh_nx), endpoint=False)
+        _y = np.linspace(0, box[1], num=int(self.mesh_ny), endpoint=False)
         _X, _Y = np.meshgrid(_x, _y)
         self.meshpoints = np.array([_X.ravel(), _Y.ravel()]).T
         self.meshtree = cKDTree(self.meshpoints, boxsize=box[:2])
