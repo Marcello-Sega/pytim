@@ -87,6 +87,20 @@ def patchOpenMM(simulation, interface):
         PatchedOpenMMSimulation.__module__ = oldmodule
         simulation.__class__ = PatchedOpenMMSimulation
 
+def patchMDTRAJ_ReplacementTables():
+    try:
+        import mdtraj
+        if not (mdtraj.formats.pdb.PDBTrajectoryFile._atomNameReplacements=={}):
+            print('Warning: mdtraj has not been patched correctly. The trajectory must be loaded *after* importing pytim: some atom names might have been replaced')
+
+        @staticmethod
+        def _NoReplacementTables():
+            mdtraj.formats.pdb.PDBTrajectoryFile._atomNameReplacements={}
+
+        mdtraj.formats.pdb.PDBTrajectoryFile._loadNameReplacementTables = _NoReplacementTables
+    except ImportError:
+        pass
+
 
 def patchMDTRAJ(trajectory, universe):
     """ Patch the mdtraj Trajectory class
@@ -113,6 +127,7 @@ def patchMDTRAJ(trajectory, universe):
             def __getitem__(self, key):
                 slice_ = self.slice(key)
                 patchMDTRAJ(slice_, universe)
+
                 if isinstance(key, int):
                     # mdtraj uses nm as distance unit, we need to convert to
                     # Angstrom for MDAnalysis
