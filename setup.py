@@ -127,7 +127,8 @@ setup(
     install_requires=[
         'MDAnalysis>=0.19.2', 'PyWavelets>=0.5.2', 'numpy>=1.16',
         'scipy>=1.1', 'scikit-image>=0.14.2', 'cython>=0.24.1',
-        'sphinx>=1.4.3', 'matplotlib', 'pytest', 'dask>=1.1.1'
+        'sphinx>=1.4.3', 'matplotlib', 'pytest', 'dask>=1.1.1',
+        'networkx>=2.2'
     ],
 
     # List additional groups of dependencies here (e.g. development
