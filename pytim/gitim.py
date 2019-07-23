@@ -6,6 +6,7 @@
 """
 from __future__ import print_function
 import numpy as np
+from itertools import product
 from scipy.spatial import distance
 
 from . import utilities
@@ -186,34 +187,33 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         points = group.positions[:]
         nrealpoints = len(points)
-        state = np.random.get_state()
-        np.random.seed(0)  # pseudo-random for reproducibility
-        gitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
+
         if self._noextrapoints is False:
             extrapoints, extraids = utilities.generate_periodic_border(
                 points, box, delta, method='3d')
-        else:
-            extrapoints = np.copy(points)
-            extraids = np.arange(len(points), dtype=np.int)
-        # add points at the vertices of the expanded (by 2 alpha) box
-        cube_vertices = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [
-            0.0, 1.0, 0.0
-        ], [0.0, 1.0, 1.0], [1.0, 0.0, 0.0], [1.0, 0.0, 1.0], [1.0, 1.0, 0.0],
-            [1.0, 1.0, 1.0]])
-        if self._noextrapoints is False:
+
+            # add points at the vertices of the expanded (by 2 alpha) box by
+            # generating general linear positions of the expanded box vertices
             n_cube = 8
-            for dim, vertex in enumerate(cube_vertices):
-                # added to prevent coplanar points
-                cond = np.where(vertex < 0.5)[0]
-                vertex = vertex * box + 2 * delta + gitter[dim]
-                vertex[cond] -= 4 * delta[cond]
-                vertex = np.reshape(vertex, (1, 3))
-                extrapoints = np.append(extrapoints, vertex, axis=0)
-                extraids = np.append(extraids, -1)
+            cube_vertices = np.array(list(product((0., 1.), repeat=3)))
+            vertices = np.multiply(cube_vertices,box + 2*delta) \
+                     + np.multiply(cube_vertices-1, 2*delta)
+
+            state = np.random.get_state()
+            np.random.seed(0)  # pseudo-random for reproducibility
+            jitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
+            np.random.set_state(state)
+            vertices += jitter
+            extrapoints = np.vstack((extrapoints, vertices))
+            extraids = np.append(extraids,[-1] * 8)
         else:
             n_cube = 0
+            extrapoints = np.copy(points)
+            extraids = np.arange(len(points), dtype=np.int)
+
         if layer == 0:
             self.triangulation = []
+
         self.triangulation.append(Delaunay(extrapoints))
         try:
             triangulation = self.triangulation[layer]
@@ -229,8 +229,6 @@ J. Chem. Phys. 138, 044110, 2013)*
             radii = self.triangulation[layer].radii
         except IndexError:
             raise IndexError("alpha_shape called using a wrong layer")
-
-        np.random.set_state(state)
 
         cr = circumradius(_points, radii, simplices)
         # we filter first according to the touching sphere radius
