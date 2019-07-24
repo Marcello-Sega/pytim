@@ -212,11 +212,15 @@ J. Chem. Phys. 138, 044110, 2013)*
         radii = np.append(group.radii[extraids[extraids >= 0]],
                           np.zeros(8))
 
-        cr = circumradius(extrapoints, radii, simplices)
+        _points = triangulation.points  # simply using extrapoints results in
+                                        # buffer mismatch (npreal vs float)
+                                        # in circumradius()
+
+        cr = circumradius(_points, radii, simplices)
         # we filter first according to the touching sphere radius
         a_shape = simplices[cr >= self.alpha]
         # then we remove all simplices involving the 8 outer points, if any
-        cond = np.where(np.all(a_shape < len(extrapoints) - n_cube, axis=1))[0]
+        cond = np.where(np.all(a_shape < len(_points) - n_cube, axis=1))[0]
         a_shape = a_shape[np.unique(cond)]
         # finally, we select only the ids of atoms in the basic cell.
         return np.unique(a_shape[np.where(a_shape < nrealpoints)])
