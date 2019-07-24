@@ -184,8 +184,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         points = group.positions[:]
         nrealpoints = len(points)
 
-        # The Delaunay tessellation does not handle periodic boundary conditions,
-        # thus one has to physically copy a layer of atoms of a thickness, delta
+        # Delaunay tessellation does not handle periodic boundary conditions,
+        # have to physically copy a layer of atoms of a thickness, delta
         if self._noextrapoints is False:
             box = self.universe.dimensions[:3]
             delta = np.array([self._buffer_factor * self.alpha] * 3)
@@ -212,9 +212,9 @@ J. Chem. Phys. 138, 044110, 2013)*
         radii = np.append(group.radii[extraids[extraids >= 0]],
                           np.zeros(8))
 
-        _points = triangulation.points  # simply using extrapoints results in
-                                        # buffer mismatch (npreal vs float)
-                                        # in circumradius()
+        # simply using extrapoints results in buffer dtype mismatch
+        # in circumradius()
+        _points = triangulation.points
 
         cr = circumradius(_points, radii, simplices)
         # we filter first according to the touching sphere radius
