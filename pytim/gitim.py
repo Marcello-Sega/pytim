@@ -180,14 +180,17 @@ J. Chem. Phys. 138, 044110, 2013)*
         """
 
     def alpha_shape(self, alpha, group, layer):
-        box = self.universe.dimensions[:3]
-        delta = np.array([self._buffer_factor * self.alpha] * 3)
-        delta = np.min([delta, box / 2.], axis=0)
 
         points = group.positions[:]
         nrealpoints = len(points)
 
+        # The Delaunay tessellation does not handle periodic boundary conditions,
+        # thus one has to physically copy a layer of atoms of a thickness, delta
         if self._noextrapoints is False:
+            box = self.universe.dimensions[:3]
+            delta = np.array([self._buffer_factor * self.alpha] * 3)
+            delta = np.min([delta, box / 2.], axis=0)
+
             extrapoints, extraids = utilities.generate_periodic_border(
                 points, box, delta, method='3d')
 
@@ -199,30 +202,21 @@ J. Chem. Phys. 138, 044110, 2013)*
             extraids = np.append(extraids, [-1] * n_cube)
         else:
             n_cube = 0
-            extrapoints = np.copy(points)
+            extrapoints = points
             extraids = np.arange(len(points), dtype=np.int)
 
-        self.triangulation.append(Delaunay(extrapoints))
-        try:
-            triangulation = self.triangulation[layer]
-        except IndexError:
-            raise IndexError("alpha_shape called using a wrong layer")
-        triangulation.radii = np.append(group.radii[extraids[extraids >= 0]],
-                                        np.zeros(8))
+        triangulation = Delaunay(extrapoints)
+        self.triangulation.append(triangulation)
 
         simplices = triangulation.simplices
+        radii = np.append(group.radii[extraids[extraids >= 0]],
+                          np.zeros(8))
 
-        try:
-            _points = self.triangulation[layer].points
-            radii = self.triangulation[layer].radii
-        except IndexError:
-            raise IndexError("alpha_shape called using a wrong layer")
-
-        cr = circumradius(_points, radii, simplices)
+        cr = circumradius(extrapoints, radii, simplices)
         # we filter first according to the touching sphere radius
         a_shape = simplices[cr >= self.alpha]
         # then we remove all simplices involving the 8 outer points, if any
-        cond = np.where(np.all(a_shape < len(_points) - n_cube, axis=1))[0]
+        cond = np.where(np.all(a_shape < len(extrapoints) - n_cube, axis=1))[0]
         a_shape = a_shape[np.unique(cond)]
         # finally, we select only the ids of atoms in the basic cell.
         return np.unique(a_shape[np.where(a_shape < nrealpoints)])
