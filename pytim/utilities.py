@@ -6,6 +6,7 @@
 """
 from __future__ import print_function
 from timeit import default_timer as timer
+from itertools import product
 import numpy as np
 from sys import stderr
 
@@ -261,5 +262,28 @@ def consecutive_filename(universe, basename, extension):
     filename = basename + '.' + str(frame) + '.' + extension
     return filename
 
+
+def generate_cube_vertices(box, delta=0.0, jitter=False, dim=3):
+    """ Generate points at the vertices of a rectangular box
+
+        :param array_like box:   dimensions of the box
+        :param array_like delta: add buffer around the box
+        :param bool jitter:      create general linear positions
+                                 by minute displacements of the
+                                 vertices
+        :param int dim:          dimension of the rectangular box,
+                                 the default is 3
+
+    """
+    cube_vertices = np.array(list(product((0., 1.), repeat=dim)))
+    vertices = np.multiply(cube_vertices, box + 2*delta) \
+             + np.multiply(cube_vertices-1, 2*delta)
+    if jitter:
+        state = np.random.get_state()
+        np.random.seed(0)  # pseudo-random for reproducibility
+        vertices += (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
+        np.random.set_state(state)
+
+    return vertices
 
 #

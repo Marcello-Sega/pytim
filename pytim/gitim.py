@@ -6,7 +6,6 @@
 """
 from __future__ import print_function
 import numpy as np
-from itertools import product
 from scipy.spatial import distance
 
 from . import utilities
@@ -194,25 +193,14 @@ J. Chem. Phys. 138, 044110, 2013)*
 
             # add points at the vertices of the expanded (by 2 alpha) box by
             # generating general linear positions of the expanded box vertices
-            n_cube = 8
-            cube_vertices = np.array(list(product((0., 1.), repeat=3)))
-            vertices = np.multiply(cube_vertices,box + 2*delta) \
-                     + np.multiply(cube_vertices-1, 2*delta)
-
-            state = np.random.get_state()
-            np.random.seed(0)  # pseudo-random for reproducibility
-            jitter = (np.random.random(3 * 8).reshape(8, 3)) * 1e-9
-            np.random.set_state(state)
-            vertices += jitter
+            vertices = utilities.generate_cube_vertices(box, delta, jitter=True)
+            n_cube = len(vertices)
             extrapoints = np.vstack((extrapoints, vertices))
-            extraids = np.append(extraids,[-1] * 8)
+            extraids = np.append(extraids, [-1] * n_cube)
         else:
             n_cube = 0
             extrapoints = np.copy(points)
             extraids = np.arange(len(points), dtype=np.int)
-
-        if layer == 0:
-            self.triangulation = []
 
         self.triangulation.append(Delaunay(extrapoints))
         try:
@@ -291,6 +279,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         """Determine the GITIM layers."""
 
         alpha_group, dbs = self._assign_layers_setup()
+
+        self.triangulation = [] # storage for triangulations
 
         for layer in range(0, self.max_layers):
 
