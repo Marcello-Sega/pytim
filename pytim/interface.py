@@ -454,13 +454,13 @@ class Interface(object):
         >>> interface = pytim.GITIM(u)
         Traceback (most recent call last):
             ...
-        Exception: Wrong Universe passed to ITIM class
+        Exception: Wrong Universe
 
 
         >>> interface = pytim.ITIM(u)
         Traceback (most recent call last):
             ...
-        Exception: Wrong Universe passed to ITIM class
+        Exception: Wrong Universe
 
         >>> # TEST:3 large probe sphere radius
         >>> u = mda.Universe(WATER_GRO)
