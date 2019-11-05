@@ -113,9 +113,9 @@ class SASA(GITIM):
         if len(cond) == 0:
             return [], []
 
-        arg = (ri2 + dij2 - rj2) / (ri * dij * 2.)
-        alpha = 2. * np.arccos(arg[cond])
-        argx, argy = pij[:, 0] / dij, pij[:, 1] / dij
+        arg = (ri2 + dij2 - rj2)[cond] / (ri * dij * 2.)[cond]
+        alpha = 2. * np.arccos(arg)
+        argx, argy = pij[:, 0], pij[:, 1]
         beta = np.arctan2(argx[cond], argy[cond])
         return alpha, beta
 
@@ -127,6 +127,8 @@ class SASA(GITIM):
         neighbors = self.tree.query_ball_point(group.positions[index], cutoff)
         neighbors = np.asarray(list(set(neighbors) - set([index])))
         covered_slices, exposed_area = 0, 4. * np.pi * R**2
+        if len(neighbors) == 0:
+            return False, exposed_area
         buried = False
         delta = R + self.alpha - 1e-3
         slices = np.arange(-delta, delta, 2. * delta / self.nslices)
