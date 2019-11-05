@@ -120,6 +120,7 @@ class SASA(GITIM):
         return alpha, beta
 
     def _atom_coverage(self, index):
+        # derivation follows http://freesasa.github.io/doxygen/Geometry.html
         group = self.sasa_group
         box = group.universe.dimensions[:3]
         R = group.radii[index]
