@@ -195,7 +195,7 @@ class Profile(object):
             bins=self._nbins)
         return rnd_accum, bins
 
-    def sample(self, group):
+    def sample(self, group, **kargs):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
         if not isinstance(group, AtomGroup):
@@ -221,7 +221,7 @@ class Profile(object):
             else:
                 rnd_accum, bins = self._sample_random_distribution(group)
 
-        values = self.observable.compute(group)
+        values = self.observable.compute(group,**kargs)
         accum, bins, _ = stats.binned_statistic(
             pos,
             values,
