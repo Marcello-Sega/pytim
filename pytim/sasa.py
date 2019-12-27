@@ -213,13 +213,13 @@ class SASA(GITIM):
         alpha_group, dbs = self._assign_layers_setup()
 
         for layer in range(0, self.max_layers):
-            if alpha_group.atoms.n_atoms==0:
+            if alpha_group.atoms.n_atoms == 0:
                 group = alpha_group
             else:
                 alpha_ids = self.compute_sasa(alpha_group)
-    
+
                 group = alpha_group[alpha_ids]
-    
+
                 alpha_group = self._assign_layers_postprocess(
                     dbs, group, alpha_group, layer)
 
