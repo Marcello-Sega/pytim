@@ -211,7 +211,6 @@ class Profile(object):
         if self.interface is None:
             pos = group.positions[::, self._dir]
         else:
-            deltabin = 1 + (self._nbins - 1) // 2
             pos = IntrinsicDistance(
                 self.interface, symmetry=self.symmetry, mode=self.mode).compute(group)
 
@@ -229,8 +228,6 @@ class Profile(object):
             statistic='sum',
             bins=self._nbins)
         accum[~np.isfinite(accum)] = 0.0
-        if self.interface is not None:
-            accum[deltabin] = np.inf
 
         if self.sampled_values is None:
             self.sampled_values = accum.copy()
@@ -264,6 +261,12 @@ class Profile(object):
         vals = self.sampled_values.copy()
         vals /= (np.average(self._totvol) / self._nbins)
         vals /= self._counts
+        if self.interface is not None:
+           # new versions of scipy.binned_statistic don't like inf
+           # we set it now to zero, but only here, so that the 
+           # count is always available in self.sampled_values
+           deltabin = int(1 + (nbins - 1) // 2)
+           vals[deltabin] = 0
 
         avg, bins, _ = stats.binned_statistic(
             self.sampled_bins,
@@ -281,6 +284,7 @@ class Profile(object):
                 range=self._range,
                 statistic='mean',
                 bins=nbins)
+            avg[deltabin] = np.inf
             avg[avgV > 0.0] /= avgV[avgV > 0.0]
             avg[avgV <= 0.0] = 0.0
 
