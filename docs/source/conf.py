@@ -16,6 +16,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import sphinx.ext.autodoc
 import os
 import sys
 #import sphinx_rtd_theme
@@ -140,7 +141,7 @@ todo_include_todos = True
 html_theme = 'classic'
 
 html_theme_options = {
-    #'sidebarbgcolor':'#cccccc',
+    # 'sidebarbgcolor':'#cccccc',
     'sidebarbgcolor': '#0063A6',
     'headtextcolor': '#0063A6',
     'headbgcolor': '#ffffff',
@@ -372,7 +373,6 @@ texinfo_documents = [
 autodoc_member_order = 'bysource'
 
 # -- Customization to Sphinx autodoc generation ------------------------------
-import sphinx.ext.autodoc
 
 
 def dont_skip_any_doctests(app, what, name, obj, skip, options):

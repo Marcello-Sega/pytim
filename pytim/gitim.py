@@ -193,7 +193,8 @@ J. Chem. Phys. 138, 044110, 2013)*
 
             # add points at the vertices of the expanded (by 2 alpha) box by
             # generating general linear positions of the expanded box vertices
-            vertices = utilities.generate_cube_vertices(box, delta, jitter=True)
+            vertices = utilities.generate_cube_vertices(
+                box, delta, jitter=True)
             n_cube = len(vertices)
             extrapoints = np.vstack((extrapoints, vertices))
             extraids = np.append(extraids, [-1] * n_cube)
@@ -278,7 +279,7 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         alpha_group, dbs = self._assign_layers_setup()
 
-        self.triangulation = [] # storage for triangulations
+        self.triangulation = []  # storage for triangulations
 
         for layer in range(0, self.max_layers):
 

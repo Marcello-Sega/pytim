@@ -2,18 +2,18 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 #from pytim.patches import patchTrajectory, patchOpenMM, patchMDTRAJ
 
+from .simple_interface import SimpleInterface
+from .itim import ITIM
+from .gitim import GITIM
+from .sasa import SASA
+from .willard_chandler import WillardChandler
+from .chacon_tarazona import ChaconTarazona
+from . import observables, utilities, datafiles
+from .version import __version__
+import warnings
 from .patches import patchNumpy, patchMDTRAJ_ReplacementTables
 patchNumpy()
 patchMDTRAJ_ReplacementTables()
-import warnings
-from .version import __version__
-from . import observables, utilities, datafiles
-from .chacon_tarazona import ChaconTarazona
-from .willard_chandler import WillardChandler
-from .sasa import SASA
-from .gitim import GITIM
-from .itim import ITIM
-from .simple_interface import SimpleInterface
 
 warnings.filterwarnings(
     "ignore",

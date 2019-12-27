@@ -277,7 +277,7 @@ def generate_cube_vertices(box, delta=0.0, jitter=False, dim=3):
     """
     cube_vertices = np.array(list(product((0., 1.), repeat=dim)))
     vertices = np.multiply(cube_vertices, box + 2*delta) \
-             + np.multiply(cube_vertices-1, 2*delta)
+        + np.multiply(cube_vertices-1, 2*delta)
     if jitter:
         state = np.random.get_state()
         np.random.seed(0)  # pseudo-random for reproducibility

@@ -220,7 +220,7 @@ class Profile(object):
             else:
                 rnd_accum, bins = self._sample_random_distribution(group)
 
-        values = self.observable.compute(group,**kargs)
+        values = self.observable.compute(group, **kargs)
         accum, bins, _ = stats.binned_statistic(
             pos,
             values,
@@ -262,11 +262,11 @@ class Profile(object):
         vals /= (np.average(self._totvol) / self._nbins)
         vals /= self._counts
         if self.interface is not None:
-           # new versions of scipy.binned_statistic don't like inf
-           # we set it now to zero, but only here, so that the 
-           # count is always available in self.sampled_values
-           deltabin = int(1 + (nbins - 1) // 2)
-           vals[deltabin] = 0
+            # new versions of scipy.binned_statistic don't like inf
+            # we set it now to zero, but only here, so that the
+            # count is always available in self.sampled_values
+            deltabin = int(1 + (nbins - 1) // 2)
+            vals[deltabin] = 0
 
         avg, bins, _ = stats.binned_statistic(
             self.sampled_bins,
