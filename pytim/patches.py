@@ -3,6 +3,190 @@
 from __future__ import print_function
 
 
+def patchVirial():
+    import libmdaxdr
+    import MDAnalysis
+    def get_virials(self):
+        """Virials on each :class:`Atom` in the :class:`AtomGroup`.
+    
+        A :class:`numpy.ndarray` with
+        :attr:`~numpy.ndarray.shape`\ ``=(``\ :attr:`~AtomGroup.n_atoms`\ ``, 3)``
+        and :attr:`~numpy.ndarray.dtype`\ ``=numpy.float32``.
+    
+        The virials can be changed by assigning an array of the appropriate
+        shape, i.e. either ``(``\ :attr:`~AtomGroup.n_atoms`\ ``, 3)`` to assign
+        individual forces or ``(3,)`` to assign the *same* force to all
+        :class:`Atoms<Atom>` (e.g. ``ag.virials = array([0,0,0])`` will give all
+        :class:`Atoms<Atom>` a zero :attr:`~Atom.virial`).
+    
+        Raises
+        ------
+        ~MDAnalysis.exceptions.NoDataError
+            If the :class:`~MDAnalysis.coordinates.base.Timestep` does not
+            contain :attr:`~MDAnalysis.coordinates.base.Timestep.forces`.
+        """
+        ts = self.universe.trajectory.ts
+        try:
+            return ts.virials[self.ix]
+        except (AttributeError, NoDataError):
+            raise NoDataError("Timestep does not contain virials")
+
+    def set_virials(self):
+        return
+
+    def get_pressures(self):
+        """Pressures on each :class:`Atom` in the :class:`AtomGroup`.
+    
+        A :class:`numpy.ndarray` with
+        :attr:`~numpy.ndarray.shape`\ ``=(``\ :attr:`~AtomGroup.n_atoms`\ ``, 3)``
+        and :attr:`~numpy.ndarray.dtype`\ ``=numpy.float32``.
+    
+        The pressures can be changed by assigning an array of the appropriate
+        shape, i.e. either ``(``\ :attr:`~AtomGroup.n_atoms`\ ``, 3)`` to assign
+        individual forces or ``(3,)`` to assign the *same* force to all
+        :class:`Atoms<Atom>` (e.g. ``ag.pressures = array([0,0,0])`` will give all
+        :class:`Atoms<Atom>` a zero :attr:`~Atom.pressure`).
+    
+        Raises
+        ------
+        ~MDAnalysis.exceptions.NoDataError
+            If the :class:`~MDAnalysis.coordinates.base.Timestep` does not
+            contain :attr:`~MDAnalysis.coordinates.base.Timestep.forces`.
+        """
+        from numpy import expand_dims
+        ts = self.universe.trajectory.ts
+        #try:
+        press =  ts.virials[self.ix] 
+        press = press + 16.6054 * 0.01 * ts.velocities[self.ix]**2  * expand_dims(self.universe.atoms.masses[self.ix] ,axis=1)
+        return press
+        #except (AttributeError, NoDataError):
+        #    raise NoDataError("Timestep does not contain forces")
+
+    def set_pressures(self):
+        return
+
+    MDAnalysis.core.groups.AtomGroup.virials = property(get_virials,set_virials)
+    MDAnalysis.core.groups.AtomGroup.pressures = property(get_pressures,set_pressures)
+    
+    class TRRReaderVIR(MDAnalysis.coordinates.XDR.XDRBaseReader):
+        from libmdaxdr import TRRFile as TRRFileVIR
+        from MDAnalysis.coordinates.TRR import TRRWriter
+    
+        def convert_virials_from_native(self, virial, inplace=True):
+            """Conversion of forces array *virial* from native to base units
+    
+            Parameters
+            ----------
+            virial : array_like
+              Forces to transform
+            inplace : bool (optional)
+              Whether to modify the array inplace, overwriting previous data
+    
+            Note
+            ----
+            By default, the input *virial* is modified in place and also returned.
+            In-place operations improve performance because allocating new arrays
+            is avoided.
+    
+            .. versionadded:: 0.7.7
+            """
+    
+            f = units.get_conversion_factor(
+                'force', self.units['force'], flags['force_unit'])
+            f = f *  units.get_conversion_factor(
+                'length', self.units['length'], flags['length_unit'])
+            if f == 1.:
+                return virial
+            if not inplace:
+                return f * virial
+            virial *= f
+            return virial
+    
+    
+        """Reader for the Gromacs TRR format.
+    
+        The Gromacs TRR trajectory format is a lossless format. The TRR format can
+        store *velocoties* and *forces* in addition to the coordinates. It is also
+        used by other Gromacs tools to store and process other data such as modes
+        from a principal component analysis.
+    
+        The lambda value is written in the data dictionary of the returned
+        :class:`Timestep`
+    
+        Notes
+        -----
+        See :ref:`Notes on offsets <offsets-label>` for more information about
+        offsets.
+    
+        """
+        format = 'TRR'
+        units = {'time': 'ps', 'length': 'nm', 'velocity': 'nm/ps',
+                 'force': 'kJ/(mol*nm)'}
+        _writer = TRRWriter
+        _file = TRRFileVIR
+    
+        def _frame_to_ts(self, frame, ts):
+            from MDAnalysis.lib.mdamath import triclinic_box as triclinic_box
+    
+            """convert a trr-frame to a mda TimeStep"""
+            ts.time = frame.time
+            ts.frame = self._frame
+            ts.data['step'] = frame.step
+    
+            ts.has_positions = frame.hasx
+            ts.has_velocities = frame.hasv
+            ts.has_forces = frame.hasf
+            ts.has_virials = frame.hasvir
+    
+            ts.dimensions = triclinic_box(*frame.box)
+    
+            if self.convert_units:
+                self.convert_pos_from_native(ts.dimensions[:3])
+    
+            if ts.has_positions:
+                if self._sub is not None:
+                    ts.positions = frame.x[self._sub]
+                else:
+                    ts.positions = frame.x
+                if self.convert_units:
+                    self.convert_pos_from_native(ts.positions)
+    
+            if ts.has_velocities:
+                if self._sub is not None:
+                    ts.velocities = frame.v[self._sub]
+                else:
+                    ts.velocities = frame.v
+                if self.convert_units:
+                    self.convert_velocities_from_native(ts.velocities)
+    
+            if ts.has_forces:
+                if self._sub is not None:
+                    ts.forces = frame.f[self._sub]
+                else:
+                    ts.forces = frame.f
+                if self.convert_units:
+                    self.convert_forces_from_native(ts.forces)
+    
+            if ts.has_virials:
+                if self._sub is not None:
+                    ts.virials = frame.f[self._sub]
+                else:
+                    ts.virials = frame.vir
+                if self.convert_units:
+                    self.convert_forces_from_native(ts.virials)
+    
+    
+            ts.data['lambda'] = frame.lmbda
+    
+            return ts
+
+    MDAnalysis.coordinates.TRR.TRRReader = TRRReaderVIR
+    MDAnalysis.coordinates.TRR.TRRFile = libmdaxdr.TRRFile
+    MDAnalysis.lib.formats.libmdaxdr.TRRFile = libmdaxdr.TRRFile
+    MDAnalysis.coordinates.TRR.TRRReader._file = libmdaxdr.TRRFile
+
+
+
 def patchNumpy():
     # this try/except block patches numpy and provides _validate_lengths
     # to skimage<=1.14.1

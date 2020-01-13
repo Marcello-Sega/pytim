@@ -46,6 +46,21 @@ circumradius = Extension(
     language="c++",
     include_dirs=[numpy.get_include()])
 
+util = Extension('cython_util',
+                        sources=[ 'pytim/lib/formats/cython_util.pyx',
+                                      'pytim/lib/formats/cython_util.pxd'],
+                             include_dirs= [numpy.get_include()]+ ['pytim/lib/formats/','pytim/lib/formats/src/','pytim/lib/formats/include/'],
+                             )
+
+libmdaxdr = Extension('libmdaxdr',
+                             language='c',
+                             sources=['pytim/lib/formats/libmdaxdr.pyx',
+                                      'pytim/lib/formats/src/xdrfile_trr_virial.c'],
+                             include_dirs= [numpy.get_include()]+ ['pytim/lib/formats/','pytim/lib/formats/src/','pytim/lib/formats/include/'],
+                            # define_macros=largefile_macros + define_macros,
+                            # extra_compile_args=extra_compile_args
+                        )
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
@@ -63,7 +78,7 @@ with open("pytim/version.py") as fp:
 
 setup(
     name='pytim',
-    ext_modules=[pytim_dbscan, circumradius],
+    ext_modules=[pytim_dbscan, circumradius,libmdaxdr,util],
     cmdclass={
         'build_ext': build_ext,
         'test': NoseTestCommand
