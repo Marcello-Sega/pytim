@@ -12,15 +12,6 @@ env:
 
 matrix:
     include:
-        - os: linux
-          sudo: required
-          python: 2.7
-          env: MDAv=0.19
-
-        - os: linux
-          sudo: required
-          python: 2.7
-          env: MDAv=0.19.2
 
         - os: linux
           sudo: required
@@ -32,6 +23,10 @@ matrix:
           python: 3.6
           env: MDAv=0.19.2
 
+        - os: linux
+          sudo: required
+          python: 3.6
+          env: MDAv=0.20.0
 
 
 
