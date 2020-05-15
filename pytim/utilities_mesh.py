@@ -8,7 +8,7 @@ def compute_compatible_mesh_params(mesh, box):
     """ given a target mesh size and a box, return the number of grid elements
         and spacing in each direction, which are commensurate with the box
     """
-    n = np.array([np.ceil(b / mesh) for b in box])
+    n = np.array([np.ceil(b / mesh) for b in box], dtype=np.int_)
     d = box / n
     return n, d
 
