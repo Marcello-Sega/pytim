@@ -220,7 +220,7 @@ class SASA(GITIM):
 
                 group = alpha_group[alpha_ids]
 
-                alpha_group = self._assign_layers_postprocess(
+            alpha_group = self._assign_layers_postprocess(
                     dbs, group, alpha_group, layer)
 
         # reset the interpolator
