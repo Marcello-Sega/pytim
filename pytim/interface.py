@@ -515,12 +515,12 @@ class Interface(object):
         >>> g = u.atoms.select_atoms('resname bph4')
         >>> # Define the interface
         >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=False, molecular=True)
-        >>> print(inter.atoms)
+        >>> print(repr(inter.atoms))
         <AtomGroup with 2025 atoms>
 
 
         >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=True, molecular=True)
-        >>> print(inter.atoms)
+        >>> print(repr(inter.atoms))
         <AtomGroup with 855 atoms>
 
 
