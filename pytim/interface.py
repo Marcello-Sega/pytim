@@ -507,6 +507,23 @@ class Interface(object):
         4.00
 
 
+        >>> # correct behaviour of biggest_cluster_only option
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import ANTAGONISTIC_GRO
+        >>> u = mda.Universe(ANTAGONISTIC_GRO)
+        >>> g = u.atoms.select_atoms('resname bph4')
+        >>> # Define the interface
+        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=False, molecular=True)
+        >>> print(inter.atoms)
+        <AtomGroup with 2025 atoms>
+
+
+        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=True, molecular=True)
+        >>> print(inter.atoms)
+        <AtomGroup with 855 atoms>
+
+
         >>> # mdtraj
         >>> try:
         ...     import mdtraj
