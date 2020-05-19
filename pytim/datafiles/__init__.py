@@ -34,8 +34,6 @@
     WATER_XYZ            SPC water/vapour interface
 
 
-
-
     Example: list all topologies
 
     >>> print(np.sort(pytim_data.topol))
@@ -73,6 +71,7 @@ __all__ = [
     "WATER_550K_GRO",  # GROMACS single frame, SPC/E water/vapour interface,550 K
     "METHANOL_GRO",  # methanol/vapour interface with molecules in the  vapour phase
     "ILBENZENE_GRO",  # Ionic liquid/benzene, partial miscibility
+    "ANTAGONISTIC_GRO",  # 3-Methylpyridine, Sodium Tetraphenylborate and water
     "LJ_GRO",  # Lennard-Jones liquid/vapour interface
     "LJ_SHORT_XTC",  # Lennard-Jones liquid/vapour interface trajectory
     "MICELLE_PDB",  # PDB of dodecylphosphocholine micelle in water
@@ -292,6 +291,9 @@ pytim_data.add('METHANOL_GRO', 'conf', 'GRO', 'methanol/vapour interface')
 
 ILBENZENE_GRO = resource_filename('pytim', 'data/ilbenzene.gro')
 pytim_data.add('ILBENZENE_GRO', 'conf', 'GRO', 'BMIM PF4 / benzene interface')
+
+ANTAGONISTIC_GRO = resource_filename('pytim', 'data/antagonistic.gro')
+pytim_data.add('ANTAGONISTIC_GRO', 'conf', 'GRO', '3-Methylpyridine, Sodium Tetraphenylborate and water')
 
 WATER_XTC = resource_filename('pytim', 'data/water.xtc')
 pytim_data.add('WATER_XTC', 'traj', 'XTC',
