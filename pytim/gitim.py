@@ -254,15 +254,6 @@ J. Chem. Phys. 138, 044110, 2013)*
         return alpha_group, dbs
 
     def _assign_layers_postprocess(self, dbs, group, alpha_group, layer):
-        if self.biggest_cluster_only is True:
-            # apply the same clustering algorith as set at init
-            l, c, _ = dbs(
-                group,
-                self.cluster_cut[0],
-                threshold_density=self.cluster_threshold_density,
-                molecular=self.molecular)
-            group = group[np.where(np.array(l) == np.argmax(c))[0]]
-
         if len(group) > 0:
             if self.molecular:
                 group = group.residues.atoms
