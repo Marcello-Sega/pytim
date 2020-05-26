@@ -19,5 +19,5 @@ from .rdf import RDF
 from .rdf2d import RDF2D
 from .free_volume import FreeVolume
 from .correlator import Correlator
-from .orientation import Orientation
+from .orientation import Orientation,BivariateAngles
 from .layer_triangulation import LayerTriangulation
