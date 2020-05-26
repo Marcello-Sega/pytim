@@ -360,18 +360,11 @@ In order for this option to have any effect, a `cluster_cut` value should also b
 
 # More info
 
-Have a look at some jupyter notebooks:
+1. Have a look at the jupyter notebooks: https://github.com/Marcello-Sega/pytim-notebooks
 
-1. [An introduction to Pytim](https://github.com/Marcello-Sega/pytim/blob/master/notebooks/An%20introduction%20to%20Pytim.ipynb) 
-2. [The Willard-Chandler method]( https://github.com/Marcello-Sega/pytim/blob/master/notebooks/Willard-Chandler%20and%20Cube%20format.ipynb)
+2. Browse the examples in the [Pytim Online Manual](https://marcello-sega.github.io/pytim/quick.html)
 
-Browse the examples in the online manual:
-
-3. [Pytim Online Manual](https://marcello-sega.github.io/pytim/quick.html)
-
-Check out the Pytim Poster from the 10th Liquid Matter Conference 
-
-4. [Available on ResearchGate](http://dx.doi.org/10.13140/RG.2.2.18613.17126)  DOI:10.13140/RG.2.2.18613.17126
+3. Check out the Pytim Poster from the 10th Liquid Matter Conference [Available on ResearchGate](http://dx.doi.org/10.13140/RG.2.2.18613.17126)  DOI:10.13140/RG.2.2.18613.17126
 
 
 # <a name="installation"></a> How to install the package and the documentation? 
