@@ -47,6 +47,7 @@ PyPi:     ``` pip install --user --upgrade pytim ```
 
 Anaconda: ``` conda install -c conda-forge pytim ```
 
+NOTE: on Mac OS you might want to use ```CFLAGS='-stdlib=libc++' pip install --user --upgrade pytim```
 
 
 # <a name="example"></a> Show me an example usage, now!
