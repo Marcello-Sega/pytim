@@ -209,13 +209,13 @@ class Interface(object):
             # now that labels are assigned for each of the clusters,
             # we can restric the cluster group to the largest cluster.
 
-            try:
-                if self.biggest_cluster_only:
-                    label_max = np.argmax(counts)
-                    ids_max = np.where(labels == label_max)[0]
-                    self.cluster_group = self.cluster_group[ids_max]
-            except AttributeError: # biggest_cluster_only not set
-                pass
+            if self.biggest_cluster_only:
+                label_max = np.argmax(counts)
+                ids_max = np.where(labels == label_max)[0]
+                self.cluster_group = self.cluster_group[ids_max]
+            else: # we still filter out molecules which do not belong to any cluster
+                ids = np.where(labels != -1)[0]
+                self.cluster_group = self.cluster_group[ids]
 
             self.n_neighbors = neighbors
         else:

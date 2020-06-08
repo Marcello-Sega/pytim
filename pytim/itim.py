@@ -195,7 +195,7 @@ J. Comp. Chem. 29, 945, 2008)*
                  **kargs):
 
         self.autoassign = autoassign
-
+        self.biggest_cluster_only = True # necessary for ITIM
         self.symmetry = 'planar'
         self.do_center = centered
 
