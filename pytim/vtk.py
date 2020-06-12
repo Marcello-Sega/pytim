@@ -95,7 +95,7 @@ class Writevtk(object):
         vertices, faces, normals = list(inter.triangulated_surface[0:3])
         if sequence is True:
             filename = consecutive_filename(inter.universe, filename)
-        write_triangulation(filename, vertices[::, ::-1], faces, normals)
+        write_triangulation(filename, vertices, faces, normals)
 
 
 def _format_vector(vector, format_str="{:f}"):
