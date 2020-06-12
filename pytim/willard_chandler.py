@@ -226,6 +226,7 @@ class WillardChandler(Interface):
             volume, None, spacing=tuple(spacing))
         # note that len(normals) == len(verts): they are normals
         # at the vertices, and not normals of the faces
-        self.triangulated_surface = [verts, faces, normals]
+        # verts and normals have x and z flipped because skimage uses zyx ordering
+        self.triangulated_surface = [np.fliplr(verts), faces, np.fliplr(normals)]
         self.surface_area = measure.mesh_surface_area(verts, faces)
         verts += spacing[::-1] / 2.
