@@ -60,6 +60,16 @@ J. Chem. Phys. 138, 044110, 2013)*
         :param bool biggest_cluster_only: Tag as surface atoms/molecules only
                                     those in the largest cluster. Need to
                                     specify also a :py:obj:`cluster_cut` value.
+        :param bool biggest_surface_cluster_only: Filter surface atoms/molecules 
+                                    to include only those in the largest cluster
+                                    of (initially detected) surface ones. Useful
+                                    to filter out cavitating bubbles.
+        :param float surface_cluster_cut: Filter surface atoms/molecules 
+                                    to include only those in the largest cluster
+                                    of (initially detected) surface ones. Useful
+                                    to filter out cavitating bubbles.
+                                    (default: None disables the filtering)
+        :param str symmetry:        Gives the code a hint about the topology
         :param str symmetry:        Gives the code a hint about the topology
                                     of the interface: 'generic' (default)
                                     or  'planar'
@@ -123,6 +133,7 @@ J. Chem. Phys. 138, 044110, 2013)*
                  cluster_threshold_density=None,
                  extra_cluster_groups=None,
                  biggest_cluster_only=False,
+                 surface_cluster_cut=None,
                  symmetry='generic',
                  centered=False,
                  info=False,
@@ -139,6 +150,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         self.do_center = centered
 
         self.biggest_cluster_only = biggest_cluster_only
+        self.surface_cluster_cut = surface_cluster_cut
         sanity = SanityCheck(self, warnings=warnings)
         sanity.assign_universe(universe, group)
         sanity.assign_alpha(alpha)
@@ -307,6 +319,8 @@ J. Chem. Phys. 138, 044110, 2013)*
             alpha_ids = self.alpha_shape(self.alpha, alpha_group, layer)
 
             group = alpha_group[alpha_ids]
+            if self.surface_cluster_cut is not None:
+                group=self._filter_biggest_surface_cluster(group,self.surface_cluster_cut)
 
             alpha_group = self._assign_layers_postprocess(
                 dbs, group, alpha_group, layer)
