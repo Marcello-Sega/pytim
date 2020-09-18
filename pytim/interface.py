@@ -76,6 +76,10 @@ class Interface(object):
     cluster_threshold_density, _cluster_threshold_density =\
         _create_property('cluster_threshold_density',
                          "(float) threshold for the density-based filtering")
+    surface_cluster_cut, _surface_cluster_cut =\
+        _create_property('surface_cluster_cut',
+                         "(float) distance cut to calculate the surface clusters")
+
     # TODO: does this belong here ?
     _interpolator, __interpolator =\
         _create_property('_interpolator', "(dict) custom atomic radii")
@@ -145,6 +149,13 @@ class Interface(object):
             if not (symmetry in self.symmetry_dict):
                 raise ValueError(messages.WRONG_DIRECTION)
             self.symmetry = symmetry
+
+    def _generate_surface_clusters(self, group, cut):
+        # at the moment, selects only the biggest cluster
+        labels, counts, neighs = utilities.do_cluster_analysis_dbscan(
+                group, cut,
+                molecular=False)
+        return group[np.where(labels == np.argmax(counts))[0]]
 
     def _define_cluster_group(self):
         self.universe.atoms.pack_into_box()
