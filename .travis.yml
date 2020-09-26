@@ -16,19 +16,7 @@ matrix:
         - os: linux
           sudo: required
           python: 3.6
-          env: MDAv=0.17
-
-        - os: linux
-          sudo: required
-          python: 3.6
-          env: MDAv=0.19.2
-
-        - os: linux
-          sudo: required
-          python: 3.6
-          env: MDAv=0.20.0
-
-
+          env: MDAv=1.0.0
 
        # - os: osx
        #   language: generic
