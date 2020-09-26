@@ -1,7 +1,7 @@
 [What is Pytim](#what-is-pytim) | [Examples](#example) | [More info](#more-info)  | [How to Install](#installation) | [References](#references)
 
 
-[![Build Status](https://travis-ci.org/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.org/Marcello-Sega/pytim)
+[![Build Status](https://api.travis-ci.com/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.com/Marcello-Sega/pytim)
 [![GitHub tags](https://img.shields.io/github/tag/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/)
 [![GitHub issues](https://img.shields.io/github/issues/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/issues)
 [![codecov](https://codecov.io/gh/Marcello-Sega/pytim/branch/master/graph/badge.svg)](https://codecov.io/gh/Marcello-Sega/pytim)
