@@ -6,6 +6,7 @@
 """
 
 from __future__ import print_function
+import platform
 from multiprocessing import Process, Queue
 import numpy as np
 try:
@@ -198,6 +199,7 @@ J. Comp. Chem. 29, 945, 2008)*
         self.biggest_cluster_only = True # necessary for ITIM
         self.symmetry = 'planar'
         self.do_center = centered
+        self.system = platform.system()
 
         sanity = SanityCheck(self, warnings=warnings)
         sanity.assign_universe(universe, group)
@@ -373,30 +375,37 @@ J. Comp. Chem. 29, 945, 2008)*
         sort = np.argsort(_z + _radius * np.sign(_z))
         # NOTE: np.argsort returns the sorted *indices*
 
-        # so far, it justs exploit a simple scheme splitting
-        # the calculation between the two sides. Would it be
-        # possible to implement easily 2d domain decomposition?
-        proc, queue = [None, None], [Queue(), Queue()]
-        proc[up] = Process(
-            target=self._assign_one_side,
-            args=(up, sort[::-1], _x, _y, _z, _radius, queue[up]))
-        proc[low] = Process(
-            target=self._assign_one_side,
-            args=(low, sort[::], _x, _y, _z, _radius, queue[low]))
+        if self.multiproc and ('win' not in self.system.lower()):
+            # so far, it justs exploit a simple scheme splitting
+            # the calculation between the two sides. Would it be
+            # possible to implement easily 2d domain decomposition?
+            proc, queue = [None, None], [Queue(), Queue()]
+            proc[up] = Process(
+                target=self._assign_one_side,
+                args=(up, sort[::-1], _x, _y, _z, _radius, queue[up]))
+            proc[low] = Process(
+                target=self._assign_one_side,
+                args=(low, sort[::], _x, _y, _z, _radius, queue[low]))
 
-        for p in proc:
-            p.start()
-        for uplow in [up, low]:
-            for index, group in enumerate(queue[uplow].get()):
-                # cannot use self._layers[uplow][index] = group, otherwise
-                # info about universe is lost (do not know why yet)
-                # must use self._layers[uplow][index] =
-                # self.universe.atoms[group.indices]
-                self._layers[uplow][index] = self.universe.atoms[group.indices]
-        for p in proc:
-            p.join()
-        for q in queue:
-            q.close()
+            for p in proc:
+                p.start()
+            for uplow in [up, low]:
+                for index, group in enumerate(queue[uplow].get()):
+                    # cannot use self._layers[uplow][index] = group, otherwise
+                    # info about universe is lost (do not know why yet)
+                    # must use self._layers[uplow][index] =
+                    # self.universe.atoms[group.indices]
+                    self._layers[uplow][index] = self.universe.atoms[group.indices]
+            for p in proc:
+                p.join()
+            for q in queue:
+                q.close()
+        else:
+            for index, group in enumerate(self._assign_one_side(up, sort[::-1], _x, _y, _z, _radius)):
+                self._layers[up][index] = group
+            for index, group in enumerate(self._assign_one_side(low, sort[::], _x, _y, _z, _radius)):
+                self._layers[low][index] = group
+
 
         self.label_planar_sides()
 
