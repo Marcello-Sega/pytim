@@ -5,6 +5,7 @@
     =============
 """
 from __future__ import print_function
+import platform
 import numpy as np
 from scipy.spatial import distance
 
@@ -131,6 +132,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
         self.autoassign = autoassign
+        self.system = platform.system()
 
         self.do_center = centered
 
