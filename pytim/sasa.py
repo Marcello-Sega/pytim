@@ -179,6 +179,10 @@ class SASA(GITIM):
         self.Rmax = np.max(group.radii)
         self.tree = cKDTree(group.positions, boxsize=box)
         self.sasa_group = group
+
+        if 'win' in self.system.lower():
+            self.ncpu = 1
+
         try:
             self.ncpu
         except:
@@ -187,24 +191,40 @@ class SASA(GITIM):
         indices = range(len(group.atoms))
         exposed = [False] * len(group.atoms)
         area = [0.0] * len(group.atoms)
-        queue, proc = [], []
 
-        for c in range(self.ncpu):
-            queue.append(Queue())
-            proc.append(Process(
-                target=self._atomlist_coverage,
-                args=(indices[c::self.ncpu], queue[c])))
-            proc[c].start()
-
-        for c in range(self.ncpu):
-            sl = slice(c, len(indices), self.ncpu)
-            res = queue[c].get()
+        if self.ncpu == 1:
+            sl = slice(0, len(indices), self.ncpu)
+            res = self._atomlist_coverage(indices[0::self.ncpu])
             # in some cases zero atoms are assinged to some of the processes
             if len(res[0]) > 0:
                 exposed[sl] = (~np.asarray(res[0]))
                 area[sl] = res[1]
+        else:
+            queue, proc = [], []
+
+            for c in range(self.ncpu):
+                queue.append(Queue())
+                proc.append(Process(
+                    target=self._atomlist_coverage,
+                    args=(indices[c::self.ncpu], queue[c])))
+                proc[c].start()
+
+            for c in range(self.ncpu):
+                sl = slice(c, len(indices), self.ncpu)
+                res = queue[c].get()
+                # in some cases zero atoms are assinged to some
+                # of the processes
+                if len(res[0]) > 0:
+                    exposed[sl] = (~np.asarray(res[0]))
+                    area[sl] = res[1]
+
+            for c in range(self.ncpu):
+                proc[c].join()
+            for c in range(self.ncpu):
+                queue[c].close()
 
         self.area = np.array(area)
+
         return np.where(exposed)[0]
 
     def _assign_layers(self):
@@ -251,6 +271,20 @@ class SASA(GITIM):
         >>> inter = pytim.SASA(u,group=g,molecular=False)
         >>> print (np.all(np.isclose(inter.area,[4.*np.pi,0.0])))
         True
+
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import MICELLE_PDB
+        >>>
+        >>> u = mda.Universe(MICELLE_PDB)
+        >>> micelle = u.select_atoms('resname DPC')
+        >>> inter = pytim.SASA(u, group=micelle, molecular=False)
+        >>> inter.ncpu = 1
+        >>> inter._assign_layers()
+        >>> inter.atoms
+        <AtomGroup with 619 atoms>
+
+
 
 
         """
