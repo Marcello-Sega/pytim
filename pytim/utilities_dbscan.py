@@ -53,11 +53,11 @@ def do_cluster_analysis_dbscan(group,
     points = group.atoms.positions[:]
 
     tree = cKDTree(points, boxsize=box[:3])
-
+    # TODO: neighborhoods has to be converted to a list
     neighborhoods = np.array([
         np.array(neighbors)
         for neighbors in tree.query_ball_point(points, cluster_cut, n_jobs=-1)
-    ])
+    ],dtype=object)
     if len(neighborhoods.shape) != 1:
         raise ValueError("Error in do_cluster_analysis_DBSCAN(), the cutoff\
                           is probably too small")
