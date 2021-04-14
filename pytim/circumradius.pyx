@@ -37,7 +37,9 @@ cdef  _circumradius(npreal [:,:] points, npreal [:] radii, int [:,:] simplices )
     cdef npreal r2[4]
     cdef npreal vi,u2,v2,uv,R1,R2,A,B,C,R_1,R_2
     R = np.zeros(simplices.shape[0])
+    c = np.zeros((simplices.shape[0],3))
     cdef npreal[:] Rv = R
+    cdef npreal[:,:] cv = c
             
     for simplex in range(simplices.shape[0]):
         r2[0]=r2[1]=r2[2]=r2[3]=0.0
@@ -81,19 +83,29 @@ cdef  _circumradius(npreal [:,:] points, npreal [:] radii, int [:,:] simplices )
         C = u2 - 1
         R_1 = (A+B)/C
         R_2 = (A-B)/C
-        if R_1 < 0.0:
-            if R_2 < 0:
+        if R_1 <= 0.0:
+            if R_2 <= 0:
                 Rv[simplex] = 0.0
             else:
                 Rv[simplex] = R_2
         else:
-            if R_2 < 0:
+            if R_2 <= 0:
                 Rv[simplex] = R_1
             elif R_2 < R_1:
                 Rv[simplex] = R_2
             else:
                 Rv[simplex] = R_1
-    return R
+        # see notation in J. Chem. Phys. 138, 044110 (2013)
+        # after solving the equation ds is overwritten and
+        # ds[0] = M^-1 d
+        # ds[1] = M^-1 s
+        # so that the center position (eq. A5) is 
+        # cv = r = M^-1(s - Rd)
+        cv[simplex,0] = ds[1][0]-Rv[simplex]*ds[0][0] 
+        cv[simplex,1] = ds[1][1]-Rv[simplex]*ds[0][1] 
+        cv[simplex,2] = ds[1][2]-Rv[simplex]*ds[0][2] 
+         
+    return R,c
 
 def circumradius(points, radii, simplices):
     return _circumradius(points, radii, simplices)

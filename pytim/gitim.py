@@ -8,6 +8,7 @@ from __future__ import print_function
 import platform
 import numpy as np
 from scipy.spatial import distance
+from scipy.linalg import norm as linalgnorm
 
 from . import utilities
 from .sanity_check import SanityCheck
@@ -18,6 +19,7 @@ try:
 except ImportError:
     from scipy.spatial import Delaunay
 
+from scipy.spatial import cKDTree
 from .interface import Interface
 from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
 from circumradius import circumradius
@@ -221,10 +223,36 @@ J. Chem. Phys. 138, 044110, 2013)*
         except IndexError:
             raise IndexError("alpha_shape called using a wrong layer")
 
-        cr = circumradius(_points, radii, simplices)
+        # radii and centers of the kissing spheres
+        cr,cc = circumradius(_points, radii, simplices)
         # we filter first according to the touching sphere radius
-        a_shape = simplices[cr >= self.alpha]
-        # then we remove all simplices involving the 8 outer points, if any
+        cond = (cr >= self.alpha)
+        if self._noextrapoints:
+            tree = cKDTree(extrapoints)
+        else:
+            tree = cKDTree(extrapoints[:-8])
+        cond2 =  cond | True # all True, will set them false below
+        # find all atoms within the kissing sphere to each of the simplices
+        neighborhoods1 = tree.query_ball_point(x=cc[cond],r=cr[cond])
+        radii2 = cr[cond]-2*self.alpha
+        radii2[radii2<0] = 0.0 # query_ball_point treats negative radii as positive...
+        # if they are within the kissing sphere, but further than 2*alpha from its
+        # border, there is necessarily space enough in between, i.e. we will remove 
+        # these points with a set operation later.
+        neighborhoods2 = tree.query_ball_point(x=cc[cond],r=radii2)
+        # we will now search for those which are also close to the simplex
+        for i,neighbors in enumerate(neighborhoods1):
+            sid = np.argwhere(cond)[i]
+            # we are not interested in points either too far away from the sphere border.
+            # To be sure, we alse remove points belonging to the kissed simplex as well.
+            real_neighs = list(set(neighbors) -set(neighborhoods2[i])- set(simplices[i]))
+            for atomid in real_neighs:
+                d = linalgnorm(_points[simplices[sid][0]]-tree.data[atomid],axis=1)
+                if np.count_nonzero(d-radii[atomid]-radii[simplices[sid][0]] - 2.*self.alpha<0) > 1:
+                        cond2[sid] = False
+        cond &= cond2
+        a_shape = simplices[cond]
+        # then we remove all simplices involving the 9 outer points, if any
         cond = np.where(np.all(a_shape < len(_points) - n_cube, axis=1))[0]
         a_shape = a_shape[np.unique(cond)]
         # finally, we select only the ids of atoms in the basic cell.
