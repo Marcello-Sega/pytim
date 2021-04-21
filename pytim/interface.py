@@ -145,6 +145,12 @@ class Interface(object):
                 raise ValueError(messages.WRONG_DIRECTION)
             self.symmetry = symmetry
 
+    def _filter_biggest_surface_cluster(self,group,cut):
+        l,c,n = utilities.do_cluster_analysis_dbscan(
+                group, cut,
+                molecular=False)
+        return group[np.where(l == np.argmax(c))[0]]
+
     def _define_cluster_group(self):
         self.universe.atoms.pack_into_box()
         self.cluster_group = self.universe.atoms[:0]  # empty
