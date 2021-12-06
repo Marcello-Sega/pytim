@@ -66,6 +66,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         :param bool warnings:       Print warnings
         :param bool autoassign:     If true (default) detect the interface
                                     every time a new frame is selected.
+        :param int workers:         Passes the workers option to scipy.spatial.cKDTree.query_ball
+                                    If -1 is given all CPU threads are used (default: -1)
 
         Example:
 
@@ -127,13 +129,14 @@ J. Chem. Phys. 138, 044110, 2013)*
                  warnings=False,
                  autoassign=True,
                  _noextrapoints=False,
+                 workers=-1,
                  **kargs):
 
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
         self.autoassign = autoassign
         self.system = platform.system()
-
+        self.workers = workers
         self.do_center = centered
 
         self.biggest_cluster_only = biggest_cluster_only

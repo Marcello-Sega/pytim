@@ -60,6 +60,8 @@ class SASA(GITIM):
         :param bool warnings:       Print warnings
         :param bool autoassign:     If true (default) detect the interface
                                     every time a new frame is selected.
+        :param int workers:         Passes the workers option to scipy.spatial.cKDTree.query_ball
+                                    If -1 is given all CPU threads are used (default: -1)
 
         Example:
 
