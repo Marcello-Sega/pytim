@@ -31,7 +31,7 @@ def determine_samples(threshold_density, cluster_cut, n_neighbors):
 def do_cluster_analysis_dbscan(group,
                                cluster_cut,
                                threshold_density=None,
-                               molecular=True):
+                               molecular=True,workers=1):
     """ Performs a cluster analysis using DBSCAN
 
         :returns [labels,counts,neighbors]: lists of the id of the cluster to
@@ -46,6 +46,9 @@ def do_cluster_analysis_dbscan(group,
         clusters. This is on average O(N log N) thanks to the O(log N)
         scaling of the kdtree.
 
+        To avoid problems in environments with limited resources, 
+        pass n_jobs=1 to start only one thread
+
     """
     box = group.universe.dimensions[:3]
 
@@ -56,7 +59,7 @@ def do_cluster_analysis_dbscan(group,
 
     neighborhoods = np.array([
         np.array(neighbors)
-        for neighbors in tree.query_ball_point(points, cluster_cut, n_jobs=-1)
+        for neighbors in tree.query_ball_point(points, cluster_cut, workers=workers)
     ])
     if len(neighborhoods.shape) != 1:
         raise ValueError("Error in do_cluster_analysis_DBSCAN(), the cutoff\

@@ -55,6 +55,10 @@ class WillardChandler(Interface):
                                   mixed interfaces
         :param bool centered:     Center the  :py:obj:`group`
         :param bool warnings:     Print warnings
+        :param bool autoassign:   If true (default) detect the interface
+                                  every time a new frame is selected.
+        :param int workers:       Passes the workers option to scipy.spatial.cKDTree.query_ball
+                                  If -1 is given all CPU threads are used (default: -1)
 
         Example:
 
@@ -109,9 +113,11 @@ class WillardChandler(Interface):
                  centered=False,
                  warnings=False,
                  autoassign=True,
+                 workers=-1,
                  **kargs):
 
         self.autoassign, self.do_center = autoassign, centered
+        self.workers = workers
         sanity = SanityCheck(self, warnings=warnings)
         sanity.assign_universe(universe, group)
         sanity.assign_alpha(alpha)
