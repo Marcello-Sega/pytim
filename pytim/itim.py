@@ -63,6 +63,8 @@ J. Comp. Chem. 29, 945, 2008)*
                                   (default 0.4 Angstrom)
         :param bool autoassign:   If true (default) detect the interface
                                   every time a new frame is selected.
+        :param int workers:       Passes the workers option to scipy.spatial.cKDTree.query_ball
+                                  If -1 is given all CPU threads are used (default: -1)
 
         Example:
 
@@ -193,9 +195,11 @@ J. Comp. Chem. 29, 945, 2008)*
                  warnings=False,
                  mesh=0.4,
                  autoassign=True,
+                 workers=-1,
                  **kargs):
 
         self.autoassign = autoassign
+        self.workers = workers
         self.biggest_cluster_only = True # necessary for ITIM
         self.symmetry = 'planar'
         self.do_center = centered
