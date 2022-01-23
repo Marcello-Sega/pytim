@@ -3,5 +3,5 @@ numpy>=1.16.0
 scipy>=1.1.0
 MDAnalysis>=1.0
 pytest
-codecov
+codecov==2.1.12
 pytest-cov 
