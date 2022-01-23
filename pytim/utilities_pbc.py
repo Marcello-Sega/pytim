@@ -13,14 +13,14 @@ def generate_periodic_border(points, box, delta, method='3d'):
     """
     extrapoints = np.copy(points)
 
-    if method is '2d':
+    if method == '2d':
         shifts = np.array([
             el + (0, ) for el in list(itertools.product([1, -1, 0], repeat=2))
         ])
     else:
         shifts = np.array(list(itertools.product([1, -1, 0], repeat=3)))
 
-    extraids = np.arange(len(points), dtype=np.int)
+    extraids = np.arange(len(points), dtype=int)
     for shift in shifts:
         if (np.sum(shift * shift)):  # avoid [0,0,0]
             # this needs some explanation:
