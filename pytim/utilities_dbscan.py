@@ -56,8 +56,8 @@ def do_cluster_analysis_dbscan(group,
 
     neighborhoods = np.array([
         np.array(neighbors)
-        for neighbors in tree.query_ball_point(points, cluster_cut, n_jobs=-1)
-    ])
+        for neighbors in tree.query_ball_point(points, cluster_cut, workers=-1)
+    ],dtype=object)
     if len(neighborhoods.shape) != 1:
         raise ValueError("Error in do_cluster_analysis_DBSCAN(), the cutoff\
                           is probably too small")

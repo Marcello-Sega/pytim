@@ -90,7 +90,7 @@ class RDF(DistributionFunction):
         except:
             pass
 
-        if max_distance is 'full':
+        if max_distance == 'full':
             max_distance = np.min(universe.dimensions[:3]) / 2.
 
         self._distance = Distance()
@@ -221,7 +221,7 @@ class oldRDF(object):
 
         kargs1 = kargs1 or {}
         kargs2 = kargs2 or {}
-        if max_radius is 'full':
+        if max_radius == 'full':
             self.max_radius = np.min(universe.dimensions[:3]) / 2.
         else:
             self.max_radius = max_radius

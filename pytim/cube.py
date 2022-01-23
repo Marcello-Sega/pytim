@@ -28,20 +28,15 @@ def _write_atomgroup(f, group, atomic_numbers):
 
     types = group.types
     if atomic_numbers is None:
-        try:
-            atomic_numbers = [el for el in group.elements]
-        except AttributeError:
-            n0 = {'number': 0}
-            atomic_numbers = [
-                utilities.atoms_maps.get(t, n0)['number'] for t in types
-            ]
+        n0 = {'number': 0}
+        atomic_numbers = [utilities.atoms_maps.get(t, n0)['number'] for t in types]
 
     for i, p in enumerate(group.positions):
         f.write(_format_atom(p / Bohr, atomic_numbers[i]))
 
 
 def _format_atom(pos, number, format_str="{:d} {:g} {:g} {:g} {:g}"):
-    return format_str.format(number, number, pos[0], pos[1], pos[2]) + '\n'
+    return format_str.format(int(number), float(number), pos[0], pos[1], pos[2]) + '\n'
 
 
 def _write_scalar_grid(f, scalars):

@@ -109,8 +109,8 @@ class BivariateAngles(Observable):
         >>> condition = np.logical_and(u.atoms.sides==0,u.atoms.layers==1)
         >>> group = u.atoms[condition]
         >>> costheta, phi = biv.compute(group)
-        >>> costheta[0],phi[0]
-        (0.6533759236335754, 0.10778185716460659)
+        >>> np.all(np.isclose([costheta[0],phi[0]], [0.6533759236335754, 0.10778185716460659]))
+        True
     """
 
         v_normal = self.molecular_plane_vector.compute(inp)

@@ -196,7 +196,7 @@ class Data(object):
 
     def add(self, label, filetype, fileformat, desc):
         self._label.append(label)
-        if label[0] is not '_':
+        if label[0] != '_':
             self.label.append(label)
         self.file[label] = globals()[label]
         file = self.file[label]
