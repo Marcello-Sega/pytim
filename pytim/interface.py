@@ -148,6 +148,11 @@ class Interface(object):
     def _define_cluster_group(self):
         self.universe.atoms.pack_into_box()
         self.cluster_group = self.universe.atoms[:0]  # empty
+        try: # for classes that are not yet implementing this, play safe
+            self.workers
+        except AttributeError:
+            self.workers=1
+
         if (self.cluster_cut is not None):
             cluster_cut = float(self.cluster_cut[0])
             # we start by adding the atoms in the smaller clusters
@@ -156,7 +161,7 @@ class Interface(object):
                 for extra in self.extra_cluster_groups:
                     x_labels, x_counts, _ = utilities.do_cluster_analysis_dbscan(
                         extra, cluster_cut, self.cluster_threshold_density,
-                        self.molecular)
+                        self.molecular,workers=self.workers)
                     x_labels = np.array(x_labels)
                     x_label_max = np.argmax(x_counts)
                     x_ids_other = np.where(x_labels != x_label_max)[0]
@@ -171,7 +176,7 @@ class Interface(object):
             # the smaller clusters of the other phase
             labels, counts, neighbors = utilities.do_cluster_analysis_dbscan(
                 self.cluster_group, cluster_cut,
-                self.cluster_threshold_density, self.molecular)
+                self.cluster_threshold_density, self.molecular,workers=self.workers)
             labels = np.array(labels)
 
             # counts is not necessarily ordered by size of cluster.
@@ -519,7 +524,11 @@ class Interface(object):
         <AtomGroup with 2025 atoms>
 
 
-        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=True, molecular=True)
+        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=True, molecular=True,workers=-1)
+        >>> print(repr(inter.atoms))
+        <AtomGroup with 855 atoms>
+
+        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=True, molecular=True,workers=1)
         >>> print(repr(inter.atoms))
         <AtomGroup with 855 atoms>
 
