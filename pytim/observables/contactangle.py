@@ -34,7 +34,7 @@ class ContactAngle(object):
             >>> droplet = u.select_atoms("name OW")
             >>> substrate = u.select_atoms("name C")
             >>>
-            >>> CA = observables.ContactAngle(droplet, substrate)
+            >>> CA = observables.ContactAngleGitim(droplet, substrate)
             >>>
             >>> inter = pytim.GITIM(universe=u,group=droplet, molecular=False,alpha=2.5,cluster_cut=3.4, biggest_cluster_only=True)
             >>>
