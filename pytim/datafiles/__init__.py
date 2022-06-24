@@ -44,7 +44,8 @@
     Example: list all trajectories
 
     >>> print (np.sort(pytim_data.traj))
-    ['LJ_SHORT_XTC' 'WATER_LMP_XTC' 'WATER_XTC']
+    ['LJ_SHORT_XTC' 'WATER_DROPLET_CYLINDRICAL_XTC' 'WATER_LMP_XTC'
+     'WATER_XTC']
 
 
 
