@@ -36,7 +36,7 @@ class ContactAngle(object):
             >>>
             >>> CA = observables.ContactAngleGitim(droplet, substrate)
             >>>
-            >>> inter = pytim.GITIM(universe=u,group=droplet, molecular=False,alpha=2.5,cluster_cut=3.4, biggest_cluster_only=True)
+            >>> inter = pytim.Gitim(universe=u,group=droplet, molecular=False,alpha=2.5,cluster_cut=3.4, biggest_cluster_only=True)
             >>>
             >>> for ts in u.trajectory[::]:
             ...     CA.sample(inter)
