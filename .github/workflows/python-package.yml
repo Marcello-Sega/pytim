@@ -3,11 +3,7 @@
 
 name: Python package
 
-on:
-  push:
-    branches: [ github-action-tests ]
-  pull_request:
-    branches: [ github-action-tests  ]
+on: [ push ]
 
 jobs:
   build:
