@@ -42,8 +42,7 @@ class ContactAngle(object):
             ...     CA.sample(inter)
             >>>
             >>> np.round(CA.contact_angle,2)
-                    79.52
-            >>> # TODO add other related observables and separate examples with different binning (angular vs planar) and fit (circle vs ellipse)
+            79.52
 
         """
 
