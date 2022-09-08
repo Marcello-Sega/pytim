@@ -40,7 +40,7 @@ class ContactAngle(object):
             >>>
             >>> for ts in u.trajectory[::]:
             ...     CA.sample(inter)
-            >>>
+            >>> aaaa=bb
             >>> np.round(CA.contact_angle,2)
             >>>
             >>> #79.52
