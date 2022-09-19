@@ -3,7 +3,7 @@
 """ Module: ContactAngle
     ====================
 """
-
+import pytim
 import MDAnalysis as mda
 import numpy as np
 from scipy.spatial import cKDTree
@@ -33,18 +33,49 @@ class ContactAngle(object):
             >>> u = mda.Universe(WATER_DROPLET_CYLINDRICAL_GRO,WATER_DROPLET_CYLINDRICAL_XTC)
             >>> droplet = u.select_atoms("name OW")
             >>> substrate = u.select_atoms("name C")
-            >>>
-            >>> CA = observables.ContactAngleGitim(droplet, substrate)
-            >>>
-            >>> inter = pytim.Gitim(universe=u,group=droplet, molecular=False,alpha=2.5,cluster_cut=3.4, biggest_cluster_only=True)
-            >>>
+            >>> #inter = pytim.GITIM(universe=u,group=droplet, molecular=False,alpha=2.5,cluster_cut=3.4, biggest_cluster_only=True)
+
+            >>> ##### Contact angale calculation using gitim and theta binning techniques:
+            >>> CA_gitim_th = observables.ContactAngleGitim(droplet, substrate)
             >>> for ts in u.trajectory[::]:
-            ...     CA.sample(inter)
-            >>> aaaa=bb
-            >>> np.round(CA.contact_angle,2)
+            ...     CA_gitim_th.sample(bins=397,binning='theta',periodic=1,removeCOM=0,base_cut=3)
+            >>> np.round(CA_gitim_th.contact_angle,2)
+            86.42
+
+            >>> ##### Contact angale calculation using gitim and z binning techniques:
+            >>> CA_gitim_z = observables.ContactAngleGitim(droplet, substrate)
+            >>> for ts in u.trajectory[::]:
+            ...     CA_gitim_z.sample(bins=397,binning='z',periodic=1,removeCOM=0,base_cut=3)
+            >>> np.round(CA_gitim_z.contact_angle,2)
+            89.94
+
+            >>> ##### Contact angale calculation using gibbs and theta binning techniques:
+            >>> CA_gibbs_th = observables.ContactAngleGibbs(droplet, substrate)
+            >>> for ts in u.trajectory[::]:
+            ...     CA_gibbs_th.sample(bins=100,params=(40.,10,0.3),binning='theta',periodic=1)
+            >>> np.round(CA_gibbs_th.contact_angle,2)
+            79.52
+
+            >>> ##### Contact angale calculation using gibbs and z binning techniques:
+            >>> CA_gibbs_z = observables.ContactAngleGibbs(droplet, substrate)
+            >>> for ts in u.trajectory[::]:
+            ...     CA_gibbs_z.sample(bins=100,params=(40.,10,0.3),binning='z',periodic=1)
+            >>> np.round(CA_gibbs_z.contact_angle,2)
+            30.24
+
+            >>> ##### Contact angale calculation using gitim, theta binning and ellipse fitting techniques:
+            >>> aa,th1,th2=CA_gitim_th.fit_arc_ellipse()
+            >>> ##### Advancing angle
+            >>> np.round(np.abs(th1),2)
+            78.05
+            >>> ##### Receding angle
+            >>> np.round(th2,2)
+            75.08
+
             >>>
-            >>> #79.52
-            >>> # TODO add other related observables and separate examples with different binning (angular vs planar) and fit (circle vs ellipse)
+            >>> #pytest ~/nuremberg/pytim/pytim/data ~/nuremberg/pytim/pytim/observables/contactangle.py ~/nuremberg/pytim/pytim/datafiles/* --doctest-modules
+            >>>
+
 
         """
 
@@ -123,8 +154,8 @@ class ContactAngle(object):
         b = np.ones_like(X)
         a = np.linalg.lstsq(A, b)[0].squeeze()
         # Print the equation of the ellipse in standard form
-        print('Ellipse equ: {0:.3}x^2 + {1:.3}xy+{2:.3}y^2+{3:.3}x+{4:.3}y = 0'.format(
-            a[0], a[1], a[2], a[3], a[4]))
+        #print('Ellipse equ: {0:.3}x^2 + {1:.3}xy+{2:.3}y^2+{3:.3}x+{4:.3}y = 0'.format(
+        #    a[0], a[1], a[2], a[3], a[4]))
         if yy is None:
             yy = 0  # positon of substrate
         bc = a[1]*yy+a[3]
@@ -242,7 +273,7 @@ class ContactAngleGitim(ContactAngle):
     """ ContactAngle class implementation with GITIM
     """
 
-    def sample(self, inter, bins=100, cut=3.5, alpha=2.5, pdbOut=None, binning='theta', periodic=None, removeCOM=None, base_cut=0.0):
+    def sample(self,bins=100,cut=3.5,alpha=2.5,pdbOut=None,binning='theta',periodic=None,inter=None,removeCOM=None,base_cut=0.0):
         """ compute the height profile z(r) of a droplet
 
             :param int       bins     : number of slices along the z axis (across the whole box z-edge)
@@ -250,9 +281,9 @@ class ContactAngleGitim(ContactAngle):
             :param float     alpha    : probe sphere radius for GITIM
             :param str       pdbOut   : optional pdb file where to store trajectory with tagged surface atoms
 
-            NOTES: 
+            NOTES:
             1) not tested with the molecular option of GITIM
-            2) bins in x,y and z directions are the same, this might be a problem for boxes with large aspect 
+            2) bins in x,y and z directions are the same, this might be a problem for boxes with large aspect
                ratios
             3) make removeCOM=0 to remove movement of droplet along x axis
 
@@ -265,8 +296,13 @@ class ContactAngleGitim(ContactAngle):
             self.r_, self.z_, self.theta_, self.R_ = [], [], [], []
 
         self.nframes += 1
+        if inter is None:
+            self.inter = pytim.GITIM(universe=droplet.universe,group=droplet,
+                                     molecular=False,alpha=2.5)#,biggest_surface_cluster_only=True,surface_cluster_cut=5.)
+        else:
+            self.inter = inter
 
-        self.inter = inter
+        #self.inter = inter
 
         self.remove_COM(removeCOM, droplet, inter, alpha, box)
         self.maxr = np.nanmax(droplet.universe.dimensions[:2])
@@ -400,7 +436,7 @@ class ContactAngleGitim(ContactAngle):
 
 
 class ContactAngleGibbs(ContactAngle):
-    """ ContactAngle class implementation using an estimate of the 
+    """ ContactAngle class implementation using an estimate of the
         Gibbs dividing surface
     """
 
