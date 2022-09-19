@@ -7,7 +7,7 @@ from pytim import utilities
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
 from .observable import Observable
-from .contactangle import ContactAngleGitim, ContactAngleGibbs
+from .contactangle import ContactAngle
 from .basic_observables import Position, RelativePosition, Velocity, Force
 from .basic_observables import Number, Mass, Charge, NumberOfResidues
 from .basic_observables import Distance
