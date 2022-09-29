@@ -1,4 +1,4 @@
 mdtraj
 pytest
 codecov
-pytest-cov 
+pytest-cov==4.0.0 
