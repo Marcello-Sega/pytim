@@ -107,7 +107,8 @@ class LocalReferenceFrame(Observable):
             z = np.argmin(S)
             UU = np.roll(U, 2 - z, axis=-1).T
             # flip normal if cm on the same side of normal
-            UU[2] *= ((np.dot(UU[2], dcm) <= 0) * 2. - 1.)
+            if np.dot(UU[2], dcm) > 0:
+                UU[2] = -UU[2] 
             local_coords.append(UU.T)
         return np.array(local_coords)
 
