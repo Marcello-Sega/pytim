@@ -9,7 +9,7 @@
 [![Code Climate](https://codeclimate.com/github/Marcello-Sega/pytim/badges/gpa.svg)](https://codeclimate.com/github/Marcello-Sega/pytim)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-<sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. We will keep rolling out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on GitHub and/or make a pull request. </sub>
+<sub> If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on GitHub and/or make a pull request. </sub>
 
 **Jupyter Notebooks** with _more examples_ are available at [Marcello-Sega/pytim-notebooks](https://github.com/Marcello-Sega/pytim-notebooks)
 
