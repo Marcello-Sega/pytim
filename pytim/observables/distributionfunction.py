@@ -48,11 +48,9 @@ class DistributionFunction(object):
     >>>
     >>> nres = observables.NumberOfResidues()
     >>>
-    >>> rdf = observables.RDF(u,nbins=120,\
-        observable=nres,observable2=nres)
+    >>> rdf = observables.RDF(u,nbins=120,observable=nres,observable2=nres)
     >>>
-    >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,\
-        cluster_cut=3.5,molecular=False)
+    >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,cluster_cut=3.5,molecular=False)
     >>>
     >>> for ts in u.trajectory[::50]:
     ...     layer=interface.layers[0,0]
@@ -140,8 +138,7 @@ class DistributionFunction(object):
             [coord in self.spherical_coords for coord in self.coords_out])
 
         if (self.cartesian and self.spherical) or (not self.cartesian and not self.spherical):
-            raise ValueError("Can pass either any of Cartesian ['x','y','z'] \
-                                or of spherical ['r','phi','theta'] coordinates ")
+            raise ValueError("Can pass either any of Cartesian ['x','y','z'] or of spherical ['r','phi','theta'] coordinates ")
         if self.spherical:
             all_coords = self.spherical_coords
         if self.cartesian:

@@ -44,11 +44,9 @@ class RDF(DistributionFunction):
     >>>
     >>> nres = observables.NumberOfResidues()
     >>>
-    >>> rdf = observables.RDF(u,nbins=120,\
-        observable=nres,observable2=nres)
+    >>> rdf = observables.RDF(u,nbins=120,observable=nres,observable2=nres)
     >>>
-    >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,\
-        cluster_cut=3.5,molecular=False)
+    >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,cluster_cut=3.5,molecular=False)
     >>>
     >>> for ts in u.trajectory[::50]:
     ...     layer=interface.layers[0,0]
