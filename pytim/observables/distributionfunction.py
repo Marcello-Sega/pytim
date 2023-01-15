@@ -9,7 +9,7 @@ from . import Position, RelativePosition
 
 
 class DistributionFunction(object):
-    """Calculates a 3d distribution function of some observable from two
+    r"""Calculates a 3d distribution function of some observable from two
     groups.
 
     The two functions must return an array (of scalars or of vectors)
@@ -18,8 +18,8 @@ class DistributionFunction(object):
 
     .. math::
 
-          sdf(x,y,z) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(x-x_i,y-y_i,z-z_i)\
-            f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
+          sdf(x,y,z) = \frac{1}{N}\left\langle \sum_{i\neq j} \delta(x-x_i,y-y_i,z-z_i)\
+            f_1(r_i,v_i)\cdot f_2(r_j,v_j) \right\rangle
 
 
     :param double max_distance:     compute the sdf up to this distance along 
