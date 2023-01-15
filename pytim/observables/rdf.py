@@ -20,8 +20,8 @@ class RDF(DistributionFunction):
 
     .. math::
 
-          g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|)\
-            f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
+          g(r) = \frac{1}{N}\left\langle \sum_{i\neq j} \delta(r-|r_i-r_j|)\
+            f_1(r_i,v_i)\cdot f_2(r_j,v_j) \right\rangle
 
 
     :param double max_radius:       compute the rdf up to this distance.
@@ -143,7 +143,7 @@ class RDF(DistributionFunction):
 
 
 class oldRDF(object):
-    """Calculates a radial distribution function of some observable from two
+    r"""Calculates a radial distribution function of some observable from two
     groups.
 
     The two functions must return an array (of scalars or of vectors)
@@ -152,8 +152,8 @@ class oldRDF(object):
 
     .. math::
 
-          g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|)\
-            f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
+          g(r) = \frac{1}{N}\left\langle \sum_{i\neq j} \delta(r-|r_i-r_j|)\
+            f_1(r_i,v_i)\cdot f_2(r_j,v_j) \right\rangle
 
 
     :param double max_radius:       compute the rdf up to this distance.
