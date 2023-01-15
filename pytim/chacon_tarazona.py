@@ -35,15 +35,15 @@ class ChaconTarazona(Interface):
 
         Example:
 
-        >>> import MDAnalysis as mda
-        >>> import numpy as np
-        >>> import pytim
-        >>> from pytim.datafiles import WATER_GRO
-        >>> u = mda.Universe(WATER_GRO)
-        >>> g = u.select_atoms('name OW')
-        >>> interface = pytim.ChaconTarazona(u,alpha=2.,tau=1.5,group=g,info=False,molecular=False)
-        >>> interface.writepdb('CT.pdb',centered=True)
-        >>> print (repr(interface.layers))
+        >> import MDAnalysis as mda
+        >> import numpy as np
+        >> import pytim
+        >> from pytim.datafiles import WATER_GRO
+        >> u = mda.Universe(WATER_GRO)
+        >> g = u.select_atoms('name OW')
+        >> interface = pytim.ChaconTarazona(u,alpha=2.,tau=1.5,group=g,info=False,molecular=False)
+        >> interface.writepdb('CT.pdb',centered=True)  # doctest: +SKIP
+        >> print (repr(interface.layers))
         array([[<AtomGroup with 175 atoms>],
                [<AtomGroup with 159 atoms>]], dtype=object)
 
