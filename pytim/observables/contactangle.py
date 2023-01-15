@@ -320,9 +320,9 @@ class ContactAngleGitim(ContactAngle):
 
     def sample_theta_R(self, bins, theta, r, z, base_cut):
         R = np.sqrt(r*r+z*z)
-        n_h, t_edges = np.histogram(theta, bins=bins, normed=None, range=(
+        n_h, t_edges = np.histogram(theta, bins=bins, range=(
             0, np.pi), weights=None, density=False)
-        R_h, t_edges = np.histogram(theta, bins=bins, normed=None, range=(
+        R_h, t_edges = np.histogram(theta, bins=bins, range=(
             0, np.pi), weights=R,    density=False)
         #cond = np.where(n_h>0)
         zz, rr = R_h * np.sin(t_edges[:-1]) / \
@@ -334,9 +334,9 @@ class ContactAngleGitim(ContactAngle):
 
     def sample_z_r(self, bins, z, r, base_cut):
         #print("I love maxr",self.maxr)
-        n_h, r_edges = np.histogram(r, bins=bins, normed=None, range=(
+        n_h, r_edges = np.histogram(r, bins=bins, range=(
             0, self.maxr), weights=None, density=False)
-        z_h, r_edges = np.histogram(r, bins=bins, normed=None, range=(
+        z_h, r_edges = np.histogram(r, bins=bins, range=(
             0, self.maxr), weights=z,    density=False)
         zz, rr = z_h/(1.*n_h), r_edges[:-1]
         zzmin = np.nanmin(zz)
@@ -384,12 +384,12 @@ class ContactAngleGitim(ContactAngle):
 
         def sample_theta_R(self, bins, th_left, th_right, RR_left, RR_right):
             n_h_left, t_edges_left = np.histogram(
-                th_left, bins=bins, normed=None, range=(0, np.pi), weights=None, density=False)
-            R_h_left, t_edges_left = np.histogram(th_left, bins=bins, normed=None, range=(
+                th_left, bins=bins, range=(0, np.pi), weights=None, density=False)
+            R_h_left, t_edges_left = np.histogram(th_left, bins=bins, range=(
                 0, np.pi), weights=RR_left,    density=False)
             n_h_right, t_edges_right = np.histogram(
-                th_right, bins=bins, normed=None, range=(0, np.pi), weights=None, density=False)
-            R_h_right, t_edges_right = np.histogram(th_right, bins=bins, normed=None, range=(
+                th_right, bins=bins, range=(0, np.pi), weights=None, density=False)
+            R_h_right, t_edges_right = np.histogram(th_right, bins=bins, range=(
                 0, np.pi), weights=RR_right, density=False)
             self.left_z, self.left_r = R_h_left * np.sin(t_edges_left[:-1])/(1.*n_h_left),\
                 R_h_left * np.cos(t_edges_left[:-1])/(1.*n_h_left)
