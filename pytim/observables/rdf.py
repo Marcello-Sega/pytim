@@ -11,7 +11,7 @@ from . import Distance
 
 
 class RDF(DistributionFunction):
-    """Calculates a radial distribution function of some observable from two
+    r"""Calculates a radial distribution function of some observable from two
     groups.
 
     The two functions must return an array (of scalars or of vectors)
