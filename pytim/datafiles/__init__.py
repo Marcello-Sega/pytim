@@ -225,7 +225,7 @@ class Data(object):
             scan = False
             radii = dict()
             for line in f:
-                if (scan and re.match('^ *\[', line)):
+                if (scan and re.match(r'^ *\[', line)):
                     return radii
                 if (scan):
                     try:
@@ -234,7 +234,7 @@ class Data(object):
                         radii[atom] = 0.5 * self.sigeps(data, input_type)
                     except IndexError:
                         pass
-                if (re.match('^ *\[ *atomtypes *\]', line)):
+                if (re.match(r'^ *\[ *atomtypes *\]', line)):
                     scan = True
         return radii
 

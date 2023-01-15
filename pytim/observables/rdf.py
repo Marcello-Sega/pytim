@@ -11,7 +11,7 @@ from . import Distance
 
 
 class RDF(DistributionFunction):
-    """Calculates a radial distribution function of some observable from two
+    r"""Calculates a radial distribution function of some observable from two
     groups.
 
     The two functions must return an array (of scalars or of vectors)
@@ -20,8 +20,8 @@ class RDF(DistributionFunction):
 
     .. math::
 
-          g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|)\
-            f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
+          g(r) = \frac{1}{N}\left\langle \sum_{i\neq j} \delta(r-|r_i-r_j|)\
+            f_1(r_i,v_i)\cdot f_2(r_j,v_j) \right\rangle
 
 
     :param double max_radius:       compute the rdf up to this distance.
@@ -44,11 +44,9 @@ class RDF(DistributionFunction):
     >>>
     >>> nres = observables.NumberOfResidues()
     >>>
-    >>> rdf = observables.RDF(u,nbins=120,\
-        observable=nres,observable2=nres)
+    >>> rdf = observables.RDF(u,nbins=120,observable=nres,observable2=nres)
     >>>
-    >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,\
-        cluster_cut=3.5,molecular=False)
+    >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,cluster_cut=3.5,molecular=False)
     >>>
     >>> for ts in u.trajectory[::50]:
     ...     layer=interface.layers[0,0]
@@ -143,7 +141,7 @@ class RDF(DistributionFunction):
 
 
 class oldRDF(object):
-    """Calculates a radial distribution function of some observable from two
+    r"""Calculates a radial distribution function of some observable from two
     groups.
 
     The two functions must return an array (of scalars or of vectors)
@@ -152,8 +150,8 @@ class oldRDF(object):
 
     .. math::
 
-          g(r) = \\frac{1}{N}\left\langle \sum_{i\\neq j} \delta(r-|r_i-r_j|)\
-            f_1(r_i,v_i)\cdot f_2(r_j,v_j) \\right\\rangle
+          g(r) = \frac{1}{N}\left\langle \sum_{i\neq j} \delta(r-|r_i-r_j|)\
+            f_1(r_i,v_i)\cdot f_2(r_j,v_j) \right\rangle
 
 
     :param double max_radius:       compute the rdf up to this distance.
@@ -176,11 +174,9 @@ class oldRDF(object):
     >>>
     >>> nres = observables.NumberOfResidues()
     >>>
-    >>> rdf = observables.RDF(u,nbins=120,\
-        observable=nres,observable2=nres)
+    >>> rdf = observables.RDF(u,nbins=120,observable=nres,observable2=nres)
     >>>
-    >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,\
-        cluster_cut=3.5,molecular=False)
+    >>> interface = pytim.ITIM(u,alpha=2.,group=oxygens,cluster_cut=3.5,molecular=False)
     >>>
     >>> for ts in u.trajectory[::50]:
     ...     layer=interface.layers[0,0]
