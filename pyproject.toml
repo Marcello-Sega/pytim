@@ -1,0 +1,4 @@
+# This is required by the build module, invoked as python -m build within the GitHub PyPI deployment action
+[build-system] 
+# scipy and numpy are required to build the cython extensions
+requires = ["setuptools", "wheel", "Cython", "numpy", "scipy"]  # PEP 508 specifications.

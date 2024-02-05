@@ -70,7 +70,10 @@ def _missing_attributes(interface, universe):
     _check_missing_attribute(interface, 'occupancies', 'Occupancies',
                              universe.atoms, 1)
     _check_missing_attribute(interface, 'elements', 'Elements', universe.atoms,
-                             1)
+                             '  ')
+    _check_missing_attribute(interface, 'chainIDs', 'ChainIDs', universe.atoms,
+                             'X')
+
     _extra_attributes(interface, universe)
 
 
@@ -80,7 +83,7 @@ def _extra_attributes(interface, universe):
     attr = {'layers': Layers, 'clusters': Clusters, 'sides': Sides}
     for key in attr.keys():
         if key not in dir(universe.atoms):
-            vals = np.zeros(len(universe.atoms), dtype=np.int) - 1
+            vals = np.zeros(len(universe.atoms), dtype=int) - 1
             universe.add_TopologyAttr(attr[key](vals))
 
 
@@ -113,11 +116,9 @@ def _check_missing_attribute(interface, name, classname, group, value):
         if name == 'elements':
             types = MDAnalysis.topology.guessers.guess_types(group.names)
             # is there an inconsistency in the way 'element' is defined
-            # different modules in MDA?
-            n0 = {'number': 0}
+            # in different modules in MDA?
             # Note: the second arg in .get() is the default.
-            group.elements = np.array(
-                [atoms_maps.get(t, n0)['number'] for t in types])
+            group.elements = np.array([t.ljust(2) for t in types])
         if name == 'radii':
             guess_radii(interface)
 

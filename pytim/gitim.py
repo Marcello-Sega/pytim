@@ -5,6 +5,7 @@
     =============
 """
 from __future__ import print_function
+import platform
 import numpy as np
 from scipy.spatial import distance
 
@@ -131,6 +132,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         # this is just for debugging/testing
         self._noextrapoints = _noextrapoints
         self.autoassign = autoassign
+        self.system = platform.system()
 
         self.do_center = centered
 
@@ -193,14 +195,15 @@ J. Chem. Phys. 138, 044110, 2013)*
 
             # add points at the vertices of the expanded (by 2 alpha) box by
             # generating general linear positions of the expanded box vertices
-            vertices = utilities.generate_cube_vertices(box, delta, jitter=True)
+            vertices = utilities.generate_cube_vertices(
+                box, delta, jitter=True)
             n_cube = len(vertices)
             extrapoints = np.vstack((extrapoints, vertices))
             extraids = np.append(extraids, [-1] * n_cube)
         else:
             n_cube = 0
             extrapoints = np.copy(points)
-            extraids = np.arange(len(points), dtype=np.int)
+            extraids = np.arange(len(points), dtype=int)
 
         self.triangulation.append(Delaunay(extrapoints))
         try:
@@ -253,24 +256,13 @@ J. Chem. Phys. 138, 044110, 2013)*
         return alpha_group, dbs
 
     def _assign_layers_postprocess(self, dbs, group, alpha_group, layer):
-        if self.biggest_cluster_only is True:
-            # apply the same clustering algorith as set at init
-            l, c, _ = dbs(
-                group,
-                self.cluster_cut[0],
-                threshold_density=self.cluster_threshold_density,
-                molecular=self.molecular)
-            group = group[np.where(np.array(l) == np.argmax(c))[0]]
-
-        alpha_group = alpha_group[:] - group[:]
         if len(group) > 0:
             if self.molecular:
-                self._layers[layer] = group.residues.atoms
-            else:
-                self._layers[layer] = group
+                group = group.residues.atoms
+            self._layers[layer] = group
         else:
             self._layers[layer] = group.universe.atoms[:0]
-
+        alpha_group = alpha_group[:] - group[:]
         self.label_group(
             self._layers[layer], beta=1. * (layer + 1), layer=(layer + 1))
         return alpha_group
@@ -280,7 +272,7 @@ J. Chem. Phys. 138, 044110, 2013)*
 
         alpha_group, dbs = self._assign_layers_setup()
 
-        self.triangulation = [] # storage for triangulations
+        self.triangulation = []  # storage for triangulations
 
         for layer in range(0, self.max_layers):
 

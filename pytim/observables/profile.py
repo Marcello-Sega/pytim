@@ -187,6 +187,8 @@ class Profile(object):
         rnd *= self.interface.universe.dimensions[:3]
         rnd_pos = IntrinsicDistance(
             self.interface, symmetry=self.symmetry).compute(rnd)
+        # the interpolator can return NaNs in some cases
+        rnd_pos = rnd_pos[np.isfinite(rnd_pos)]
         rnd_accum, bins, _ = stats.binned_statistic(
             rnd_pos,
             np.ones(len(rnd_pos)),
@@ -195,7 +197,7 @@ class Profile(object):
             bins=self._nbins)
         return rnd_accum, bins
 
-    def sample(self, group):
+    def sample(self, group, **kargs):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
         if not isinstance(group, AtomGroup):
@@ -211,7 +213,6 @@ class Profile(object):
         if self.interface is None:
             pos = group.positions[::, self._dir]
         else:
-            deltabin = 1 + (self._nbins - 1) // 2
             pos = IntrinsicDistance(
                 self.interface, symmetry=self.symmetry, mode=self.mode).compute(group)
 
@@ -221,7 +222,10 @@ class Profile(object):
             else:
                 rnd_accum, bins = self._sample_random_distribution(group)
 
-        values = self.observable.compute(group)
+        values = self.observable.compute(group, **kargs)
+        # the interpolator can return NaNs in some cases
+        cond = np.isfinite(pos)
+        values, pos = values[cond], pos[cond]
         accum, bins, _ = stats.binned_statistic(
             pos,
             values,
@@ -229,8 +233,6 @@ class Profile(object):
             statistic='sum',
             bins=self._nbins)
         accum[~np.isfinite(accum)] = 0.0
-        if self.interface is not None:
-            accum[deltabin] = np.inf
 
         if self.sampled_values is None:
             self.sampled_values = accum.copy()
@@ -264,6 +266,12 @@ class Profile(object):
         vals = self.sampled_values.copy()
         vals /= (np.average(self._totvol) / self._nbins)
         vals /= self._counts
+        if self.interface is not None:
+            # new versions of scipy.binned_statistic don't like inf
+            # we set it now to zero, but only here, so that the
+            # count is always available in self.sampled_values
+            deltabin = int(1 + (nbins - 1) // 2)
+            vals[deltabin] = 0
 
         avg, bins, _ = stats.binned_statistic(
             self.sampled_bins,
@@ -281,6 +289,7 @@ class Profile(object):
                 range=self._range,
                 statistic='mean',
                 bins=nbins)
+            avg[deltabin] = np.inf
             avg[avgV > 0.0] /= avgV[avgV > 0.0]
             avg[avgV <= 0.0] = 0.0
 

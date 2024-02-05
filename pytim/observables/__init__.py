@@ -7,6 +7,7 @@ from pytim import utilities
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
 from .observable import Observable
+from .contactangle import ContactAngleGitim, ContactAngleGibbs
 from .basic_observables import Position, RelativePosition, Velocity, Force
 from .basic_observables import Number, Mass, Charge, NumberOfResidues
 from .basic_observables import Distance
@@ -19,5 +20,5 @@ from .rdf import RDF
 from .rdf2d import RDF2D
 from .free_volume import FreeVolume
 from .correlator import Correlator
-from .orientation import Orientation
+from .orientation import Orientation,BivariateAngles
 from .layer_triangulation import LayerTriangulation

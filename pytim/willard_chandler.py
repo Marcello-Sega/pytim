@@ -27,6 +27,7 @@ except AttributeError:
 
 class WillardChandler(Interface):
     """ Identifies the dividing surface using the Willard-Chandler method
+        NOTE that this method does *not* identify surface atoms
 
         *(Willard, A. P.; Chandler, D. J. Phys. Chem. B 2010, 114, 1954–1958)*
 
@@ -83,9 +84,20 @@ class WillardChandler(Interface):
     @property
     def layers(self):
         """ The method does not identify layers.
+
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import *
+        >>>
+        >>> u = mda.Universe(MICELLE_PDB)
+        >>> g = u.select_atoms('resname DPC')
+        >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, fast=True)
+        >>> inter.layers
+        <AtomGroup with 0 atoms>
         """
-        self.layers = None
-        return None
+        return self._layers
 
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.
@@ -226,6 +238,7 @@ class WillardChandler(Interface):
             volume, None, spacing=tuple(spacing))
         # note that len(normals) == len(verts): they are normals
         # at the vertices, and not normals of the faces
-        self.triangulated_surface = [verts, faces, normals]
+        # verts and normals have x and z flipped because skimage uses zyx ordering
+        self.triangulated_surface = [np.fliplr(verts), faces, np.fliplr(normals)]
         self.surface_area = measure.mesh_surface_area(verts, faces)
         verts += spacing[::-1] / 2.

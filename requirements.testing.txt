@@ -1,0 +1,4 @@
+mdtraj
+pytest==7.4.4
+codecov
+pytest-cov 

@@ -1,17 +1,18 @@
 [What is Pytim](#what-is-pytim) | [Examples](#example) | [More info](#more-info)  | [How to Install](#installation) | [References](#references)
 
 
-[![Build Status](https://travis-ci.org/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.org/Marcello-Sega/pytim)
+[![Build Status](https://api.travis-ci.com/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.com/Marcello-Sega/pytim)
 [![GitHub tags](https://img.shields.io/github/tag/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/)
 [![GitHub issues](https://img.shields.io/github/issues/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/issues)
 [![codecov](https://codecov.io/gh/Marcello-Sega/pytim/branch/master/graph/badge.svg)](https://codecov.io/gh/Marcello-Sega/pytim)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/5f3f2e7be75b46c1a6e4a3d44e3bb900)](https://www.codacy.com/app/Marcello-Sega/pytim?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Marcello-Sega/pytim&amp;utm_campaign=Badge_Grade)
 [![Code Climate](https://codeclimate.com/github/Marcello-Sega/pytim/badges/gpa.svg)](https://codeclimate.com/github/Marcello-Sega/pytim)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-<sub>**Disclaimer**: Pytim is in **beta-stage** right now and while a systematic testing system has been set up, this has not yet total coverage. We will keep rolling out more examples and, still, some new features. If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on GitHub and/or make a pull request. </sub>
+<sub> If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on GitHub and/or make a pull request. </sub>
 
- <sub>**News**: The paper about pytim has been published on J. Comput. Chem. It is open access and you can [download the pdf](https://onlinelibrary.wiley.com/doi/epdf/10.1002/jcc.25384) from Wiley <img  src="https://licensebuttons.net/l/by-nc/4.0/80x15.png"> (see also the [references](#refs))
+**Jupyter Notebooks** with _more examples_ are available at [Marcello-Sega/pytim-notebooks](https://github.com/Marcello-Sega/pytim-notebooks)
+
+**The paper about pytim** has been published on J. Comput. Chem. It is open access and you can [download the pdf](https://onlinelibrary.wiley.com/doi/epdf/10.1002/jcc.25384) from Wiley <img  src="https://licensebuttons.net/l/by-nc/4.0/80x15.png"> (see also the [references](#refs))
 
 # What is Pytim
 
@@ -45,6 +46,7 @@ PyPi:     ``` pip install --user --upgrade pytim ```
 
 Anaconda: ``` conda install -c conda-forge pytim ```
 
+NOTE: on Mac OS you might want to use ```CFLAGS='-stdlib=libc++' pip install --user --upgrade pytim```
 
 
 # <a name="example"></a> Show me an example usage, now!
@@ -358,18 +360,11 @@ In order for this option to have any effect, a `cluster_cut` value should also b
 
 # More info
 
-Have a look at some jupyter notebooks:
+1. Have a look at the jupyter notebooks: https://github.com/Marcello-Sega/pytim-notebooks
 
-1. [An introduction to Pytim](https://github.com/Marcello-Sega/pytim/blob/master/notebooks/An%20introduction%20to%20Pytim.ipynb) 
-2. [The Willard-Chandler method]( https://github.com/Marcello-Sega/pytim/blob/master/notebooks/Willard-Chandler%20and%20Cube%20format.ipynb)
+2. Browse the examples in the [Pytim Online Manual](https://marcello-sega.github.io/pytim/quick.html)
 
-Browse the examples in the online manual:
-
-3. [Pytim Online Manual](https://marcello-sega.github.io/pytim/quick.html)
-
-Check out the Pytim Poster from the 10th Liquid Matter Conference 
-
-4. [Available on ResearchGate](http://dx.doi.org/10.13140/RG.2.2.18613.17126)  DOI:10.13140/RG.2.2.18613.17126
+3. Check out the Pytim Poster from the 10th Liquid Matter Conference [Available on ResearchGate](http://dx.doi.org/10.13140/RG.2.2.18613.17126)  DOI:10.13140/RG.2.2.18613.17126
 
 
 # <a name="installation"></a> How to install the package and the documentation? 

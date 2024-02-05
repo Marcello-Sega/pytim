@@ -10,11 +10,11 @@ oxygens = u.select_atoms('name OW')
 radii = pytim_data.vdwradii(G43A1_TOP)
 
 obs = observables.Number(u)
-profile = observables.Profile(oxygens, observable=obs)
+profile = observables.Profile(observable=obs)
 
 for ts in u.trajectory[:]:
   #  utilities.center(u, oxygens)
-    profile.sample()
+    profile.sample(oxygens)
 
 lower, upper,  avg = profile.get_values(binwidth=1.0)
 bins = (lower + upper) / 2.

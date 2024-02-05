@@ -90,6 +90,7 @@ class Interface(object):
 
     @property
     def atoms(self):
+        if len(self._layers) == 0: return self._layers # an empty atom group
         return self._layers[:].sum()
 
     @property
@@ -209,9 +210,14 @@ class Interface(object):
             # now that labels are assigned for each of the clusters,
             # we can restric the cluster group to the largest cluster.
 
-            label_max = np.argmax(counts)
-            ids_max = np.where(labels == label_max)[0]
-            self.cluster_group = self.cluster_group[ids_max]
+            if self.biggest_cluster_only:
+                label_max = np.argmax(counts)
+                ids_max = np.where(labels == label_max)[0]
+                self.cluster_group = self.cluster_group[ids_max]
+            else: # we still filter out molecules which do not belong to any cluster
+                ids = np.where(labels != -1)[0]
+                self.cluster_group = self.cluster_group[ids]
+
             self.n_neighbors = neighbors
         else:
             self.cluster_group = self.analysis_group
@@ -454,13 +460,13 @@ class Interface(object):
         >>> interface = pytim.GITIM(u)
         Traceback (most recent call last):
             ...
-        Exception: Wrong Universe passed to ITIM class
+        Exception: Wrong Universe
 
 
         >>> interface = pytim.ITIM(u)
         Traceback (most recent call last):
             ...
-        Exception: Wrong Universe passed to ITIM class
+        Exception: Wrong Universe
 
         >>> # TEST:3 large probe sphere radius
         >>> u = mda.Universe(WATER_GRO)
@@ -500,6 +506,23 @@ class Interface(object):
         >>> beta = line[62:66] # PDB file format is fixed
         >>> print(beta)
         4.00
+
+
+        >>> # correct behaviour of biggest_cluster_only option
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import ANTAGONISTIC_GRO
+        >>> u = mda.Universe(ANTAGONISTIC_GRO)
+        >>> g = u.atoms.select_atoms('resname bph4')
+        >>> # Define the interface
+        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=False, molecular=True)
+        >>> print(repr(inter.atoms))
+        <AtomGroup with 2025 atoms>
+
+
+        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=True, molecular=True)
+        >>> print(repr(inter.atoms))
+        <AtomGroup with 855 atoms>
 
 
         >>> # mdtraj

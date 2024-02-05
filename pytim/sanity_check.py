@@ -35,8 +35,11 @@ class SanityCheck(object):
                 _group = self.interface.universe.atoms[ag:ag + 1]
             elif isinstance(ag, (list, np.ndarray)):
                 _group = self.interface.universe.atoms[ag]
-            else:
+            elif isinstance(ag, MDAnalysis.core.groups.AtomGroup):
                 _group = ag
+            else:
+                raise RuntimeError(messages.WRONG_ANALYSIS_GROUP)
+
             self.interface.analysis_group = _group
 
         if (len(self.interface.analysis_group) == 0):

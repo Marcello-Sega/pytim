@@ -113,13 +113,14 @@ class SASA(GITIM):
         if len(cond) == 0:
             return [], []
 
-        arg = (ri2 + dij2 - rj2) / (ri * dij * 2.)
-        alpha = 2. * np.arccos(arg[cond])
-        argx, argy = pij[:, 0] / dij, pij[:, 1] / dij
+        arg = (ri2 + dij2 - rj2)[cond] / (ri * dij * 2.)[cond]
+        alpha = 2. * np.arccos(arg)
+        argx, argy = pij[:, 0], pij[:, 1]
         beta = np.arctan2(argx[cond], argy[cond])
         return alpha, beta
 
     def _atom_coverage(self, index):
+        # derivation follows http://freesasa.github.io/doxygen/Geometry.html
         group = self.sasa_group
         box = group.universe.dimensions[:3]
         R = group.radii[index]
@@ -127,6 +128,8 @@ class SASA(GITIM):
         neighbors = self.tree.query_ball_point(group.positions[index], cutoff)
         neighbors = np.asarray(list(set(neighbors) - set([index])))
         covered_slices, exposed_area = 0, 4. * np.pi * R**2
+        if len(neighbors) == 0:
+            return False, exposed_area
         buried = False
         delta = R + self.alpha - 1e-3
         slices = np.arange(-delta, delta, 2. * delta / self.nslices)
@@ -176,6 +179,10 @@ class SASA(GITIM):
         self.Rmax = np.max(group.radii)
         self.tree = cKDTree(group.positions, boxsize=box)
         self.sasa_group = group
+
+        if 'win' in self.system.lower():
+            self.ncpu = 1
+
         try:
             self.ncpu
         except:
@@ -184,24 +191,40 @@ class SASA(GITIM):
         indices = range(len(group.atoms))
         exposed = [False] * len(group.atoms)
         area = [0.0] * len(group.atoms)
-        queue, proc = [], []
 
-        for c in range(self.ncpu):
-            queue.append(Queue())
-            proc.append(Process(
-                target=self._atomlist_coverage,
-                args=(indices[c::self.ncpu], queue[c])))
-            proc[c].start()
-
-        for c in range(self.ncpu):
-            sl = slice(c, len(indices), self.ncpu)
-            res = queue[c].get()
+        if self.ncpu == 1:
+            sl = slice(0, len(indices), self.ncpu)
+            res = self._atomlist_coverage(indices[0::self.ncpu])
             # in some cases zero atoms are assinged to some of the processes
             if len(res[0]) > 0:
                 exposed[sl] = (~np.asarray(res[0]))
                 area[sl] = res[1]
+        else:
+            queue, proc = [], []
+
+            for c in range(self.ncpu):
+                queue.append(Queue())
+                proc.append(Process(
+                    target=self._atomlist_coverage,
+                    args=(indices[c::self.ncpu], queue[c])))
+                proc[c].start()
+
+            for c in range(self.ncpu):
+                sl = slice(c, len(indices), self.ncpu)
+                res = queue[c].get()
+                # in some cases zero atoms are assinged to some
+                # of the processes
+                if len(res[0]) > 0:
+                    exposed[sl] = (~np.asarray(res[0]))
+                    area[sl] = res[1]
+
+            for c in range(self.ncpu):
+                proc[c].join()
+            for c in range(self.ncpu):
+                queue[c].close()
 
         self.area = np.array(area)
+
         return np.where(exposed)[0]
 
     def _assign_layers(self):
@@ -210,13 +233,15 @@ class SASA(GITIM):
         alpha_group, dbs = self._assign_layers_setup()
 
         for layer in range(0, self.max_layers):
+            if alpha_group.atoms.n_atoms == 0:
+                group = alpha_group
+            else:
+                alpha_ids = self.compute_sasa(alpha_group)
 
-            alpha_ids = self.compute_sasa(alpha_group)
-
-            group = alpha_group[alpha_ids]
+                group = alpha_group[alpha_ids]
 
             alpha_group = self._assign_layers_postprocess(
-                dbs, group, alpha_group, layer)
+                    dbs, group, alpha_group, layer)
 
         # reset the interpolator
         self._interpolator = None
@@ -246,6 +271,20 @@ class SASA(GITIM):
         >>> inter = pytim.SASA(u,group=g,molecular=False)
         >>> print (np.all(np.isclose(inter.area,[4.*np.pi,0.0])))
         True
+
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import MICELLE_PDB
+        >>>
+        >>> u = mda.Universe(MICELLE_PDB)
+        >>> micelle = u.select_atoms('resname DPC')
+        >>> inter = pytim.SASA(u, group=micelle, molecular=False)
+        >>> inter.ncpu = 1
+        >>> inter._assign_layers()
+        >>> inter.atoms
+        <AtomGroup with 619 atoms>
+
+
 
 
         """
