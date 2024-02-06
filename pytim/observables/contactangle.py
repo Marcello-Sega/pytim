@@ -3,524 +3,655 @@
 """ Module: ContactAngle
     ====================
 """
-
+import pytim
 import MDAnalysis as mda
 import numpy as np
 from scipy.spatial import cKDTree
-
+import warnings
+from numpy.linalg import solve
+from scipy.optimize import curve_fit
+from scipy.optimize import minimize
 
 class ContactAngle(object):
-    """ Base class for contact angle calculation
-    """
+    """ ContactAngle class implementation that uses interfacial atoms
+        Computes radial profiles and contact angles using different approaches
 
-    # todo pass surface normal and adapt algorithms.
-    def __init__(self, droplet, substrate, zcut=5.0, debug=False):
-        """
-            Computes radial profiles and contact angles using different approaches
+        :param AtomGroup droplet   : Atom group representative of the droplet
+        :param PYTIM interface     : Compute the contact angle for this interface
+        :param AtomGroup droplet   : Atom group representative of the droplet
+        :param AtomGroup substrate : Atom group representative of the substrate
+        :param str       binning   : 'theta' for angular binning, 'h' for elevation binning
+        :param float     hcut      : don't consider contributions from atoms closer than this to the substrate
+                                     (used to disregard the microscopic contact angle)
+        :param float     hcut_upper: don't consider contributions from atoms above this distance from the substrate
+                                     default: None
+        :param int       bins      : bins used for sampling the profile
+        :param int       periodic  : direction along which the system is periodic. Default: None, not periodic
+        :param int       removeCOM : remove the COM motion along this direction. Default: None, does not remove COM motion
 
-            :param AtomGroup fluid     : Atom group representative of the droplet
-            :param AtomGroup substrate : Atom group representative of the substrate
-            :param float     zcut      : don't consider contributions from atoms nearer than this to the substrate
+        Example:
 
-            Example:
+        >>> import MDAnalysis as mda
+        >>> import numpy as np
+        >>> import pytim
+        >>> from pytim import observables
+        >>> from pytim.datafiles import *
+        >>> 
+        >>> u = mda.Universe(WATER_DROPLET_CYLINDRICAL_GRO,WATER_DROPLET_CYLINDRICAL_XTC)
+        >>> droplet = u.select_atoms("name OW")
+        >>> substrate = u.select_atoms("name C")
+        >>> inter = pytim.GITIM(universe=u,group=droplet, molecular=False,alpha=2.5,cluster_cut=3.4, biggest_cluster_only=True)
+        >>> 
+        >>> # Contact angle calculation using interfacial atoms, angular bining for a cylindrical droplet
+        >>> # with periodicity along the y (1) axis
+        >>> 
+        >>> CA = observables.ContactAngle(inter, substrate, binning='theta', periodic=1,bins=397,removeCOM=0,hcut=5)
+        >>> for ts in u.trajectory[::]:
+        ...     CA.sample()
+        >>> # Instantaneous contact angle (last frame) by fitting a circle...
+        >>> np.round(CA.contact_angle,2)
+        90.12
 
-            >>> import MDAnalysis as mda
-            >>> import numpy as np
-            >>> import pytim
-            >>> from pytim import observables
-            >>> from pytim.datafiles import *
-            >>>
-            >>> u = mda.Universe(WATER_DROPLET_CYLINDRICAL_GRO,WATER_DROPLET_CYLINDRICAL_XTC)
-            >>> droplet = u.select_atoms("name OW")
-            >>> substrate = u.select_atoms("name C")
-            >>>
-            >>> CA = observables.ContactAngleGitim(droplet, substrate)
-            >>>
-            >>> inter = pytim.GITIM(universe=u,group=droplet, molecular=False,alpha=2.5,cluster_cut=3.4, biggest_cluster_only=True)
-            >>>
-            >>> for ts in u.trajectory[::]:
-            ...     CA.sample(inter)
-            >>>
-            >>> np.round(CA.contact_angle,2)
-            79.52
+        >>> 
+        >>> # ... and using an elliptical fit:
+        >>> left, right = CA.contact_angles
+        >>> # left angle
+        >>> np.round(np.abs(left),2)
+        90.25
 
-        """
+        >>> # right angle
+        >>> np.round(right,2)
+        92.55
 
-        self.droplet = droplet
-        self.substrate = substrate
-        self.universe = self.droplet.universe
-        self.trajectory = self.droplet.universe.trajectory
-        self.zcut = zcut
-        self.nframes = 0
-        self.debug = debug
-        masses = self.universe.atoms.masses.copy()
-        masses[self.universe.atoms.masses == 0.0] = 40.0
-        self.universe.atoms.masses = masses.copy()
+        >>> # Contact angles from the averaged binned statistics of
+        >>> # surface atoms' radial distance as a function of the azimuthal angle
+        >>> list(np.round(CA.mean_contact_angles,2))
+        [83.78, 87.01]
 
-    def remove_com(self, group):
-        if id(self.droplet.universe) != id(group.universe):
-            raise RuntimeError('Universes are not the same')
-        com = self.droplet.center_of_mass()
-        zoff = np.max(self.substrate.atoms.positions[:, 2])
-        com[2] = zoff
-        pos = group.positions - com
-        pos = pos[pos[:, 2] > self.zcut]
-        return pos
+   """
 
-    @staticmethod
-    def arc(r, center, rad):
-        return center+np.sqrt(rad**2-r**2)
+    class Histogram(object):
+        def __init__(self):
+            self.r,self.h = np.array([]), np.array([])
 
-    @staticmethod
-    def fit_arc_(z, r, rmin=None, rmax=None, use_points=False, p0=None):
-        """ fit an arc through the profile z(r) sampled by the class
+    histo = Histogram()
 
-            :param float rmin       : minimum radius used for the fit (default: 0)
-            :param float rmax       : maximum radius used for the fit (default: maximum from dataset)
-            :param bool  use_points : False: use the profile estimate, True: use the surface atoms positions (only)
-        """
-        def arc(r, center, R):
-            return center+np.sqrt(R**2-r**2)
-
-        from scipy.optimize import curve_fit
-
-        z = np.asarray(z)
-        r = np.asarray(r)
-
-        con = np.logical_and(np.isfinite(z), np.isfinite(r))
-        z, r = z[con], r[con]
-
-        if rmax is None:
-            rmax = np.nanmax(r)
-            rmin = np.nanmin(r)
-        cond = np.logical_and(r > rmin, r < rmax)
-        if p0 is None:
-            p0 = (-20., 110.)
-        popt, pcov = curve_fit(arc, r[cond], z[cond], p0=p0)
-        center, rad = popt
-        #print("center=",center, "radius=",rad)
-        rad = np.abs(rad)
-        base_radius = np.sqrt(rad**2-center**2)
-        # old from marcello costheta = -np.sin(center/rad)
-        costheta = -center/rad
-        return (rad, base_radius, costheta, center)
-
-    @staticmethod
-    def fit_ellipse_(r, z, yy=None):
-        ZZ = np.asarray(z)
-        RR = np.asarray(r)
-        idx1 = np.isnan(RR)
-        idx2 = np.isnan(ZZ)
-        idx = np.logical_and(~idx1, ~idx2)  # nan removed
-        R_, Z_ = RR[idx], ZZ[idx]
-        x1, y1 = R_, Z_
-        X = x1[:, np.newaxis]
-        Y = y1[:, np.newaxis]
-        # Formulate and solve the least squares problem ||Ax - b ||^2
-        A = np.hstack([X**2, X * Y, Y**2, X, Y])
-        b = np.ones_like(X)
-        a = np.linalg.lstsq(A, b)[0].squeeze()
-        # Print the equation of the ellipse in standard form
-        print('Ellipse equ: {0:.3}x^2 + {1:.3}xy+{2:.3}y^2+{3:.3}x+{4:.3}y = 0'.format(
-            a[0], a[1], a[2], a[3], a[4]))
-        if yy is None:
-            yy = 0  # positon of substrate
-        bc = a[1]*yy+a[3]
-        cc = a[2]*yy**2+a[4]*yy-1
-        x1 = (-bc+np.sqrt(bc**2-4*a[0]*cc))/(2*a[0])
-        x2 = (-bc-np.sqrt(bc**2-4*a[0]*cc))/(2*a[0])
-        m1 = -(2*a[0]*x1+a[3]+a[1]*yy)/(a[1]*x1+a[4]+2*a[2]*yy)
-        m2 = -(2*a[0]*x2+a[3]+a[1]*yy)/(a[1]*x2+a[4]+2*a[2]*yy)
-        theta1 = np.arctan(m1)*180/np.pi
-        theta2 = np.arctan(m2)*180/np.pi
-        return a, theta1, theta2
-
-    @staticmethod
-    def arc_ellipse(x, rmin=None, rmax=None, bins=None):
-        if rmax is None:
-            rmax, rmin, bins = 80, -80, 3200
-        #x_coord = np.linspace(rmin,rmax,bins)
-        #y_coord = np.linspace(zmin,zmax,bins)
-        #X_coord, Y_coord = np.meshgrid(x_coord, y_coord)
-        #Z_coord = x[0] * X_coord ** 2 + x[1] * X_coord * Y_coord + x[2] * Y_coord**2 + x[3] * X_coord + x[4] * Y_coord
-        # rmin,rmax,bins=int(rmin),int(rmax),int(bins)
-        val = np.linspace(rmin, rmax, bins)
-        bb = x[1]*val+x[4]
-        # aa=x[2]
-        cc = x[0]*val*val+x[3]*val-1
-        yyP = (-bb+np.sqrt(bb*bb - 4*x[2]*cc))/(2*x[2])
-        yyN = (-bb-np.sqrt(bb*bb - 4*x[2]*cc))/(2*x[2])
-        yy = list(yyP)+list(yyN)
-        xx = list(val)+list(val)
-        xx = np.asarray(xx)
-        yy = np.asarray(yy)
-        idy = ~np.isnan(yy)
-        # return X_coord,Y_coord,Z_coord,xx[idy],yy[idy]
-        return xx[idy], yy[idy]
-
-    def fit_arc(self, rmin=0, rmax=None, use_points=None, p0=None):
-        """ fit an arc through the profile z(r) sampled by the class
-
-            :param float rmin       : minimum radius used for the fit (default: 0)
-            :param float rmax       : maximum radius used for the fit (default: maximum from dataset)
-
-        """
-        try:
-            z, r = self.z, self.r
-
-        except AttributeError:
-            raise RuntimeError(
-                'something is wrong: no surface atoms or not gibbs surface present')
-
-        return self.fit_arc_(z, r, rmin=rmin, rmax=rmax, p0=p0)
-
-    def fit_arc_ellipse(self):
-        try:
-            z, r = self.z, self.r
-        except AttributeError:
-            raise RuntimeError(
-                'something is wrong: no surface atoms or not gibbs surface present')
-
-        return self.fit_ellipse_(r, z, yy=None)
-
-    def arc_function(self, r, rmin=0, rmax=None, use_points=False, base_cut=None):
-        rad, br, ct, center = self.fit_arc(
-            rmin=rmin, rmax=rmax, use_points=use_points)
-        #print('fitted radius, center, base_radius, cos(theta):',rad,center,br,ct)
-        return self.arc(r, center, rad)
+    def __init__(self, inter, substrate, binning='theta',hcut=0.0,hcut_upper=None,
+                 contact_cut=0.0,bins=100,periodic=None,removeCOM=None,store=False):
+        self.inter, self.substrate = inter, substrate
+        self.universe, self.trajectory = self.inter.universe, self.inter.universe.trajectory
+        self.hcut, self.hcut_upper = hcut, hcut_upper
+        self.nframes, self.binning, self.periodic = 0, binning, periodic
+        self.bins, self.removeCOM = bins, removeCOM
+        self.contact_cut, self.store = contact_cut, store
+        self.r, self.h = np.array([]),np.array([])
+        if self.contact_cut == 'auto':
+            tree = cKDTree(substrate.positions,boxsize = substrate.universe.dimensions[:3])
+            d,_ =tree.query(inter.atoms.positions, k=1)
+            hist,bins =np.histogram(d,int(np.max(d)/0.5))
+            # check the location of the maximum with resolution 0.5 Angstrom
+            vmax,imax = np.max(hist),np.argmax(hist)
+            # find where the distribution drops below 5% of the maximum; this could happen before and after the maximum
+            idx = np.where(hist<=0.05*vmax)[0]
+            # select the first bin that satisfies the above condition and is after the maximum
+            self.contact_cut = bins[idx[idx>imax][0]]
 
     @property
     def contact_angle(self):
-        rad, br, ct, center = self.fit_arc()
-        return np.arccos(ct)*180./np.pi
-
-    @property
-    def base_radius(self):
-        rad, br, ct, center = self.fit_arc()
-        return br
-
-    @property
-    def radius(self):
-        rad, br, ct, center = self.fit_arc()
-        return rad
-
-    @property
-    def center(self):
-        rad, br, ct, center = self.fit_arc()
-        return center
-
-    def droplet_size(self, direction):
-        delta = np.max(self.inter.atoms.positions[:, direction])
-        delta = delta - np.min(self.inter.atoms.positions[:, direction])
-        return np.abs(delta)
-
-    def remove_COM(self, removeCOM, droplet, inter, alpha, box):
-        if removeCOM is not None:
-            while(self.droplet_size(removeCOM) > box[removeCOM] - 4 * alpha):
-                pos = droplet.universe.atoms.positions.copy()
-                pos[:, removeCOM] += alpha
-                droplet.universe.atoms.positions = pos.copy()
-                pos = droplet.universe.atoms.pack_into_box()
-                droplet.universe.atoms.positions = pos.copy()
-            com = self.inter.atoms.center_of_mass()[removeCOM]
-            pos = droplet.universe.atoms.positions.copy()
-            pos[:, removeCOM] -= com
-            droplet.universe.atoms.positions = pos.copy()
-
-            pos[:, removeCOM] += box[removeCOM]/2
-            droplet.universe.atoms.positions = pos.copy()
-
-            droplet.universe.atoms.positions = pos.copy()
-            pos = droplet.universe.atoms.pack_into_box()
-            droplet.universe.atoms.positions = pos.copy()
-        return droplet.universe.atoms.positions
-
-
-class ContactAngleGitim(ContactAngle):
-    """ ContactAngle class implementation with GITIM
-    """
-
-    def sample(self, inter, bins=100, cut=3.5, alpha=2.5, pdbOut=None, binning='theta', periodic=None, removeCOM=None, base_cut=0.0):
-        """ compute the height profile z(r) of a droplet
-
-            :param int       bins     : number of slices along the z axis (across the whole box z-edge)
-            :param float     cut      : cut-off for the clustering algorithm that separates liquid from vapor
-            :param float     alpha    : probe sphere radius for GITIM
-            :param str       pdbOut   : optional pdb file where to store trajectory with tagged surface atoms
-
-            NOTES: 
-            1) not tested with the molecular option of GITIM
-            2) bins in x,y and z directions are the same, this might be a problem for boxes with large aspect 
-               ratios
-            3) make removeCOM=0 to remove movement of droplet along x axis
-
+        """ 
+            The contact angle from the best-fititng circumference 
+            computed using the current frame
         """
-        droplet, substrate = self.droplet, self.substrate
-        box = droplet.universe.dimensions[:3]
-        try:
-            _ = self.r_
-        except:
-            self.r_, self.z_, self.theta_, self.R_ = [], [], [], []
+        _ , _, theta, _ ,_ = self.fit_arc()
+        return theta
+    @property
+
+    def mean_contact_angle(self):
+        """ 
+            The contact angle from the best-fititng circumference 
+            computed using the location of the interface averaged 
+            over the sampled frames
+        """
+        _ , _, theta, _ ,_ = self.fit_arc(use='histogram')
+        return theta
+
+    @property
+    def contact_angles(self):
+        """ 
+            The left and rigth contact angles from the best-fititng ellipse
+            computed using the current frame
+        """
+        _, _, left, right, _  = self.fit_arcellipse()
+        return left, right
+
+    @property
+    def mean_contact_angles(self):
+        """ 
+            The left and rigth contact angles from the best-fititng ellipse
+            computed using the location of the interface averaged 
+            over the sampled frames
+        """
+        _, _, left, right, _  = self.fit_arcellipse(use='histogram')
+        return left, right
+
+    def shifted_pos(self, group):
+        com = group.center_of_mass()
+        hoff = np.max(self.substrate.atoms.positions[:, 2])
+        com[2] = hoff
+        # removes the com along x,y and uses the topmost substrate atom to
+        # define the location of the origin along the vertical axis
+        pos = group.positions - com
+        # further, we won't be using any coordinate that is below a certain
+        # distance from the substrate surface
+        pos = pos[pos[:, 2] > self.hcut]
+        if self.hcut_upper is not None: pos = pos[pos[:, 2] < self.hcut_upper]
+        return pos
+
+    def _remove_COM(self, group, inter, alpha, box):
+        def group_size(g,direction):
+            p = g.atoms.positions[:, direction]
+            return np.abs(np.max(p) - np.min(p))
+
+        if self.removeCOM is not None:
+            while(group_size(group,self.removeCOM) > box[self.removeCOM] - 4 * alpha):
+                pos = group.universe.atoms.positions.copy()
+                pos[:, self.removeCOM] += alpha
+                group.universe.atoms.positions = pos.copy()
+                pos = group.universe.atoms.pack_into_box()
+                group.universe.atoms.positions = pos.copy()
+            com = self.inter.atoms.center_of_mass()[self.removeCOM]
+            pos = group.universe.atoms.positions.copy()
+            pos[:, self.removeCOM] -= com
+            group.universe.atoms.positions = pos.copy()
+
+            pos[:, self.removeCOM] += box[self.removeCOM]/2
+            group.universe.atoms.positions = pos.copy()
+
+            group.universe.atoms.positions = pos.copy()
+            pos = group.universe.atoms.pack_into_box()
+            group.universe.atoms.positions = pos.copy()
+        return group.universe.atoms.positions
+
+
+    def sample(self):
+        """ samples the height profile h(r) of a droplet, stores
+            the current atomic coordinates of the liquid surface
+            not in contact with the substrate in the reference
+            frame of the droplet, and optionally the coordinates
+            along the whole trajectory.
+            TODOs:
+            1) test with the molecular option of GITIM
+            2) bins in x,y and h directions are the same, this might be a problem for boxes with large aspect
+               ratios
+            3) removeCOM=0 should remove the movement of droplet along the x axis
+        """
+        if self.contact_cut > 0:
+            tree_substrate = cKDTree(self.substrate.atoms.positions,boxsize=self.substrate.universe.dimensions[:3])
+            dists , _ = tree_substrate.query(self.inter.atoms.positions,k=1)
+            self.liquid_vapor = self.inter.atoms[dists > self.contact_cut]
+        else:
+            self.liquid_vapor = self.inter.atoms
+
+        box = self.substrate.universe.dimensions[:3]
+        if self.store:
+            try: _ = self._r
+            except: self._r, self._h, self._theta, self._R = [], [], [], []
 
         self.nframes += 1
 
-        self.inter = inter
+        self._remove_COM(self.inter.atoms, self.liquid_vapor, self.inter.alpha, box)
+        self.maxr = np.max(self.substrate.universe.dimensions[:2])
+        self.maxh = self.substrate.universe.dimensions[2]
 
-        self.remove_COM(removeCOM, droplet, inter, alpha, box)
-        self.maxr = np.nanmax(droplet.universe.dimensions[:2])
-        self.maxz = droplet.universe.dimensions[2]
-
-        if pdbOut is not None:
-            self.inter.writepdb(pdbOut, multiframe=True)
-
-        if periodic is None:
-            r, theta, z = self.spherical_coordinates()
+        if self.periodic is None:
+            r, theta, h , phi  = self.spherical_coordinates()
+            self.phi= phi.copy()
         else:
-            r, theta, z = self.cylindrical_coordinates(periodic)
+            r, theta, h , z = self.cylindrical_coordinates()
+            self.z = z.copy()
 
-        if binning == 'theta':
-            self.sample_theta_R(bins, theta, r, z, base_cut)
-        elif binning == 'z':
-            self.sample_z_r(bins, z, r, base_cut)
+        self.r = r.copy()
+        self.theta = theta.copy()
+        self.h = h.copy()
+
+        if self.binning == 'theta':
+            self.sample_theta_R(theta, r, h)
+        elif self.binning == 'h':
+            self.sample_r_h(r,h)
         else:
             raise (ValueError("Wrong binning type"))
 
-    def _compute_coords(self, z_, r_):
-        # r_,distance from center;R_, projection on xy plane can be considered as x in 2d
-        R_ = np.sqrt(r_*r_ + z_*z_)
-        theta_ = np.arccos(r_/R_)
-        self.theta_ += list(theta_)
-        self.r_ += list(r_)
-        self.z_ += list(z_)
-        #self.R_ += list(R_)
+    @staticmethod
+    def rmsd_ellipse(p,x,N,check_coeffs=True):
+        cp = ContactAngle._ellipse_general_to_canonical(p,check_coeffs)
+        cp = {'x0':cp[0],'y0':cp[1],'a':cp[2],'b':cp[3],'phi':cp[4]}
+        xx,yy = ContactAngle.arc_ellipse(cp,N)
+        pos = np.vstack([xx,yy]).T
+        cond = np.logical_and(yy>=np.min(x[:,1]),yy<=np.max(x[:,1]))
+        pos = pos[cond]
+        return np.sqrt(np.mean(cKDTree(pos).query(x)[0]**2))
 
-        r, z, theta = np.asarray(self.r_), np.asarray(
-            self.z_), np.asarray(self.theta_)
+    @staticmethod
+    def rmsd_ellipse_penalty(p,x,N,check_coeffs=True):
+        rmsd = ContactAngle.rmsd_ellipse(p,x,N,check_coeffs)
+        penalty = 0 if 4*p[0]*p[2]-p[1]**2 > 0  else 10*rmsd
+        return rmsd + penalty
 
-        return r, theta, z
+    @staticmethod
+    def rmsd_circle(p,x):
+        R,x0,y0  = p
+        d = np.linalg.norm(np.array([x0,y0])-x,axis=1) - R
+        return np.sqrt(np.mean(d**2))
 
-    def cylindrical_coordinates(self, periodic):
-        pos = self.remove_com(self.inter.atoms)
+    @staticmethod
+    def arc_ellipse(parmsc, npts=100, tmin=0.,tmax=2.*np.pi):
+        """ Return npts points on the ellipse described by the canonical parameters
+            x0, y0, ap, bp, e, phi for values of the paramter between tmin and tmax.
+
+            :param dict  parmsc : dictionary with keys: x0,y0,a,b,phi
+            :param float tmin   : minimum value of the parameter
+            :param float tmax   : maximum value of the parameter
+            :param int   npts   : number of points to use
+
+            return:
+            :tuple              : (x,y) of coordinates as numpy arrays
+        """
+        t = np.linspace(tmin, tmax, npts)
+        x = parmsc['x0'] + parmsc['a'] * np.cos(t) * np.cos(parmsc['phi']) - parmsc['b'] * np.sin(t) * np.sin(parmsc['phi'])
+        y = parmsc['y0'] + parmsc['a'] * np.cos(t) * np.sin(parmsc['phi']) + parmsc['b'] * np.sin(t) * np.cos(parmsc['phi'])
+        return x, y
+
+    @staticmethod
+    def arc_circle(parmsc, npts=100, tmin=0.,tmax=2.*np.pi):
+        """ Return npts points on the circle described by the canonical parameters
+            R, x0, y0 for values of the paramter between tmin and tmax.
+
+            :param dict  parmsc : dictionary with keys: R, x0, y0
+            :param float tmin   : minimum value of the parameter
+            :param float tmax   : maximum value of the parameter
+            :param int   npts   : number of points to use
+
+            return:
+            :tuple              : (x,y) of coordinates as numpy arrays
+        """
+        t = np.linspace(tmin, tmax, npts)
+        x = parmsc['x0'] + parmsc['R'] * np.cos(t)
+        y = parmsc['y0'] + parmsc['R'] * np.sin(t)
+        return x, y
+
+    @staticmethod
+    def _fit_arc(hr,hh,nonlinear=True):
+        """ fit an arc through the profile h(r) sampled by the class
+            :param list hr        : list of arrays with the radial coordinates
+            :param list hh        : list of arrays with the elevations
+            :param bool nonlinear : use the more accurate minimization of the rmsd instead of the algebraic distance
+
+            return:
+            :list             : a list with the tuple (radius, base radius, cos(theta), center, rmsd)
+                                for each bin. If only one bin is present, return just the tuple. 
+        """
+        parms = []
+        for i in np.arange(len(hr)):
+            r = hr[i]
+            h = hh[i]
+            if len(r) == 0: 
+                parms.append(None)
+                break
+            M = np.vstack((r,h,np.ones(r.shape))).T
+            b = r**2 + h**2
+            sol = np.linalg.lstsq(M,b,rcond=None)[0]
+            rc,hc = sol[:2]/2.
+            rad = np.sqrt(sol[2]+rc**2+hc**2)
+            pos = np.vstack([r,h]).T
+            if nonlinear:
+                res = minimize(ContactAngle.rmsd_circle, x0=[rad,rc,hc], args=(pos), 
+                    method='nelder-mead',options={'xatol': 1e-8, 'disp': False})
+                rad, rc, hc = res.x
+                base_radius = np.sqrt(rad**2-hc**2)
+                rmsdval = res.fun
+            else:
+                rmsdval = ContactAngle.rmsd_circle([rad, rc,hc], pos)
+
+            base_radius = np.sqrt(rad**2-hc**2)
+            costheta = -hc/rad
+            theta = np.arccos(costheta) * 180./np.pi
+            if theta<0: theta+=180.
+
+            parms.append((rad, base_radius, theta, [rc,hc], rmsdval))
+        if len(parms) == 1 : return parms[0]
+        else : return parms
+
+
+    @staticmethod
+    def _fit_ellipse(hr, hh, nonlinear=True, off=0.0, points_density=25):
+        """  fit an ellipse through the values h(r)
+
+             :param list  hr        : list of arrays with distances from the center along the contact surface
+             :param list  hh        : list of arrays with elevations from the contact surface
+             :param bool  nonlinear : use the more accurate minimization of the rmsd instead of the algebraic distance
+             :param float off       : elevation from the substrate surface, where the
+                                     contact angle should be evaluated. Default; 0.0, corresponding
+                                     to the atomic center of the highest atom of the substrate
+             :param int   points_densioty: number of points per Angstrom on the ellipse that are used to compute the rmsd
+
+             return:
+             :list      : a list with a tuple (parms,parmsc,theta1,theta2) for each of the bins
+                          If only one bin is present, return just the tuple
+                 parms  : array of parameters of the ellipse equation in general form:
+                          a[0] x^2 + a[1] x y + a[2] y^2 + a[3] x + a[4] y = 0
+                 parmsc : dictionary with parameters of the ellipse in canoncial form: (x0,y0,a,b,phi,e)
+                          with a,b the major and minor semiaxes, x0,y0 the center and theta the angle
+                          between x axis and major axis
+                 theta1 : right angle
+                 theta2 : left angle
+                 rmsd   : the rmsd to the best fit (linear or nonlinear) ellipse
+
+             Stable implementation from Halır, Radim, and Jan Flusser,
+             "Numerically stable direct least squares fitting of ellipses."
+             Proc. 6th International Conference in Central Europe on Computer
+             Graphics and Visualization. WSCG. Vol. 98. Citeseer, 1998.
+
+             python code for ellipse fitting from https://scipython.com/blog/direct-linear-least-squares-fitting-of-an-ellipse/
+        """
+        parms = []
+
+        def constr(x):
+            # can be used if switching to COBYLA
+            return 4*x[0]*x[2]-x[1]**2
+
+        for i in np.arange(len(hr)):
+            RR = hr[i]
+            HH = hh[i]
+            if len(RR) == 0:
+                parms.append(None)
+                break
+            idx1 = np.isnan(RR)
+            idx2 = np.isnan(HH)
+            idx = np.logical_and(~idx1, ~idx2)  # nan removed
+            x, y = RR[idx], HH[idx]
+
+            D1 = np.vstack([x**2, x*y, y**2]).T
+            D2 = np.vstack([x, y, np.ones(len(x))]).T
+            S1 = D1.T @ D1
+            S2 = D1.T @ D2
+            S3 = D2.T @ D2
+            T = -np.linalg.inv(S3) @ S2.T
+            M = S1 + S2 @ T
+            C = np.array(((0, 0, 2), (0, -1, 0), (2, 0, 0)), dtype=float)
+            M = np.linalg.solve(C,M)
+            eigval, eigvec = np.linalg.eig(M)
+            con = 4 * eigvec[0]* eigvec[2] - eigvec[1]**2
+            ak = eigvec[:, np.nonzero(con > 0)[0]]
+            p = np.concatenate((ak, T @ ak)).ravel()
+            pos = np.vstack([x,y]).T
+            # we aim at accuracy of about 0.04 Angstrom with points_density = 25
+            N = int(points_density * np.max(np.sqrt(x**2+y**2)))
+            if nonlinear:
+                res = minimize(ContactAngle.rmsd_ellipse_penalty,x0=p, args=(pos,N,False),
+                      method='nelder-mead',options={'xatol': 1e-2, 'disp': False})
+                #  res = minimize(ContactAngle.rmsd_ellipse,x0=p, args=(pos,N,False),
+                #     method='COBYLA',options={'rhobeg': 1e-1, 'disp': True,'tol':1e-9},
+                #                  constraints=[{'type':'ineq','fun':constr,'catol':0.0}])
+                p,rmsdval = res.x,res.fun
+            else:
+                rmsdval = ContactAngle.rmsd_ellipse(p,pos,N)
+
+            # contact angles from derivative of the curve when it crosses the substrate:
+            # We require the solution of the line passing through the point to have two coincident
+            # solutions for the system ax2 + bxy + cy2 + dx + ey +f = 0 and y-y0 = m (x-x0)
+            # This yields m = 4*a*c*x0*y0 + 2*a*e*x0 - b**2*x0*y0 - b*d*x0 - b*e*y0 - 2*b*f + 2*c*d*y0 + d*e
+            # The point x0,y0 is the one that solves the ellipse equation when requesting y0=off, so
+            # x0 =[-b*y_0 - d +/- sqrt(-4*a*c*y_0**2 - 4*a*e*y_0 - 4*a*f + b**2*y_0**2 + 2*b*d*y_0 + d**2)]/(2*a)
+            a,b,c,d,e,f = p
+            y_0 = off
+            x_01 = (-b*y_0 - d + np.sqrt(-4*a*c*y_0**2 - 4*a*e*y_0 - 4*a*f + b**2*y_0**2 + 2*b*d*y_0 + d**2))/(2*a)
+            x_02 = (-b*y_0 - d - np.sqrt(-4*a*c*y_0**2 - 4*a*e*y_0 - 4*a*f + b**2*y_0**2 + 2*b*d*y_0 + d**2))/(2*a)
+            m1 = (4*a*c*x_01*y_0 + 2*a*e*x_01 - b**2*x_01*y_0 - b*d*x_01 - b*e*y_0 - 2*b*f + 2*c*d*y_0 + d*e )
+            m1 = m1/(4*a*c*x_01**2 - b**2*x_01**2 - 2*b*e*x_01 + 4*c*d*x_01 + 4*c*f - e**2)
+            m2 = (4*a*c*x_02*y_0 + 2*a*e*x_02 - b**2*x_02*y_0 - b*d*x_02 - b*e*y_0 - 2*b*f + 2*c*d*y_0 + d*e )
+            m2 = m2/(4*a*c*x_02**2 - b**2*x_02**2 - 2*b*e*x_02 + 4*c*d*x_02 + 4*c*f - e**2)
+            # depending on the sign of a at the denominator of x_01 and x_02, they can have a different order
+            # along the axis: let's keep them ordered, so that the first is the left one and the second the right one.
+            if x_02<x_01 :
+                x_01,x_02 = x_02, x_01
+                m1,m2 = m2,m1
+
+            theta1 = np.arctan(m1)*180/np.pi
+            theta2 = np.arctan(m2)*180/np.pi
+            # we compute the internal angle (assuming the droplet is in the upper half space), and need to take care of this
+            # theta1 is at the left edge of the droplet, theta2 at the right
+            if theta1<0.0: theta1+=180.
+            if theta2<0.0: theta2=-theta2
+            else: theta2=180.-theta2
+
+            # canonical form (careful: we overwrite internal variables a,b)
+            x0,y0,a,b,phi,e = ContactAngle._ellipse_general_to_canonical(p,check_coeffs=False)
+            parms.append((p, {'x0':x0,'y0':y0,'a':a,'b':b,'phi':phi,'e':e}, theta1, theta2, rmsdval))
+        if len(parms)==1: return parms[0]
+        else : return parms
+
+    @staticmethod
+    def _ellipse_canonical_to_general(coeffs):
+        """ Convert canonical coefficients (x0,y0,A,B,phi) to general ones (a,b,c,d,e,f)
+        """
+        x0,y0,A,B,phi = coeffs
+        a = A*A *np.sin(phi)**2 + B*B*np.cos(phi)**2
+        b = 2*(A*A-B*B)*np.sin(phi)*np.cos(phi)
+        c =  A*A *np.cos(phi)**2 + B*B*np.sin(phi)**2
+        d = -2*a*x0 -b*y0
+        e = -b*x0 -2*c*y0
+        f = a*x0**2 + b * x0*y0 + c*y0**2 - a*a*b*b
+        return [a,b,c,d,e,f]
+
+    @staticmethod
+    def _ellipse_general_to_canonical(coeffs,check_coeffs=True):
+        """ Convert general coefficients (a,b,c,d,e,f) to canonical ones.
+
+            :param list coeffs       : general coefficients
+            :param bool check_coeffs : raise an error if the coefficients do not represent
+                                       an ellipse. In some cases this checks needs to be
+                                       turned off, e.g. for a COBYLA minimization, as
+                                       during the minimization the constraints might
+                                       be violated.
+
+            return:
+            : tuple     : canonical coefficients x0,y0,a,b,phi,e
+
+            from https://scipython.com/blog/direct-linear-least-squares-fitting-of-an-ellipse/
+
+            Convert the cartesian conic coefficients, (a, b, c, d, e, f), to the
+            ellipse parameters, where F(x, y) = ax^2 + bxy + cy^2 + dx + ey + f = 0.
+            The returned parameters are x0, y0, ap, bp, e, phi, where (x0, y0) is the
+            ellipse centre; (ap, bp) are the semi-major and semi-minor axes,
+            respectively; e is the eccentricity; and phi is the rotation of the semi-
+            major axis from the x-axis.
+
+        """
+        # We use the formulas from https://mathworld.wolfram.com/Ellipse.html
+        # which assumes a cartesian form ax^2 + 2bxy + cy^2 + 2dx + 2fy + g = 0.
+        # Therefore, rename and scale b, d and f appropriately.
+        a,b,c,d,f,g = coeffs
+        b/=2; d/=2 ; f/=2
+        den = b**2 - a*c
+        if check_coeffs and den > 0:
+            raise ValueError('coeffs do not represent an ellipse: b^2 - 4ac must'
+                             ' be negative!'+str(den))
+        # The location of the ellipse centre.
+        x0, y0 = (c*d - b*f) / den, (a*f - b*d) / den
+        num = 2 * (a*f**2 + c*d**2 + g*b**2 - 2*b*d*f - a*c*g)
+        fac = np.sqrt((a - c)**2 + 4*b**2)
+        # The semi-major and semi-minor axis lengths (these are not sorted).
+        if np.isclose(fac,0.0): # a=c and b=0
+            ap,bp=a
+        else:
+            argument = num / den / (fac - a - c), num / den / (-fac - a - c)
+            if den>0: # it is not an ellipse, so not all semi axes are defined.
+                      # for the purpose of the minimizer, we still need to provide
+                      # one solution
+                ap,bp = np.sqrt([np.max(argument)]*2)
+            else:
+                ap,bp = np.sqrt(argument)
+        # Sort the semi-major and semi-minor axis lengths but keep track of
+        # the original relative magnitudes of width and height.
+        width_gt_height = True
+        if ap < bp: width_gt_height , ap,bp = False, bp, ap
+        # The eccentricity.
+        r = (bp/ap)**2
+        if r > 1: r = 1./r
+        e = np.sqrt(1. - r)
+        # The angle of anticlockwise rotation of the major-axis from x-axis.
+        if np.isclose(b,0):
+            phi = 0.0 if a < c else np.pi/2.
+        else:
+            phi = np.arctan((2.*b) / (a - c)) / 2.
+            if a > c: phi += np.pi/2.
+        if not width_gt_height:
+            # Ensure that phi is the angle to rotate to the semi-major axis.
+            phi += np.pi/2.
+        # NOTE: don't change the units of phi to deg., other parts of the code
+        #       depend on it being in rad.
+        phi = phi % np.pi
+        return x0, y0, ap, bp, phi, e
+
+    def _compute_coords(self, r, h, symm):
+        # r is the distance from the center of the droplet
+        # projected on the substrate surface.
+        # h is the elevation from the substrate surface
+        # symm is the remaining coordinate (the angle phi in
+        # spherical coordinates, the position along the cylinder
+        # axis in cylindrical ones.
+        R = np.sqrt(r**2 + h**2)
+        theta = np.arccos(r/R)
+        if self.store:
+            self._theta += list(theta)
+            self._r += list(r)
+            self._h += list(h)
+
+        return  np.asarray(r), np.asarray(theta), np.asarray(h), np.asarray(symm)
+
+    def cylindrical_coordinates(self):
+        pos = self.shifted_pos(self.liquid_vapor.atoms)
         dirs = np.array([0, 1])
-        dd = dirs[dirs != periodic][0]
-        r_ = pos[:, dd]  # change to this if you face error "np.abs(pos[:,dd])"
-        z_ = pos[:, 2]
-        # R_=np.sqrt(R_*R_+z_*z_)
-        # print(z_,r_)
-        # print(r_.shape,z_.shape)
-        return self._compute_coords(z_, r_)
+        dd = dirs[dirs != self.periodic][0]
+        r = pos[:, dd]
+        h = pos[:, 2]
+        od = list(set((1,2,3))-set((2,dd)))[0]
+        z = pos[:,od]
+        return self._compute_coords(r, h, z)
 
     def spherical_coordinates(self):
-        pos = self.remove_com(self.inter.atoms)
-        #r_ = np.linalg.norm(pos[:,0:2],axis=1)
-        # this r_ is the distance from the center
-        r_ = np.linalg.norm(pos[:, 0:2], axis=1)
-        z_ = pos[:, 2]
-        return self._compute_coords(z_, r_)
+        pos = self.shifted_pos(self.liquid_vapor.atoms)
+        r = np.linalg.norm(pos[:, 0:2], axis=1)
+        h = pos[:, 2]
+        symm = np.arctan2(pos[:,1],pos[:,0])
+        phi  = np.arctan2(y,x)*180/np.pi
+        phi[phi<0]+=360.
+        return self._compute_coords(r, h, phi)
 
-    def sample_theta_R(self, bins, theta, r, z, base_cut):
-        R = np.sqrt(r*r+z*z)
-        n_h, t_edges = np.histogram(theta, bins=bins, range=(
-            0, np.pi), weights=None, density=False)
-        R_h, t_edges = np.histogram(theta, bins=bins, range=(
-            0, np.pi), weights=R,    density=False)
-        #cond = np.where(n_h>0)
-        zz, rr = R_h * np.sin(t_edges[:-1]) / \
-            (1.*n_h), R_h * np.cos(t_edges[:-1])/(1.*n_h)
-        zzmin = np.nanmin(zz)
-        ercut = zzmin+base_cut
-        self.z, self.r = zz[zz > ercut], rr[zz > ercut]
-        # print("sample",z,r)
-
-    def sample_z_r(self, bins, z, r, base_cut):
-        #print("I love maxr",self.maxr)
-        n_h, r_edges = np.histogram(r, bins=bins, range=(
-            0, self.maxr), weights=None, density=False)
-        z_h, r_edges = np.histogram(r, bins=bins, range=(
-            0, self.maxr), weights=z,    density=False)
-        zz, rr = z_h/(1.*n_h), r_edges[:-1]
-        zzmin = np.nanmin(zz)
-        ercut = zzmin+base_cut
-        self.z, self.r = zz[zz > ercut], rr[zz > ercut]
-        #self.z , self.r =   z_h/(1.*n_h), r_edges[:-1]
-
-    def fit_arc(self, rmin=0, rmax=None, use_points=False):
-        """ fit an arc through the profile z(r) sampled by the class
-
-            :param float rmin       : minimum radius used for the fit (default: 0)
-            :param float rmax       : maximum radius used for the fit (default: maximum from dataset)
-            :param bool  use_points : False: use the mean surface atoms positions
-                                      True : use the surface atoms positions
+    def sample_theta_R(self, theta, r, h):
         """
+            given a set of angles (theta), base radii (r) and elevations (s), compute the mean profile h(r)
+            by taking the binned average values of h and r.
+        """
+        R = np.sqrt(r*r+h*h)
+        n_h, t_edges = np.histogram(theta, bins=self.bins, density=False, range=(0, np.pi), weights=None)
+        R_h, t_edges = np.histogram(theta, bins=self.bins, density=False, range=(0, np.pi), weights=R)
+        cond = n_h > 0.0
+        R_h = R_h [cond]
+        t_edges = t_edges[:-1][cond]
+        n_h = n_h [cond]
+        hh, rr = R_h * np.sin(t_edges)/n_h, R_h * np.cos(t_edges)/n_h
+        hhmin = np.min(hh)
+        ercut = hhmin+self.hcut
+        self.histo.r, self.histo.h = rr[hh > ercut], hh[hh > ercut]
 
+    def sample_r_h(self, r, h):
+        """
+            gven a set of elevations (h) and base radii (r), compute the mean profile h(r)
+            by taking the binned average values of h and r.
+        """
+        n_h, r_edges = np.histogram(r, bins=self.bins, density=False, range=(0, self.maxr), weights=None)
+        h_h, r_edges = np.histogram(r, bins=self.bins, density=False, range=(0, self.maxr), weights=h)
+        cond = n_h > 0.0
+        h_h = h_h [cond]
+        r_edges = r_edges[:-1][cond]
+        n_h = n_h [cond]
+
+        hh, rr = h_h/n_h, r_edges
+        hhmin = np.min(hh)
+        ercut = hhmin+self.hcut
+        self.histo.h, self.histo.r = hh[hh > ercut], rr[hh > ercut]
+
+    def _select_coords(self, use, bins):
+        # return lists of array with coordinates falling into the bins that partition the symmetric coordinate.
         try:
-            if use_points:
-                z, r = self.z_, self.r_
-            else:
-                z, r = self.z, self.r
+            if self.store and use == 'stored': r, h = self._r, self._h
+            elif not self.store and use == 'stored': raise(ValueError("The choice use='stored' can only be used if store=True was passed at initialization "))
+            elif use == 'frame':  r, h = self.r, self.h
+            elif use == 'histogram': r, h= self.histo.r, self.histo.h
+            else: raise(ValueError("The parameter use can only take the values 'frame', 'histogram', or 'stored' "))
 
         except AttributeError:
-            raise RuntimeError(
-                'something is wrong: no surface atoms or not gibbs surface present')
+            raise RuntimeError('No surface atoms or Gibbs surface present')
 
-        return self.fit_arc_(z, r, rmin=rmin, rmax=rmax)
+        # we always comply with the request of cutting all molecules below hcut from the minimum
+        if self.hcut > 0:
+            hmin = np.min(h)
+            cond = h > hmin+self.hcut
+            r,h=r[cond],h[cond]
+        if bins > 1:
+            # TODO: extend for histogram and stored
+            if use != 'frame' : raise(ValueError("bins>1 can be used only with use='frame'"))
+            hr,hh = [],[]
+            symm = self.phi[cond] if self.periodic is None  else self.z[cond]
+            limit = 2*np.pi if self.periodic is None else self.substrate.dimensions[self.periodic]
+            # set the right edges of the bins. This assumes that shifted_pos() has been called on the
+            # coordinates (hence, this function should not be public)
+            binvals = np.linspace(-limit/2.,limit/2., bins+1)[1:-1]
+            # this will put in bin index 0 eveything close to or below 0.0 and in bin index nbins-1 everyhin
+            # close to or above limit
+            inds = np.digitize(symm, binvals)
+            for i in range(bins):
+                hr.append(r[inds==i])
+                hh.append(h[inds==i])
+        else:
+            hr,hh=[r],[h]
+        return hr,hh
 
-    def fit_points_ellipse(self, rmax=None, rmin=None, bins=None, yy=None, use_points=False):
-        if rmax is None:
-            rmax, rmin, bins = 80, -80, 3200
-            yy = 0
-        try:
-            if use_points:
-                z, r = self.z_, self.r_
-            else:
-                z, r = self.z, self.r
-        except AttributeError:
-            raise RuntimeError(
-                'something is wrong: no surface atoms or not gibbs surface present')
-        cofX, th1, th2 = self.fit_ellipse_(r, z, yy)
+    def fit_arc(self, use='frame', nonlinear=True, bins=1):
+        """ fit an arc through the profile h(r) sampled by the class
 
-        print(cofX, th1, th2)
-        return self.arc_ellipse(cofX, rmax=rmax, rmin=rmin, bins=bins)
+            :param str   use        : 'frame'    : use the positions of the current frame only (default)
+                                      'histogram': use the binned values sampled so far
+                                      'stored'   : use the stored surface atoms positions, if the option store=True was passed at initialization
+            :param int   bins       : the number of bins to use along the symmetry direction (cylinder axis, azimuthal angle)
 
-        def sample_theta_R(self, bins, th_left, th_right, RR_left, RR_right):
-            n_h_left, t_edges_left = np.histogram(
-                th_left, bins=bins, range=(0, np.pi), weights=None, density=False)
-            R_h_left, t_edges_left = np.histogram(th_left, bins=bins, range=(
-                0, np.pi), weights=RR_left,    density=False)
-            n_h_right, t_edges_right = np.histogram(
-                th_right, bins=bins, range=(0, np.pi), weights=None, density=False)
-            R_h_right, t_edges_right = np.histogram(th_right, bins=bins, range=(
-                0, np.pi), weights=RR_right, density=False)
-            self.left_z, self.left_r = R_h_left * np.sin(t_edges_left[:-1])/(1.*n_h_left),\
-                R_h_left * np.cos(t_edges_left[:-1])/(1.*n_h_left)
-            self.right_z, self.right_r = R_h_right * np.sin(t_edges_right[:-1])/(1.*n_h_right),\
-                R_h_right * np.cos(t_edges_right[:-1])/(1.*n_h_right)
-
-
-class ContactAngleGibbs(ContactAngle):
-    """ ContactAngle class implementation using an estimate of the 
-        Gibbs dividing surface
-    """
-
-    def sigmoid(self, r, r0, A, w):
-        return A*(1.+np.tanh((r0-r)/w))/2.
-
-    def sample(self, bins=100, params=None, binning='theta', periodic=None, base_cut=0.0):
-        """ compute the height profile z(r) of a droplet
-            :param int       bins     : number of slices along the z axis (across the whole box z-edge)
-
+            return:
+                a list including, for each of the bins:
+                : tuple                 : radius, base radius, cos(theta), center
         """
-        from scipy.optimize import curve_fit
+        r, h = self._select_coords(use,bins=bins)
 
-        droplet, substrate = self.droplet, self.substrate
-        self.nframes += 1
+        return self._fit_arc(r, h, nonlinear=nonlinear)
 
-        pos = self.remove_com(droplet)
-        if periodic is None:
-            r = np.linalg.norm(pos[:, 0:2], axis=1)
-            z = pos[:, 2]
-            R = np.sqrt(r*r + z*z)
-        else:
-            dirs = np.array([0, 1])
-            dd = dirs[dirs != periodic][0]
-            r = np.abs(pos[:, dd])
-            z = pos[:, 2]
-            R = np.sqrt(r*r+z*z)
+    def fit_arcellipse(self,use='frame',nonlinear=True,bins=1):
 
-        theta = np.arccos(r/R)
-        maxr = np.nanmax(droplet.universe.dimensions[:2])
-        maxR = maxr
-        maxz = droplet.universe.dimensions[2]
-        if binning == 'z':
-            # histogram for this frame
-            H_, zedge, redge = np.histogram2d(
-                z, r, bins, [[0, maxz], [0, maxr]])
-            zedge = (zedge[:-1]+zedge[1:])/2.
-            redge = (redge[:-1]+redge[1:])/2.
-            # print(H_[H_>0],zedge,redge)
-        elif binning == 'theta':
-            H_, thetaedge, Redge = np.histogram2d(
-                theta, R, bins, [[0, np.pi/2.], [30, maxR]])
-            thetaedge = (thetaedge[:-1]+thetaedge[1:])/2.
-            Redge = (Redge[:-1]+Redge[1:])/2.
-        else:
-            raise ValueError("binning can be only 'z' or 'theta'")
+        """  fit an ellipse through the points sampled by the class. See implementation details in _fit_ellipse()
+            :param str   use        : 'frame'    : use the positions of the current frame only (default)
+                                      'histogram': use the binned values sampled so far
+                                      'stored'   : use the stored surface atoms positions, if the option store=True
+                                                   was passed at initialization
+            :return:
+                a list including, for each of the bins:
+                parms  : parameters of the ellipse equation in general form:
+                         a[0] x^2 + a[1] x y + a[2] y^2 + a[3] x + a[4] y = 0
+                parmsc : dictionary of parameters in canoncial form: (a,b, x0,y0,phi, e)
+                         with a,b the major and minor semiaxes, x0,y0 the center, phi  the angle
+                         (in rad) between x axis and major axis, and e the eccentricity.
+                theta1 : right contact angle
+                theta2 : left contact angle
+        """
 
-        # cumulative histogram
-        try:
-            self.H
-            self.H += H_
+        r, h = self._select_coords(use,bins=bins)
+        return self._fit_ellipse(r, h, nonlinear=nonlinear, off=0.0)
 
-        except:
-            self.H = H_
-
-        # normalize by number of frames and metric factor
-
-        # fit the histogram with a sigmoidal function, determine a Gibbs dividing distance for each z-slice
-        # we redo this every frame, it does not take much time, and we always have the up-to-date location
-        # of the Gibbs dividing surface with maximum statistics
-        if binning == 'z':
-            if periodic is None:
-                H_ = self.H / (self.nframes*redge)
-            else:
-                H_ = self.H / (self.nframes)  # need to check
-
-        elif binning == 'theta':
-            if periodic is None:
-                H_ = self.H / (self.nframes*Redge**2 * np.cos(thetaedge))
-
-            else:
-                H_ = self.H / (self.nframes*Redge * np.cos(thetaedge))  # check
-            #print(self.H, H_, self.nframes)
-
-        parms, zvals, rvals = [], [], []
-        for i, h in enumerate(H_):
-            cond = h > 1e-6
-            if params is None:
-                p0 = (40., 10.0, 0.8)
-            else:
-                p0 = params
-            try:
-                if binning == 'z':
-                    popt, pcov = curve_fit(
-                        self.sigmoid, redge[cond], h[cond], p0=p0)
-                    #popt, pcov = curve_fit(self.exp_sigmoid, redge[cond], h[cond], p0=p0)
-
-                if binning == 'theta':
-                    popt, pcov = curve_fit(
-                        self.sigmoid, Redge[cond], h[cond], p0=p0)
-
-            except TypeError:
-                pass  # not enough points in slice i
-            except ValueError:
-                # not enough points (another version of numpy throws this error? check)
-                pass
-            except RuntimeError:
-                pass  # fit failed
-            try:
-                if np.isfinite(pcov[0][0]) and popt[0] != p0[0] and popt[0] > 0 and popt[0] < maxR:
-                    #print(pcov[0][0], popt[0])
-                    # if np.isfinite(pcov[0][0]) and popt[0]>0 and popt[0]<maxr:
-                    #print("I am here")
-                    if True or 2*popt[2] < popt[0]:
-                        parms.append(list(popt))
-                        if binning == 'z':
-                            zvals.append(zedge[i])
-                            rvals.append(popt[0])
-
-                        else:
-                            rad = popt[0]
-                            zvals.append(rad * np.sin(thetaedge[i]))
-                            rvals.append(rad * np.cos(thetaedge[i]))
-
-            except UnboundLocalError:
-                pass
-
-        # check here that we have a reasnoable number of points. Handle this
-        zvals = np.array(zvals)
-        rvals = np.array(rvals)
-        # print(zvals,rvals)
-        parms = np.array(parms)
-        flcut = np.nanmin(zvals)+base_cut
-        #print (zvals.shape,parms.shape)
-        self.z, self.r = zvals[zvals > flcut], rvals[zvals > flcut]
