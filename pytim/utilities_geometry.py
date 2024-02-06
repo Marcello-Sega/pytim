@@ -93,6 +93,20 @@ def polygonalArea(points):
     return np.abs(ratio * np.sum([0.5, -0.5] * points2d * np.roll(
         np.roll(points2d, 1, axis=0), 1, axis=1)))
 
+def minimum_image(disp, box):
+    """  wraps displacement vectors so that they satisfy the minimum image
+         convention
+
+         :param ndarray disp: an (N,3) array of displacements
+         :param ndarray box: (3,) array with the rectangular box edges' length
+         :return ndarray: the wrapped displacements
+
+    """
+    cond = np.where(disp>box[:3]/2)
+    disp[cond] = disp[cond] -  box[cond[1]]
+    cond = np.where(disp<-box[:3]/2)
+    disp[cond] = disp[cond] +  box[cond[1]]
+    return disp
 
 def pbc_compact(pos1, pos2, box):
     """  wraps points so that satisfy the minimum image
