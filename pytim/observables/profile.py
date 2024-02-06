@@ -22,12 +22,12 @@ class Profile(object):
                                     None is supplied, it defaults to the number
                                     density. The number density is always
                                     calculated on a per atom basis.
-    :param ITIM       interface:    if provided, calculate the intrinsic
-                                    profile with respect to the first layers
     :param str        direction:    'x','y', or 'z' : calculate the profile
                                     along this direction. (default: 'z' or
                                     the normal direction of the interface,
                                     if provided.
+    :param ITIM       interface:    if provided, calculate the intrinsic
+                                    profile with respect to the first layers
     :param bool       MCnorm:       if True (default) use a simple Monte Carlo
                                     estimate the effective volumes of the bins.
 
@@ -113,8 +113,8 @@ class Profile(object):
     """
 
     def __init__(self,
-                 direction=None,
                  observable=None,
+                 direction=None,
                  interface=None,
                  symmetry='default',
                  mode='default',
@@ -246,7 +246,7 @@ class Profile(object):
                 self.sampled_rnd_values += rnd_accum
         self._counts += 1
 
-    def get_values(self, binwidth=None, nbins=None):
+    def get_values(self, binwidth=None, nbins=None, density=True):
         if self.sampled_values is None:
             print("Warning no profile sampled so far")
         # we use the largest box (largest number of bins) as reference.
@@ -264,7 +264,7 @@ class Profile(object):
             nbins += 1
 
         vals = self.sampled_values.copy()
-        vals /= (np.average(self._totvol) / self._nbins)
+        if density: vals /= (np.average(self._totvol) / self._nbins)
         vals /= self._counts
         if self.interface is not None:
             # new versions of scipy.binned_statistic don't like inf
