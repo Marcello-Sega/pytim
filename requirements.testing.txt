@@ -1,3 +1,4 @@
+mdtraj==1.9.8
 mdtraj
 pytest==8.1.1
 codecov
