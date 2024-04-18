@@ -90,6 +90,7 @@ class Interface(object):
 
     @property
     def atoms(self):
+        if len(self._layers) == 0: return self._layers # an empty atom group
         return self._layers[:].sum()
 
     @property
