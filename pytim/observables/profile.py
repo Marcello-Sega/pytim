@@ -187,6 +187,8 @@ class Profile(object):
         rnd *= self.interface.universe.dimensions[:3]
         rnd_pos = IntrinsicDistance(
             self.interface, symmetry=self.symmetry).compute(rnd)
+        # the interpolator can return NaNs in some cases
+        rnd_pos = rnd_pos[np.isfinite(rnd_pos)]
         rnd_accum, bins, _ = stats.binned_statistic(
             rnd_pos,
             np.ones(len(rnd_pos)),
@@ -221,6 +223,9 @@ class Profile(object):
                 rnd_accum, bins = self._sample_random_distribution(group)
 
         values = self.observable.compute(group, **kargs)
+        # the interpolator can return NaNs in some cases
+        cond = np.isfinite(pos)
+        values, pos = values[cond], pos[cond]
         accum, bins, _ = stats.binned_statistic(
             pos,
             values,
