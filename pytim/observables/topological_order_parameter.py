@@ -54,7 +54,7 @@ class TopologicalOrderParameter(Observable):
             Note that the observable stores also other information
             in the class:
 
-            - neighbor: the index of the nearest neighbor at topological
+            - neighbors: the index of the nearest neighbor at topological
             distance N. The distances to these neighbors are the values
             of psi.
 
@@ -101,7 +101,6 @@ class TopologicalOrderParameter(Observable):
         tree = KDTree(inp.positions,boxsize=box)
         OO = tree.query_ball_tree(tree, 3.5)
         self.inp = inp
-        ids = []
         for i,neighs in enumerate(OO):
             neigh_Os = inp[[a for a in neighs if a != i ]]
             sel = inp[[a for a in neighs if a != i ]].residues.atoms
@@ -125,14 +124,13 @@ class TopologicalOrderParameter(Observable):
         self.dist,self.predecessors  = res
         
         pairs = np.argwhere(self.dist==self.topological_distance)
-        self.pairs = pairs
         # we use directed=True because we computed the matrix symmetrically
         dists = np.linalg.norm(minimum_image(inp[pairs[:,0]].positions - inp[pairs[:,1]].positions,
                                          inp.dimensions),axis=1)
         self.dists =dists
         # in some case (gas) a molecule might have no 4th neighbor, so we initialize
         # psi with inf.
-        neighbor,psi=-np.ones(len(inp),dtype=int),np.inf*np.ones(len(inp),dtype=float)
+        neighbors,psi=-np.ones(len(inp),dtype=int),np.inf*np.ones(len(inp),dtype=float)
 
         index = np.arange(len(inp))
 
@@ -140,10 +138,13 @@ class TopologicalOrderParameter(Observable):
             cond = np.where(pairs[:,0]==i)[0]
             if len(cond) > 0:
                 amin =  np.argmin(dists[cond])
-                neighbor[i],psi[i] =  pairs[cond,1][amin], np.min(dists[cond])
+                neighbors[i],psi[i] =  pairs[cond,1][amin], np.min(dists[cond])
             # otherwise, there is no 4th neighbor, we keep the default value (inf)
         self.psi = psi
-        self.neighbor = np.array(neighbor)
+        # so far neighbors and pairs are indices of the local array, now we store
+        # them as MDAnalysis indices
+        self.neighbors = self.inp.indices[neighbors]
+        self.pairs = self.inp.indices[pairs]
         return self.psi
 
     def path(self, start, end):
