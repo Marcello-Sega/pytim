@@ -27,6 +27,7 @@ except AttributeError:
 
 class WillardChandler(Interface):
     """ Identifies the dividing surface using the Willard-Chandler method
+        NOTE that this method does *not* identify surface atoms
 
         *(Willard, A. P.; Chandler, D. J. Phys. Chem. B 2010, 114, 1954–1958)*
 
@@ -83,9 +84,20 @@ class WillardChandler(Interface):
     @property
     def layers(self):
         """ The method does not identify layers.
+
+        Example:
+
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import *
+        >>>
+        >>> u = mda.Universe(MICELLE_PDB)
+        >>> g = u.select_atoms('resname DPC')
+        >>> inter= pytim.WillardChandler(u, group=g, alpha=3.0, fast=True)
+        >>> inter.layers
+        <AtomGroup with 0 atoms>
         """
-        self.layers = None
-        return None
+        return self._layers
 
     def _sanity_checks(self):
         """ Basic checks to be performed after the initialization.

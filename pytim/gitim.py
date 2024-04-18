@@ -217,7 +217,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         else:
             n_cube = 0
             extrapoints = np.copy(points)
-            extraids = np.arange(len(points), dtype=np.int)
+            extraids = np.arange(len(points), dtype=int)
 
         self.triangulation.append(Delaunay(extrapoints))
         try:

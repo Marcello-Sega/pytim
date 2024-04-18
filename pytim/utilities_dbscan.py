@@ -2,10 +2,11 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
 import numpy as np
+import scipy
 from scipy.cluster import vq
 from scipy.spatial import cKDTree
 from pytim_dbscan import dbscan_inner
-
+from packaging import version
 
 def determine_samples(threshold_density, cluster_cut, n_neighbors):
 
@@ -53,21 +54,22 @@ def do_cluster_analysis_dbscan(group,
     points = group.atoms.positions[:]
 
     tree = cKDTree(points, boxsize=box[:3])
-    # TODO: neighborhoods has to be converted to a list
-    neighborhoods = np.array([
-        np.array(neighbors)
-        for neighbors in tree.query_ball_point(points, cluster_cut, n_jobs=-1)
-    ],dtype=object)
+
+    if version.parse(scipy.__version__) >= version.parse("1.6.0"):
+        query = tree.query_ball_point(points, cluster_cut, workers=-1)
+    else:
+        query = tree.query_ball_point(points, cluster_cut)
+
+    neighborhoods = np.array([ np.array(neighs) for neighs in query],dtype=object)
+
     if len(neighborhoods.shape) != 1:
         raise ValueError("Error in do_cluster_analysis_DBSCAN(), the cutoff\
                           is probably too small")
     if molecular is False:
-        n_neighbors = np.array([len(neighbors) for neighbors in neighborhoods])
+        n_neighbors = np.array([len(neighs) for neighs in neighborhoods])
     else:
-        n_neighbors = np.array([
-            len(np.unique(group[neighbors].resids))
-            for neighbors in neighborhoods
-        ])
+        n_neighbors = np.array([len(np.unique(group[neighs].resids))
+            for neighs in neighborhoods ])
 
     min_samples = determine_samples(threshold_density, cluster_cut,
                                     n_neighbors)
