@@ -125,8 +125,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        'numpy>=1.16', 'cython>=0.24.1', 'sphinx>=1.4.3', 'pytest',
-        'gsd<=3.2.1'
+        'numpy>=1.16', 'cython>=0.24.1','gsd<=3.2.1'
     ],
 
     # List additional groups of dependencies here (e.g. development
