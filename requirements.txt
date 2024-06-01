@@ -1,4 +1,5 @@
 cython>=0.24.1
 numpy>=1.16.0
 scipy>=1.6.0
+gsd<=3.2.1
 MDAnalysis>=2.0
