@@ -72,17 +72,15 @@ def correlate(a1, a2=None, _normalize=True):
       ...     size.append(len(inter.layers[0,0]))
       >>>
       >>> # we need to subtract the average value
-      >>> np.set_printoptions(precision=3,threshold=1000)
+      >>> np.set_printoptions(precision=3,threshold=1000,suppress=True)
       >>> corr = pytim.utilities.correlate(size-np.mean(size))
       >>> corr = corr/corr[0] # normalize to 1
       >>> print (corr)
-      [ 1.     0.142  0.104  0.147  0.371  0.099  0.165  0.095  0.338  0.219
-       -0.021  0.087  0.245 -0.01  -0.193  0.103  0.029 -0.009 -0.11   0.012
-       -0.133  0.056 -0.283 -0.276  0.035 -0.012 -0.211 -0.429 -0.132 -0.263
-        0.072 -0.7   -0.236  0.136 -0.243 -0.878 -0.13  -0.329 -0.386 -0.652
-       -0.267 -0.188 -0.226 -0.79  -0.284 -0.02  -1.512 -1.316 -0.188  7.551]
-
-      >>> np.set_printoptions()
+      [ 1.     0.153  0.104  0.17   0.365  0.115  0.171  0.104  0.342  0.24
+       -0.021  0.097  0.265  0.004 -0.169  0.088  0.022 -0.008 -0.113  0.003
+       -0.139  0.051 -0.287 -0.279  0.027 -0.019 -0.223 -0.43  -0.157 -0.285
+        0.048 -0.704 -0.26   0.13  -0.31  -0.883 -0.12  -0.323 -0.388 -0.64
+       -0.295 -0.177 -0.165 -0.81  -0.321 -0.031 -1.557 -1.296 -0.305  6.974]
 
       This will produce (sampling the whole trajectory), the following:
 

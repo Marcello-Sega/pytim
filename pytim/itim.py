@@ -85,15 +85,15 @@ J. Comp. Chem. 29, 945, 2008)*
         >>> print (interface.layers)
         [[<AtomGroup with 786 atoms> <AtomGroup with 681 atoms>
           <AtomGroup with 663 atoms> <AtomGroup with 651 atoms>]
-         [<AtomGroup with 786 atoms> <AtomGroup with 702 atoms>
-          <AtomGroup with 666 atoms> <AtomGroup with 636 atoms>]]
+         [<AtomGroup with 786 atoms> <AtomGroup with 699 atoms>
+          <AtomGroup with 669 atoms> <AtomGroup with 636 atoms>]]
 
 
         >>> interface.layers[0,0] # upper side, first layer
         <AtomGroup with 786 atoms>
 
         >>> interface.layers[1,2] # lower side, third layer
-        <AtomGroup with 666 atoms>
+        <AtomGroup with 669 atoms>
 
         >>> # or as a whole AtomGroup. This can include all atoms in all layers
         >>> interface.atoms
@@ -170,12 +170,12 @@ J. Comp. Chem. 29, 945, 2008)*
         >>> print(interface.layers[:,0:3]) # 1st - 3rd layer (0:3), on both sides
         [[<AtomGroup with 786 atoms> <AtomGroup with 681 atoms>
           <AtomGroup with 663 atoms>]
-         [<AtomGroup with 786 atoms> <AtomGroup with 702 atoms>
-          <AtomGroup with 666 atoms>]]
+         [<AtomGroup with 786 atoms> <AtomGroup with 699 atoms>
+          <AtomGroup with 669 atoms>]]
 
 
         >>> print(interface.layers[1,0:4:2]) # side 1, layers 1-4 & stride 2 (0:4:2)
-        [<AtomGroup with 786 atoms> <AtomGroup with 666 atoms>]
+        [<AtomGroup with 786 atoms> <AtomGroup with 669 atoms>]
 
         """
 
@@ -380,7 +380,7 @@ J. Comp. Chem. 29, 945, 2008)*
         _y = utilities.get_y(self.cluster_group, self.normal)
         _z = utilities.get_z(self.cluster_group, self.normal)
 
-        sort = np.argsort(_z + _radius * np.sign(_z))
+        sort = np.argsort(_z + _radius * np.sign(_z),kind='stable')
         # NOTE: np.argsort returns the sorted *indices*
 
         if self.multiproc and ('win' not in self.system.lower()):

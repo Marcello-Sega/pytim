@@ -496,7 +496,7 @@ class ContactAngle(object):
         C = np.zeros((6, 6), dtype=float)
         C[0, 2], C[2, 0], C[1, 1] = 2, 2, -1
         eigval, eigvec = np.linalg.eig(np.linalg.solve(S, C))
-        sort = np.argsort(eigval)
+        sort = np.argsort(eigval,kind='stable')
         eigval, eigvec = eigval[sort], eigvec[sort]
         lam = np.nonzero(np.logical_and(
             eigval > 0, np.isfinite(eigval)))[0][-1]
@@ -515,7 +515,7 @@ class ContactAngle(object):
         C = np.array(((0, 0, 2), (0, -1, 0), (2, 0, 0)), dtype=float)
         M = np.linalg.solve(C, M)
         eigval, eigvec = np.linalg.eig(M)
-        sort = np.argsort(eigval)[::-1]
+        sort = np.argsort(eigval,kind='stable')[::-1]
         eigval, eigvec = eigval[sort], eigvec[sort]
         con = 4 * eigvec[0] * eigvec[2] - eigvec[1]**2 > 0
         ak = eigvec[:, np.nonzero(con)[0]]
