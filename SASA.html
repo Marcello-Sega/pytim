@@ -1,0 +1,332 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>SASA &#8212; Pytim 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="shortcut icon" href="_static/pytim.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="WillardChandler" href="WillardChandler.html" />
+    <link rel="prev" title="GITIM" href="GITIM.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="WillardChandler.html" title="WillardChandler"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="GITIM.html" title="GITIM"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">SASA</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="sasa">
+<h1>SASA<a class="headerlink" href="#sasa" title="Permalink to this heading">¶</a></h1>
+<span class="target" id="module-pytim.sasa"></span><section id="module-sasa">
+<h2>Module: sasa<a class="headerlink" href="#module-sasa" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pytim.sasa.SASA">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pytim.sasa.</span></span><span class="sig-name descname"><span class="pre">SASA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">universe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'guess'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">molecular</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_layers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_zero_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_threshold_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_cluster_groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">biggest_cluster_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_cluster_cut</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'generic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centered</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autoassign</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_noextrapoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pytim/sasa.html#SASA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pytim.sasa.SASA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identifies interfacial molecules at curved interfaces using the Lee-Richards SASA algorithm.</p>
+<p><em>(Lee, B; Richards, FM. J Mol Biol. 55, 379–400, 1971)</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>universe</strong> (<em>Object</em>) – The <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a> Universe, <a class="reference external" href="http://www.mdtraj.org/">MDTraj</a> trajectory
+or <a class="reference external" href="http://www.openmm.org/">OpenMM</a> Simulation objects.</p></li>
+<li><p><strong>group</strong> (<em>Object</em>) – An AtomGroup, or an array-like object with
+the indices of the atoms in the group. Will
+identify the interfacial molecules from
+this group</p></li>
+<li><p><strong>alpha</strong> (<em>float</em>) – The probe sphere radius</p></li>
+<li><p><strong>normal</strong> (<em>str</em>) – ‘x’,’y,’z’ or ‘guess’
+(for planar interfaces only)</p></li>
+<li><p><strong>molecular</strong> (<em>bool</em>) – Switches between search of interfacial
+molecules / atoms (default: True)</p></li>
+<li><p><strong>max_layers</strong> (<em>int</em>) – The number of layers to be identified</p></li>
+<li><p><strong>radii_dict</strong> (<em>dict</em>) – Dictionary with the atomic radii of the
+elements in the group. If None is supplied,
+the default one (from GROMOS 43a1) will be
+used.</p></li>
+<li><p><strong>cluster_cut</strong> (<em>float</em>) – Cutoff used for neighbors or density-based
+cluster search (default: None disables the
+cluster analysis)</p></li>
+<li><p><strong>cluster_threshold_density</strong> (<em>float</em>) – Number density threshold for
+the density-based cluster search. ‘auto’
+determines the threshold automatically.
+Default: None uses simple neighbors cluster
+search, if cluster_cut is not None</p></li>
+<li><p><strong>extra_cluster_groups</strong> (<em>Object</em>) – Additional groups, to allow for
+mixed interfaces</p></li>
+<li><p><strong>biggest_cluster_only</strong> (<em>bool</em>) – Tag as surface atoms/molecules only
+those in the largest cluster. Need to
+specify also a <code class="xref py py-obj docutils literal notranslate"><span class="pre">cluster_cut</span></code> value.</p></li>
+<li><p><strong>centered</strong> (<em>bool</em>) – Center the  <code class="xref py py-obj docutils literal notranslate"><span class="pre">group</span></code></p></li>
+<li><p><strong>include_zero_radius</strong> (<em>bool</em>) – if false (default) exclude atoms with zero radius
+from the surface analysis (they are always included
+in the cluster search, if present in the relevant
+group) to avoid some artefacts.</p></li>
+<li><p><strong>info</strong> (<em>bool</em>) – Print additional info</p></li>
+<li><p><strong>warnings</strong> (<em>bool</em>) – Print warnings</p></li>
+<li><p><strong>autoassign</strong> (<em>bool</em>) – If true (default) detect the interface
+every time a new frame is selected.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">MICELLE_PDB</span>
+<span class="go">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">MICELLE_PDB</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">micelle</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname DPC&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">SASA</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">micelle</span><span class="p">,</span> <span class="n">molecular</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">atoms</span>
+<span class="go">&lt;AtomGroup with 619 atoms&gt;</span>
+</pre></div>
+</div>
+<dl class="py property">
+<dt class="sig sig-object py" id="pytim.sasa.SASA.layers">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">layers</span></span><a class="headerlink" href="#pytim.sasa.SASA.layers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Access the layers as numpy arrays of AtomGroups.</p>
+<p>The object can be sliced as usual with numpy arrays.
+Differently from <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ITIM</span></code></a>, there are no sides.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pytim.sasa.SASA.analysis_group">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">analysis_group</span></span><a class="headerlink" href="#pytim.sasa.SASA.analysis_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>(AtomGroup) the group, the surface of which should be computed</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pytim.sasa.SASA.autoassign">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">autoassign</span></span><a class="headerlink" href="#pytim.sasa.SASA.autoassign" title="Permalink to this definition">¶</a></dt>
+<dd><p>(bool) assign layers every time a frame changes</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pytim.sasa.SASA.include_zero_radius">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">include_zero_radius</span></span><a class="headerlink" href="#pytim.sasa.SASA.include_zero_radius" title="Permalink to this definition">¶</a></dt>
+<dd><p>(bool) include atoms with zero radius in the analysis (excluded by default)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pytim.sasa.SASA.is_buried">
+<span class="sig-name descname"><span class="pre">is_buried</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.sasa.SASA.is_buried" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks wether an array of positions are located below
+the first interfacial layer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pytim.sasa.SASA.label_planar_sides">
+<span class="sig-name descname"><span class="pre">label_planar_sides</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytim.sasa.SASA.label_planar_sides" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign to all layers a label (the beta tempfactor)
+that can be used in pdb files. Additionally, set
+the new layers and sides.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pytim.sasa.SASA.prepare_box">
+<span class="sig-name descname"><span class="pre">prepare_box</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytim.sasa.SASA.prepare_box" title="Permalink to this definition">¶</a></dt>
+<dd><p>Before the analysis, pack every molecule into the box.
+Keep the original positions for latter use.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pytim.sasa.SASA.reset_labels">
+<span class="sig-name descname"><span class="pre">reset_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pytim.sasa.SASA.reset_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset labels before interfacial analysis</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pytim.sasa.SASA.surface_cluster_cut">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">surface_cluster_cut</span></span><a class="headerlink" href="#pytim.sasa.SASA.surface_cluster_cut" title="Permalink to this definition">¶</a></dt>
+<dd><p>(float) distance cut to calculate the surface clusters</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pytim.sasa.SASA.writepdb">
+<span class="sig-name descname"><span class="pre">writepdb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'layers.pdb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centered</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'no'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiframe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tempfactors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pytim.sasa.SASA.writepdb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the frame to a pdb file, marking the atoms belonging
+to the layers with different beta factors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – the output file name</p></li>
+<li><p><strong>centered</strong> (<em>str</em>) – ‘origin’, ‘middle’, or ‘no’</p></li>
+<li><p><strong>group</strong> (<em>AtomGroup</em>) – if ‘all’ is passed, use universe</p></li>
+<li><p><strong>multiframe</strong> (<em>bool</em>) – append to pdb file if True</p></li>
+<li><p><strong>tempfactors</strong> (<em>ndarray</em>) – use this array as temp (beta) factors</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Example: save the positions (centering the interface in the cell)</dt><dd><p>without appending</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim.datafiles</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">WATER_GRO</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">multiframe</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Example: save the positions without centering the interface. This</dt><dd><p>will not shift the atoms from the original position
+(still, they will be put into the basic cell).
+The <code class="xref py py-obj docutils literal notranslate"><span class="pre">multiframe</span></code> option set to <code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code> will
+overwrite the file</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;layers.pdb&#39;</span><span class="p">,</span><span class="n">centered</span><span class="o">=</span><span class="s1">&#39;no&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that if <a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-mod docutils literal notranslate"><span class="pre">GITIM</span></code></a> is used, and the
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">symmetry</span></code> option is different from <code class="xref py py-obj docutils literal notranslate"><span class="pre">planar</span></code>,
+the <code class="xref py py-obj docutils literal notranslate"><span class="pre">centered='origin'</span></code> option is equivalent to
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">centered='middle'</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-92682414-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+<h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quick.html">Pytim: Quick Tour</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">How to Install Pytim</a></li>
+<li class="toctree-l1"><a class="reference internal" href="micelle.html">Surface of a micelle</a></li>
+<li class="toctree-l1"><a class="reference internal" href="center.html">To center or not to center?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guessing_radii.html">Choosing the atomic radii</a></li>
+<li class="toctree-l1"><a class="reference internal" href="newproperties.html">New properties of Atoms</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Modules</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="ITIM.html">ITIM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="GITIM.html">GITIM</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SASA</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-sasa">Module: sasa</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="WillardChandler.html">WillardChandler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SimpleInterface.html">SimpleInterface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observables.html">Observables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datafiles.html">Datafiles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="GITIM.html"
+                          title="previous chapter">GITIM</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="WillardChandler.html"
+                          title="next chapter">WillardChandler</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/SASA.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="WillardChandler.html" title="WillardChandler"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="GITIM.html" title="GITIM"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">SASA</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Marcello Sega.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+    </div>
+  </body>
+</html>

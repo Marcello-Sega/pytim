@@ -1,33 +1,28 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>New properties of Atoms &#8212; Pytim 0.7.0 documentation</title>
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.7.0',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>New properties of Atoms &#8212; Pytim 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    
     <link rel="shortcut icon" href="_static/pytim.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="ITIM" href="ITIM.html" />
     <link rel="prev" title="Choosing the atomic radii" href="guessing_radii.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -43,7 +38,8 @@
         <li class="right" >
           <a href="guessing_radii.html" title="Choosing the atomic radii"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.7.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">New properties of Atoms</a></li> 
       </ul>
     </div>  
 
@@ -52,61 +48,62 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="new-properties-of-atoms">
-<h1>New properties of Atoms<a class="headerlink" href="#new-properties-of-atoms" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="summary">
-<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
-<p>Pytim adds some new properties to the <code class="xref py py-class docutils literal"><span class="pre">Atoms</span></code> class of <code class="xref py py-obj docutils literal"><span class="pre">MDAnalysis</span></code>.</p>
+  <section id="new-properties-of-atoms">
+<h1>New properties of Atoms<a class="headerlink" href="#new-properties-of-atoms" title="Permalink to this heading">¶</a></h1>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference internal" href="quick.html"><span class="doc">Pytim</span></a> adds some new properties to the <code class="xref py py-class docutils literal notranslate"><span class="pre">Atoms</span></code> class of <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a>.</p>
 <p>This tutorial shows what they are and how to used them.</p>
-</div>
-<div class="section" id="background">
-<h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="background">
+<h2>Background<a class="headerlink" href="#background" title="Permalink to this heading">¶</a></h2>
 <p>After computing for the first time the interfacial atoms/molecules
-in a system (this is true for classes like <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a>
-and <a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-class docutils literal"><span class="pre">GITIM</span></code></a>, but not for
-<a class="reference internal" href="WillardChandler.html#pytim.willard_chandler.WillardChandler" title="pytim.willard_chandler.WillardChandler"><code class="xref py py-class docutils literal"><span class="pre">WillardChandler</span></code></a>) some new properties
-are added to all atoms in the universe: <code class="xref py py-obj docutils literal"><span class="pre">layers</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">clusters</span></code>
-and, in case of <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a>, also <code class="xref py py-obj docutils literal"><span class="pre">sides</span></code>.</p>
-<p>Note that, differently from what happens in <code class="xref py py-obj docutils literal"><span class="pre">MDAnalysys</span></code>, also some of the standard properties (e.g. <code class="xref py py-obj docutils literal"><span class="pre">radii</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">tempfactors</span></code>, <code class="xref py py-obj docutils literal"><span class="pre">bfactors</span></code>,  <code class="xref py py-obj docutils literal"><span class="pre">elements</span></code>) will <em>always</em> be associated to the atoms, <em>even if</em> the information is not present in the configuration file/trajectory (some heuristics is used by pytim to guess their values)</p>
-</div>
-<div class="section" id="layers">
-<h2>Layers<a class="headerlink" href="#layers" title="Permalink to this headline">¶</a></h2>
-<p>The value of <cite>atoms.layers</cite> can be either -1 (atom not in any of the layers) or 1, 2, 3,…, <code class="xref py py-obj docutils literal"><span class="pre">max_layers</span></code></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+in a system (this is true for classes like <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">ITIM</span></code></a>
+and <a class="reference internal" href="GITIM.html#pytim.gitim.GITIM" title="pytim.gitim.GITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">GITIM</span></code></a>, but not for
+<a class="reference internal" href="WillardChandler.html#pytim.willard_chandler.WillardChandler" title="pytim.willard_chandler.WillardChandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">WillardChandler</span></code></a>) some new properties
+are added to all atoms in the universe: <code class="xref py py-obj docutils literal notranslate"><span class="pre">layers</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">clusters</span></code>
+and, in case of <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">ITIM</span></code></a>, also <code class="xref py py-obj docutils literal notranslate"><span class="pre">sides</span></code>.</p>
+<p>Note that, differently from what happens in <a class="reference external" href="http://www.mdanalysis.org/">MDAnalysis</a>, also some of the standard properties (e.g. <code class="xref py py-obj docutils literal notranslate"><span class="pre">radii</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">tempfactors</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">bfactors</span></code>,  <code class="xref py py-obj docutils literal notranslate"><span class="pre">elements</span></code>) will <em>always</em> be associated to the atoms, <em>even if</em> the information is not present in the configuration file/trajectory (some heuristics is used by <a class="reference internal" href="quick.html"><span class="doc">Pytim</span></a> to guess their values)</p>
+</section>
+<section id="layers">
+<h2>Layers<a class="headerlink" href="#layers" title="Permalink to this heading">¶</a></h2>
+<p>The value of <code class="xref py py-obj docutils literal notranslate"><span class="pre">atoms.layers</span></code> can be either -1 (atom not in any of the layers) or 1, 2, 3,…, <code class="xref py py-obj docutils literal notranslate"><span class="pre">max_layers</span></code></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">WATER_GRO</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span>   <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">WATER_GRO</span>
 </pre></div>
 </div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">WATER_GRO</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;name OW&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">max_layers</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span><span class="p">))</span>
+<span class="go">[-1  1  2  3]</span>
 </pre></div>
 </div>
 <p>This property can be used to select a particular subset of atoms, e.g.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># select all hydrogens in the first layer</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># select all hydrogens in the first layer</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">condition</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">layers</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">types</span><span class="o">==</span><span class="s1">&#39;H&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">[</span><span class="n">condition</span><span class="p">]</span>
 <span class="go">&lt;AtomGroup with 1048 atoms&gt;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="clusters">
-<h2>Clusters<a class="headerlink" href="#clusters" title="Permalink to this headline">¶</a></h2>
-<p>The value of <cite>atoms.clusters</cite> can be -1 if the atom is not in a
+</section>
+<section id="clusters">
+<h2>Clusters<a class="headerlink" href="#clusters" title="Permalink to this heading">¶</a></h2>
+<p>The value of <code class="xref py py-obj docutils literal notranslate"><span class="pre">atoms.clusters</span></code> can be -1 if the atom is not in a
 cluster (or not in the group for which the cluster search is
 performed) or 0,1,… if it belongs to the largest cluster,
 second-to-largest cluster, and so on, respectively.</p>
-<p>For example, the benzene molecules in <code class="file docutils literal"><span class="pre">ILBENZENE_GRO</span></code> are labelled automatically
+<p>For example, the benzene molecules in <code class="file docutils literal notranslate"><span class="pre">ILBENZENE_GRO</span></code> are labelled automatically
 according to the cluster they belong when calling:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pytim</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="k">import</span> <span class="n">ILBENZENE_GRO</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pytim.datafiles</span> <span class="kn">import</span> <span class="n">ILBENZENE_GRO</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">ILBENZENE_GRO</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;resname LIG&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">cluster_cut</span><span class="o">=</span><span class="mf">7.5</span><span class="p">,</span><span class="n">cluster_threshold_density</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span> <span class="o">=</span> <span class="n">pytim</span><span class="o">.</span><span class="n">ITIM</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">group</span><span class="o">=</span><span class="n">g</span><span class="p">,</span><span class="n">cluster_cut</span><span class="o">=</span><span class="mf">7.5</span><span class="p">,</span><span class="n">cluster_threshold_density</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span><span class="n">normal</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">clusters</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span>
 <span class="go">19200</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">clusters</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span>
@@ -121,28 +118,25 @@ according to the cluster they belong when calling:</p>
 <span class="go">10164</span>
 </pre></div>
 </div>
-<p>The option <code class="xref py py-obj docutils literal"><span class="pre">tempfactors</span></code> of <code class="xref py py-func docutils literal"><span class="pre">writepdb()</span></code>
+<p>The option <code class="xref py py-obj docutils literal notranslate"><span class="pre">tempfactors</span></code> of <a class="reference internal" href="ITIM.html#pytim.itim.ITIM.writepdb" title="pytim.itim.ITIM.writepdb"><code class="xref py py-meth docutils literal notranslate"><span class="pre">writepdb()</span></code></a>
 can be used to save to a pdb file, instead of the information about
 the layers (default), the cluster labels:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;/tmp/clusters.pdb&#39;</span><span class="p">,</span><span class="n">tempfactors</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">clusters</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inter</span><span class="o">.</span><span class="n">writepdb</span><span class="p">(</span><span class="s1">&#39;/tmp/clusters.pdb&#39;</span><span class="p">,</span><span class="n">tempfactors</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">clusters</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This results in the following (isolated molecules not shown)</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="100%" />
-</colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td><a class="first last reference internal image-reference" href="_images/ILclusters.png"><img alt="_images/ILclusters.png" class="align-center" src="_images/ILclusters.png" style="width: 70%;" /></a>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><a class="reference internal image-reference" href="_images/ILclusters.png"><img alt="_images/ILclusters.png" class="align-center" src="_images/ILclusters.png" style="width: 70%;" /></a>
 </td>
 </tr>
 </tbody>
 </table>
-</div>
-<div class="section" id="sides">
-<h2>Sides<a class="headerlink" href="#sides" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="sides">
+<h2>Sides<a class="headerlink" href="#sides" title="Permalink to this heading">¶</a></h2>
 <p>The value of <cite>atoms.sides</cite> can be -1, 1, or 0 depending whether the atom is in one of the upper half layers, in the
-one of the lower half layers, or not in any layer. This properties is working only in <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal"><span class="pre">ITIM</span></code></a>.</p>
+one of the lower half layers, or not in any layer. This properties is working only in <a class="reference internal" href="ITIM.html#pytim.itim.ITIM" title="pytim.itim.ITIM"><code class="xref py py-class docutils literal notranslate"><span class="pre">ITIM</span></code></a>.</p>
 <div class="toctree-wrapper compound">
 </div>
 <script>
@@ -156,10 +150,11 @@ one of the lower half layers, or not in any layer. This properties is working on
 
 </script>
 
-</div>
-</div>
+</section>
+</section>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -168,8 +163,8 @@ one of the lower half layers, or not in any layer. This properties is working on
             <p class="logo"><a href="index.html">
               <img class="logo" src="_static/logo.png" alt="Logo"/>
             </a></p>
-<h3><a href="index.html">Table Of Contents</a></h3>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<h3><a href="index.html">Table of Contents</a></h3>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="quick.html">Pytim: Quick Tour</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">How to Install Pytim</a></li>
@@ -187,23 +182,28 @@ one of the lower half layers, or not in any layer. This properties is working on
 </ul>
 </li>
 </ul>
-<p class="caption"><span class="caption-text">Modules</span></p>
+<p class="caption" role="heading"><span class="caption-text">Modules</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="ITIM.html">ITIM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="GITIM.html">GITIM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SASA.html">SASA</a></li>
 <li class="toctree-l1"><a class="reference internal" href="WillardChandler.html">WillardChandler</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ChaconTarazona.html">ChaconTarazona</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SimpleInterface.html">SimpleInterface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="observables.html">Observables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="datafiles.html">Datafiles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="guessing_radii.html"
-                        title="previous chapter">Choosing the atomic radii</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="ITIM.html"
-                        title="next chapter">ITIM</a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="guessing_radii.html"
+                          title="previous chapter">Choosing the atomic radii</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="ITIM.html"
+                          title="next chapter">ITIM</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -212,15 +212,15 @@ one of the lower half layers, or not in any layer. This properties is working on
     </ul>
    </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
     </form>
+    </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -240,12 +240,13 @@ one of the lower half layers, or not in any layer. This properties is working on
         <li class="right" >
           <a href="guessing_radii.html" title="Choosing the atomic radii"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">Pytim 0.7.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">Pytim 1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">New properties of Atoms</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2017, Marcello Sega.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>
