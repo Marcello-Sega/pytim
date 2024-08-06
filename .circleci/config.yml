@@ -1,0 +1,14 @@
+version: 2.1
+
+jobs:
+  do_nothing:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - run: echo "This job does nothing."
+
+workflows:
+  version: 2
+  do_nothing_workflow:
+    jobs:
+      - do_nothing
