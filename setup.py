@@ -125,7 +125,7 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        'numpy>=1.16', 'cython>=0.24.1','gsd<=3.2.1'
+        'numpy>=1.26.4,<2.0.0', 'cython>=0.24.1','gsd>=3.0.0','MDAnalysis>=2.7.0'
     ],
 
     # List additional groups of dependencies here (e.g. development

@@ -190,7 +190,7 @@ class Interface(object):
             labels = np.array(labels)
 
             # counts is not necessarily ordered by size of cluster.
-            sorting = np.argsort(counts)[::-1]
+            sorting = np.argsort(counts,kind='stable')[::-1]
             # labels for atoms in each cluster starting from the largest
             unique_labels = np.sort(np.unique(labels[labels > -1]))
             # by default, all elements of the cluster_group are in

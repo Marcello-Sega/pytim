@@ -21,7 +21,7 @@ jobs:
     # The executor is the environment in which the steps below will be executed - below will use a python 3.8 container
     # Change the version below to your required version of python
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/python:3.9
     # Checkout the code as the first step. This is a dedicated CircleCI step.
     # The python orb's install-packages step will install the dependencies from a Pipfile via Pipenv by default.
     # Here we're making sure we use just use the system-wide pip. By default it uses the project root's requirements.txt.
@@ -35,10 +35,10 @@ jobs:
           # pip-dependency-file: test-requirements.txt  # if you have a different name for your requirements file, maybe one that combines your runtime and test requirements.
       - run:
           name: Install pytim
-          command: pip install  -r requirements.txt -r requirements.testing.txt -e .
+          command: pip install --upgrade -r requirements.txt -r requirements.testing.txt -e .
       - run:
           name: Run tests
-          command: python setup.py test
+          command: pytest pytim/*py pytim/observables/*py pytim/datafiles/*py --doctest-modules
           #  - run:
           #name: Coverage
           # # This assumes pytest is installed via the install-package step above
