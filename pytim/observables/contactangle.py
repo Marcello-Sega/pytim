@@ -15,22 +15,22 @@ from scipy.optimize import minimize
 
 
 class ContactAngle(object):
-    """ ContactAngle class implementation that uses interfacial atoms to compute
+    """ ContactAngle class implementation that uses interfacial atoms to compute\
         droplet profiles and contact angles using different approaches.
 
-        :param PYTIM             interface  : Compute the contact angle for this interface
-        :param AtomGroup         droplet    : Atom group representative of the droplet
-        :param AtomGroup         substrate  : Atom group representative of the substrate
-        :param int               periodic   : direction along which the system is periodic. Default: None, not periodic
-                                              If None, the code performs best fit to ellipsoids, otherwise, to ellipses
-                                              If not None, selects the direction of the axis of macroscopic translational
+        :param PYTIM             interface:   Compute the contact angle for this interface
+        :param AtomGroup         droplet:     Atom group representative of the droplet
+        :param AtomGroup         substrate:   Atom group representative of the substrate
+        :param int               periodic:    direction along which the system is periodic. Default: None, not periodic\
+                                              If None, the code performs best fit to ellipsoids, otherwise, to ellipses\
+                                              If not None, selects the direction of the axis of macroscopic translational\
                                               invariance: 0:x, 1:y, 2:z
-        :param float             hcut       : don't consider contributions from atoms closer than this to the substrate
+        :param float             hcut:        don't consider contributions from atoms closer than this to the substrate\
                                               (used to disregard the microscopic contact angle)
-        :param float             hcut_upper : don't consider contributions from atoms above this distance from the substrate
+        :param float             hcut_upper:  don't consider contributions from atoms above this distance from the substrate\
                                               default: None
-        :param int               bins       : bins used for sampling the profile
-        :param int or array_like removeCOM  : remove the COM motion along this direction(s). Default: None, does not remove COM motion
+        :param int               bins:        bins used for sampling the profile
+        :param int or array_like removeCOM:   remove the COM motion along this direction(s). Default: None, does not remove COM motion
 
         Example:
 
@@ -289,14 +289,15 @@ class ContactAngle(object):
 
     @staticmethod
     def rmsd_ellipsoid(p, x, N, check_coeffs=True):
-        """ RMSD between the points x and the ellipsoid defined by the general 
+        """ RMSD between the points x and the ellipsoid defined by the general\
             parameters p of the associated polynomial.
 
-            :param p            list    : general coefficients [a,b,c,f,g,h,p,q,r,d]
-            :param x            ndarray : points coordinates as a (*,3)-ndarray
-            :param N            int     : number of points on the ellipsoid that are 
-                                          generated and used to compute the rmsd
-            :param check_coeffs bool    : if true, perform additional checks
+            :param list    p:            general coefficients [a,b,c,f,g,h,p,q,r,d]
+            :param ndarray x:            points coordinates as a (x,3)-ndarray
+            :param int     N:            number of points on the ellipsoid that are\
+                                         generated and used to compute the rmsd
+            :param bool    check_coeffs: if true, perform additional checks
+
         """
         cp = ContactAngle._ellipsoid_general_to_affine(p, check_coeffs)
         xx, yy, zz = ContactAngle.ellipsoid(cp, N)
@@ -320,16 +321,18 @@ class ContactAngle(object):
 
     @staticmethod
     def ellipse(parmsc, npts=100, tmin=0., tmax=2.*np.pi):
-        """ Return npts points on the ellipse described by the canonical parameters
+        """ Return npts points on the ellipse described by the canonical parameters\
             x0, y0, ap, bp, e, phi for values of the paramter between tmin and tmax.
 
-            :param dict  parmsc : dictionary with keys: x0,y0,a,b,phi
-            :param float tmin   : minimum value of the parameter
-            :param float tmax   : maximum value of the parameter
-            :param int   npts   : number of points to use
+            :param dict  parmsc: dictionary with keys: x0,y0,a,b,phi
+            :param float tmin:   minimum value of the parameter
+            :param float tmax:   maximum value of the parameter
+            :param int   npts:   number of points to use
 
-            return:
-            :tuple              : (x,y) of coordinates as numpy arrays
+            :return:
+
+            :tuple:  (x,y):       coordinates as numpy arrays
+
         """
         t = np.linspace(tmin, tmax, npts)
         x = parmsc['x0'] + parmsc['a'] * np.cos(t) * np.cos(
@@ -343,13 +346,15 @@ class ContactAngle(object):
         """ Return npts points on the circle described by the canonical parameters
             R, x0, y0 for values of the paramter between tmin and tmax.
 
-            :param dict  parmsc : dictionary with keys: R, x0, y0
-            :param float tmin   : minimum value of the parameter
-            :param float tmax   : maximum value of the parameter
-            :param int   npts   : number of points to use
+            :param dict  parmsc: dictionary with keys: R, x0, y0
+            :param float tmin:   minimum value of the parameter
+            :param float tmax:   maximum value of the parameter
+            :param int   npts:   number of points to use
 
-            return:
-            :tuple              : (x,y) of coordinates as numpy arrays
+            :return:
+
+            :tuple:      (x,y): coordinates as numpy arrays
+
         """
         t = np.linspace(tmin, tmax, npts)
         x = parmsc['x0'] + parmsc['R'] * np.cos(t)
@@ -358,14 +363,14 @@ class ContactAngle(object):
 
     @staticmethod
     def ellipsoid(parmsc, npts=1000):
-        """ Return npts points on the ellipsoid described by the affine parameters
-            T, v
+        """ Compute npts points on the ellipsoid described by the affine parameters T, v
 
-            :param dict  parmsc : dictionary with keys: T (3x3 matrix), v (3x1 vector)
-            :param int   npts   : number of points to use
+            :param dict  parmsc: dictionary with keys: T (3x3 matrix), v (3x1 vector)
+            :param int   npts:   number of points to use
 
-            return:
-            :tuple              : (x,y,z) coordinates of points on the ellipsoid as ndarrays
+            :return:
+            :tuple: (x,y,z)     : coordinates of points on the ellipsoid as ndarrays
+
         """
         phi = np.arccos(2 * np.random.rand(npts) - 1)
         theta = 2 * np.pi * np.random.rand(npts)
@@ -377,12 +382,13 @@ class ContactAngle(object):
     @staticmethod
     def _fit_circle(hr, hh, nonlinear=True):
         """ fit an arc through the profile h(r) sampled by the class
-            :param list hr        : list of arrays with the radial coordinates
-            :param list hh        : list of arrays with the elevations
-            :param bool nonlinear : use the more accurate minimization of the rmsd instead of the algebraic distance
 
-            return:
-            :list             : a list with the tuple (radius, base radius, cos(theta), center, rmsd)
+            :param list hr:        list of arrays with the radial coordinates
+            :param list hh:        list of arrays with the elevations
+            :param bool nonlinear: use the more accurate minimization of the rmsd instead of the algebraic distance
+
+            :return:
+            :list:             : a list with the tuple (radius, base radius, cos(theta), center, rmsd)
                                 for each bin. If only one bin is present, return just the tuple. 
         """
         parms = []
@@ -423,15 +429,15 @@ class ContactAngle(object):
     def _contact_angles_from_ellipse(p, off=0.0):
         """  compute the contact angle from the parameters of the polynomial representation
 
-             :parms array_like  p   : a sequence (list, tuple, ndarray) of parameters of the ellipse equation 
-                                      in general form:
+             :parms array_like  p: a sequence (list, tuple, ndarray) of parameters of the ellipse equation\
+                                      in general form:\
                                       p[0] x^2 + p[1] x y + p[2] y^2 + p[3] x + p[4] y + p[5] = 0
-             :param float off       : elevation from the substrate surface, where the
-                                      contact angle should be evaluated. Default; 0.0, corresponding
+             :param float off:     elevation from the substrate surface, where the\
+                                      contact angle should be evaluated. Default; 0.0, corresponding\
                                       to the atomic center of the highest atom of the substrate
-             return:
-             :tuple                 : a tuple (theta1,theta2) with the left and right (internal)
-                                      contact angles
+
+             :return:
+             :tuple                 : a tuple (theta1,theta2) with the left and right (internal) contact angles
 
              We require the solution of the line passing through the point to have two coincident
              solutions for the system ax2 + bxy + cy2 + dx + ey +f = 0 and y-y0 = m (x-x0)
@@ -518,18 +524,19 @@ class ContactAngle(object):
     @staticmethod
     def _fit_ellipsoid_lstsq_cox(x, y, z):
         """
-            Return the polynomial coefficients that perform a least square 
-            fit to a set of points, using a modified version of: 
-            Turner, D. A., I. J. Anderson, J. C. Mason, and M. G. Cox. 
-            "An algorithm for fitting an ellipsoid to data." 
+            Return the polynomial coefficients that perform a least square\
+            fit to a set of points, using a modified version of:\
+            Turner, D. A., I. J. Anderson, J. C. Mason, and M. G. Cox.\
+            "An algorithm for fitting an ellipsoid to data."\
             National Physical Laboratory, UK (1999).
 
-            :param array_like  x  : list or ndarray array with coordinate x
-            :param array_like  y  : list or ndarray array with coordinate y
-            :param array_like  z  : list or ndarray array with coordinate z
+            :param array_like  x: list or ndarray array with coordinate x
+            :param array_like  y: list or ndarray array with coordinate y
+            :param array_like  z: list or ndarray array with coordinate z
 
-            return:
-            :ndarray              : a (10,)-ndarray with the polynomial coefficients    
+            :return:
+
+            :ndarray: a (10,)-ndarray with the polynomial coefficients    
         """
         D = np.vstack([x**2+y**2-2*z**2, x**2 - 2*y**2 + z**2,
                       4*x*y, 2*x*z, 2*y*z, x, y, z, np.ones(len(x))]).T
@@ -561,7 +568,7 @@ class ContactAngle(object):
                                      to the atomic center of the highest atom of the substrate
              :param int   points_density: number of points per Angstrom on the ellipse that are used to compute the rmsd
 
-             return:
+             :return:
 
              :list      : a list with a tuple (parms,parmsc,theta, rmsd) for each of the bins
                           If only one bin is present, return just the tuple
@@ -634,7 +641,8 @@ class ContactAngle(object):
                                      to the atomic center of the highest atom of the substrate
              :param int   points_density: number of points per Angstrom on the ellipse that are used to compute the rmsd
 
-             return:
+
+             :return:
 
              :list      : a list with a tuple (parms,parmsc,theta, rmsd) for each of the bins
                           If only one bin is present, return just the tuple
@@ -710,7 +718,7 @@ class ContactAngle(object):
                                        during the minimization the constraints might
                                        be violated.
 
-            return:
+            :return:
             : dict                   : a dictionary with the canonical coefficients x0,y0,a,b,phi,e
 
             from https://scipython.com/blog/direct-linear-least-squares-fitting-of-an-ellipse/
@@ -826,7 +834,7 @@ class ContactAngle(object):
                                        the contact line
             :param int        npts   : number of points to sample
 
-            return:
+            :return:
             :tuple                   : a tuple containing the contact line
                                        on the (x,y) plane as a (npts,2)-ndarray 
                                        and the contact angles as a (npts,)-ndarray.
@@ -851,7 +859,7 @@ class ContactAngle(object):
                                        during the minimization the constraints might
                                        be violated.
 
-            return:
+            :return:
             : dict                   : a dictionary with the affine matrix and vector, T and v
                                        If a point on the unit sphere centered in the origin is s, 
                                        then the correspoinding point r=(x,y,z) on the ellipsoid is 
@@ -1044,36 +1052,38 @@ class ContactAngle(object):
     def fit_circle(self, use='frame', nonlinear=True, bins=1):
         """ fit an arc through the profile h(r) sampled by the class
 
-            :param str   use        : 'frame'    : use the positions of the current frame only (default)
-                                      'histogram': use the binned values sampled so far
-                                      'stored'   : use the stored surface atoms positions, if the option store=True was passed at initialization
-            :param int   bins       : the number of bins to use along the symmetry direction (cylinder axis, azimuthal angle)
+            :param str   use: 'frame'    : use the positions of the current frame only (default)\
+                              'histogram': use the binned values sampled so far\
+                              'stored'   : use the stored surface atoms positions, if the option store=True was passed at initialization
+            :param int   bins: the number of bins to use along the symmetry direction (cylinder axis, azimuthal angle)
 
-            return:
+            :return:
                 a list including, for each of the bins:
-                : tuple                 : radius, base radius, cos(theta), center
+
+                :tuple:  radius, base radius, cos(theta), center
         """
         r, h = self._select_coords(use, bins=bins)
 
         return self._fit_circle(r, h, nonlinear=nonlinear)
 
     def fit_ellipse(self, use='frame', nonlinear=True, bins=1):
-        """  fit an ellipse through the points sampled by the class. See implementation details in _fit_ellipsoid()
+        """ fit an ellipse through the points sampled by the class. See implementation details in _fit_ellipsoid()
 
-            :param str   use        : 'frame'    : use the positions of the current frame only (default)
-                                      'histogram': use the binned values sampled so far
-                                      'stored'   : use the stored surface atoms positions, if the option store=True
-                                                   was passed at initialization
-            :param int   bins       : the number of bins to use along the symmetry direction (cylinder axis, azimuthal angle)
+            :param str   use: 'frame'    : use the positions of the current frame only (default)\
+                              'histogram': use the binned values sampled so far\
+                              'stored'   : use the stored surface atoms positions, if the option store=True\
+                                           was passed at initialization
+            :param int   bins: the number of bins to use along the symmetry direction (cylinder axis, azimuthal angle)
 
             :return:
                 a list including, for each of the bins, a tuple with elements:
-                parms  : parameters of the ellipse polynomial in general form:
-                         a[0] x^2 + a[1] x y + a[2] y^2 + a[3] x + a[4] y = 0
-                parmsc : dictionary of parameters in canoncial form: (a,b, x0,y0,phi, e)
-                         with a,b the major and minor semiaxes, x0,y0 the center, phi  the angle
-                         (in rad) between x axis and major axis, and e the eccentricity.
-                theta  : [left contact angle, right contact angle]
+
+                :list: parms:  parameters of the ellipse polynomial in general form:\
+                              a[0] x^2 + a[1] x y + a[2] y^2 + a[3] x + a[4] y = 0
+                :dict: parmsc: dictionary of parameters in canoncial form: (a,b, x0,y0,phi, e)\
+                              with a,b the major and minor semiaxes, x0,y0 the center, phi  the angle\
+                              (in rad) between x axis and major axis, and e the eccentricity.
+                :list: theta:  [left contact angle, right contact angle]
         """
 
         r, h = self._select_coords(use, bins=bins)
@@ -1085,25 +1095,27 @@ class ContactAngle(object):
     def fit_ellipsoid(self, use='frame', nonlinear=True, bins=1):
         """  fit an ellipsoid through the points sampled by the class. See implementation details in _fit_ellipsoid()
 
-            :param str   use        : 'frame'    : use the positions of the current frame only (default)
-                                      'histogram': use the binned values sampled so far
-                                      'stored'   : use the stored surface atoms positions, if the option store=True
+            :param str   use        : 'frame'    : use the positions of the current frame only (default)\
+                                      'histogram': use the binned values sampled so far\
+                                      'stored'   : use the stored surface atoms positions, if the option store=True\
                                                    was passed at initialization
             :param int   bins       : the number of bins to use along the symmetry direction (cylinder axis, azimuthal angle)
 
             :return:
-            :list       : a list with a tuple (parms,parmsc,theta, rmsd) for each of the bins
-                          If only one bin is present, return just the tuple
-                 parms  : array of parameters of the ellipsoid equation in general form:
-                             a[0] x^2 + a[1] y^2 + a[2] z^2 + a[3] yz + a[4] xz + 
+
+                 a list with a tuple (parms,parmsc,theta, rmsd) for each of the bins;\
+                          If only one bin is present, return just the tuple.
+
+                 :array: parms  : array of parameters of the ellipsoid equation in general form:\
+                             a[0] x^2 + a[1] y^2 + a[2] z^2 + a[3] yz + a[4] xz + \
                              a[5] xy  + a[6] x + a[7] y + a[8] z + a[9] = 0, otherwise.
-                 parmsc : dictionary with parameters of the ellipsoid affine form (T,v),
-                          such that the ellipsoid points are
-                                         r  = T s + v, 
+                 :dict: parmsc : dictionary with parameters of the ellipsoid affine form (T,v),\
+                          such that the ellipsoid points are\
+                                         r  = T s + v,\
                           if s are points from the unit sphere centered in the origin.
-                 theta  : the contact angle as a function of the azimuthal angle phi from phi=0, aligned 
+                 :float: theta  : the contact angle as a function of the azimuthal angle phi from phi=0, aligned\
                           with (-1,0,0) to 2 pi.
-                 rmsd   : the rmsd to the best fit (linear or nonlinear) ellipsoid
+                 :float: rmsd   : the rmsd to the best fit (linear or nonlinear) ellipsoid
         """
 
         x, y, z = self._select_coords(use, bins=bins)  # TODO FIXME

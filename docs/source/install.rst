@@ -17,10 +17,6 @@ The package will download all the dependencies which are needed. Prerequisites f
 
 .. code-block:: bash
 
-	pip install setuptools --user --upgrade
-	pip install numpy --user --upgrade
-	pip install cython --user --upgrade
-
 	git clone https://github.com/Marcello-Sega/pytim.git
 	cd pytim
 	python setup.py install --user
@@ -35,11 +31,21 @@ The package can also be installed directly from the Python Package Index, along 
 
 .. code-block:: bash
 
-	pip install setuptools --user --upgrade
-	pip install cython --user --upgrade
-	pip install numpy --user --upgrade
-
+	git clone https://github.com/Marcello-Sega/pytim.git
+	cd pytim
 	pip install pytim --user --upgrade
+
+
+Alternatively, you can use pip (directly or as a module) to install pytim, possibly in developer/editable mode:
+
+.. code-block:: bash
+
+	git clone https://github.com/Marcello-Sega/pytim.git
+	cd pytim
+	python -m pip install -e .
+
+This way the changes in the source will be reflected immediately after restarting a python shell, avoiding the need to reinstall every time.
+
 
 Using Anaconda
 --------------

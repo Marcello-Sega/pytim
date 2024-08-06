@@ -1,15 +1,12 @@
 Pytim: Quick Tour
 *****************
 
+.. include:: refs.rst 
+
 :doc:`Pytim <quick>` is a package based on MDAnalysis_ for the identification and analysis of surface molecules in configuration files or in trajectories from molecular dynamics simulations.
 
-Although MDAnalysis_ is needed to perform the interfacial analysis, you can also use :doc:`Pytim <quick>` on top of MDTraj_ or directly online from a simulation performed using OpenMM_. For more information see the :doc:`Tutorials`.
+Although MDAnalysis_ is needed to perform the interfacial analysis, you can also use :doc:`Pytim <quick>` on top of MDTraj_ or directly online from a simulation performed using OpenMM_.
 
-.. _MDAnalysis: http://www.mdanalysis.org/
-.. _MDTraj: http://www.mdtraj.org/
-.. _OpenMM: http://www.openmm.org/
-.. _Paraview: https://www.paraview.org/
-.. _Supported_Formats: https://pythonhosted.org/MDAnalysis/documentation_pages/coordinates/init.html#id1
 
 Basic Example
 =============
@@ -63,7 +60,7 @@ where surface oxygen atoms are highlighted in blue.
    :width: 70%
    :align: center
 
-This is a very basic example, and more are given below, in the :doc:`Tutorials`, and in the documentation of the modules.
+This is a very basic example, and more are given below and in the documentation of the modules.
 
 Non-planar interfaces
 =====================
@@ -99,6 +96,37 @@ We make here the example of multiple solvation layers around glucose:
 .. image:: https://raw.githubusercontent.com/Marcello-Sega/pytim/IMAGES/_images/glc-gitim.png
 	:width: 40%
 	:align: center
+
+SASA
+----
+
+The Solvent-Accessible-Surface-Area method of Lee and Richards has been extensively used 
+to compute the exposed surface of proteins to calculate solvation and electrostatic effects.
+However, the method can be also used to produce the list of surface-exposed atoms. In this sense,
+it is a very similar to GITIM. In the present implementation, the identification of surface atoms
+scales quasi-linear with the number of atoms.
+
+The above example for GITIM can be rewritten using :class:`~pytim.sasa.SASA` with very similar results:
+
+.. code-block:: python
+
+    import MDAnalysis as mda
+    import pytim
+    from   pytim.datafiles import GLUCOSE_PDB
+
+    u       = mda.Universe(GLUCOSE_PDB)
+    solvent = u.select_atoms('name OW')
+    glc     = u.atoms - solvent.residues.atoms
+
+    # alpha is the probe-sphere radius
+    inter = pytim.SASA(u, group=solvent, max_layers=3, alpha=2)
+
+    for i in [0,1,2]:
+        print ("Layer "+str(i),repr(inter.layers[i]))
+
+    Layer 0 <AtomGroup with 42 atoms>
+    Layer 1 <AtomGroup with 102 atoms>
+    Layer 2 <AtomGroup with 189 atoms>
 
 
 Willard-Chandler
