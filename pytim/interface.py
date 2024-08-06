@@ -73,6 +73,9 @@ class Interface(object):
     autoassign, _autoassign =\
         _create_property('autoassign',
                          "(bool) assign layers every time a frame changes")
+    include_zero_radius, _include_zero_radius=\
+        _create_property('include_zero_radius',
+                         "(bool) include atoms with zero radius in the analysis (excluded by default)")
     cluster_threshold_density, _cluster_threshold_density =\
         _create_property('cluster_threshold_density',
                          "(float) threshold for the density-based filtering")

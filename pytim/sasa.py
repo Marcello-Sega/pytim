@@ -22,9 +22,9 @@ from scipy.spatial import cKDTree
 
 
 class SASA(GITIM):
-    """ Identifies interfacial molecules at curved interfaces using the
-        Lee-Richards SASA algorithm (Lee, B; Richards, FM. J Mol Biol.
-        55, 379–400, 1971)
+    """ Identifies interfacial molecules at curved interfaces using the Lee-Richards SASA algorithm.
+
+        *(Lee, B; Richards, FM. J Mol Biol. 55, 379–400, 1971)*
 
         :param Object universe:   The MDAnalysis_ Universe, MDTraj_ trajectory
                                   or OpenMM_ Simulation objects.
@@ -56,6 +56,10 @@ class SASA(GITIM):
                                     those in the largest cluster. Need to
                                     specify also a :py:obj:`cluster_cut` value.
         :param bool centered:       Center the  :py:obj:`group`
+        :param bool include_zero_radius: if false (default) exclude atoms with zero radius
+                                    from the surface analysis (they are always included
+                                    in the cluster search, if present in the relevant
+                                    group) to avoid some artefacts.
         :param bool info:           Print additional info
         :param bool warnings:       Print warnings
         :param bool autoassign:     If true (default) detect the interface

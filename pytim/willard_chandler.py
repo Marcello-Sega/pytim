@@ -54,6 +54,11 @@ class WillardChandler(Interface):
                                   search, if cluster_cut is not None
         :param Object extra_cluster_groups: Additional groups, to allow for
                                   mixed interfaces
+
+        :param bool include_zero_radius: if false (default) exclude atoms with zero radius
+                                  from the surface analysis (they are always included
+                                  in the cluster search, if present in the relevant
+                                  group) to avoid some artefacts.
         :param bool centered:     Center the  :py:obj:`group`
         :param bool warnings:     Print warnings
 
@@ -116,6 +121,7 @@ class WillardChandler(Interface):
                  mesh=2.0,
                  symmetry='spherical',
                  cluster_cut=None,
+                 include_zero_radius=False,
                  cluster_threshold_density=None,
                  extra_cluster_groups=None,
                  centered=False,
@@ -124,6 +130,7 @@ class WillardChandler(Interface):
                  **kargs):
 
         self.autoassign, self.do_center = autoassign, centered
+        self.include_zero_radius = include_zero_radius
         sanity = SanityCheck(self, warnings=warnings)
         sanity.assign_universe(universe, group)
         sanity.assign_alpha(alpha)
@@ -216,7 +223,10 @@ class WillardChandler(Interface):
         if self.do_center is True:
             self.center()
 
-        pos = self.cluster_group.positions
+        if self.include_zero_radius:
+            pos = self.cluster_group.positions
+        else:
+            pos = self.cluster_group.positions[self.cluster_group.radii > 0.0]
         box = self.universe.dimensions[:3]
 
         ngrid, spacing = utilities.compute_compatible_mesh_params(

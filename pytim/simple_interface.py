@@ -29,7 +29,10 @@ class SimpleInterface(Interface):
                                   be also passed (upper and lower)
         :param AtomGroup upper:   The upper surface group (if symmetry='planar')
         :param AtomGroup lower:   The lower surface group (if symmetry='planar')
-
+        :param bool include_zero_radius: if false (default) exclude atoms with zero radius
+                                  from the surface analysis (they are always included
+                                  in the cluster search, if present in the relevant
+                                  group) to avoid some artefacts.
 
         Example: compute an intrinsic profile by interpolating the surface
         position from the P atoms of a DPPC bilayer
@@ -82,6 +85,7 @@ class SimpleInterface(Interface):
                  alpha=1.5,
                  symmetry='generic',
                  normal='z',
+                 include_zero_radius=False,
                  upper=None,
                  lower=None):
 
@@ -89,6 +93,7 @@ class SimpleInterface(Interface):
         self.universe = universe
         self.group = group
         self.alpha = alpha
+        self.include_zero_radius = include_zero_radius
         self.upper = upper
         self.lower = lower
         emptyg = universe.atoms[0:0]
@@ -99,6 +104,9 @@ class SimpleInterface(Interface):
         sanity.assign_universe(universe, group)
         sanity.assign_alpha(alpha)
         sanity.assign_radii(radii_dict=None)
+
+        if not self.include_zero_radius: self.group = self.group[self.group.radii > 0.0]
+
         if normal in [0, 1, 2]:
             self.normal = normal
         else:

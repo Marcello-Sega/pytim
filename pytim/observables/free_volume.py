@@ -18,21 +18,23 @@ class FreeVolume(object):
         :param Universe universe:  the universe
         :param int npoints: number of Monte Carlo sampling points (default: 10x the number of atoms in the universe)
 
-        Returns:
-        :(free volume, error) tuple : A tuple with the free volume and the estimated error
+        :return:
+
+        :tuple: free volume, error : A tuple with the free volume and the estimated error
 
         Examples:
+
         >>> import MDAnalysis as mda
         >>> import numpy as np
         >>> import pytim
         >>> from pytim.datafiles import CCL4_WATER_GRO, _TEST_BCC_GRO
-
+        >>> 
         >>> u = mda.Universe(CCL4_WATER_GRO)
         >>> inter = pytim.ITIM(u) # just to make sure all radii are set
         >>> np.random.seed(1) # ensure reproducibility of test
         >>> FV = pytim.observables.FreeVolume(u)
         >>> bins, prof ,err = FV.compute_profile()
-
+        >>> 
         >>> free, err = FV.compute()
         >>> print ('{:0.3f} +/- {:0.3f}'.format(free,err))
         0.431 +/- 0.001
@@ -95,7 +97,9 @@ class FreeVolume(object):
             :param int nbins: number of bins, by default 30
             :param int direction: direction along wich to compute the the profile, z (2) by default
 
-            :returns bins,fraction,error: the left limit of the bins, the free volume fraction in each bin, the associated std deviation
+            :return:
+
+            :tuple: bins,fraction,error: the left limit of the bins, the free volume fraction in each bin, the associated std deviation
         """
         box = self.u.dimensions[:3].copy()
 
@@ -127,7 +131,9 @@ class FreeVolume(object):
             :param AtomGroup inp:  compute the volume fraction of this group, None selects the complete universe
             :param int nbins: number of bins, by default 30
 
-            :returns fraction, error: the free volume fraction and associated error
+            :return:
+
+            :tuple: fraction, error: the free volume fraction and associated error
 
         """
         _, free, err = self.compute_profile(inp, nbins=1)

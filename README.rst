@@ -12,8 +12,8 @@ So far the following methods have been implemented:
 
 * ITIM
 * GITIM 
+* SASA
 * Willard Chandler
-* Chacon Tarazona
 * DBSCAN filtering
 
 ----

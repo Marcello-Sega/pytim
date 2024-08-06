@@ -316,7 +316,7 @@ class oldRDF(object):
         self.count += count
 
         box = self.universe.dimensions
-        self.volume += np.product(box[:3])
+        self.volume += np.prod(box[:3])
         self.nsamples += 1
         self.n_squared += len(self.g1) * len(self.g2)
 

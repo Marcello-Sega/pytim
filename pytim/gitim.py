@@ -26,8 +26,7 @@ from circumradius import circumradius
 class GITIM(Interface):
     """ Identifies interfacial molecules at curved interfaces.
 
-        *(Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M., \
-J. Chem. Phys. 138, 044110, 2013)*
+        *(Sega, M.; Kantorovich, S.; Jedlovszky, P.; Jorge, M., J. Chem. Phys. 138, 044110, 2013)*
 
         :param Object universe:   The MDAnalysis_ Universe, MDTraj_ trajectory
                                   or OpenMM_ Simulation objects.
@@ -68,6 +67,10 @@ J. Chem. Phys. 138, 044110, 2013)*
                                     of the interface: 'generic' (default)
                                     or  'planar'
         :param bool centered:       Center the  :py:obj:`group`
+        :param bool include_zero_radius: if false (default) exclude atoms with zero radius
+                                    from the surface analysis (they are always included
+                                    in the cluster search, if present in the relevant
+                                    group) to avoid some artefacts.
         :param bool info:           Print additional info
         :param bool warnings:       Print warnings
         :param bool autoassign:     If true (default) detect the interface
@@ -124,6 +127,7 @@ J. Chem. Phys. 138, 044110, 2013)*
                  max_layers=1,
                  radii_dict=None,
                  cluster_cut=None,
+                 include_zero_radius=False,
                  cluster_threshold_density=None,
                  extra_cluster_groups=None,
                  biggest_cluster_only=False,
@@ -155,6 +159,7 @@ J. Chem. Phys. 138, 044110, 2013)*
         self.normal = None
         self.PDB = {}
         self.molecular = molecular
+        self.include_zero_radius = include_zero_radius
         sanity.assign_cluster_params(cluster_cut,
                                      cluster_threshold_density, extra_cluster_groups)
         sanity.check_multiple_layers_options()
@@ -254,7 +259,8 @@ J. Chem. Phys. 138, 044110, 2013)*
         # then all atoms in the larges group are labelled as liquid-like
         self.label_group(self.cluster_group.atoms, beta=0.0)
 
-        alpha_group = self.cluster_group[:]
+        if self.include_zero_radius: alpha_group = self.cluster_group[:]
+        else: alpha_group = self.cluster_group[self.cluster_group.radii > 0.0]
 
         # TODO the successive layers analysis should be done by removing points
         # from the triangulation and updating the circumradius of the neighbors

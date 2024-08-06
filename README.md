@@ -26,7 +26,6 @@ So far the following interface/phase identification methods have been implemente
 * GITIM 
 * SASA
 * Willard Chandler
-* Chacon Tarazona
 * DBSCAN filtering
 
 ## Supported formats
@@ -474,8 +473,6 @@ Depending on which algorithm you are using, you might also want to cite the foll
 [L. B. Pártay, G. Hantal, P. Jedlovszky, Á. Vincze and G. Horvai, _J. Comp. Chem._ **29**, 945 (2008)](http://dx.doi.org/10.1002/jcc.20852) A new method for determining the interfacial molecules and characterizing the surface roughness in computer simulations. Application to the liquid–vapor interface of water
 
 [M. Sega and G. Hantal._Phys. Chem. Chem. Phys._ **29**, 18968-18974 (2017)](https://doi.org/10.1039/C7CP02918G) Phase and interface determination in computer simulations of liquid mixtures with high partial miscibility.
-
-[E. Chacón, P. Tarazona, Phys. Rev. Lett. **91**, 166103 (2003)](http://dx.doi.org/10.1103/PhysRevLett.91.166103) Intrinsic profiles beyond the capillary wave theory: A Monte Carlo study.
 
 [A. P. Willard, D. Chandler, J. Phys. Chem. B **114**,1954 (2010)](http://dx.doi.org/10.1021/jp909219k) Instantaneous Liquid Interfaces
 

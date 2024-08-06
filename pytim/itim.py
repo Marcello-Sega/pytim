@@ -56,6 +56,10 @@ J. Comp. Chem. 29, 945, 2008)*
                                   search, if cluster_cut is not None
         :param Object extra_cluster_groups: Additional groups, to allow for
                                   mixed interfaces
+        :param bool include_zero_radius: if false (default) exclude atoms with zero radius
+                                  from the surface analysis (they are always included
+                                  in the cluster search, if present in the relevant
+                                  group) to avoid some artefacts.
         :param bool info:         Print additional info
         :param bool centered:     Center the  :py:obj:`group`
         :param bool warnings:     Print warnings
@@ -186,6 +190,7 @@ J. Comp. Chem. 29, 945, 2008)*
                  max_layers=1,
                  radii_dict=None,
                  cluster_cut=None,
+                 include_zero_radius=False,
                  cluster_threshold_density=None,
                  extra_cluster_groups=None,
                  info=False,
@@ -214,6 +219,7 @@ J. Comp. Chem. 29, 945, 2008)*
         self.normal = None
         self.PDB = {}
         self.molecular = molecular
+        self.include_zero_radius = include_zero_radius
 
         sanity.assign_cluster_params(cluster_cut,
                                      cluster_threshold_density, extra_cluster_groups)
@@ -294,6 +300,8 @@ J. Comp. Chem. 29, 945, 2008)*
             # atom here goes to 0 to #sorted_atoms, it is not a MDAnalysis
             # index/atom
             for atom in sorted_atoms:
+                if self.include_zero_radius == False and not (_radius[atom] > 0.0):
+                    continue
                 if self._seen[uplow][atom] != 0:
                     continue
 
