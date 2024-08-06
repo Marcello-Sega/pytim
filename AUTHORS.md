@@ -1,7 +1,7 @@
-Marcello-Sega 
-gyorgy-hantal 
-balazsfabian 
-elija-feigl 
-JakobMichl
-iuvenis 
-bnovak1
+- Marcello-Sega 
+- gyorgy-hantal 
+- balazsfabian 
+- elija-feigl 
+- JakobMichl
+- iuvenis 
+- bnovak1
