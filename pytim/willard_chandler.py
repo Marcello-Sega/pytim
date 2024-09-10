@@ -5,6 +5,7 @@
     ========================
 """
 
+from typing import Optional
 from __future__ import print_function
 from skimage import measure
 import numpy as np
@@ -39,6 +40,9 @@ class WillardChandler(Interface):
                                   this group
         :param float alpha:       The width of the Gaussian kernel
         :param float mesh:        The grid spacing for the density calculation
+        :param float density_cutoff: The density value used to define the
+                                  isosurface. `None` (default) uses the average
+                                  of the minimum and maximum density.
         :param AtomGroup group:   Compute the density using this group
         :param dict radii_dict:   Dictionary with the atomic radii of
                                   the elements in the group.
@@ -127,10 +131,12 @@ class WillardChandler(Interface):
                  centered=False,
                  warnings=False,
                  autoassign=True,
+                 density_cutoff: Optional[float] = None,
                  **kargs):
 
         self.autoassign, self.do_center = autoassign, centered
         self.include_zero_radius = include_zero_radius
+        self.density_cutoff = density_cutoff
         sanity = SanityCheck(self, warnings=warnings)
         sanity.assign_universe(universe, group)
         sanity.assign_alpha(alpha)
@@ -245,7 +251,7 @@ class WillardChandler(Interface):
         volume = self.density_field.reshape(
             tuple(np.array(ngrid[::-1]).astype(int)))
         verts, faces, normals, values = marching_cubes(
-            volume, None, spacing=tuple(spacing))
+            volume, self.density_cutoff, spacing=tuple(spacing))
         # note that len(normals) == len(verts): they are normals
         # at the vertices, and not normals of the faces
         # verts and normals have x and z flipped because skimage uses zyx ordering
