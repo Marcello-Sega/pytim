@@ -6,7 +6,6 @@
 """
 
 from __future__ import print_function
-from typing import Optional
 from skimage import measure
 import numpy as np
 
@@ -131,7 +130,7 @@ class WillardChandler(Interface):
                  centered=False,
                  warnings=False,
                  autoassign=True,
-                 density_cutoff: Optional[float] = None,
+                 density_cutoff=None,
                  **kargs):
 
         self.autoassign, self.do_center = autoassign, centered
