@@ -16,4 +16,4 @@ patchMDTRAJ_ReplacementTables()
 
 warnings.filterwarnings(
     "ignore",
-    'Failed to guess the mass for the following*')  # To ignore warnings in MDA
+    'Failed to guess the mass for the following*')  # To ignore warnings in MDA 
