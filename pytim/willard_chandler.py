@@ -156,13 +156,14 @@ class WillardChandler(Interface):
         self._atoms = self._layers[:]  # this is an empty AtomGroup
         self.writevtk = Writevtk(self)
 
-    def writecube(self, filename="pytim.cube", group=None, sequence=False):
+    def writecube(self, filename="pytim.cube", group=None, sequence=False, normalize=True):
         """ Write to cube files (sequences) the volumentric density and the
             atomic positions.
 
             :param str filename:  the file name
             :param bool sequence: if true writes a sequence of files adding
                                   the frame to the filename
+            :param bool normalize: if true normalizes the density field to [0, 1]
 
             >>> import MDAnalysis as mda
             >>> import pytim
@@ -173,6 +174,7 @@ class WillardChandler(Interface):
             >>> inter.writecube('dens.cube') # writes on dens.cube
             >>> inter.writecube('dens.cube',group=g) # writes also  particles
             >>> inter.writecube('dens.cube',sequence=True) # dens.<frame>.cube
+            >>> inter.writecube('dens.cube', normalize=False) # writes density values without normalization
         """
         if sequence is True:
             filename = cube.consecutive_filename(self.universe, filename)
@@ -183,7 +185,8 @@ class WillardChandler(Interface):
             self.ngrid,
             self.spacing,
             self.density_field,
-            atomic_numbers=None)
+            atomic_numbers=None,
+            normalize=normalize)
 
     def writeobj(self, filename="pytim.obj", sequence=False):
         """ Write to wavefront obj files (sequences) the triangulated surface
