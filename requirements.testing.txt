@@ -1,4 +1,4 @@
 mdtraj
 pytest==8.1.1
 codecov==2.1.13
-pytest-cov==5.0.0 
+pytest-cov==6.0.0 
