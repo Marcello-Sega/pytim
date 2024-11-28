@@ -248,12 +248,8 @@ def guess_normal(universe, group):
 
 
 def density_map(pos, grid, sigma, box):
-    values = np.vstack([pos[::, 0], pos[::, 1], pos[::, 2]])
-    kernel = gaussian_kde_pbc(values, bw_method=sigma / values.std(ddof=1))
-    kernel.box = box
-    kernel.sigma = sigma
-    return kernel, values.std(ddof=1)
-
+    kernel = gaussian_kde_pbc(pos, box=box, sigma=sigma)
+    return kernel, kernel.stddev
 
 def _NN_query(kdtree, position, qrange):
     return kdtree.query_ball_point(position, qrange, n_jobs=-1)
@@ -287,19 +283,3 @@ def generate_cube_vertices(box, delta=0.0, jitter=False, dim=3):
         np.random.set_state(state)
 
     return vertices
-
-def make_supercell_images(pos, box, n_images=1):
-    """ Generate supercell images of a set of points
-
-        :param np.ndarray pos:  positions of the points
-        :param np.ndarray box:  box dimensions
-        :param int n_images:    number of images to generate
-
-    """
-    images = []
-    for i in range(-n_images, n_images + 1):
-        for j in range(-n_images, n_images + 1):
-            for k in range(-n_images, n_images + 1):
-                images.append(pos + np.array([i, j, k]) * box)
-    return np.vstack(images)
-

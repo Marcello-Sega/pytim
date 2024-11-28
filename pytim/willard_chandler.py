@@ -232,16 +232,12 @@ class WillardChandler(Interface):
             pos = self.cluster_group.positions[self.cluster_group.radii > 0.0]
         box = self.universe.dimensions[:3]
 
-        # Make supercell images
-        pos = utilities.make_supercell_images(pos, box)
-
         ngrid, spacing = utilities.compute_compatible_mesh_params(
             self.mesh, box)
         self.spacing, self.ngrid = spacing, ngrid
         grid = utilities.generate_grid_in_box(box, ngrid, order='xyz')
         kernel, _ = utilities.density_map(pos, grid, self.alpha, box)
 
-        kernel.pos = pos.copy()
         self.density_field = kernel.evaluate(grid)
 
         # Thomas Lewiner, Helio Lopes, Antonio Wilson Vieira and Geovan
