@@ -3,33 +3,23 @@
 """ Module: pytim.gaussian_kde_pbc
     ==============================
 """
-from __future__ import print_function
 import numpy as np
-from scipy.stats import gaussian_kde
-from scipy.spatial import cKDTree
+
+try:
+    from jax.scipy.stats import gaussian_kde
+except ImportError:
+    from scipy.stats import gaussian_kde
 
 
 class gaussian_kde_pbc(gaussian_kde):
     # note that here "points" are those on the grid
 
-    def evaluate_pbc_fast(self, points):
-        grid = points
-        pos = self.pos
-        box = self.box
-        d = self.sigma * 2.5
-        results = np.zeros(grid.shape[1], dtype=float)
-        gridT = grid[::-1].T[:]
-        tree = cKDTree(gridT, boxsize=box)
-        # the indices of grid elements within distane d from each of the pos
-        scale = 2. * self.sigma**2
-        indlist = tree.query_ball_point(pos, d)
-        for n, ind in enumerate(indlist):
-            dr = gridT[ind, :] - pos[n]
-            cond = np.where(dr > box / 2.)
-            dr[cond] -= box[cond[1]]
-            cond = np.where(dr < -box / 2.)
-            dr[cond] += box[cond[1]]
-            dens = np.exp(-np.sum(dr * dr, axis=1) / scale)
-            results[ind] += dens
+    def evaluate(self, points):
+        """ Evaluate the estimated pdf on a set of points.
 
-        return results
+        :param ndarray points: the points where the pdf is to be evaluated.
+        :return: the value of the estimated pdf at the points.
+        :rtype: ndarray
+
+        """
+        return np.array(super().evaluate(points))

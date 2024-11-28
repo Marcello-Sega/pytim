@@ -5,25 +5,29 @@
     =================
 """
 from __future__ import print_function
-from timeit import default_timer as timer
-from itertools import product
-import numpy as np
-from sys import stderr
 
+from itertools import product
+from sys import stderr
+from timeit import default_timer as timer
+
+import numpy as np
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
-from .utilities_geometry import trim_triangulated_surface
-from .utilities_geometry import triangulated_surface_stats
-from .utilities_geometry import polygonalArea, fit_sphere, EulerRotation
-from .utilities_geometry import find_surface_triangulation
-from .utilities_geometry import pbc_compact, pbc_wrap
-from .utilities_pbc import generate_periodic_border, rebox
+from .atoms_maps import atoms_maps
 from .gaussian_kde_pbc import gaussian_kde_pbc
 from .utilities_dbscan import do_cluster_analysis_dbscan
-
-from .atoms_maps import atoms_maps
-from .utilities_mesh import compute_compatible_mesh_params
-from .utilities_mesh import generate_grid_in_box
+from .utilities_geometry import (
+    EulerRotation,
+    find_surface_triangulation,
+    fit_sphere,
+    pbc_compact,
+    pbc_wrap,
+    polygonalArea,
+    triangulated_surface_stats,
+    trim_triangulated_surface,
+)
+from .utilities_mesh import compute_compatible_mesh_params, generate_grid_in_box
+from .utilities_pbc import generate_periodic_border, rebox
 
 
 def lap(show=False):
@@ -284,4 +288,18 @@ def generate_cube_vertices(box, delta=0.0, jitter=False, dim=3):
 
     return vertices
 
-#
+def make_supercell_images(pos, box, n_images=1):
+    """ Generate supercell images of a set of points
+
+        :param np.ndarray pos:  positions of the points
+        :param np.ndarray box:  box dimensions
+        :param int n_images:    number of images to generate
+
+    """
+    images = []
+    for i in range(-n_images, n_images + 1):
+        for j in range(-n_images, n_images + 1):
+            for k in range(-n_images, n_images + 1):
+                images.append(pos + np.array([i, j, k]) * box)
+    return np.vstack(images)
+

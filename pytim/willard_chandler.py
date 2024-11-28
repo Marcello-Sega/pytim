@@ -6,23 +6,18 @@
 """
 
 from __future__ import print_function
-from skimage import measure
-import numpy as np
 
-from . import messages
-from . import utilities, cube, wavefront_obj
+import numpy as np
+from skimage import measure
+from skimage.measure import marching_cubes
+
+from . import cube, messages, utilities, wavefront_obj
+from .interface import Interface
+from .patches import patchMDTRAJ, patchOpenMM, patchTrajectory
 from .sanity_check import SanityCheck
 from .vtk import Writevtk
 
-from .interface import Interface
-from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
-
 np.set_printoptions(legacy=False)  # fixes problem with skimage
-
-try:
-    marching_cubes = measure.marching_cubes
-except AttributeError:
-    marching_cubes = measure.marching_cubes_lewiner
 
 
 class WillardChandler(Interface):
@@ -237,6 +232,9 @@ class WillardChandler(Interface):
             pos = self.cluster_group.positions[self.cluster_group.radii > 0.0]
         box = self.universe.dimensions[:3]
 
+        # Make supercell images
+        pos = utilities.make_supercell_images(pos, box)
+
         ngrid, spacing = utilities.compute_compatible_mesh_params(
             self.mesh, box)
         self.spacing, self.ngrid = spacing, ngrid
@@ -244,7 +242,7 @@ class WillardChandler(Interface):
         kernel, _ = utilities.density_map(pos, grid, self.alpha, box)
 
         kernel.pos = pos.copy()
-        self.density_field = kernel.evaluate_pbc_fast(grid)
+        self.density_field = kernel.evaluate(grid)
 
         # Thomas Lewiner, Helio Lopes, Antonio Wilson Vieira and Geovan
         # Tavares. Efficient implementation of Marching Cubes’ cases with
