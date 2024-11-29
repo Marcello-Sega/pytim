@@ -234,9 +234,12 @@ class WillardChandler(Interface):
 
         ngrid, spacing = utilities.compute_compatible_mesh_params(
             self.mesh, box)
+
         self.spacing, self.ngrid = spacing, ngrid
+
         grid = utilities.generate_grid_in_box(box, ngrid, order='xyz')
-        kernel, _ = utilities.density_map(pos, grid, self.alpha, box)
+
+        kernel = gaussian_kde_pbc(pos, box=box, sigma=self.alpha)
 
         self.density_field = kernel.evaluate(grid)
 

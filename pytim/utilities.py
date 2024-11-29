@@ -247,10 +247,6 @@ def guess_normal(universe, group):
     return np.argmax(delta)
 
 
-def density_map(pos, grid, sigma, box):
-    kernel = gaussian_kde_pbc(pos, box=box, sigma=sigma)
-    return kernel, kernel.stddev
-
 def _NN_query(kdtree, position, qrange):
     return kdtree.query_ball_point(position, qrange, n_jobs=-1)
 

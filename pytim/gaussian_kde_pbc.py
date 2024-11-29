@@ -4,12 +4,12 @@
     ==============================
 """
 import numpy as np
+from scipy.spatial import cKDTree
 
 try:
     from jax.scipy.stats import gaussian_kde
     has_jax = True
 except ImportError:
-    from scipy.spatial import cKDTree
     from scipy.stats import gaussian_kde
     has_jax = False
 
@@ -32,7 +32,7 @@ def make_supercell_images(pos, box, n_images=1):
 class gaussian_kde_pbc(gaussian_kde):
     # note that here "points" are those on the grid
 
-    def __init__(self, pos, box, sigma, weights=None):
+    def __init__(self, pos, box, sigma, weights=None, use_jax = False):
         """ Initialize the gaussian_kde_pbc object.
         
         :param ndarray pos: the particle positions.
@@ -44,10 +44,10 @@ class gaussian_kde_pbc(gaussian_kde):
         self.box = box
         self.pos = pos
         self.sigma = sigma
-
+        self.use_jax = use_jax
         dataset = np.vstack([pos[::, 0], pos[::, 1], pos[::, 2]])
 
-        if has_jax:
+        if has_jax and self.use_jax:
             supercell = make_supercell_images(pos, box=box)
             dataset = np.vstack([supercell[::, 0], supercell[::, 1], supercell[::, 2]])
 
@@ -64,10 +64,12 @@ class gaussian_kde_pbc(gaussian_kde):
         :rtype: ndarray
 
         """
-        if has_jax:
+        if has_jax and self.use_jax:
+            print('evaluating using jax')
             return np.array(super().evaluate(points))
 
         else:
+            print('evaluating using pytim implementation')
             grid = points
             pos = self.pos
             box = self.box
