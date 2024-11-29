@@ -159,12 +159,12 @@ class Distance(Observable):
         >>> u = mda.Universe(pytim.datafiles.WATER_GRO)
         >>> d1 = pytim.observables.Distance().compute(u.atoms[:9],u.atoms[:9])
         >>> d2 = pytim.observables.RelativePosition(spherical=True).compute(u.atoms[:9],u.atoms[:9])[:,0]
-        >>> np.all(np.isclose(d1,d2))
+        >>> all(np.isclose(d1,d2))
         True
 
         >>> d1 = pytim.observables.Distance('xy').compute(u.atoms[:9],u.atoms[:9])
         >>> d2 = pytim.observables.RelativePosition('xy',spherical=True).compute(u.atoms[:9],u.atoms[:9])[:,0]
-        >>> np.all(np.isclose(d1,d2))
+        >>> all(np.isclose(d1,d2))
         True
 
     """

@@ -541,7 +541,10 @@ class Interface(object):
 
         >>> # mdtraj
         >>> try:
+        ...     from packaging.version import Version
         ...     import mdtraj
+        ...     if Version(mdtraj.__version__) < Version('1.10.2'): # numpy2 support
+        ...         pass
         ...     try:
         ...         import numpy as np
         ...         import MDAnalysis as mda

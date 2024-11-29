@@ -138,7 +138,7 @@ class Correlator(object):
                 RuntimeError(
                     'Cannot compute survival probability without a reference')
             sampled = self.observable.compute(group)
-            self.timeseries.append(list(sampled.flatten()))
+            self.timeseries.append(sampled.flatten().tolist())
 
         if self.shape is None:
             self.shape = sampled.shape
@@ -149,13 +149,13 @@ class Correlator(object):
         # the residence function (1 if in the reference group, 0 otherwise)
         mask = np.isin(self.reference, group)
         # append the residence function to its timeseries
-        self.maskseries.append(list(mask))
+        self.maskseries.append(mask.tolist())
         if self.observable is not None:
             # this copies a vector of zeros with the correct shape
             sampled = self.reference_obs.copy()
             obs = self.observable.compute(group)
             sampled[np.where(mask)] = obs
-            self.timeseries.append(list(sampled.flatten()))
+            self.timeseries.append(sampled.flatten().tolist())
         else:
             self.timeseries = self.maskseries
             if self.shape is None:
@@ -249,7 +249,7 @@ class Correlator(object):
             >>> print (np.allclose(corr, [ c0, c1, c2, c3]))
             True
             >>> # check normalization
-            >>> np.all(vv.correlation(continuous=False) == corr/corr[0])
+            >>> print(np.all(vv.correlation(continuous=False) == corr/corr[0]))
             True
             >>> # not normalizd, continuous
             >>> corr = vv.correlation(normalized=False,continuous=True)
@@ -258,7 +258,7 @@ class Correlator(object):
             >>> print (np.allclose(corr, [ c0, c1, c2, c3]))
             True
             >>> # check normalization
-            >>> np.all(vv.correlation(continuous=True) == corr/corr[0])
+            >>> print(np.all(vv.correlation(continuous=True) == corr/corr[0]))
             True
 
         """

@@ -62,12 +62,12 @@ def polygonalArea(points):
         >>> s1 = np.sin(2*np.pi/5.) ; s2 = np.sin(4*np.pi/5.)
         >>> pentagon = np.array([[1,0,0],[c1,s1,0],[-c2,s2,0],[-c2,-s2,0],[c1,-s1,0]])
         >>> A = 0.25 * np.sqrt(25+10*np.sqrt(5)) * 100./ (50+10*np.sqrt(5))
-        >>> np.isclose(pytim.utilities.polygonalArea(pentagon),A)
+        >>> print(np.isclose(pytim.utilities.polygonalArea(pentagon),A))
         True
 
         >>> # now let's rotate it:
         >>> rotated = np.dot(EulerRotation(0,np.pi/2.,0),pentagon.T).T
-        >>> np.isclose(pytim.utilities.polygonalArea(rotated),A)
+        >>> print(np.isclose(pytim.utilities.polygonalArea(rotated),A))
         True
 
      """

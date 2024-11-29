@@ -125,14 +125,14 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
-        'numpy>=1.26.4,<2.0.0', 'cython>=0.24.1','gsd>=3.0.0','MDAnalysis>=2.7.0'
+        'numpy>=2.1.3', 'cython>=0.24.1','gsd>=3.0.0','MDAnalysis>=2.8.0'
     ],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
     # $ pip install -e .[dev,test]
-    tests_require=['nose>=1.3.7', 'coverage'],
+    tests_require=['nose>=1.3.7', 'coverage', 'scikit-image'],
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.

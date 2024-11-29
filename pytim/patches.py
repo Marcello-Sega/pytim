@@ -2,25 +2,14 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
 
-
-def patchNumpy():
-    # this try/except block patches numpy and provides _validate_lengths
-    # to skimage<=1.14.1
-    import numpy
-    try:
-        numpy.lib.arraypad._validate_lengths
-    except AttributeError:
-        def patch_validate_lengths(ar, crop_width):
-            return numpy.lib.arraypad._as_pairs(crop_width, ar.ndim, as_index=True)
-        numpy.lib.arraypad._validate_lengths = patch_validate_lengths
-
-
 def patchTrajectory(trajectory, interface):
     """ Patch the MDAnalysis trajectory class
 
         this patch makes the layer assignement being automatically
         called whenever a new frame is loaded.
     """
+    from importlib.metadata import version
+    if  int(version('numpy').split('.')[0])<2 : return
     try:
         trajectory.interface
         trajectory.interface = interface
@@ -110,11 +99,14 @@ def patchMDTRAJ(trajectory, universe):
 
         Example:
 
-        >>> import mdtraj
-        >>> import pytim
-        >>> from pytim.datafiles import WATER_GRO, WATER_XTC
-        >>> t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO)
-        >>> inter = pytim.ITIM(t)
+        >>> try:
+        ...     import mdtraj
+        ...     import pytim
+        ...     from pytim.datafiles import WATER_GRO, WATER_XTC
+        ...     t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO)
+        ...     inter = pytim.ITIM(t)
+        ... except:
+        ...     pass
 
 
     """

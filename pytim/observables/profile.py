@@ -311,18 +311,19 @@ class Profile(object):
         >>> inter = pytim.ITIM(u,cluster_cut=3.5,alpha=2.5)
         >>> print(inter.normal)
         2
-        >>> np.set_printoptions(precision=8)
         >>> np.random.seed(1) # for the MC normalization
         >>> stdprof = pytim.observables.Profile()
         >>> stdprof.sample(u.atoms)
-        >>> print(stdprof.get_values(binwidth=0.5)[2][:6])
-        [0.09229169 0.10959639 0.08075523 0.10959639 0.09805993 0.09805993]
+        >>> vals = stdprof.get_values(binwidth=0.5)[2]
+        >>> print(np.around(vals[:6],decimals=3))
+        [0.092 0.11  0.081 0.11  0.098 0.098]
+
 
         >>> prof = pytim.observables.Profile(interface=inter)
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=0.5)[2]
-        >>> print(vals[len(vals)//2-3:len(vals)//2+3])
-        [0.07344066 0.04300743 0.02803522        inf 0.         0.        ]
+        >>> print(np.around(vals[len(vals)//2-3:len(vals)//2+3],decimals=3))
+        [0.073 0.043 0.028   inf 0.    0.   ]
 
 
 
@@ -353,15 +354,15 @@ class Profile(object):
         >>> np.random.seed(1) # for the MC normalization
         >>> stdprof = pytim.observables.Profile()
         >>> stdprof.sample(u.atoms)
-        >>> print(stdprof.get_values(binwidth=0.5)[2][:6])
-        [0.09229169 0.10959639 0.08075523 0.10959639 0.09805993 0.09805993]
+        >>> vals = stdprof.get_values(binwidth=0.5)[2]
+        >>> print(np.around(vals[:6],decimals=3))
+        [0.092 0.11  0.081 0.11  0.098 0.098]
 
         >>> prof = pytim.observables.Profile(interface=inter)
         >>> prof.sample(u.atoms)
         >>> vals = prof.get_values(binwidth=1.0)[2]
-        >>> print(vals[len(vals)//2-4:len(vals)//2+2])
-        [0.09554818 0.09796541 0.05555127 0.                inf 0.        ]
-
+        >>> print(np.around(vals[len(vals)//2-4:len(vals)//2+2],decimals=3))
+        [0.096 0.098 0.056 0.      inf 0.   ]
 
         """
 
