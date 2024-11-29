@@ -101,38 +101,45 @@ class TopologicalOrderParameter(Observable):
         tree = KDTree(inp.positions,boxsize=box)
         OO = tree.query_ball_tree(tree, 3.5)
         self.inp = inp
+        # the observable is based on residues, so the max size of the matrix will never be larger than 
+        # the number of residues. We build a lookup table to simplify handling them: to obtain the sequential
+        # index within the inp group, pass its resindex to the table.
+        lookup = -1 + np.zeros(1+np.max(inp.resindices),dtype=int) # resindices is zero-based, let's add one.
+        lookup[inp.resindices] = np.arange(len(inp))
+        assert len(OO) == len(inp), "Internal error: tree of different size than input group"
         for i,neighs in enumerate(OO):
             neigh_Os = inp[[a for a in neighs if a != i ]]
-            sel = inp[[a for a in neighs if a != i ]].residues.atoms
+            sel = neigh_Os.residues.atoms # include Hs
+            # displacement between i-th donor (O) and all acceptors in the neighbor list of molecules
             disp = minimum_image(sel[sel.types==self.acceptor_type].positions - inp[i].position, box)
             # OH_d: distances correpsonding to disp
             OH_d = np.linalg.norm(disp,axis=1)
-            # OH_d: we reshape to (N,nacceptors) to extract the distance to the closest acceptor
+            # OH_d: we reshape to (neigh_Os.shape ,nacceptors) to extract the distance to the closest acceptor
             OH_d = np.min(OH_d.reshape((OH_d.shape[0]//nacceptors,nacceptors)),axis=1)
             # HB criterion on OH distance
 
             cond = np.argwhere(OH_d<2.45).flatten().tolist()
-            # Update the list of HB pairs: use the residue index
-            # note: cond runs over the elements of sel!
-            for a in  np.unique(neigh_Os[cond].resindices).tolist():  M[i,a], M[a,i] = 1,1
+            # Update the list of HB pairs: we use the lookup table
+            b = lookup[inp[i].resindex]
+            assert b==i, "b is not i"
+            for a in np.unique(lookup[neigh_Os[cond].resindices]).tolist():  M[b,a], M[a,b] = 1,1
         self.M = M
+        # we might use directed=True to speedup because we computed the matrix symmetrically, but
+        # this needs to be checked.
         res = dijkstra(M,
                      unweighted=True,
                      limit=self.topological_distance,
-                     directed=True,
+                     directed=False,
                      return_predecessors=True)
         self.dist,self.predecessors  = res
         
         pairs = np.argwhere(self.dist==self.topological_distance)
-        # we use directed=True because we computed the matrix symmetrically
         dists = np.linalg.norm(minimum_image(inp[pairs[:,0]].positions - inp[pairs[:,1]].positions,
                                          inp.dimensions),axis=1)
         self.dists =dists
         # in some case (gas) a molecule might have no 4th neighbor, so we initialize
         # psi with inf.
         neighbors,psi=-np.ones(len(inp),dtype=int),np.inf*np.ones(len(inp),dtype=float)
-
-        index = np.arange(len(inp))
 
         for i in np.arange(len(inp)):
             cond = np.where(pairs[:,0]==i)[0]
