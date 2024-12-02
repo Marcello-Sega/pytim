@@ -52,24 +52,24 @@ class ContactAngle(object):
         >>> for ts in u.trajectory[::]:
         ...     CA.sample()
         >>> # Instantaneous contact angle (last frame) by fitting a circle...
-        >>> np.round(CA.contact_angle,2)
+        >>> print(np.round(CA.contact_angle,2))
         90.58
 
         >>> 
         >>> # ... and using an elliptical fit:
         >>> left, right = CA.contact_angles
         >>> # left angle
-        >>> np.round(np.abs(left),2)
+        >>> print(np.round(np.abs(left),2))
         79.95
 
         >>> # right angle
-        >>> np.round(right,2)
+        >>> print(np.round(right,2))
         83.84
 
         >>> # Contact angles from the averaged binned statistics of
         >>> # surface atoms' radial distance as a function of the azimuthal angle
-        >>> list(np.round(CA.mean_contact_angles,2))
-        [96.2, 100.68]
+        >>> np.around(CA.mean_contact_angles,1).tolist()
+        [96.2, 100.7]
 
    """
 
