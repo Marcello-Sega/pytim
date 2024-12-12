@@ -114,11 +114,7 @@ def _check_missing_attribute(interface, name, classname, group, value):
             values = np.array([value] * len(group))
         universe.add_TopologyAttr(missing_class(values))
         if name == 'elements':
-            types = MDAnalysis.topology.guessers.guess_types(group.names)
-            # is there an inconsistency in the way 'element' is defined
-            # in different modules in MDA?
-            # Note: the second arg in .get() is the default.
-            group.elements = np.array([t.ljust(2) for t in types])
+            group.elements = MDAnalysis.guesser.DefaultGuesser(universe).guess_types(atom_types=group.names)
         if name == 'radii':
             guess_radii(interface)
 
