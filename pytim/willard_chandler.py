@@ -6,23 +6,18 @@
 """
 
 from __future__ import print_function
-from skimage import measure
-import numpy as np
 
-from . import messages
-from . import utilities, cube, wavefront_obj
+import numpy as np
+from skimage import measure
+from skimage.measure import marching_cubes
+
+from . import cube, messages, utilities, wavefront_obj
+from .interface import Interface
+from .patches import patchMDTRAJ, patchOpenMM, patchTrajectory
 from .sanity_check import SanityCheck
 from .vtk import Writevtk
 
-from .interface import Interface
-from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
-
 np.set_printoptions(legacy=False)  # fixes problem with skimage
-
-try:
-    marching_cubes = measure.marching_cubes
-except AttributeError:
-    marching_cubes = measure.marching_cubes_lewiner
 
 
 class WillardChandler(Interface):
@@ -156,13 +151,14 @@ class WillardChandler(Interface):
         self._atoms = self._layers[:]  # this is an empty AtomGroup
         self.writevtk = Writevtk(self)
 
-    def writecube(self, filename="pytim.cube", group=None, sequence=False):
+    def writecube(self, filename="pytim.cube", group=None, sequence=False, normalize=True):
         """ Write to cube files (sequences) the volumentric density and the
             atomic positions.
 
             :param str filename:  the file name
             :param bool sequence: if true writes a sequence of files adding
                                   the frame to the filename
+            :param bool normalize: if true normalizes the density field to [0, 1]
 
             >>> import MDAnalysis as mda
             >>> import pytim
@@ -173,6 +169,7 @@ class WillardChandler(Interface):
             >>> inter.writecube('dens.cube') # writes on dens.cube
             >>> inter.writecube('dens.cube',group=g) # writes also  particles
             >>> inter.writecube('dens.cube',sequence=True) # dens.<frame>.cube
+            >>> inter.writecube('dens.cube', normalize=False) # writes density values without normalization
         """
         if sequence is True:
             filename = cube.consecutive_filename(self.universe, filename)
@@ -183,7 +180,8 @@ class WillardChandler(Interface):
             self.ngrid,
             self.spacing,
             self.density_field,
-            atomic_numbers=None)
+            atomic_numbers=None,
+            normalize=normalize)
 
     def writeobj(self, filename="pytim.obj", sequence=False):
         """ Write to wavefront obj files (sequences) the triangulated surface
@@ -240,8 +238,7 @@ class WillardChandler(Interface):
         grid = utilities.generate_grid_in_box(box, ngrid, order='xyz')
         kernel, _ = utilities.density_map(pos, grid, self.alpha, box)
 
-        kernel.pos = pos.copy()
-        self.density_field = kernel.evaluate_pbc_fast(grid)
+        self.density_field = kernel.evaluate(grid)
 
         # Thomas Lewiner, Helio Lopes, Antonio Wilson Vieira and Geovan
         # Tavares. Efficient implementation of Marching Cubes’ cases with
