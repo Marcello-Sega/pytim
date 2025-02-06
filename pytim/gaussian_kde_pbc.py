@@ -3,31 +3,24 @@
 """ Module: pytim.gaussian_kde_pbc
     ==============================
 """
+import os
+
 import numpy as np
+from scipy.spatial import cKDTree
+from scipy.stats import gaussian_kde
 
-try:
-    from jax.scipy.stats import gaussian_kde
-    has_jax = True
-except ImportError:
-    from scipy.spatial import cKDTree
-    from scipy.stats import gaussian_kde
+if os.environ.get("PYTIM_BACKEND") == "scipy":
     has_jax = False
-
-def make_supercell_images(pos, box, n_images=1):
-    """ Generate supercell images of a set of points
-
-        :param np.ndarray pos:  positions of the points
-        :param np.ndarray box:  box dimensions
-        :param int n_images:    number of images to generate
-
-    """
-    images = []
-    for i in range(-n_images, n_images + 1):
-        for j in range(-n_images, n_images + 1):
-            for k in range(-n_images, n_images + 1):
-                images.append(pos + np.array([i, j, k]) * box)
-    return np.vstack(images)
-
+    print("Using scipy backend")
+else:
+    try:
+        import jax.numpy as jnp
+        from kdecv.calculate import GaussianKDE
+        has_jax=True
+        print("Using JAX backend")
+    except ImportError:
+        has_jax = False
+        print("Using scipy backend")
 
 class gaussian_kde_pbc(gaussian_kde):
     # note that here "points" are those on the grid
@@ -47,14 +40,10 @@ class gaussian_kde_pbc(gaussian_kde):
 
         dataset = np.vstack([pos[::, 0], pos[::, 1], pos[::, 2]])
 
-        if has_jax:
-            supercell = make_supercell_images(pos, box=box)
-            dataset = np.vstack([supercell[::, 0], supercell[::, 1], supercell[::, 2]])
-
         self.stddev = dataset.std(ddof=1)
-        bw_method = sigma / self.stddev
+        self.bw = sigma / self.stddev
 
-        super().__init__(dataset, bw_method=bw_method, weights=weights)
+        super().__init__(dataset, bw_method=self.bw, weights=weights)
 
     def evaluate(self, points):
         """ Evaluate the estimated pdf on a set of points.
@@ -65,7 +54,8 @@ class gaussian_kde_pbc(gaussian_kde):
 
         """
         if has_jax:
-            return np.array(super().evaluate(points))
+            kde = GaussianKDE(self.pos, self.box, self.bw, self.weights)
+            return np.array(kde.evaluate(points.T).flatten())
 
         else:
             grid = points
