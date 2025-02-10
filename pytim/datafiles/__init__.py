@@ -32,6 +32,7 @@
     WATER_DROPLET_CYLINDRICAL_GRO cylindrical water droplet on graphite
     WATER_GRO            SPC water/vapour interface
     WATER_PDB            SPC water/vapour interface
+    WATER_TWO_INTERFACES two SPC water/vapour interfaces
     WATER_XYZ            SPC water/vapour interface
 
 
@@ -281,6 +282,10 @@ pytim_data.add('LJ_SHORT_XTC', 'traj', 'XTC', 'LJ liquid/vapour interface')
 WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
 pytim_data.add('WATERSMALL_GRO', 'config', 'GRO',
                'small SPC water/vapour interface')
+
+WATER_TWO_INTERFACES = resource_filename('pytim', 'data/water-2-interfaces.gro')
+pytim_data.add('WATER_TWO_INTERFACES', 'config', 'GRO',
+               'two SPC water/vapour interfaces')
 
 WATER_520K_GRO = resource_filename('pytim', 'data/water_520K.gro')
 pytim_data.add('WATER_520K_GRO', 'config', 'GRO',

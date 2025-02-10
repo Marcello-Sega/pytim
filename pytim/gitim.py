@@ -54,14 +54,27 @@ class GITIM(Interface):
                                     search, if cluster_cut is not None
         :param Object extra_cluster_groups: Additional groups, to allow for
                                     mixed interfaces
-        :param bool biggest_cluster_only: Tag as surface atoms/molecules only
-                                    those in the largest cluster. Need to
-                                    specify also a :py:obj:`cluster_cut` value.
+        :param int n_clusters:      Tag as surface atoms/molecules only
+                                    those in the n_clusters largest clusters.
+                                    Default: None, uses all clusters.
+                                    Need to specify also a :py :obj:`cluster_cut` value.
+                                    Note that depending on the parameters of the cluster
+                                    search and interface determination, the surface atoms
+                                    of the N clusters when n_clusters=N may be different
+                                    from the surface atoms of the first N clusters when
+                                    n_clusters=N+1. This typically happens when the cluster
+                                    cutoff is comparable or smaller than the probe sphere radius.
+                                    See also min_cluster_size.
+        :param int min_cluster_size:Tag as surface atoms/molecules only those
+                                    in clusters larger than min_cluster_size (in atoms)
+                                    Default: None, gives precendence to n_clusters.
+                                    Note that only one of n_clusters and min_cluster_size
+                                    can be not None.
         :param float surface_cluster_cut: Filter surface atoms/molecules
                                     to include only those in the largest
                                     cluster of (initially detected) surface
                                     ones.
-                                    (default: None disables the filtering)
+                                    Default: None, disables the filtering.
         :param str symmetry:        Gives the code a hint about the topology
         :param str symmetry:        Gives the code a hint about the topology
                                     of the interface: 'generic' (default)
@@ -130,7 +143,9 @@ class GITIM(Interface):
                  include_zero_radius=False,
                  cluster_threshold_density=None,
                  extra_cluster_groups=None,
-                 biggest_cluster_only=False,
+                 n_clusters=None,
+                 min_cluster_size=None,
+                 biggest_cluster_only = False, # backward compatibility, sets n_clusters
                  surface_cluster_cut=None,
                  symmetry='generic',
                  centered=False,
@@ -147,7 +162,16 @@ class GITIM(Interface):
 
         self.do_center = centered
 
-        self.biggest_cluster_only = biggest_cluster_only
+        # For backward compatibility
+        self.biggest_cluster_only = False
+        if biggest_cluster_only is not False and n_clusters is None:
+            self.biggest_cluster_only = True
+            n_clusters = 1
+            self.n_clusters = 1
+
+        self.n_clusters = n_clusters
+        self.min_cluster_size = min_cluster_size
+
         self.surface_cluster_cut = surface_cluster_cut
         sanity = SanityCheck(self, warnings=warnings)
         sanity.assign_universe(universe, group)
@@ -358,6 +382,20 @@ class GITIM(Interface):
         >>> inter = pytim.GITIM(u,group=g,radii_dict={'A':0.5},alpha=0.3660255)
         >>> print(repr(inter.atoms))
         <AtomGroup with 0 atoms>
+
+
+        >>> # Check the behavior of n_clusters
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import WATER_TWO_INTERFACES
+        >>> import numpy as np
+        >>> u = mda.Universe(WATER_TWO_INTERFACES)
+        >>> n_clusters = 3
+        >>> inter = pytim.GITIM(u,g=u.select_atoms('name OW'),cluster_cut=4.5, alpha = 3.2, molecular=True, n_clusters= n_clusters)
+        >>> layers = [u.atoms[np.logical_and(u.atoms.layers == 1,  u.atoms.clusters == c)] for c in range(n_clusters)]
+        >>> layers
+        [<AtomGroup with 441 atoms>, <AtomGroup with 441 atoms>, <AtomGroup with 6 atoms>]
+
 
 
         """

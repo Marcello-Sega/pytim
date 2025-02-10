@@ -52,9 +52,23 @@ class SASA(GITIM):
                                     search, if cluster_cut is not None
         :param Object extra_cluster_groups: Additional groups, to allow for
                                     mixed interfaces
-        :param bool biggest_cluster_only: Tag as surface atoms/molecules only
-                                    those in the largest cluster. Need to
-                                    specify also a :py:obj:`cluster_cut` value.
+        :param int n_clusters:      Tag as surface atoms/molecules only
+                                    those in the n_clusters largest clusters.
+                                    Default: None, uses all clusters.
+                                    Need to specify also a :py :obj:`cluster_cut` value.
+                                    Note that depending on the parameters of the cluster
+                                    search and interface determination, the surface atoms
+                                    of the N clusters when n_clusters=N may be different
+                                    from the surface atoms of the first N clusters when
+                                    n_clusters=N+1. This typically happens when the cluster
+                                    cutoff is comparable or smaller than the probe sphere radius.
+                                    See also min_cluster_size.
+        :param int min_cluster_size:Tag as surface atoms/molecules only those
+                                    in clusters larger than min_cluster_size (in atoms)
+                                    Default: None, gives precendence to n_clusters.
+                                    Note that only one of n_clusters and min_cluster_size
+                                    can be not None.
+
         :param bool centered:       Center the  :py:obj:`group`
         :param bool include_zero_radius: if false (default) exclude atoms with zero radius
                                     from the surface analysis (they are always included

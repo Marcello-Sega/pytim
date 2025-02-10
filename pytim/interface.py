@@ -224,10 +224,23 @@ class Interface(object):
             # now that labels are assigned for each of the clusters,
             # we can restric the cluster group to the largest cluster.
 
-            if self.biggest_cluster_only:
-                label_max = np.argmax(counts)
-                ids_max = np.where(labels == label_max)[0]
-                self.cluster_group = self.cluster_group[ids_max]
+
+            if self.min_cluster_size is not None and self.n_clusters is not None:
+                raise ValueError("min_cluster_size and n_clusters cannot both take a value different from None")
+            if self.n_clusters is not None:
+                self.cluster_group = self.universe.atoms[:0] # reset to the empty group
+                self._unique_labels = unique_labels[:]
+                for el in unique_labels[:self.n_clusters]:
+                    self.cluster_group += self.universe.atoms[self.universe.atoms.clusters == el]
+            elif self.min_cluster_size is not None:
+                self.cluster_group = self.universe.atoms[:0] # reset to the empty group
+                for el in unique_labels:
+                    g_ = self.universe.atoms[self.universe.atoms.clusters==el]
+                    if len(g_) >= self.min_cluster_size:
+                        self.cluster_group += g_
+                    else:
+                        break # unique_labels are sorted by size
+
             else: # we still filter out molecules which do not belong to any cluster
                 ids = np.where(labels != -1)[0]
                 self.cluster_group = self.cluster_group[ids]
@@ -522,19 +535,19 @@ class Interface(object):
         4.00
 
 
-        >>> # correct behaviour of biggest_cluster_only option
+        >>> # correct behaviour of n_clusters option
         >>> import MDAnalysis as mda
         >>> import pytim
         >>> from pytim.datafiles import ANTAGONISTIC_GRO
         >>> u = mda.Universe(ANTAGONISTIC_GRO)
         >>> g = u.atoms.select_atoms('resname bph4')
-        >>> # Define the interface
-        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=False, molecular=True)
+        >>> # Define the interface, use all clusters
+        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, n_clusters=None , molecular=True)
         >>> print(repr(inter.atoms))
         <AtomGroup with 2025 atoms>
 
-
-        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, biggest_cluster_only=True, molecular=True)
+        >>> # Again, using only the largest cluster
+        >>> inter = pytim.SASA( g, alpha=2.5, max_layers=2, cluster_cut=3.5, n_clusters=1, molecular=True)
         >>> print(repr(inter.atoms))
         <AtomGroup with 855 atoms>
 
@@ -579,19 +592,19 @@ class Interface(object):
         ...     pass
 
 
-        >>> # check that using the biggest_cluster_only option without setting cluster_cut
-        >>> # throws a warning and resets to biggest_cluster_only == False
+        >>> # check that using the n_clusters option without setting cluster_cut
+        >>> # throws a warning and resets to n_clusters == -1
         >>> import MDAnalysis as mda
         >>> import pytim
         >>> from   pytim.datafiles import GLUCOSE_PDB
         >>>
         >>> u = mda.Universe(GLUCOSE_PDB)
         >>> solvent = u.select_atoms('name OW')
-        >>> inter = pytim.GITIM(u, group=solvent, biggest_cluster_only=True)
-        Warning: the option biggest_cluster_only has no effect without setting cluster_cut, ignoring it
+        >>> inter = pytim.GITIM(u, group=solvent, n_clusters=1)
+        Warning: the options n_clusters and min_cluster_size have no effect without setting cluster_cut, ignoring them
 
-        >>> print (inter.biggest_cluster_only)
-        False
+        >>> print (inter.n_clusters)
+        None
 
         >>> import pytim
         >>> import pytest
