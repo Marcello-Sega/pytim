@@ -10,9 +10,11 @@ from .willard_chandler import WillardChandler
 from . import observables, utilities, datafiles
 from .version import __version__
 import warnings
-from .patches import patchNumpy, patchMDTRAJ_ReplacementTables
-patchNumpy()
-patchMDTRAJ_ReplacementTables()
+try: # waiting for numpy2 support in mdtraj>=1.10.2
+    from .patches import patchMDTRAJ_ReplacementTables
+    patchMDTRAJ_ReplacementTables()
+except:
+    pass
 
 warnings.filterwarnings(
     "ignore",

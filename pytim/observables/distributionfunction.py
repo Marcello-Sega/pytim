@@ -304,7 +304,7 @@ class DistributionFunction(object):
         self.count += count
 
         box = self.universe.dimensions
-        self.volume += np.product(box[:3])
+        self.volume += np.prod(box[:3])
         if self.g2 is None or len(self.g2) == 0:
             self.n_normalize += len(self.g1)
         else:

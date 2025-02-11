@@ -77,7 +77,7 @@ class SanityCheck(object):
                 patchMDTRAJ(input_obj, self.interface.universe)
                 os.remove(_file.name)
                 return 'mdtraj'
-        except ImportError:
+        except (ImportError,ValueError): # ValueError to handle mdtraj not supporting numpy2
             pass
         try:
             import os

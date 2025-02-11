@@ -6,12 +6,14 @@
     loaded with MDTraj (http://mdtraj.org/)
     (see also the openmm interoperability)
 """
+try:
+    import mdtraj
+    import pytim
+    from pytim.datafiles import WATER_GRO, WATER_XTC
 
-import mdtraj
-import pytim
-from pytim.datafiles import WATER_GRO, WATER_XTC
-
-t = mdtraj.load_xtc(WATER_XTC, top=WATER_GRO)
-inter = pytim.ITIM(t)
-for step in t[:]:
-    print("surface atoms: "+repr(inter.atoms.indices))
+    t = mdtraj.load_xtc(WATER_XTC, top=WATER_GRO)
+    inter = pytim.ITIM(t)
+    for step in t[:]:
+        print("surface atoms: "+repr(inter.atoms.indices))
+except:
+    pass # for package testing, in case mdtraj is not available or has compatibility issues

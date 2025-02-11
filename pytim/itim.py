@@ -132,11 +132,14 @@ J. Comp. Chem. 29, 945, 2008)*
 
 
         >>> # pytim can be used also on top of mdtraj (MDAnalysis must be present,though)
-        >>> import mdtraj
-        >>> import pytim
-        >>> from pytim.datafiles import WATER_GRO, WATER_XTC
-        >>> t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO)
-        >>> inter = pytim.ITIM(t)
+        >>> try:
+        ...     import mdtraj
+        ...     import pytim
+        ...     from pytim.datafiles import WATER_GRO, WATER_XTC
+        ...     t = mdtraj.load_xtc(WATER_XTC,top=WATER_GRO)
+        ...     inter = pytim.ITIM(t)
+        ... except (ModuleNotFoundError,ValueError): # ValueError to handle mdtraj not supporting numpy2
+        ...     pass
 
 
         .. _MDAnalysis: http://www.mdanalysis.org/
