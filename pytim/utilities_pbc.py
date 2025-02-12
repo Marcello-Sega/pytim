@@ -6,7 +6,7 @@ import itertools
 
 
 def generate_periodic_border(points, box, delta, method='3d'):
-    """ Selects the pparticles within a skin depth delta from the
+    """ Selects the particles within a skin depth delta from the
         simulation box, and replicates them to mimic periodic
         boundary conditions. Returns all points (original +
         periodic copies) and the indices of the original particles

@@ -23,4 +23,5 @@ from .rdf2d import RDF2D
 from .free_volume import FreeVolume
 from .correlator import Correlator
 from .orientation import Orientation,BivariateAngles
+from .voronoi import Voronoi
 from .layer_triangulation import LayerTriangulation
