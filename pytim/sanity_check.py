@@ -232,12 +232,15 @@ class SanityCheck(object):
         self.interface.alpha = alpha
 
     def check_multiple_layers_options(self):
-        try:
-            if self.interface.biggest_cluster_only is True:
-                if self.interface.cluster_cut is None:
-                    self.interface.biggest_cluster_only = False
-                    print("Warning: the option biggest_cluster_only", end=' ')
-                    print("has no effect without setting", end=' ')
-                    print("cluster_cut, ignoring it")
-        except BaseException:
-            pass
+       try:
+          if (self.interface.biggest_cluster_only is True or
+              self.interface.n_clusters is not None or
+              self.interface.min_cluster_size is not None):
+              if self.interface.cluster_cut is None:
+                  self.interface.biggest_cluster_only = False # backward compatibility
+                  self.interface.n_clusters = None
+                  self.interface.min_cluster_size = None
+                  print("Warning: the options n_clusters and min_cluster_size", end=' ')
+                  print("have no effect without setting cluster_cut, ignoring them")
+       except BaseException:
+           pass
