@@ -92,8 +92,12 @@ __all__ = [
     "_TEST_ORIENTATION_GRO",  # test file
     "_TEST_PROFILE_GRO",  # test file
 ]
+try:
+    from importlib.resources import files
+    def resource(path,fname): return str(files(path)/fname)
+except:
+    from pkg_resources import resource_filename as resource
 
-from pkg_resources import resource_filename
 import tempfile
 import re as re
 import urllib
@@ -244,101 +248,101 @@ pytim_data = Data()
 
 # NOTE: to add a new datafile, make sure it is listed in setup.py (in the root directory)
 # in the package_data option (a glob like 'data/*' is usually enough)
-CCL4_WATER_GRO = resource_filename('pytim', 'data/CCL4.H2O.GRO')
+CCL4_WATER_GRO = resource('pytim', 'data/CCL4.H2O.GRO')
 pytim_data.add('CCL4_WATER_GRO', 'config', 'GRO',
                'Carbon tetrachloride/TIP4p water interface')
 
-WATER_GRO = resource_filename('pytim', 'data/water.gro')
+WATER_GRO = resource('pytim', 'data/water.gro')
 pytim_data.add('WATER_GRO', 'config', 'GRO', 'SPC water/vapour interface')
 
-WATER_LMP_XTC = resource_filename('pytim', 'data/water_lmp.xtc')
+WATER_LMP_XTC = resource('pytim', 'data/water_lmp.xtc')
 pytim_data.add('WATER_LMP_XTC', 'traj', 'LAMMPS', 'SPC water/vapour interface')
 
-WATER_PDB = resource_filename('pytim', 'data/water.pdb')
+WATER_PDB = resource('pytim', 'data/water.pdb')
 pytim_data.add('WATER_PDB', 'config', 'PDB', 'SPC water/vapour interface')
 
-WATER_XYZ = resource_filename('pytim', 'data/water.xyz')
+WATER_XYZ = resource('pytim', 'data/water.xyz')
 pytim_data.add('WATER_XYZ', 'config', 'XYZ', 'SPC water/vapour interface')
 
-MICELLE_PDB = resource_filename('pytim', 'data/micelle.pdb')
+MICELLE_PDB = resource('pytim', 'data/micelle.pdb')
 pytim_data.add('MICELLE_PDB', 'config', 'GRO', 'DPC micelle')
 
-FULLERENE_PDB = resource_filename('pytim', 'data/fullerene.pdb')
+FULLERENE_PDB = resource('pytim', 'data/fullerene.pdb')
 pytim_data.add('FULLERENE_PDB', 'config', 'PDB', 'fullerene')
 
-DPPC_GRO = resource_filename('pytim', 'data/dppc.gro')
+DPPC_GRO = resource('pytim', 'data/dppc.gro')
 pytim_data.add('DPPC_GRO', 'config', 'GRO', 'DPPC bilayer')
 
-GLUCOSE_PDB = resource_filename('pytim', 'data/glucose.pdb')
+GLUCOSE_PDB = resource('pytim', 'data/glucose.pdb')
 pytim_data.add('GLUCOSE_PDB', 'config', 'PDB', 'solvated beta-d-glucose')
 
-LJ_GRO = resource_filename('pytim', 'data/LJ.gro')
+LJ_GRO = resource('pytim', 'data/LJ.gro')
 pytim_data.add('LJ_GRO', 'config', 'GRO',
                'Lennard-Jones liquid/vapour interface')
 
-LJ_SHORT_XTC = resource_filename('pytim', 'data/LJ.short.xtc')
+LJ_SHORT_XTC = resource('pytim', 'data/LJ.short.xtc')
 pytim_data.add('LJ_SHORT_XTC', 'traj', 'XTC', 'LJ liquid/vapour interface')
 
-WATERSMALL_GRO = resource_filename('pytim', 'data/water-small.gro')
+WATERSMALL_GRO = resource('pytim', 'data/water-small.gro')
 pytim_data.add('WATERSMALL_GRO', 'config', 'GRO',
                'small SPC water/vapour interface')
 
-WATER_TWO_INTERFACES = resource_filename('pytim', 'data/water-2-interfaces.gro')
+WATER_TWO_INTERFACES = resource('pytim', 'data/water-2-interfaces.gro')
 pytim_data.add('WATER_TWO_INTERFACES', 'config', 'GRO',
                'two SPC water/vapour interfaces')
 
-WATER_520K_GRO = resource_filename('pytim', 'data/water_520K.gro')
+WATER_520K_GRO = resource('pytim', 'data/water_520K.gro')
 pytim_data.add('WATER_520K_GRO', 'config', 'GRO',
                'SPC/E water/vapour interface, 520K')
 
-WATER_550K_GRO = resource_filename('pytim', 'data/water_550K.gro')
+WATER_550K_GRO = resource('pytim', 'data/water_550K.gro')
 pytim_data.add('WATER_550K_GRO', 'config', 'GRO',
                'SPC/E water/vapour interface, 550K')
 
-WATER_DROPLET_CYLINDRICAL_GRO = resource_filename('pytim', 'data/water_droplet_cylindrical.gro')
+WATER_DROPLET_CYLINDRICAL_GRO = resource('pytim', 'data/water_droplet_cylindrical.gro')
 pytim_data.add('WATER_DROPLET_CYLINDRICAL_GRO', 'config', 'GRO',
                'cylindrical water droplet on graphite')
 
-WATER_DROPLET_CYLINDRICAL_XTC = resource_filename('pytim', 'data/water_droplet_cylindrical.xtc')
+WATER_DROPLET_CYLINDRICAL_XTC = resource('pytim', 'data/water_droplet_cylindrical.xtc')
 pytim_data.add('WATER_DROPLET_CYLINDRICAL_XTC', 'traj', 'XTC',
                'cylindrical water droplet on graphite trajectory')
 
-METHANOL_GRO = resource_filename('pytim', 'data/methanol.gro')
+METHANOL_GRO = resource('pytim', 'data/methanol.gro')
 pytim_data.add('METHANOL_GRO', 'conf', 'GRO', 'methanol/vapour interface')
 
-ILBENZENE_GRO = resource_filename('pytim', 'data/ilbenzene.gro')
+ILBENZENE_GRO = resource('pytim', 'data/ilbenzene.gro')
 pytim_data.add('ILBENZENE_GRO', 'conf', 'GRO', 'BMIM PF4 / benzene interface')
 
-ANTAGONISTIC_GRO = resource_filename('pytim', 'data/antagonistic.gro')
+ANTAGONISTIC_GRO = resource('pytim', 'data/antagonistic.gro')
 pytim_data.add('ANTAGONISTIC_GRO', 'conf', 'GRO', '3-Methylpyridine, Sodium Tetraphenylborate and water')
 
-WATER_XTC = resource_filename('pytim', 'data/water.xtc')
+WATER_XTC = resource('pytim', 'data/water.xtc')
 pytim_data.add('WATER_XTC', 'traj', 'XTC',
                'SPC water/vapour interface trajectory')
 
-_TEST_BCC_GRO = resource_filename('pytim', 'data/_test_bcc.gro')
+_TEST_BCC_GRO = resource('pytim', 'data/_test_bcc.gro')
 pytim_data.add('_TEST_BCC_GRO', 'config', 'GRO', 'test file')
 
-_TEST_ORIENTATION_GRO = resource_filename('pytim',
+_TEST_ORIENTATION_GRO = resource('pytim',
                                           'data/_test_orientation.gro')
 pytim_data.add('_TEST_ORIENTATION_GRO', 'config', 'GRO', 'test file')
 
-_TEST_PROFILE_GRO = resource_filename('pytim', 'data/_test_profile.gro')
+_TEST_PROFILE_GRO = resource('pytim', 'data/_test_profile.gro')
 pytim_data.add('_TEST_PROFILE_GRO', 'config', 'GRO', 'test file')
 
-WATER_LMP_DATA = resource_filename('pytim', 'data/water_lmp.data')
+WATER_LMP_DATA = resource('pytim', 'data/water_lmp.data')
 pytim_data.add('WATER_LMP_DATA', 'topol', 'DATA',
                'LAMMPS topology for WATER_LAMMPS')
 
-G43A1_TOP = resource_filename('pytim', 'data/ffg43a1.nonbonded.itp')
+G43A1_TOP = resource('pytim', 'data/ffg43a1.nonbonded.itp')
 pytim_data.add('G43A1_TOP', 'topol', 'GMX', 'GROMOS 43A1 topology for GROMACS')
 
-AMBER03_TOP = resource_filename('pytim', 'data/ffamber03.nonbonded.itp')
+AMBER03_TOP = resource('pytim', 'data/ffamber03.nonbonded.itp')
 pytim_data.add('AMBER03_TOP', 'topol', 'GMX', 'AMBER 03 topology for GROMACS')
 
-CHARMM27_TOP = resource_filename('pytim', 'data/ffcharmm27.nonbonded.itp')
+CHARMM27_TOP = resource('pytim', 'data/ffcharmm27.nonbonded.itp')
 pytim_data.add('CHARMM27_TOP', 'topol', 'GMX',
                'CHARMM 27 topology for GROMACS')
 
 # This should be the last line: clean up namespace
-del resource_filename
+del resource
