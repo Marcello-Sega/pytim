@@ -77,7 +77,10 @@ class Voronoi(Observable):
                     parea = [float(np.sum(fareas* fnormals[:,i]**2)) for i in [0,1,2]]
                     dictionary['projected_areas'].append(parea)
                     dictionary['projected_volumes'].append(pvolume)
-        dictionary['projected_areas'] = np.array(dictionary['projected_areas'])
-        dictionary['projected_volumes'] = np.array(dictionary['projected_volumes'])
+        try:
+            dictionary['projected_areas'] = np.array(dictionary['projected_areas'])
+            dictionary['projected_volumes'] = np.array(dictionary['projected_volumes'])
+        except:
+            pass
         return [val for val in [volumes, areas, dictionary] if len(val) > 0 ]
 
