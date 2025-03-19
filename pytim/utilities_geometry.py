@@ -210,3 +210,20 @@ def EulerRotation(phi, theta, psi):
     R2 = [-cth * cps * sph - cph * sps, cth * cps * cph - sph * sps, cps * sth]
     R3 = [sth * sph, -cph * sth, cth]
     return np.array([R1, R2, R3])
+
+def minimum_image(disp, box):
+    """  wraps displacement vectors so that they satisfy the minimum image
+         convention
+
+         :param ndarray disp: an (N,3) array of displacements
+         :param ndarray box: (3,) array with the rectangular box edges' length
+         :return ndarray: the wrapped displacements
+
+    """
+    cond = np.where(disp>box[:3]/2)
+    disp[cond] = disp[cond] -  box[cond[1]]
+    cond = np.where(disp<-box[:3]/2)
+    disp[cond] = disp[cond] +  box[cond[1]]
+    return disp
+ 
+

@@ -284,4 +284,4 @@ def generate_cube_vertices(box, delta=0.0, jitter=False, dim=3):
 
     return vertices
 
-#
+
