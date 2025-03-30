@@ -2,7 +2,7 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 
 from __future__ import print_function
-from abc import ABCMeta, abstractproperty
+from abc import ABCMeta, abstractmethod
 import numpy as np
 from scipy.spatial import Delaunay, cKDTree
 from scipy.interpolate import LinearNDInterpolator
@@ -42,26 +42,29 @@ class Surface(object):
         except (TypeError, KeyError):
             self._layer = 0
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def interpolation(self, inp):
         """ returns interpolated position on the surface """
         return utilities.extract_positions(inp)
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def distance(self, inp, *args, **kargs):
         """ returns distance from the surface """
         positions = utilities.extract_positions(inp)
         distance_array = positions[::, 2]
         return distance_array
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def triangulation(self):
         """ return a scipy.spatial.qhull.Delaunay triangulation
             of the surface
         """
-        return triangulation
+        return NotImplemented
 
-    @abstractproperty
+    @property
     def regular_grid(self):
         """ returns the points defining the regular grid in 2 dimensions, and
             the elevation values evaluated at the grid points
@@ -69,7 +72,8 @@ class Surface(object):
         """
         return (x, y), elevations
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def dump(self):
         """ save the surface to file """
         return True
