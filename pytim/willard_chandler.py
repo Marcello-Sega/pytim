@@ -156,14 +156,17 @@ class WillardChandler(Interface):
         self._atoms = self._layers[:]  # this is an empty AtomGroup
         self.writevtk = Writevtk(self)
 
-    def writecube(self, filename="pytim.cube", group=None, sequence=False, normalize=True):
+    def writecube(self, filename="pytim.cube", group=None, sequence=False, order='zyx', shift=[0,0,0], normalize=True):
         """ Write to cube files (sequences) the volumentric density and the
             atomic positions.
 
-            :param str filename:  the file name
-            :param bool sequence: if true writes a sequence of files adding
-                                  the frame to the filename
-            :param bool normalize: if true normalizes the density field to [0, 1]
+            :param str filename  : the file name
+            :param bool sequence : if true writes a sequence of files adding
+                                   the frame to the filename
+            :param string order  : 'xyz' or 'zyx', to adapt to the software used
+                                   for visualization. Default: 'zyx'
+            :param array shift   : add shift in grid units. Default: [0,0,0]
+            :param bool normalize: if true normalizes the density field to the range [0, 1]
 
             >>> import MDAnalysis as mda
             >>> import pytim
@@ -186,6 +189,7 @@ class WillardChandler(Interface):
             self.spacing,
             self.density_field,
             atomic_numbers=None,
+            order=order,
             normalize=normalize)
 
     def writeobj(self, filename="pytim.obj", sequence=False):
