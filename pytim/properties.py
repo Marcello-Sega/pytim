@@ -71,6 +71,8 @@ def _missing_attributes(interface, universe):
                              universe.atoms, 1)
     _check_missing_attribute(interface, 'elements', 'Elements', universe.atoms,
                              '  ')
+    _check_missing_attribute(interface, 'types', 'Atomtypes', universe.atoms,
+                             '  ')
     _check_missing_attribute(interface, 'chainIDs', 'ChainIDs', universe.atoms,
                              'X')
 
@@ -114,11 +116,18 @@ def _check_missing_attribute(interface, name, classname, group, value):
             values = np.array([value] * len(group))
         universe.add_TopologyAttr(missing_class(values))
         if name == 'elements':
-            types = MDAnalysis.topology.guessers.guess_types(group.names)
             # is there an inconsistency in the way 'element' is defined
             # in different modules in MDA?
             # Note: the second arg in .get() is the default.
+            # Here we opt to derive the element from the type if possible
+            try: types = group.types
+            except:
+                try: types =  MDAnalysis.guesser.default_guesser.DefaultGuesser(universe).guess_types(g.names)
+                except: types = MDAnalysis.topology.guessers.guess_types(group.names) # old MDA versions
             group.elements = np.array([t.ljust(2) for t in types])
+        if name == 'types':
+            try: MDAnalysis.guesser.default_guesser.DefaultGuesser(universe).guess_types(g.names)
+            except: group.types = MDAnalysis.topology.guessers.guess_types(group.names) # old MDA versions
         if name == 'radii':
             guess_radii(interface)
 
