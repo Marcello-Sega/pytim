@@ -44,3 +44,20 @@ jobs:
       run: |
          pytest pytim/ --doctest-modules
          
+    - name: Clone pytim-notebooks
+      run: |
+        git clone https://github.com/YOUR_USERNAME/pytim-notebooks.git
+
+    - name: Install dependencies for pytim-notebooks
+      run: |
+        cd pytim-notebooks
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Test pytim-notebooks
+      run: |
+        cd pytim-notebooks
+        IFS=$(echo -ne "\n\b") ; 
+        for notebook in $(find . -name "*.ipynb"); do
+          echo "Running $notebook"
+          jupyter nbconvert --to notebook --execute "$notebook" --output /dev/null
+        done
