@@ -100,7 +100,7 @@ class TopologicalOrderParameter(Observable):
             [   inf 3.2736 3.9129 3.5797]
 
         """
-
+        self.group = inp
         M = self.bonding_criterion.compute(inp)
         # we might use directed=True to speedup because we computed the matrix symmetrically
         res = dijkstra(M,
