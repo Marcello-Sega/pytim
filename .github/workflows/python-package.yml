@@ -46,7 +46,7 @@ jobs:
          
     - name: Clone pytim-notebooks
       run: |
-        git clone https://github.com/YOUR_USERNAME/pytim-notebooks.git
+        git clone https://github.com/Marcello-Sega/pytim-notebooks.git
 
     - name: Install dependencies for pytim-notebooks
       run: |
