@@ -58,6 +58,8 @@ jobs:
         cd pytim-notebooks
         IFS=$(echo -ne "\n\b") ; 
         for notebook in $(find . -name "*.ipynb"); do
+          base=$(basename "$notebook" .ipynb)
+          output="executed_${base}.ipynb"
           echo "Running $notebook"
-          jupyter nbconvert --to notebook --execute "$notebook" --output /dev/null
+          jupyter nbconvert --to notebook --execute "$notebook" --output "$output"
         done
