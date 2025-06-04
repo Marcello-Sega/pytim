@@ -1,4 +1,69 @@
-# This is required by the build module, invoked as python -m build within the GitHub PyPI deployment action
-[build-system] 
+[build-system]
 # scipy and numpy are required to build the cython extensions
-requires = ["setuptools", "wheel", "Cython", "numpy", "scipy"]  # PEP 508 specifications.
+requires = ["setuptools>=61.0", "wheel", "Cython" , "numpy", "scipy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytim"
+version = "1.0.3"  # Loaded from pytim/version.py in setup.py
+description = "Python Tool for Interfacial Molecules Analysis"
+readme = "README.rst"
+requires-python = ">=3.10"
+license = "GPL-3.0-only"
+
+authors = [
+  { name = "Marcello Sega", email = "m.sega@ucl.ac.uk" },
+  { name = "Balazs Fabian" },
+  { name = "Gyorgy Hantal" },
+  { name = "Pal Jedlovszky" }
+]
+
+maintainers = [
+  { name = "Marcello Sega", email = "m.sega@ucl.ac.uk" }
+]
+
+keywords = ["molecular", "simulations", "analysis"]
+
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "Topic :: Scientific/Engineering :: Chemistry",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Programming Language :: Python :: 3"
+]
+
+dependencies = [
+  "numpy>=2.1.3",
+  "cython>=0.24.1",
+  "gsd>3.0.0",
+  "MDAnalysis>=2.8.0",
+  "scipy>=1.6.0",
+  "setuptools",
+  "PyWavelets>=0.5.2",
+  "scikit-image>=0.24.0",
+  "sphinx>=1.4.3",
+  "matplotlib",
+  "pytest",
+  "dask>=1.1.1"
+]
+
+[project.optional-dependencies]
+dev = ["nose>=1.3.7", "coverage"]
+
+[project.urls]
+Homepage = "https://github.com/Marcello-Sega/pytim"
+Source = "https://github.com/Marcello-Sega/pytim"
+BugTracker = "https://github.com/Marcello-Sega/pytim/issues"
+
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+"pytim" = ["data/*"]
