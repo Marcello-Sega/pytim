@@ -1,0 +1,20 @@
+name: SPEC-0 Check
+
+on:
+  push:
+    paths:
+      - '**/requirements.txt'
+      - '**/setup.py'
+      - '**/pyproject.toml'
+  pull_request:
+
+jobs:
+  spec0:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Marcello-Sega/spec0-compliance-bot@v0.2
+        with:
+          path: .
+          github_token: "${{ secrets.GITHUB_TOKEN }}"
+          trigger_branch: "${{ github.head_ref || github.ref_name }}"
