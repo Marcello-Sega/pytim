@@ -1,0 +1,18 @@
+name: SPEC-0 Check
+
+on:
+  push:
+    paths:
+      - '**/requirements.txt'
+      - '**/setup.py'
+      - '**/pyproject.toml'
+  pull_request:
+
+jobs:
+  spec0:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: MarcelloSega/spec0-compliance-bot@v1
+        with:
+          path: .
