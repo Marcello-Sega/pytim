@@ -17,4 +17,4 @@ jobs:
         with:
           path: .
           github_token: "${{ secrets.GITHUB_TOKEN }}"
-          trigger_branch: "${{  github.ref_name }}"
+          trigger_branch: "${{ github.head_ref || github.ref_name }}"
