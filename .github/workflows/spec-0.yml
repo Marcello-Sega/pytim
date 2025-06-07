@@ -16,4 +16,4 @@ jobs:
       - uses: Marcello-Sega/spec0-compliance-bot@v0.2
         with:
           path: .
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          github_token: "${{ secrets.GITHUB_TOKEN }}"
