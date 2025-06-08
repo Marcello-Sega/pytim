@@ -7,6 +7,7 @@
 [![codecov](https://codecov.io/gh/Marcello-Sega/pytim/branch/master/graph/badge.svg)](https://codecov.io/gh/Marcello-Sega/pytim)
 [![Code Climate](https://codeclimate.com/github/Marcello-Sega/pytim/badges/gpa.svg)](https://codeclimate.com/github/Marcello-Sega/pytim)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![SPEC-0](https://img.shields.io/github/actions/workflow/status/Marcello-Sega/pytim/spec-0.yml?label=SPEC-0&logo=github)
 
 <sub> If you try this software out and have some suggestions, remarks, or bugfixes, feel free to comment here on GitHub and/or make a pull request. </sub>
 
