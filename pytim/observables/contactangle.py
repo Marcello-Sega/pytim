@@ -86,7 +86,7 @@ class ContactAngle(object):
 
         >>> # Contact angles from the averaged binned statistics of
         >>> # surface atoms' radial distance as a function of the azimuthal angle
-        >>> np.around(CA.mean_contact_angles,1).tolist()
+        >>> np.round(CA.mean_contact_angles,1).tolist()
         [96.2, 100.7]
 
 
@@ -94,7 +94,7 @@ class ContactAngle(object):
         from the fit of a sphere/circle arc (assuming an undeformed droplet), the
         "singular" variants can be used, e.g.,
 
-        >>> print(np.around(CA.mean_contact_angle,1))
+        >>> print(np.round(CA.mean_contact_angle,1))
         91.2
 
         If it's not obvious how to set the elevation where the contact angle is
@@ -104,10 +104,10 @@ class ContactAngle(object):
 
         >>> CA = observables.ContactAngle(inter, substrate, periodic=1,bins=397,removeCOM=0,hcut=5, contact_cut='auto')
         >>> CA.sample() # one configuration
-        >>> print(np.around(CA.contact_cut,4))
+        >>> print(np.round(CA.contact_cut,4))
         4.7729
 
-        >>> print(np.around(CA.contact_angles,4))
+        >>> print(np.round(CA.contact_angles,4))
         [79.4901 83.0721]
 
 
@@ -129,12 +129,12 @@ class ContactAngle(object):
         >>> # let's fit an ellipsoid and and print the canonical parameters
         >>> p, cp, theta, phi, rmsd = CA.fit_ellipsoid()
         >>> # The RMSD of the surface atoms from the best fit ellipsoid
-        >>> print(np.around(rmsd,4))
+        >>> print(np.round(rmsd,4))
         2.846
 
         >>> # The affine transformation parameters
         >>> T,v = CA._ellipsoid_general_to_affine(p).values()
-        >>> print(np.around(T,4))
+        >>> print(np.round(T,4))
         [[38.0794  0.2772  4.6788]
          [ 0.2772 37.5698  0.1722]
          [ 4.6788  0.1722 45.7722]]
