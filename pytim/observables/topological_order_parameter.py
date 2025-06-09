@@ -99,6 +99,18 @@ class TopologicalOrderParameter(Observable):
             ...     print(psi.compute(g)[:4])
             [   inf 3.2736 3.9129 3.5797]
 
+            >>> # Now we compute by hand the path uniting two 4-bonded topological neighbors...
+            >>> at1 = g.atoms[42]
+            >>> at4 = u.atoms[psi.neighbors[at1.resindex]]
+            >>> path = psi.path(at1,at4)
+            >>> path.indices
+            array([3522, 8964, 4515, 7725,  126])
+
+            >>> # ...and check that this is the same as what's reported by
+            >>> # psi.path_to_nearest_topological_neighbor()
+            >>> psi.path_to_nearest_topological_neighbor(at1).indices
+            array([3522, 8964, 4515, 7725,  126])
+
         """
         self.group = inp
         M = self.bonding_criterion.compute(inp)
