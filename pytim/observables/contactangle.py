@@ -353,7 +353,7 @@ class ContactAngle(object):
         return rmsd + penalty
 
     @staticmethod
-    def rmsd_circle(p, x):
+    def _rmsd_circle(p, x):
         R, x0, y0 = p
         d = np.linalg.norm(np.array([x0, y0])-x, axis=1) - R
         return np.sqrt(np.mean(d**2))
@@ -444,13 +444,13 @@ class ContactAngle(object):
             rad = np.sqrt(sol[2]+rc**2+hc**2)
             pos = np.vstack([r, h]).T
             if nonlinear:
-                res = minimize(ContactAngle.rmsd_circle, x0=[rad, rc, hc], args=(pos),
+                res = minimize(ContactAngle._rmsd_circle, x0=[rad, rc, hc], args=(pos),
                                method='nelder-mead', options={'xatol': 1e-8, 'disp': False})
                 rad, rc, hc = res.x
                 base_radius = np.sqrt(rad**2-hc**2)
                 rmsdval = res.fun
             else:
-                rmsdval = ContactAngle.rmsd_circle([rad, rc, hc], pos)
+                rmsdval = ContactAngle._rmsd_circle([rad, rc, hc], pos)
 
             base_radius = np.sqrt(rad**2-hc**2)
             costheta = -hc/rad
@@ -714,14 +714,14 @@ class ContactAngle(object):
             # we aim at accuracy of about 0.04 Angstrom with points_density = 25
             N = int(points_density * np.max(np.sqrt(X**2+Y**2)))
             if nonlinear:
-                rmsdf = ContactAngle.rmsd_ellipsoid_penalty
+                rmsdf = ContactAngle._rmsd_ellipsoid_penalty
                 start = rmsdf(p, pos, N, False)
                 # we aim at improving by 10% the least square fit
                 res = minimize(rmsdf, x0=p, args=(pos, N, False),
                                method='nelder-mead', options={'xatol': start/10, 'disp': False})
                 p, rmsdval = res.x, res.fun
             else:
-                rmsdval = ContactAngle.rmsd_ellipsoid(p, pos, N)
+                rmsdval = ContactAngle._rmsd_ellipsoid(p, pos, N)
 
             theta = np.array([])
             cp = ContactAngle._ellipsoid_general_to_affine(
