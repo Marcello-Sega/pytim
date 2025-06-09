@@ -110,6 +110,38 @@ class ContactAngle(object):
         >>> print(np.around(CA.contact_angles,4))
         [79.4901 83.0721]
 
+
+        Another example with a spherical cap droplet (see also the pytim-notebook repo):
+
+        >>> import numpy as np
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import WATER_DROPLET_SPHERICAL_GRO
+        >>> from pytim.observables.contactangle import ContactAngle
+        >>>
+        >>> u = mda.Universe(WATER_DROPLET_SPHERICAL_GRO)
+        >>> droplet = u.select_atoms("name OW")
+        >>> substrate = u.select_atoms("name C")
+        >>> inter = pytim.GITIM(universe=u,group=droplet, molecular=False,alpha=2.5,cluster_cut=3.4, biggest_cluster_only=True)
+        >>> CA = ContactAngle(inter, substrate, periodic=None,bins=1,removeCOM=[0,1],contact_cut=6.)
+        >>> CA.sample()
+        >>>
+        >>> # let's fit an ellipsoid and and print the canonical parameters
+        >>> p, cp, theta, phi, rmsd = CA.fit_ellipsoid()
+        >>> print(np.around(p,3))
+        [ 1.136000e+00  1.111000e+00  7.590000e-01 -5.000000e-03 -2.150000e-01
+         -1.900000e-02  1.178700e+01 -1.200000e-01 -2.154600e+01 -1.425679e+03]
+
+        >>> # The RMSD of the surface atoms from the best fit ellipsoid
+        >>> print(np.around(rmsd,4))
+        2.7304
+
+        >>> # The affine transformation parameters
+        >>> T,v = CA._ellipsoid_general_to_affine(p).values()
+        >>> print(np.around(T,4))
+        [[38.0944  0.3495  4.9198]
+         [ 0.3495 37.7945  0.1835]
+         [ 4.9198  0.1835 46.7292]]
    """
 
     class Histogram(object):
