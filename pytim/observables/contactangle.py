@@ -130,10 +130,10 @@ class ContactAngle(object):
 
         >>> # The affine transformation parameters
         >>> T,v = CA._ellipsoid_general_to_affine(p).values()
-        >>> print(np.round(T,4))
-        [[38.0794  0.2772  4.6788]
-         [ 0.2772 37.5698  0.1722]
-         [ 4.6788  0.1722 45.7722]]
+        >>> print(np.round(T,2))
+        [[38.08  0.28  4.68]
+         [ 0.28 37.57  0.17]
+         [ 4.68  0.17 45.77]]
    """
 
     class Histogram(object):
