@@ -694,6 +694,7 @@ class ContactAngle(object):
                           if s are points from the unit sphere centered in the origin.
                  theta  : the contact angle as a function of the azimuthal angle phi from phi=0, aligned
                           with (-1,0,0) to 2 pi.
+                 phi    : the angle phi along the contact line that parametrizes the contact angle theta.
                  rmsd   : the rmsd to the best fit (linear or nonlinear) ellipsoid
 
              For the least square approach see _fit_ellipsoid_lstsq_cox
@@ -722,11 +723,14 @@ class ContactAngle(object):
                 p, rmsdval = res.x, res.fun
             else:
                 rmsdval = ContactAngle._rmsd_ellipsoid(p, pos, N)
-
-            theta = np.array([])
+            contact_line, theta =  ContactAngle._ellipsoid_contact_line_and_angles(p, off=off)
+            phi = np.arctan2(contact_line[:,1],contact_line[:,0]) # angle along the contact line
+            sort = np.argsort(np.mod(phi, 2*np.pi))
+            phi = phi[sort]
+            theta = theta[sort]
             cp = ContactAngle._ellipsoid_general_to_affine(
                 p, check_coeffs=False)
-            retvals.append((p, cp, theta, rmsdval))
+            retvals.append((p, cp, theta, phi, rmsdval))
 
         if len(retvals) == 1:
             return retvals[0]
@@ -1154,12 +1158,13 @@ class ContactAngle(object):
                           if s are points from the unit sphere centered in the origin.
                  :float: theta  : the contact angle as a function of the azimuthal angle phi from phi=0, aligned\
                           with (-1,0,0) to 2 pi.
+                 phi    : the angle phi along the contact line that parametrizes the contact angle theta.
                  :float: rmsd   : the rmsd to the best fit (linear or nonlinear) ellipsoid
         """
 
         x, y, z = self._select_coords(use, bins=bins)  # TODO FIXME
 
-        p, cp, theta, rmsd = self._fit_ellipsoid(
+        p, cp, theta, phi, rmsd = self._fit_ellipsoid(
             x, y, z, nonlinear=nonlinear, off=0.0)
         self._polynomial_coefficients, self._canonical_form = p, cp
-        return p, cp, theta, rmsd
+        return p, cp, theta, phi, rmsd.item()
