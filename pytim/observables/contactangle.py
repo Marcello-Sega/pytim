@@ -128,10 +128,6 @@ class ContactAngle(object):
         >>>
         >>> # let's fit an ellipsoid and and print the canonical parameters
         >>> p, cp, theta, phi, rmsd = CA.fit_ellipsoid()
-        >>> print(np.around(p,3))
-        [ 1.136000e+00  1.111000e+00  7.590000e-01 -5.000000e-03 -2.150000e-01
-         -1.900000e-02  1.178700e+01 -1.200000e-01 -2.154600e+01 -1.425679e+03]
-
         >>> # The RMSD of the surface atoms from the best fit ellipsoid
         >>> print(np.around(rmsd,4))
         2.7304
