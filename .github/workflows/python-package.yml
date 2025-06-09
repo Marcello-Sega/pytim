@@ -33,6 +33,7 @@ jobs:
         #python -m pip install mdtraj # removed as long as mdtraj is not supporting numpy2
         python -m build
         python -m pip install dist/*.whl
+        python -m pip install pytest pytest-cov
 
     #- name: Lint with flake8
      # run: |
