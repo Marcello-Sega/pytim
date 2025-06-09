@@ -308,6 +308,10 @@ WATER_DROPLET_CYLINDRICAL_XTC = resource('pytim', 'data/water_droplet_cylindrica
 pytim_data.add('WATER_DROPLET_CYLINDRICAL_XTC', 'traj', 'XTC',
                'cylindrical water droplet on graphite trajectory')
 
+WATER_DROPLET_SPHERICAL_GRO = resource('pytim', 'data/water_droplet_spherical.gro')
+pytim_data.add('WATER_DROPLET_SJPHERICAL_GRO', 'config', 'GRO',
+               'spherical water droplet on graphite')
+
 METHANOL_GRO = resource('pytim', 'data/methanol.gro')
 pytim_data.add('METHANOL_GRO', 'conf', 'GRO', 'methanol/vapour interface')
 
