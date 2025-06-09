@@ -32,22 +32,40 @@ class ContactAngle(object):
         :param int               bins:        bins used for sampling the profile
         :param int or array_like removeCOM:   remove the COM motion along this direction(s). Default: None, does not remove COM motion
 
-        Example:
+        Attributes:
+
+            contact_angles (ndarray):         Array of contact angles computed by fitting to an ellipse (for a cylindrical droplet crossing
+                                              pbcs) or an ellipsoid (for a deformed spherical cap droplet)
+
+            mean_contact_angles (np.ndarray): Like contact_angles, but averaged over the sampled frames
+
+            contact_angle (float) :           The contact angle for symmetric droplets computed by fitting to a circle (cylindrical droplet) or
+                                              sphere (spherical cap droplet)
+
+            mean_contact_angle (float):       Like contact_angle, but averaged over the sampled frames
+
+            polynomial_coefficients (list):   Coefficients of the polynomial fit used for the droplet shape
+
+            canonical_form (dict):            Dictionary with the canonical form coefficents
+
+        Notes: see the documentation of _ellipsoid_general_to_affine for a detailed description of the different type of coefficients
+
+        Examples:
 
         >>> import MDAnalysis as mda
         >>> import numpy as np
         >>> import pytim
         >>> from pytim import observables
         >>> from pytim.datafiles import *
-        >>> 
+        >>>
         >>> u = mda.Universe(WATER_DROPLET_CYLINDRICAL_GRO,WATER_DROPLET_CYLINDRICAL_XTC)
         >>> droplet = u.select_atoms("name OW")
         >>> substrate = u.select_atoms("name C")
         >>> inter = pytim.GITIM(universe=u,group=droplet, molecular=False,alpha=2.5,cluster_cut=3.4, biggest_cluster_only=True)
-        >>> 
+        >>>
         >>> # Contact angle calculation using interfacial atoms, angular bining for a cylindrical droplet
         >>> # with periodicity along the y (1) axis
-        >>> 
+        >>>
         >>> CA = observables.ContactAngle(inter, substrate, periodic=1,bins=397,removeCOM=0,hcut=5)
         >>> for ts in u.trajectory[::]:
         ...     CA.sample()
@@ -55,7 +73,7 @@ class ContactAngle(object):
         >>> print(np.round(CA.contact_angle,2))
         90.58
 
-        >>> 
+        >>>
         >>> # ... and using an elliptical fit:
         >>> left, right = CA.contact_angles
         >>> # left angle
@@ -70,6 +88,27 @@ class ContactAngle(object):
         >>> # surface atoms' radial distance as a function of the azimuthal angle
         >>> np.around(CA.mean_contact_angles,1).tolist()
         [96.2, 100.7]
+
+
+        If instead of the elliptical fit one would like to extract the contact angle
+        from the fit of a sphere/circle arc (assuming an undeformed droplet), the
+        "singular" variants can be used, e.g.,
+
+        >>> print(np.around(CA.mean_contact_angle,1))
+        91.2
+
+        If it's not obvious how to set the elevation where the contact angle is
+        evaluted (default contact_cut = 0 in the first example) one can use the automatic
+        detection, that selects the elevation at which the distribution of the substrate
+        atoms drops below 95% of its maximum (towards positive values of the position).
+
+        >>> CA = observables.ContactAngle(inter, substrate, periodic=1,bins=397,removeCOM=0,hcut=5, contact_cut='auto')
+        >>> CA.sample() # one configuration
+        >>> print(np.around(CA.contact_cut,4))
+        4.7729
+
+        >>> print(CA.contact_angles)
+        [79.49009977 83.07208044]
 
    """
 
@@ -104,7 +143,7 @@ class ContactAngle(object):
 
     @property
     def contact_angle(self):
-        """ 
+        """
             The contact angle from the best-fititng circumference or sphere
             computed using the current frame
         """
@@ -119,9 +158,9 @@ class ContactAngle(object):
 
     @property
     def mean_contact_angle(self):
-        """ 
-            The contact angle from the best-fititng circumference 
-            computed using the location of the interface averaged 
+        """
+            The contact angle from the best-fititng circumference
+            computed using the location of the interface averaged
             over the sampled frames
         """
         if self.periodic is None:
@@ -131,12 +170,12 @@ class ContactAngle(object):
             c, cp, theta, _, _ = self.fit_circle(use='histogram')
         self._polynomial_coefficients = c
         self._canonical_form = cp
-        return theta
+        return float(theta)
 
     @property
     def contact_angles(self):
-        """ 
-            The contact angles from the best-fititng ellipse or 
+        """
+            The contact angles from the best-fititng ellipse or
             ellipsoid computed using the current frame
         """
         if self.periodic is None:
@@ -145,13 +184,13 @@ class ContactAngle(object):
             c, cp, theta, _ = self.fit_ellipse()
         self._polynomial_coefficients = c
         self._canonical_form = cp
-        return theta
+        return np.array(theta)
 
     @property
     def mean_contact_angles(self):
-        """ 
-            The contact angles from the best-fititng ellipse or 
-            ellipsoid computed using the location of the interface 
+        """
+            The contact angles from the best-fititng ellipse or
+            ellipsoid computed using the location of the interface
             averaged over the sampled frames
         """
         if self.periodic is None:
@@ -160,7 +199,7 @@ class ContactAngle(object):
             c, cp, theta, _ = self.fit_ellipse(use='histogram')
         self._polynomial_coefficients = c
         self._canonical_form = cp
-        return theta
+        return np.array(theta)
 
     @property
     def polynomial_coefficients(self):
@@ -273,7 +312,7 @@ class ContactAngle(object):
             self.sample_theta_R(theta, r, h)
 
     @staticmethod
-    def rmsd_ellipse(p, x, N, check_coeffs=True):
+    def _rmsd_ellipse(p, x, N, check_coeffs=True):
         cp = ContactAngle._ellipse_general_to_canonical(p, check_coeffs)
         xx, yy = ContactAngle.ellipse(cp, N)
         pos = np.vstack([xx, yy]).T
@@ -282,13 +321,13 @@ class ContactAngle(object):
         return np.sqrt(np.mean(cKDTree(pos).query(x)[0]**2))
 
     @staticmethod
-    def rmsd_ellipse_penalty(p, x, N, check_coeffs=True):
-        rmsd = ContactAngle.rmsd_ellipse(p, x, N, check_coeffs)
+    def _rmsd_ellipse_penalty(p, x, N, check_coeffs=True):
+        rmsd = ContactAngle._rmsd_ellipse(p, x, N, check_coeffs)
         penalty = (4*p[0]*p[2]-p[1]**2-1)**2
         return rmsd + penalty
 
     @staticmethod
-    def rmsd_ellipsoid(p, x, N, check_coeffs=True):
+    def _rmsd_ellipsoid(p, x, N, check_coeffs=True):
         """ RMSD between the points x and the ellipsoid defined by the general\
             parameters p of the associated polynomial.
 
@@ -307,8 +346,8 @@ class ContactAngle(object):
         return np.sqrt(np.mean(cKDTree(pos).query(x)[0]**2))
 
     @staticmethod
-    def rmsd_ellipsoid_penalty(p, x, N, check_coeffs=True):
-        rmsd = ContactAngle.rmsd_ellipsoid(p, x, N, check_coeffs)
+    def _rmsd_ellipsoid_penalty(p, x, N, check_coeffs=True):
+        rmsd = ContactAngle._rmsd_ellipsoid(p, x, N, check_coeffs)
         violation = (4*p[0]*p[2]-p[1]**2)**2
         penalty = 0 if 4*p[0]*p[2]-p[1]**2 > 0 else violation
         return rmsd + penalty
@@ -389,7 +428,7 @@ class ContactAngle(object):
 
             :return:
             :list:             : a list with the tuple (radius, base radius, cos(theta), center, rmsd)
-                                for each bin. If only one bin is present, return just the tuple. 
+                                for each bin. If only one bin is present, return just the tuple.
         """
         parms = []
         for i in np.arange(len(hr)):
@@ -536,7 +575,7 @@ class ContactAngle(object):
 
             :return:
 
-            :ndarray: a (10,)-ndarray with the polynomial coefficients    
+            :ndarray: a (10,)-ndarray with the polynomial coefficients
         """
         D = np.vstack([x**2+y**2-2*z**2, x**2 - 2*y**2 + z**2,
                       4*x*y, 2*x*z, 2*y*z, x, y, z, np.ones(len(x))]).T
@@ -580,7 +619,7 @@ class ContactAngle(object):
                  theta  : [left angle, right angle]
                  rmsd   : the rmsd to the best fit (linear or nonlinear) ellipse or ellipsoid
 
-             Uses a slighly modified version of Fitzgibbon's least square algorithm from 
+             Uses a slighly modified version of Fitzgibbon's least square algorithm from
              Stable implementation from Halır, Radim, and Jan Flusser,
              "Numerically stable direct least squares fitting of ellipses."
              Proc. 6th International Conference in Central Europe on Computer
@@ -611,12 +650,12 @@ class ContactAngle(object):
                 # set a=c=1 in Eqs 27-30 https://mathworld.wolfram.com/Circle.html
                 p = [1.0001, 0.0, 0.9999, -2*x0, -2*y0, x0**2+y0**2-rad**2]
             if nonlinear:
-                rmsdf = ContactAngle.rmsd_ellipse_penalty
+                rmsdf = ContactAngle._rmsd_ellipse_penalty
                 res = minimize(rmsdf, x0=p, args=(pos, N, False),
                                method='nelder-mead', options={'xatol': 1e-4, 'disp': verbose})
                 p, rmsdval = res.x, res.fun
             else:
-                rmsdval = ContactAngle.rmsd_ellipse(p, pos, N)
+                rmsdval = ContactAngle._rmsd_ellipse(p, pos, N)
             theta1, theta2 = ContactAngle._contact_angles_from_ellipse(
                 p, off=off)
             # canonical form (careful: we overwrite internal variables a,b)
@@ -634,7 +673,7 @@ class ContactAngle(object):
 
              :param list  x        : list of arrays with coordinates x
              :param list  y        : list of arrays with coordinates y
-             :param list  z        : list of arrays with coordinates z, 
+             :param list  z        : list of arrays with coordinates z,
              :param bool  nonlinear : use the more accurate minimization of the rmsd instead of the algebraic distance
              :param float off       : elevation from the substrate surface, where the
                                      contact angle should be evaluated. Default; 0.0, corresponding
@@ -647,13 +686,13 @@ class ContactAngle(object):
              :list      : a list with a tuple (parms,parmsc,theta, rmsd) for each of the bins
                           If only one bin is present, return just the tuple
                  parms  : array of parameters of the ellipsoid equation in general form:
-                             a[0] x^2 + a[1] y^2 + a[2] z^2 + a[3] yz + a[4] xz + 
+                             a[0] x^2 + a[1] y^2 + a[2] z^2 + a[3] yz + a[4] xz +
                              a[5] xy  + a[6] x + a[7] y + a[8] z + a[9] = 0, otherwise.
                  parmsc : dictionary with parameters of the ellipsoid affine form (T,v),
                           such that the ellipsoid points are
-                                         r  = T s + v, 
+                                         r  = T s + v,
                           if s are points from the unit sphere centered in the origin.
-                 theta  : the contact angle as a function of the azimuthal angle phi from phi=0, aligned 
+                 theta  : the contact angle as a function of the azimuthal angle phi from phi=0, aligned
                           with (-1,0,0) to 2 pi.
                  rmsd   : the rmsd to the best fit (linear or nonlinear) ellipsoid
 
@@ -780,7 +819,7 @@ class ContactAngle(object):
         # NOTE: don't change the units of phi to deg., other parts of the code
         #       depend on it being in rad.
         phi = phi % np.pi
-        return {'x0': x0, 'y0': y0, 'a': ap, 'b': bp, 'phi': phi, 'e': e}
+        return {'x0': x0.item(), 'y0': y0.item(), 'a': ap.item(), 'b': bp.item(), 'phi': phi.item(), 'e': e.item()}
 
     @staticmethod
     def _ellipsoid_base(coeffs, off, npts=1000):
@@ -823,7 +862,7 @@ class ContactAngle(object):
     @staticmethod
     def _ellipsoid_contact_line_and_angles(coeffs, off, npts=1000):
         """ Computes the contact line and the contact angles along the
-            line. 
+            line.
 
             :param array_like coeffs : the coefficients of the polynomial
                                        defining the ellipsoid, see, e.g.,
@@ -836,7 +875,7 @@ class ContactAngle(object):
 
             :return:
             :tuple                   : a tuple containing the contact line
-                                       on the (x,y) plane as a (npts,2)-ndarray 
+                                       on the (x,y) plane as a (npts,2)-ndarray
                                        and the contact angles as a (npts,)-ndarray.
         """
         bx, by = ContactAngle._ellipsoid_base(coeffs, off, npts=npts)
@@ -848,8 +887,8 @@ class ContactAngle(object):
     @staticmethod
     def _ellipsoid_general_to_affine(coeffs, check_coeffs=True):
         """ Convert general coefficients (a,b,c,f,g,h,p,q,r,d) of the polynomial
-            a xx + b yy +c zz + 2f yz + 2g xz + 2h xy + px + qy +rz +d to the affine 
-            transformation ones that map the unitary sphere centered in the origin 
+            a xx + b yy +c zz + 2f yz + 2g xz + 2h xy + px + qy +rz +d to the affine
+            transformation ones that map the unitary sphere centered in the origin
             to a point on the ellipsoid.
 
             :param list coeffs       : general coefficients
@@ -861,18 +900,18 @@ class ContactAngle(object):
 
             :return:
             : dict                   : a dictionary with the affine matrix and vector, T and v
-                                       If a point on the unit sphere centered in the origin is s, 
-                                       then the correspoinding point r=(x,y,z) on the ellipsoid is 
+                                       If a point on the unit sphere centered in the origin is s,
+                                       then the correspoinding point r=(x,y,z) on the ellipsoid is
                                        defined by the affine transofmation r = T s + v = A^(-1/2) s + v
 
-            Here, A is the matrix of the quadratic form defining the ellipsoid, 
+            Here, A is the matrix of the quadratic form defining the ellipsoid,
 
-                               r^t A r + beta^t r + gamma = 0. 
+                               r^t A r + beta^t r + gamma = 0.
 
             The connection to the general coefficients is given by
 
                           |  a   h    g  |
-                       A= |  h   b    f  | ,   beta^t = (p, q, r) , gamma = d 
+                       A= |  h   b    f  | ,   beta^t = (p, q, r) , gamma = d
                           |  g   f    c  |
 
             In addition, the quadratic form can be recast to (r-v)^t A' (r-v) = k.
@@ -889,7 +928,7 @@ class ContactAngle(object):
             using A and not A/k. The standard form can be used to generate points r on the
             ellipse starting from the unit sphere s centered in zero as the affine transformation
 
-                                   r = v + T s, with T = A^{-1/2}  
+                                   r = v + T s, with T = A^{-1/2}
 
             This function eventually returns the elements of the affine transofmation T and v.
 
@@ -897,7 +936,7 @@ class ContactAngle(object):
             >>> p1 = np.array([2, 3, 4., 0.4, 0.5, -0.6, 0.3, 4.2, 0.1, -10])
             >>> cp = ContactAngle._ellipsoid_general_to_affine(p1,check_coeffs=True)
             >>> x,y,z = ContactAngle.ellipsoid(cp)
-            >>> p2 = ContactAngle._fit_ellipsoid_lstsq_cox(x,y,z) 
+            >>> p2 = ContactAngle._fit_ellipsoid_lstsq_cox(x,y,z)
             >>> # NOTE: for Cox, a+b+c = 3, so, to compare the two sets we need to normalize
             >>> p2 *= np.sum(p1[:3])/3.
             >>> print(np.all(np.isclose(p1,p2)))
@@ -965,7 +1004,7 @@ class ContactAngle(object):
     def sample_theta_R(self, theta, r, h):
         """
             given a set of angles (theta), radii (r) and elevations (h), compute the mean profile h(r)
-            by taking the binned average values of h and r. 
+            by taking the binned average values of h and r.
         """
         R = np.sqrt(r*r+h*h)
         n_h, t_edges = np.histogram(
