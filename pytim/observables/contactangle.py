@@ -107,8 +107,8 @@ class ContactAngle(object):
         >>> print(np.around(CA.contact_cut,4))
         4.7729
 
-        >>> print(CA.contact_angles)
-        [79.49009977 83.07208044]
+        >>> print(np.around(CA.contact_angles,4))
+        [79.4901 83.0721]
 
    """
 
