@@ -30,6 +30,7 @@
     WATER_520K_GRO       SPC/E water/vapour interface, 520K
     WATER_550K_GRO       SPC/E water/vapour interface, 550K
     WATER_DROPLET_CYLINDRICAL_GRO cylindrical water droplet on graphite
+    WATER_DROPLET_SPHERICAL_GRO spherical water droplet on graphite
     WATER_GRO            SPC water/vapour interface
     WATER_PDB            SPC water/vapour interface
     WATER_TWO_INTERFACES two SPC water/vapour interfaces
