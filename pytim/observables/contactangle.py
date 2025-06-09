@@ -130,14 +130,14 @@ class ContactAngle(object):
         >>> p, cp, theta, phi, rmsd = CA.fit_ellipsoid()
         >>> # The RMSD of the surface atoms from the best fit ellipsoid
         >>> print(np.around(rmsd,4))
-        2.7304
+        2.846
 
         >>> # The affine transformation parameters
         >>> T,v = CA._ellipsoid_general_to_affine(p).values()
         >>> print(np.around(T,4))
-        [[38.0944  0.3495  4.9198]
-         [ 0.3495 37.7945  0.1835]
-         [ 4.9198  0.1835 46.7292]]
+        [[38.0794  0.2772  4.6788]
+         [ 0.2772 37.5698  0.1722]
+         [ 4.6788  0.1722 45.7722]]
    """
 
     class Histogram(object):
@@ -355,27 +355,28 @@ class ContactAngle(object):
         return rmsd + penalty
 
     @staticmethod
-    def _rmsd_ellipsoid(p, x, N, check_coeffs=True):
+    def _rmsd_ellipsoid(p, x, N, check_coeffs=True, seed=42):
         """ RMSD between the points x and the ellipsoid defined by the general\
             parameters p of the associated polynomial.
 
-            :param list    p:            general coefficients [a,b,c,f,g,h,p,q,r,d]
-            :param ndarray x:            points coordinates as a (x,3)-ndarray
-            :param int     N:            number of points on the ellipsoid that are\
+            :param list    p           : general coefficients [a,b,c,f,g,h,p,q,r,d]
+            :param ndarray x           : points coordinates as a (x,3)-ndarray
+            :param int     N           : number of points on the ellipsoid that are\
                                          generated and used to compute the rmsd
             :param bool    check_coeffs: if true, perform additional checks
+            :param int     seed        : if not None set as seed for the RNG
 
         """
         cp = ContactAngle._ellipsoid_general_to_affine(p, check_coeffs)
-        xx, yy, zz = ContactAngle.ellipsoid(cp, N)
+        xx, yy, zz = ContactAngle.ellipsoid(cp, N, seed=seed)
         pos = np.vstack([xx, yy, zz]).T
         cond = np.logical_and(zz >= np.min(x[:, 2]), zz <= np.max(x[:, 2]))
         pos = pos[cond]
         return np.sqrt(np.mean(cKDTree(pos).query(x)[0]**2))
 
     @staticmethod
-    def _rmsd_ellipsoid_penalty(p, x, N, check_coeffs=True):
-        rmsd = ContactAngle._rmsd_ellipsoid(p, x, N, check_coeffs)
+    def _rmsd_ellipsoid_penalty(p, x, N, check_coeffs=True, seed=42):
+        rmsd = ContactAngle._rmsd_ellipsoid(p, x, N, check_coeffs, seed)
         violation = (4*p[0]*p[2]-p[1]**2)**2
         penalty = 0 if 4*p[0]*p[2]-p[1]**2 > 0 else violation
         return rmsd + penalty
@@ -429,16 +430,18 @@ class ContactAngle(object):
         return x, y
 
     @staticmethod
-    def ellipsoid(parmsc, npts=1000):
+    def ellipsoid(parmsc, npts=1000, seed=42):
         """ Compute npts points on the ellipsoid described by the affine parameters T, v
 
-            :param dict  parmsc: dictionary with keys: T (3x3 matrix), v (3x1 vector)
-            :param int   npts:   number of points to use
+            :param dict  parmsc : dictionary with keys: T (3x3 matrix), v (3x1 vector)
+            :param int   npts   : number of points to use
+            :param int   seed   : if not None set as seed for the RNG
 
             :return:
             :tuple: (x,y,z)     : coordinates of points on the ellipsoid as ndarrays
 
         """
+        if seed is not None: np.random.seed(seed)
         phi = np.arccos(2 * np.random.rand(npts) - 1)
         theta = 2 * np.pi * np.random.rand(npts)
         s = np.array([np.sin(phi) * np.cos(theta), np.sin(phi)
@@ -450,12 +453,12 @@ class ContactAngle(object):
     def _fit_circle(hr, hh, nonlinear=True):
         """ fit an arc through the profile h(r) sampled by the class
 
-            :param list hr:        list of arrays with the radial coordinates
-            :param list hh:        list of arrays with the elevations
+            :param list hr       : list of arrays with the radial coordinates
+            :param list hh       : list of arrays with the elevations
             :param bool nonlinear: use the more accurate minimization of the rmsd instead of the algebraic distance
 
             :return:
-            :list:             : a list with the tuple (radius, base radius, cos(theta), center, rmsd)
+            :list:               : a list with the tuple (radius, base radius, cos(theta), center, rmsd)
                                 for each bin. If only one bin is present, return just the tuple.
         """
         parms = []
@@ -696,17 +699,18 @@ class ContactAngle(object):
             return retvals
 
     @staticmethod
-    def _fit_ellipsoid(x, y, z, nonlinear=True, off=0.0, points_density=25):
+    def _fit_ellipsoid(x, y, z, nonlinear=True, off=0.0, points_density=25,seed=42):
         """  fit an ellipsoid through the points (x,y,z)
 
-             :param list  x        : list of arrays with coordinates x
-             :param list  y        : list of arrays with coordinates y
-             :param list  z        : list of arrays with coordinates z,
-             :param bool  nonlinear : use the more accurate minimization of the rmsd instead of the algebraic distance
-             :param float off       : elevation from the substrate surface, where the
-                                     contact angle should be evaluated. Default; 0.0, corresponding
-                                     to the atomic center of the highest atom of the substrate
+             :param list  x             : list of arrays with coordinates x
+             :param list  y             : list of arrays with coordinates y
+             :param list  z             : list of arrays with coordinates z,
+             :param bool  nonlinear     : use the more accurate minimization of the rmsd instead of the algebraic distance
+             :param float off           : elevation from the substrate surface, where the
+                                          contact angle should be evaluated. Default; 0.0, corresponding
+                                          to the atomic center of the highest atom of the substrate
              :param int   points_density: number of points per Angstrom on the ellipse that are used to compute the rmsd
+             :param int     seed        : if not None set as seed for the RNG
 
 
              :return:
@@ -746,11 +750,11 @@ class ContactAngle(object):
                 rmsdf = ContactAngle._rmsd_ellipsoid_penalty
                 start = rmsdf(p, pos, N, False)
                 # we aim at improving by 10% the least square fit
-                res = minimize(rmsdf, x0=p, args=(pos, N, False),
+                res = minimize(rmsdf, x0=p, args=(pos, N, False, seed),
                                method='nelder-mead', options={'xatol': start/10, 'disp': False})
                 p, rmsdval = res.x, res.fun
             else:
-                rmsdval = ContactAngle._rmsd_ellipsoid(p, pos, N)
+                rmsdval = ContactAngle._rmsd_ellipsoid(p, pos, N, seed=seed)
             contact_line, theta =  ContactAngle._ellipsoid_contact_line_and_angles(p, off=off)
             phi = np.arctan2(contact_line[:,1],contact_line[:,0]) # angle along the contact line
             sort = np.argsort(np.mod(phi, 2*np.pi))
@@ -1163,7 +1167,7 @@ class ContactAngle(object):
         self._polynomial_coefficients, self._canonical_form = p, cp
         return p, cp, theta, rmsd
 
-    def fit_ellipsoid(self, use='frame', nonlinear=True, bins=1):
+    def fit_ellipsoid(self, use='frame', nonlinear=True, bins=1, seed=42):
         """  fit an ellipsoid through the points sampled by the class. See implementation details in _fit_ellipsoid()
 
             :param str   use        : 'frame'    : use the positions of the current frame only (default)\
@@ -1193,6 +1197,6 @@ class ContactAngle(object):
         x, y, z = self._select_coords(use, bins=bins)  # TODO FIXME
 
         p, cp, theta, phi, rmsd = self._fit_ellipsoid(
-            x, y, z, nonlinear=nonlinear, off=0.0)
+            x, y, z, nonlinear=nonlinear, off=0.0, seed=seed)
         self._polynomial_coefficients, self._canonical_form = p, cp
         return p, cp, theta, phi, rmsd.item()
