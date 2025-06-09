@@ -46,7 +46,7 @@ dependencies = [
   "sphinx>=7.1.0",
   "matplotlib",
   "pytest",
-  "dask>=2023.6.0"
+  "dask>=2023.6.1"
 ]
 
 [project.optional-dependencies]
