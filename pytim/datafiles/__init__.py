@@ -74,6 +74,7 @@ __all__ = [
     "WATER_XYZ",  # XYZ single frame, water/vapour interface, same as WATER_GRO
     "WATER_DROPLET_CYLINDRICAL_GRO",  # GROMACS single frame, SPC/E water droplet on graphite
     "WATER_DROPLET_CYLINDRICAL_XTC",  # GROMACS 2 frames trajectory, SPC/E water droplet on graphite
+    "WATER_DROPLET_SPHERICAL_GRO",  # GROMACS single frame, SPC/E spherical water droplet on graphite
     "METHANOL_GRO",  # methanol/vapour interface with molecules in the  vapour phase
     "ILBENZENE_GRO",  # Ionic liquid/benzene, partial miscibility
     "ANTAGONISTIC_GRO",  # 3-Methylpyridine, Sodium Tetraphenylborate and water
