@@ -107,10 +107,6 @@ class ContactAngle(object):
         >>> print(np.round(CA.contact_cut,4))
         4.7729
 
-        >>> print(np.round(CA.contact_angles,4))
-        [79.4901 83.0721]
-
-
         Another example with a spherical cap droplet (see also the pytim-notebook repo):
 
         >>> import numpy as np
