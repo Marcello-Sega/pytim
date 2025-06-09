@@ -30,6 +30,7 @@
     WATER_520K_GRO       SPC/E water/vapour interface, 520K
     WATER_550K_GRO       SPC/E water/vapour interface, 550K
     WATER_DROPLET_CYLINDRICAL_GRO cylindrical water droplet on graphite
+    WATER_DROPLET_SPHERICAL_GRO spherical water droplet on graphite
     WATER_GRO            SPC water/vapour interface
     WATER_PDB            SPC water/vapour interface
     WATER_TWO_INTERFACES two SPC water/vapour interfaces
@@ -74,6 +75,7 @@ __all__ = [
     "WATER_XYZ",  # XYZ single frame, water/vapour interface, same as WATER_GRO
     "WATER_DROPLET_CYLINDRICAL_GRO",  # GROMACS single frame, SPC/E water droplet on graphite
     "WATER_DROPLET_CYLINDRICAL_XTC",  # GROMACS 2 frames trajectory, SPC/E water droplet on graphite
+    "WATER_DROPLET_SPHERICAL_GRO",  # GROMACS single frame, SPC/E spherical water droplet on graphite
     "METHANOL_GRO",  # methanol/vapour interface with molecules in the  vapour phase
     "ILBENZENE_GRO",  # Ionic liquid/benzene, partial miscibility
     "ANTAGONISTIC_GRO",  # 3-Methylpyridine, Sodium Tetraphenylborate and water
@@ -306,6 +308,10 @@ pytim_data.add('WATER_DROPLET_CYLINDRICAL_GRO', 'config', 'GRO',
 WATER_DROPLET_CYLINDRICAL_XTC = resource('pytim', 'data/water_droplet_cylindrical.xtc')
 pytim_data.add('WATER_DROPLET_CYLINDRICAL_XTC', 'traj', 'XTC',
                'cylindrical water droplet on graphite trajectory')
+
+WATER_DROPLET_SPHERICAL_GRO = resource('pytim', 'data/water_droplet_spherical.gro')
+pytim_data.add('WATER_DROPLET_SPHERICAL_GRO', 'config', 'GRO',
+               'spherical water droplet on graphite')
 
 METHANOL_GRO = resource('pytim', 'data/methanol.gro')
 pytim_data.add('METHANOL_GRO', 'conf', 'GRO', 'methanol/vapour interface')
