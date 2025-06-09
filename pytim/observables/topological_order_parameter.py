@@ -111,6 +111,9 @@ class TopologicalOrderParameter(Observable):
             >>> psi.path_to_nearest_topological_neighbor(at1).indices
             array([3522, 8964, 4515, 7725,  126])
 
+            >>> all(path.indices == psi.path_to_nearest_topological_neighbor(at1).indices)
+            True
+
         """
         self.group = inp
         M = self.bonding_criterion.compute(inp)
