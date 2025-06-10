@@ -52,7 +52,7 @@ def patchOpenMM(simulation, interface):
     """ Patch the Openmm Simulation class
 
     """
-    from simtk.unit import angstrom as openmm_AA
+    from openmm.unit import angstrom as openmm_AA
     try:
         simulation.interface
     except AttributeError:

@@ -13,3 +13,6 @@ layer = interface.layers[0, 0]  # first layer, upper side
 print(repr(interface.layers[0, 0]))
 
 interface.writepdb('layers.pdb', centered=False)
+
+# for pytest
+def test(): assert repr(interface.layers[0,0]) == '<AtomGroup with 651 atoms>'
