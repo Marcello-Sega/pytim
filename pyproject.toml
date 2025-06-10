@@ -67,3 +67,10 @@ exclude = ["tests*"]
 
 [tool.setuptools.package-data]
 "pytim" = ["data/*"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-rA --doctest-modules"
+testpaths = [
+    "pytim/**/*.py",
+]

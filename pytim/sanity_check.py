@@ -52,7 +52,7 @@ class SanityCheck(object):
             - MDAnalysis.core.universe.Universe
             - MDAnalysis.core.groups.AtomGroup
             - mdtraj.core.trajectory.Trajectory
-            - simtk.openmm.app.simulation.Simulation
+            - penmm.app.simulation.Simulation
         """
         if isinstance(input_obj, MDAnalysis.core.universe.Universe):
             self.interface.universe = input_obj
@@ -81,9 +81,9 @@ class SanityCheck(object):
             pass
         try:
             import os
-            from simtk.openmm.app.simulation import Simulation
-            from simtk.openmm.app import pdbfile
-            from simtk.unit import angstrom as openmm_AA
+            from openmm.app.simulation import Simulation
+            from openmm.app import pdbfile
+            from openmm.unit import angstrom as openmm_AA
 
             if isinstance(input_obj, Simulation):
                 _file = tempfile.NamedTemporaryFile(

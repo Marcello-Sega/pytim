@@ -9,3 +9,7 @@ radii = pytim_data.vdwradii(G43A1_TOP)
 
 interface = pytim.ITIM(u, max_layers=4, molecular=True, cluster_cut=3.5)
 interface.writepdb('layers.pdb')
+
+
+# for pytest
+def test(): assert repr(interface.layers[0,0]) == '<AtomGroup with 786 atoms>'

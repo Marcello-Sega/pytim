@@ -64,3 +64,6 @@ if use_matplotlib:
     plt.savefig("surfaces.pdf")
     print("surface triangulation saved in surfaces.pdf")
     plt.show()
+
+# for pytest
+def test(): assert np.isclose(stats[0],7364.5)

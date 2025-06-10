@@ -16,3 +16,6 @@ interface.writepdb('gitim.pdb', centered=False)
 
 print("selected one layer of " + str(len(layer)) +
       " atoms out of a group of " + str(len(g)))
+
+# for pytest
+def test(): assert len(layer) == 909

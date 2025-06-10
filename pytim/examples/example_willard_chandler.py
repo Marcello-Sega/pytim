@@ -1,5 +1,6 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding: utf-8 -*-
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
+import numpy as np
 import MDAnalysis as mda
 import pytim
 from pytim.datafiles import *
@@ -21,3 +22,7 @@ interface.writevtk.surface('surface.vtk')  # isodensity surface in vtk format
 
 R, _, _, _ = pytim.utilities.fit_sphere(interface.triangulated_surface[0])
 print("Radius={:.3f}".format(R))
+
+
+# for pytest
+def test(): assert np.isclose(R,19.9696295)
