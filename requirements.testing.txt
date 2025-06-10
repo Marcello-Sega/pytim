@@ -1,4 +1,7 @@
-pytest==8.1.1
-codecov==2.1.13
-pytest-cov==5.0.0 
+pytest>=8.4.0
+codecov>=2.1.13
+pytest-cov>=5.0.0
 packaging
+mdtraj>=1.10.2
+openmm
+build
