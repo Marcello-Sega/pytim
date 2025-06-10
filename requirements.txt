@@ -8,5 +8,5 @@ PyWavelets>=1.5.0
 scikit-image>=0.24.0
 sphinx>=7.1.0
 matplotlib
-pytest
+pytest>=8.4.0
 dask>=2023.6.1
