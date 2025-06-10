@@ -4,7 +4,7 @@
 [![Build Status](https://api.travis-ci.com/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.com/Marcello-Sega/pytim)
 [![GitHub tags](https://img.shields.io/github/tag/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/)
 [![GitHub issues](https://img.shields.io/github/issues/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/issues)
-[![codecov](https://codecov.io/gh/Marcello-Sega/pytim/branch/master/graph/badge.svg)](https://codecov.io/gh/Marcello-Sega/pytim)
+[![codecov](https://codecov.io/gh/Marcello-Sega/pytim/branch/master/graph/badge.svg?token=s3x3SGUi2t)](https://codecov.io/gh/Marcello-Sega/pytim)
 [![Code Climate](https://codeclimate.com/github/Marcello-Sega/pytim/badges/gpa.svg)](https://codeclimate.com/github/Marcello-Sega/pytim)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![SPEC-0](https://img.shields.io/github/actions/workflow/status/Marcello-Sega/pytim/spec-0.yml?label=SPEC-0&logo=github)
