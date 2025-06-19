@@ -1,6 +1,6 @@
 cython>=0.29.36
 numpy>=2.1.3
-scipy>=1.11.0rc2
+scipy>=1.11.0
 gsd>3.0.0
 setuptools
 MDAnalysis>=2.8.0
