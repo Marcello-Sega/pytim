@@ -39,7 +39,7 @@ dependencies = [
   "cython>=0.29.36",
   "gsd>3.0.0",
   "MDAnalysis>=2.8.0",
-  "scipy>=1.11.0rc2",
+  "scipy>=1.11.0",
   "setuptools",
   "PyWavelets>=1.5.0",
   "scikit-image>=0.24.0",
