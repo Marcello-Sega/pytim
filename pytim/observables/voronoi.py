@@ -28,17 +28,71 @@ class Voronoi(Observable):
         :param bool facets     :  compute facets areas and normals
         :param bool projections:  compute projected areas and volumes
         :returns:
-          a tuple with volumes (ndarray), areas (ndarray) and facets (dictionary) and projections (dictionary)
-          as selected by the corresponding options.
+            tuple (volumes, areas, info)
 
-          The arrays volumes and areas have shape equal to len(inp)
+            - **volumes** (ndarray): total volume(s) of the polyhedron(s).
+            - **areas** (ndarray): total surface area(s).
+            - **info** (dict, optional): contains additional per-facet and per-axis data:
 
-          The facets dictionary has keys 'facet_areas' and 'facet_normals', and the corresponding values are
-          lists of length len(inp), each one containing a list of variable length, depending on the number of
-          facet associated to the point.
+                * ``facet_areas`` – list of facet areas :math:`A_f`
+                * ``facet_normals`` – list of outward unit normals :math:`n_f`
+                * ``projected_areas`` – per-axis contributions
 
-          The projections dictionary has keys 'projected_areas' and 'projected_volumes', and the corresponding values
-          are ndarrays of shape (len(inp),3 ) for each of the three Cartesian directions x,y,z.
+                  .. math::
+
+                     A_i = \sum_f A_f (n_f \cdot e_i)^2
+
+                  where :math:`e_i` is the Cartesian unit vector in direction
+                  :math:`i \in \{x, y, z\}`
+
+                * ``projected_volumes`` – per-axis contributions
+
+                  .. math::
+
+                     V_i = \sum_f \frac{A_f h_f}{3} (n_f \cdot e_i)^2
+
+                  with :math:`h_f` the height of the pyramid defined by facet
+                  :math:`f` and the chosen reference point.
+
+        Notes
+        -----
+        - The projected area/volume decomposition uses the squared direction cosine
+          of each facet normal, so that the three components sum to the total area
+          or volume.
+
+
+        Example:
+
+        >>> import numpy as np
+        >>> import MDAnalysis as mda
+        >>> import pytim
+        >>> from pytim.datafiles import WATER_GRO
+        >>> from pytim.observables import Voronoi
+        >>> def rprint(x,n=3): print(np.around(x,n))
+        >>> 
+        >>> u = mda.Universe(WATER_GRO)
+        >>> ox = u.select_atoms('name OW')
+        >>> # just a slice to compute the observable faster
+        >>> ox = ox [ox.positions[:,2] < u.dimensions[2]/10]
+        >>> voro = Voronoi(u)
+        >>> volumes, areas, dic  = voro.compute(ox, facets=True,projections=True)
+        >>> rprint([volumes[0],areas[0]])
+        [28.708 54.081]
+
+        >>> print(dic.keys())
+        dict_keys(['facet_areas', 'facet_normals', 'projected_areas', 'projected_volumes'])
+
+        >>> # The first atom's polyhedra has 48 facets.
+        >>> # The projected areas and volumes are the
+        >>> # amount of area pointing along x,y,z
+        >>> print([len(dic[k][0]) for k in dic.keys()])
+        [48, 48, 3, 3]
+
+        >>> rprint(dic['projected_areas'][0])
+        [17.962 18.882 17.237]
+
+        >>> rprint(dic['projected_volumes'][0])
+        [9.803 9.877 9.029]
 
        """
 
