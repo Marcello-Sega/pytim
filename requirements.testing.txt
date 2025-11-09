@@ -3,5 +3,5 @@ codecov>=2.1.13
 pytest-cov>=5.0.0
 packaging
 mdtraj>=1.10.2
-openmm
+openmm==8.4.0.post1
 build
