@@ -1,11 +1,11 @@
-cython>=3.0.1
+cython>=3.0.6
 numpy>=2.1.3
-scipy>=1.11.3
+scipy>=1.12.0rc1
 gsd>3.0.0
 setuptools
 MDAnalysis>=2.8.0
-PyWavelets>=1.5.0
+PyWavelets>=1.6.0rc1
 scikit-image>=0.24.0
-sphinx>=7.2.3
+sphinx>=7.3.0
 matplotlib>=3.9.2
-dask>=2023.9.0
+dask>=2023.12.0
