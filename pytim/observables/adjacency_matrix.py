@@ -104,8 +104,8 @@ class WaterHydrogenBondingAdjacencyMatrix(AdjacencyMatrix):
         self.size = (len(group.residues),len(group.residues))
         self.M = sparse.lil_matrix(self.size)*0
         self.group = group
-        self.oxygens = group.atoms[group.atoms.types == 'O']
-        self.hydrogens = group.atoms[group.atoms.types == 'H']
+        self.oxygens = group.atoms[group.atoms.types == 'O' or group.atoms.types == 'OW']
+        self.hydrogens = group.atoms[group.atoms.types == 'H' or group.atoms.types == 'HW']
         if self.method == 'OO_OH': return self._adjacency_matrix_OO_OH()
         else: raise NotImplemented("methods OO and OHO not implemented")
 
