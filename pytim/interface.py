@@ -8,6 +8,10 @@ from . import messages
 from . import utilities
 from scipy.spatial import cKDTree
 
+try: np.isin
+except AttributeError: np.isin = np.in1d
+
+    
 
 class Interface(object):
     """ The Interface metaclass. Classes for interfacial determination
