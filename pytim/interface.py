@@ -8,9 +8,9 @@ from . import messages
 from . import utilities
 from scipy.spatial import cKDTree
 
-try: np.isin
-except AttributeError: np.isin = np.in1d
+from .patches import patchNumpy_isin
 
+patchNumpy_isin()
     
 
 class Interface(object):
