@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytim"
-version = "1.0.4"  # Loaded from pytim/version.py in setup.py
+version = "1.0.5"  # Loaded from pytim/version.py in setup.py
 description = "Python Tool for Interfacial Molecules Analysis"
 readme = "README.rst"
 requires-python = ">=3.10"
@@ -39,9 +39,9 @@ dependencies = [
   "cython>=3.0.8",
   "gsd>3.0.0",
   "MDAnalysis>=2.8.0",
-  "scipy>=1.12.0rc2",
+  "scipy>=1.12.0",
   "setuptools",
-  "PyWavelets>=1.6.0rc1",
+  "PyWavelets>=1.8.0",
   "scikit-image>=0.24.0",
   "sphinx>=7.3.0",
   "matplotlib",
