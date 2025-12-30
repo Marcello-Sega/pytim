@@ -670,8 +670,8 @@ class Interface(object):
         ...     #interface.writepdb(method.__name__+'.pdb') ; # debug
         ...     cond = (ref_ind == ind )
         ...     if np.all(cond) ==  False:
-        ...         miss1 = (np.in1d(ref_ind,ind)==False).sum()
-        ...         miss2 = (np.in1d(ind,ref_ind)==False).sum()
+        ...         miss1 = (~np.isin(ref_ind, ind)).sum()
+        ...         miss2 = (~np.isin(ind, ref_ind)).sum()
         ...         percent = (miss1 + miss2)*0.5/len(ref_ind) * 100.
         ...         if percent > 2: # this should be 0 for ITIM, and < 5
         ...                         # for GITIM, with this config+alpha
@@ -707,8 +707,8 @@ class Interface(object):
         ...     #interface.writepdb(method.__name__+'.pdb') ; # debug
         ...     cond = (ref_ind == ind )
         ...     if np.all(cond) ==  False:
-        ...         miss1 = (np.in1d(ref_ind,ind)==False).sum()
-        ...         miss2 = (np.in1d(ind,ref_ind)==False).sum()
+        ...         miss1 = (~np.isin(ref_ind, ind)).sum()
+        ...         miss2 = (~np.isin(ind, ref_ind)).sum()
         ...         percent = (miss1 + miss2)*0.5/len(ref_ind) * 100.
         ...         if percent > 4 : # should be ~ 4 % for this system
         ...             print (miss1+miss2)
