@@ -21,7 +21,7 @@ from .surface import SurfaceFlatInterface as Surface
 from .sanity_check import SanityCheck
 
 from .interface import Interface
-from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
+from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ, patchNumpy_isin
 
 
 class ITIM(Interface):
