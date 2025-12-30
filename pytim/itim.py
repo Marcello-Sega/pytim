@@ -21,8 +21,9 @@ from .surface import SurfaceFlatInterface as Surface
 from .sanity_check import SanityCheck
 
 from .interface import Interface
-from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
+from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ, patchNumpy_isin
 
+patchNumpy_isin()
 
 class ITIM(Interface):
     """ Identifies interfacial molecules at macroscopically flat interfaces.
@@ -278,7 +279,7 @@ J. Comp. Chem. 29, 945, 2008)*
             # NOTE that from MDAnalysis 0.16, .ids runs from 1->N
             # (was 0->N-1 in 0.15), we use now .indices
             indices = np.flatnonzero(
-                np.in1d(self.cluster_group.atoms.indices,
+                np.isin(self.cluster_group.atoms.indices,
                         inlayer_group.atoms.indices))
             # and update the tagged, sorted atoms
             self._seen[uplow][indices] = layer + 1
