@@ -2,6 +2,10 @@
 # vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 from __future__ import print_function
 
+def patchNumpy_isin():
+    try: np.isin
+    except AttributeError: np.isin = np.in1d
+
 def patchTrajectory(trajectory, interface):
     """ Patch the MDAnalysis trajectory class
 
