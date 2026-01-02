@@ -5,7 +5,8 @@
     ============
 """
 from __future__ import print_function
-from multiprocessing import Process, Queue, cpu_count
+import multiprocessing as mp
+from pickle import PicklingError
 import numpy as np
 from scipy.spatial import distance
 
@@ -19,6 +20,95 @@ from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
 from circumradius import circumradius
 from .gitim import GITIM
 from scipy.spatial import cKDTree
+import warnings
+
+def _overlap_static(Ri, Rj, pij, dzi):
+    dzj = pij[:, 2] - dzi
+    ri2 = Ri**2 - dzi**2
+    rj2 = Rj**2 - dzj**2
+
+    cond = np.where(rj2 >= 0.0)[0]
+    if len(cond) == 0:
+        return [], []
+    rj2 = rj2[cond]
+    pij = pij[cond]
+
+    ri, rj = np.sqrt(ri2), np.sqrt(rj2)
+    pij2 = pij**2
+    dij2 = pij2[:, 0] + pij2[:, 1]
+    dij = np.sqrt(dij2)
+
+    # slice within neighboring one
+    if np.any(dij <= rj - ri):
+        return np.array([2. * np.pi]), np.array([0.0])
+
+    # c1 => no overlap; c2 => neighboring slice enclosed
+    c1, c2 = dij < ri + rj, dij > ri - rj
+    cond = np.where(np.logical_and(c1, c2))[0]
+    if len(cond) == 0:
+        return [], []
+
+    arg = (ri2 + dij2 - rj2)[cond] / (ri * dij * 2.)[cond]
+    alpha = 2. * np.arccos(arg)
+    argx, argy = pij[:, 0], pij[:, 1]
+    beta = np.arctan2(argx[cond], argy[cond])
+    return alpha, beta
+
+
+def _atom_coverage_static(index, positions, radii, box, Rmax, alpha, nslices, nangles, tree):
+    # derivation follows http://freesasa.github.io/doxygen/Geometry.html
+    R = radii[index]
+    cutoff = R + Rmax + 2. * alpha
+    neighbors = tree.query_ball_point(positions[index], cutoff)
+    neighbors = np.asarray(list(set(neighbors) - set([index])))
+    covered_slices, exposed_area = 0, 4. * np.pi * R**2
+    if len(neighbors) == 0:
+        return False, exposed_area
+    buried = False
+    delta = R + alpha - 1e-3
+    slices = np.arange(-delta, delta, 2. * delta / nslices)
+    Ri, Rj = radii[index], radii[neighbors]
+    Ri += alpha
+    Rj += alpha
+    pi, pj = positions[index], positions[neighbors]
+    pij = pj - pi
+    cond = np.where(pij > box / 2.)
+    pij[cond] -= box[cond[1]]
+    cond = np.where(pij < -box / 2.)
+    pij[cond] += box[cond[1]]
+    for dzi in slices:
+        arc = np.zeros(nangles)
+        alpha_beta = _overlap_static(Ri, Rj, pij, dzi)
+        alpha_vals, beta_vals = alpha_beta
+        if len(alpha_vals) > 0:
+            N = np.asarray(list(zip(beta_vals - alpha_vals / 2., beta_vals + alpha_vals / 2.)))
+            N = np.asarray(N * nangles / 2 / np.pi, dtype=int)
+            N = N % nangles
+            for n in N:
+                if n[1] > n[0]:  # ! not >=
+                    arc[n[0]:n[1]] = 1.0
+                else:
+                    arc[n[0]:] = 1.0
+                    arc[:n[1]] = 1.0
+
+            if np.sum(arc) == len(arc):
+                covered_slices += 1
+            A = (np.sum(arc) / nangles) * 2. * np.pi
+            exposed_area -= 2. * R**2 / nslices * A
+    if covered_slices >= len(slices):
+        buried = True
+    return buried, exposed_area
+
+
+def _atomlist_coverage_worker(indices, positions, radii, box, Rmax, alpha, nslices, nangles, queue):
+    buried_flags, areas = [], []
+    tree = cKDTree(positions, boxsize=box)
+    for index in indices:
+        buried, area = _atom_coverage_static(
+            index, positions, radii, box, Rmax, alpha, nslices, nangles, tree)
+        buried_flags.append(buried)
+        areas.append(area)
+    queue.put((buried_flags, areas))
 
 
 class SASA(GITIM):
@@ -106,81 +196,14 @@ class SASA(GITIM):
         raise AttributeError('alpha_shape does not work in SASA ')
 
     def _overlap(self, Ri, Rj, pij, dzi):
-        dzj = pij[:, 2] - dzi
-        ri2 = Ri**2 - dzi**2
-        rj2 = Rj**2 - dzj**2
-
-        cond = np.where(rj2 >= 0.0)[0]
-        if len(cond) == 0:
-            return [], []
-        rj2 = rj2[cond]
-        pij = pij[cond]
-
-        ri, rj = np.sqrt(ri2), np.sqrt(rj2)
-        pij2 = pij**2
-        dij2 = pij2[:, 0] + pij2[:, 1]
-        dij = np.sqrt(dij2)
-
-        # slice within neighboring one
-        if np.any(dij <= rj - ri):
-            return np.array([2. * np.pi]), np.array([0.0])
-
-        # c1 => no overlap; c2 => neighboring slice enclosed
-        c1, c2 = dij < ri + rj, dij > ri - rj
-        cond = np.where(np.logical_and(c1, c2))[0]
-        if len(cond) == 0:
-            return [], []
-
-        arg = (ri2 + dij2 - rj2)[cond] / (ri * dij * 2.)[cond]
-        alpha = 2. * np.arccos(arg)
-        argx, argy = pij[:, 0], pij[:, 1]
-        beta = np.arctan2(argx[cond], argy[cond])
-        return alpha, beta
+        return _overlap_static(Ri, Rj, pij, dzi)
 
     def _atom_coverage(self, index):
-        # derivation follows http://freesasa.github.io/doxygen/Geometry.html
         group = self.sasa_group
         box = group.universe.dimensions[:3]
-        R = group.radii[index]
-        cutoff = R + self.Rmax + 2. * self.alpha
-        neighbors = self.tree.query_ball_point(group.positions[index], cutoff)
-        neighbors = np.asarray(list(set(neighbors) - set([index])))
-        covered_slices, exposed_area = 0, 4. * np.pi * R**2
-        if len(neighbors) == 0:
-            return False, exposed_area
-        buried = False
-        delta = R + self.alpha - 1e-3
-        slices = np.arange(-delta, delta, 2. * delta / self.nslices)
-        Ri, Rj = group.radii[index], group.radii[neighbors]
-        Ri += self.alpha
-        Rj += self.alpha
-        pi, pj = group.positions[index], group.positions[neighbors]
-        pij = pj - pi
-        cond = np.where(pij > box / 2.)
-        pij[cond] -= box[cond[1]]
-        cond = np.where(pij < -box / 2.)
-        pij[cond] += box[cond[1]]
-        for dzi in slices:
-            arc = np.zeros(self.nangles)
-            alpha, beta = self._overlap(Ri, Rj, pij, dzi)
-            if len(alpha) > 0:
-                N = np.asarray(list(zip(beta - alpha / 2., beta + alpha / 2.)))
-                N = np.asarray(N * self.nangles / 2 / np.pi, dtype=int)
-                N = N % self.nangles
-                for n in N:
-                    if n[1] > n[0]:  # ! not >=
-                        arc[n[0]:n[1]] = 1.0
-                    else:
-                        arc[n[0]:] = 1.0
-                        arc[:n[1]] = 1.0
-
-                if np.sum(arc) == len(arc):
-                    covered_slices += 1
-                A = (np.sum(arc) / self.nangles) * 2. * np.pi
-                exposed_area -= 2. * R**2 / self.nslices * A
-        if covered_slices >= len(slices):
-            buried = True
-        return buried, exposed_area
+        return _atom_coverage_static(
+            index, group.positions, group.radii, box, self.Rmax,
+            self.alpha, self.nslices, self.nangles, self.tree)
 
     def _atomlist_coverage(self, indices, queue=None):
         res = [], []
@@ -194,8 +217,11 @@ class SASA(GITIM):
 
     def compute_sasa(self, group):
         box = group.universe.dimensions[:3]
-        self.Rmax = np.max(group.radii)
-        self.tree = cKDTree(group.positions, boxsize=box)
+        positions = np.asarray(group.positions, dtype=float)
+        radii = np.asarray(group.radii, dtype=float)
+        box = np.asarray(box, dtype=float)
+        self.Rmax = np.max(radii)
+        self.tree = cKDTree(positions, boxsize=box)
         self.sasa_group = group
 
         if 'win' in self.system.lower():
@@ -203,8 +229,8 @@ class SASA(GITIM):
 
         try:
             self.ncpu
-        except:
-            self.ncpu = cpu_count()
+        except AttributeError:
+            self.ncpu = mp.cpu_count()
 
         indices = range(len(group.atoms))
         exposed = [False] * len(group.atoms)
@@ -219,27 +245,46 @@ class SASA(GITIM):
                 area[sl] = res[1]
         else:
             queue, proc = [], []
+            try:
+                try:
+                    ctx = mp.get_context('fork')
+                except ValueError:
+                    ctx = mp.get_context()
 
-            for c in range(self.ncpu):
-                queue.append(Queue())
-                proc.append(Process(
-                    target=self._atomlist_coverage,
-                    args=(indices[c::self.ncpu], queue[c])))
-                proc[c].start()
+                for c in range(self.ncpu):
+                    queue.append(ctx.Queue())
+                    process = ctx.Process(
+                        target=_atomlist_coverage_worker,
+                        args=(indices[c::self.ncpu], positions, radii, box,
+                              self.Rmax, self.alpha, self.nslices,
+                              self.nangles, queue[c]))
+                    process.start()
+                    proc.append(process)
 
-            for c in range(self.ncpu):
-                sl = slice(c, len(indices), self.ncpu)
-                res = queue[c].get()
-                # in some cases zero atoms are assinged to some
-                # of the processes
-                if len(res[0]) > 0:
-                    exposed[sl] = (~np.asarray(res[0]))
-                    area[sl] = res[1]
+                for c in range(self.ncpu):
+                    sl = slice(c, len(indices), self.ncpu)
+                    res = queue[c].get()
+                    # in some cases zero atoms are assinged to some
+                    # of the processes
+                    if len(res[0]) > 0:
+                        exposed[sl] = (~np.asarray(res[0]))
+                        area[sl] = res[1]
 
-            for c in range(self.ncpu):
-                proc[c].join()
-            for c in range(self.ncpu):
-                queue[c].close()
+                for process in proc:
+                    process.join()
+            except (PicklingError, AttributeError, TypeError, OSError):
+                for process in proc:
+                    if process.is_alive():
+                        process.terminate()
+                    if process.pid is not None:
+                        process.join()
+                self.ncpu = 1
+                warnings.warn("SASA algorithm switched to single-core",category=UserWarning)
+
+                return self.compute_sasa(group)
+            finally:
+                for q in queue:
+                    q.close()
 
         self.area = np.array(area)
 
