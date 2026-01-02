@@ -5,7 +5,8 @@
     ============
 """
 from __future__ import print_function
-from multiprocessing import Process, Queue, cpu_count
+import multiprocessing as mp
+from pickle import PicklingError
 import numpy as np
 from scipy.spatial import distance
 
@@ -203,8 +204,8 @@ class SASA(GITIM):
 
         try:
             self.ncpu
-        except:
-            self.ncpu = cpu_count()
+        except AttributeError:
+            self.ncpu = mp.cpu_count()
 
         indices = range(len(group.atoms))
         exposed = [False] * len(group.atoms)
@@ -219,27 +220,42 @@ class SASA(GITIM):
                 area[sl] = res[1]
         else:
             queue, proc = [], []
+            try:
+                try:
+                    ctx = mp.get_context('fork')
+                except ValueError:
+                    ctx = mp.get_context()
 
-            for c in range(self.ncpu):
-                queue.append(Queue())
-                proc.append(Process(
-                    target=self._atomlist_coverage,
-                    args=(indices[c::self.ncpu], queue[c])))
-                proc[c].start()
+                for c in range(self.ncpu):
+                    queue.append(ctx.Queue())
+                    process = ctx.Process(
+                        target=self._atomlist_coverage,
+                        args=(indices[c::self.ncpu], queue[c]))
+                    process.start()
+                    proc.append(process)
 
-            for c in range(self.ncpu):
-                sl = slice(c, len(indices), self.ncpu)
-                res = queue[c].get()
-                # in some cases zero atoms are assinged to some
-                # of the processes
-                if len(res[0]) > 0:
-                    exposed[sl] = (~np.asarray(res[0]))
-                    area[sl] = res[1]
+                for c in range(self.ncpu):
+                    sl = slice(c, len(indices), self.ncpu)
+                    res = queue[c].get()
+                    # in some cases zero atoms are assinged to some
+                    # of the processes
+                    if len(res[0]) > 0:
+                        exposed[sl] = (~np.asarray(res[0]))
+                        area[sl] = res[1]
 
-            for c in range(self.ncpu):
-                proc[c].join()
-            for c in range(self.ncpu):
-                queue[c].close()
+                for process in proc:
+                    process.join()
+            except (PicklingError, AttributeError, TypeError, OSError):
+                for process in proc:
+                    if process.is_alive():
+                        process.terminate()
+                    if process.pid is not None:
+                        process.join()
+                self.ncpu = 1
+                return self.compute_sasa(group)
+            finally:
+                for q in queue:
+                    q.close()
 
         self.area = np.array(area)
 
