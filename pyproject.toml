@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytim"
-version = "1.0.5"  # Loaded from pytim/version.py in setup.py
+version = "1.0.6"  # Loaded from pytim/version.py in setup.py
 description = "Python Tool for Interfacial Molecules Analysis"
 readme = "README.rst"
 requires-python = ">=3.10"
