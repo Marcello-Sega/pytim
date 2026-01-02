@@ -20,7 +20,7 @@ from .patches import patchTrajectory, patchOpenMM, patchMDTRAJ
 from circumradius import circumradius
 from .gitim import GITIM
 from scipy.spatial import cKDTree
-
+import warnings
 
 def _overlap_static(Ri, Rj, pij, dzi):
     dzj = pij[:, 2] - dzi
@@ -279,6 +279,8 @@ class SASA(GITIM):
                     if process.pid is not None:
                         process.join()
                 self.ncpu = 1
+                warnings.warn("SASA algorithm switched to single-core",category=UserWarning)
+
                 return self.compute_sasa(group)
             finally:
                 for q in queue:
