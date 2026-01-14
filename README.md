@@ -1,9 +1,13 @@
 [What is Pytim](#what-is-pytim) | [Examples](#example) | [More info](#more-info)  | [How to Install](#installation) | [References](#references)
 
-
-[![Build Status](https://api.travis-ci.com/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.com/Marcello-Sega/pytim)
+![PyPI - Version](https://img.shields.io/pypi/v/pytim)
+![Conda Version](https://img.shields.io/conda/vn/conda-forge/pytim)
+![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/pytim)
 [![GitHub tags](https://img.shields.io/github/tag/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/)
 [![GitHub issues](https://img.shields.io/github/issues/Marcello-Sega/pytim.svg)](https://github.com/Marcello-Sega/pytim/issues)
+[![Build Status](https://api.travis-ci.com/Marcello-Sega/pytim.svg?branch=master)](https://travis-ci.com/Marcello-Sega/pytim)
+
+
 [![codecov](https://codecov.io/gh/Marcello-Sega/pytim/branch/master/graph/badge.svg)](https://codecov.io/gh/Marcello-Sega/pytim)
 [![Code Climate](https://codeclimate.com/github/Marcello-Sega/pytim/badges/gpa.svg)](https://codeclimate.com/github/Marcello-Sega/pytim)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
