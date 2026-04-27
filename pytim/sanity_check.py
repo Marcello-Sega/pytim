@@ -111,13 +111,18 @@ class SanityCheck(object):
         elements = 0
         extraelements = -1
 
-        self.interface.cluster_threshold_density = cluster_threshold_density
 
         # we first make sure cluster_cut is either None, or an array
         if isinstance(cluster_cut, (int, float)):
             self.interface.cluster_cut = np.array([float(cluster_cut)])
         else:
             self.interface.cluster_cut = cluster_cut
+
+        # same with the cluster threshold
+        if isinstance(cluster_threshold_density, (int, float, str, type(None))):
+            self.interface.cluster_threshold_density = np.array([cluster_threshold_density])
+        else:
+            self.interface.cluster_threshold_density = cluster_threshold_density
 
         # same with extra_cluster_groups
         if not isinstance(extra_cluster_groups,
