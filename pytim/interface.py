@@ -68,6 +68,11 @@ class Interface(object):
     extra_cluster_groups, _extra_cluster_groups =\
         _create_property('extra_cluster_groups',
                          "(ndarray) additional cluster groups")
+
+    extra_cluster_count, _extra_cluster_count=\
+        _create_property('extra_cluster_count',
+                         "(int) maximum number of extra group clusters (sorted by decreasing size) to exclude.")
+
     radii_dict, _radii_dict =\
         _create_property('radii_dict', "(dict) custom atomic radii")
 
@@ -126,6 +131,7 @@ class Interface(object):
                     beta=None,
                     layer=None,
                     cluster=None,
+                    surface_cluster=None,
                     side=None):
         if group is None:
             raise RuntimeError(
@@ -146,6 +152,8 @@ class Interface(object):
             _group.sides = side
         if cluster is not None:
             _group.clusters = cluster
+        if surface_cluster is not None:
+            _group.surface_clusters = surface_cluster
 
     def _assign_symmetry(self, symmetry):
         if self.analysis_group is None:
@@ -158,72 +166,71 @@ class Interface(object):
             self.symmetry = symmetry
 
     def _generate_surface_clusters(self, group, cut):
-        # at the moment, selects only the biggest cluster
-        labels, counts, neighs = utilities.do_cluster_analysis_dbscan(
-                group, cut,
+        labels, counts, neighs, _ = utilities.do_cluster_analysis_dbscan(
+                group=group, cluster_cut=cut,threshold_density=None,
                 molecular=False)
-        return group[np.where(labels == np.argmax(counts))[0]]
+        sortid = np.argsort(counts,stable=True)[::-1]
+        sortid = sortid[counts[sortid]>0] # just the clusters with more than one element
+        self.surface_clusters =  [group[labels==s] for s in sortid]
+        return self.surface_clusters
 
     def _define_cluster_group(self):
         self.universe.atoms.pack_into_box()
         self.cluster_group = self.universe.atoms[:0]  # empty
         if (self.cluster_cut is not None):
-            cluster_cut = float(self.cluster_cut[0])
             # we start by adding the atoms in the smaller clusters
-            # of the opposit phase, if extra_cluster_groups are provided
+            # of the opposite phase, if extra_cluster_groups are provided
+            self._min_samples=[None]
             if (self.extra_cluster_groups is not None):
-                for extra in self.extra_cluster_groups:
-                    x_labels, x_counts, _ = utilities.do_cluster_analysis_dbscan(
-                        extra, cluster_cut, self.cluster_threshold_density,
-                        self.molecular)
+                for i,extra in enumerate(self.extra_cluster_groups):
+                    if len(self.cluster_cut) == 1:
+                        cluster_cut = self.cluster_cut[0]
+                    else: 
+                        cluster_cut = self.cluster_cut[i+1]
+                    if len(self.cluster_threshold_density) == 1:
+                        cluster_threshold_density = self.cluster_threshold_density[0]
+                    else: 
+                        cluster_threshold_density = self.cluster_threshold_density[i+1]
+                    x_labels, x_counts, _ , min_samples = utilities.do_cluster_analysis_dbscan(
+                        group=extra, cluster_cut=cluster_cut,
+                        threshold_density=cluster_threshold_density,
+                        molecular=self.molecular)
                     x_labels = np.array(x_labels)
-                    x_label_max = np.argmax(x_counts)
-                    x_ids_other = np.where(x_labels != x_label_max)[0]
-
+                    x_label_selection = np.argsort(x_counts)[::-1][:self.extra_cluster_count]
+                    x_ids_other = np.where(~np.isin(x_labels, x_label_selection))[0]
+                    self._min_samples.append(float(min_samples))
                     self.cluster_group += extra[x_ids_other]
-
+                    self.minority_cluster_group = extra[x_ids_other]
             # next, we add the atoms belonging to the main phase
             self.cluster_group += self.analysis_group
 
             # groups have been checked already in _sanity_checks()
             # self.cluster_group at this stage is composed of analysis_group +
             # the smaller clusters of the other phase
-            labels, counts, neighbors = utilities.do_cluster_analysis_dbscan(
-                self.cluster_group, cluster_cut,
-                self.cluster_threshold_density, self.molecular)
+            labels, counts, neighbors, min_samples = utilities.do_cluster_analysis_dbscan(
+                self.cluster_group, self.cluster_cut[0],
+                self.cluster_threshold_density[0], self.molecular)
             labels = np.array(labels)
-
+            self._min_samples[0] = float(min_samples)
             # counts is not necessarily ordered by size of cluster.
+            # we sort it and remember that its index corresponds to the 
+            # label
             sorting = np.argsort(counts,kind='stable')[::-1]
             # labels for atoms in each cluster starting from the largest
-            unique_labels = np.sort(np.unique(labels[labels > -1]))
+            # discarding cases where counts are zero (exhausted the labels)
+            unique_labels = [int(lab) for lab in sorting if counts[lab] > 0]
             # by default, all elements of the cluster_group are in
             # single-molecule/atom clusters. We will update them right after.
             self.label_group(self.cluster_group, cluster=-1)
-            # we go in reverse order to let smaller labels (bigger clusters)
-            # overwrite larger labels (smaller cluster) when the molecular
+            # we let bigger clusters overwrite smaller cluster when the molecular
             # option is used.
             for el in unique_labels[::-1]:
                 # select a label
-                cond = np.where(labels == el)
+                cond = (labels == el)
                 if self.molecular is True:
                     g_ = self.cluster_group[cond].residues.atoms
                 else:
                     g_ = self.cluster_group[cond]
-                # probably we need an example here, say:
-                # counts = [ 61, 1230, 34, 0, ...  0 ,0 ]
-                # labels = [ 0, 1, 2, 1, -1  ....  -1 ]
-                # we have three clusters, of 61, 1230 and 34 atoms.
-                # There are 61 labels '0'
-                #         1230 labels '1'
-                #           34 labels '2'
-                #         the remaining are '-1'
-                #
-                # sorting = [1,0,2,3,....] i.e. the largest element is in
-                #     (1230) position 1, the next (61) is in position 0, ...
-                # Say, g_ is now the group with label '1' (the biggest cluster)
-                # Using argwhere(sorting==1) returns exactly 0 -> the right
-                # ordered label for the largest cluster.
                 self.label_group(g_, cluster=np.argwhere(sorting == el)[0, 0])
             # now that labels are assigned for each of the clusters,
             # we can restric the cluster group to the largest cluster.
@@ -253,6 +260,8 @@ class Interface(object):
         else:
             self.cluster_group = self.analysis_group
             self.label_group(self.cluster_group, cluster=0)
+        if len(self.cluster_group) == 0:
+            raise ValueError('Empty cluster group: change your cluster search settings.')
 
     def is_buried(self, pos):
         """ Checks wether an array of positions are located below
