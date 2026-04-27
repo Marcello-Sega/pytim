@@ -23,6 +23,13 @@ class Clusters(MDAnalysis.core.topologyattrs.AtomAttr):
     per_object = 'atom'
 
 
+class SurfaceClusters(MDAnalysis.core.topologyattrs.AtomAttr):
+    """Clusters for each surface atom"""
+    attrname = 'surface_clusters'
+    singular = 'surface_cluster'
+    per_object = 'atom'
+
+
 class Sides(MDAnalysis.core.topologyattrs.AtomAttr):
     """Sides for each atom"""
     attrname = 'sides'
@@ -82,7 +89,7 @@ def _missing_attributes(interface, universe):
 def _extra_attributes(interface, universe):
     # we add here the new layer, cluster and side information
     # they are not part of MDAnalysis.core.topologyattrs
-    attr = {'layers': Layers, 'clusters': Clusters, 'sides': Sides}
+    attr = {'layers': Layers, 'clusters': Clusters, 'sides': Sides, 'surface_clusters': SurfaceClusters}
     for key in attr.keys():
         if key not in dir(universe.atoms):
             vals = np.zeros(len(universe.atoms), dtype=int) - 1
