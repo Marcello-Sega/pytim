@@ -46,12 +46,25 @@ class IntrinsicDistance(Observable):
         else:
             self.symmetry = symmetry
 
-    def compute(self, inp, kargs=None):
+    def compute(self,
+                inp,
+                upper_surface=None,
+                lower_surface=None,
+                kargs=None):
         """Compute the intrinsic distance of a set of points from the first
         layers.
 
         :param ndarray positions: compute the intrinsic distance for this set
                                   of points
+        :param AtomGroup upper_surface: use this group as the upper planar
+                                  reference surface, if provided
+        :param AtomGroup lower_surface: use this group as the lower planar
+                                  reference surface, if provided
         """
         # see pytim/surface.py
-        return self.interface._surfaces[0].distance(inp, self.symmetry, mode=self.mode)
+        return self.interface._surfaces[0].distance(
+            inp,
+            self.symmetry,
+            mode=self.mode,
+            upper_surface=upper_surface,
+            lower_surface=lower_surface)
