@@ -131,21 +131,36 @@ class Surface(object):
         # return the surface modes reshaped into an array
         return np.append(az + 0.j, s / self.Q).reshape(self.modes_shape)
 
-    def triangulate_layer_flat(self, layer=0):
+    def triangulate_layer_flat(self,
+                               layer=0,
+                               upper_surface=None,
+                               lower_surface=None):
         """Triangulate a layer.
 
         :param int layer:  (default: 0) triangulate this layer (on both sides\
                            of the interface)
+        :param AtomGroup upper_surface: explicit upper planar surface
+        :param AtomGroup lower_surface: explicit lower planar surface
         :return list triangulations:  a list of two Delaunay triangulations,\
                            which are also stored in self.surf_triang
         """
-        if layer > len(self.interface._layers[0]):
-            raise ValueError(messages.UNDEFINED_LAYER)
-
         box = self.interface.universe.dimensions[:3][self.xyz]
 
-        upper = (self.interface._layers[0][layer])
-        lower = (self.interface._layers[1][layer])
+        if (upper_surface is None) != (lower_surface is None):
+            raise ValueError("upper_surface and lower_surface must be "
+                             "provided together")
+
+        if upper_surface is None:
+            if layer > len(self.interface._layers[0]):
+                raise ValueError(messages.UNDEFINED_LAYER)
+            upper = (self.interface._layers[0][layer])
+            lower = (self.interface._layers[1][layer])
+        else:
+            upper = upper_surface
+            lower = lower_surface
+            if len(upper) == 0 or len(lower) == 0:
+                raise ValueError("explicit planar surfaces must not be empty")
+
         delta = self.interface.alpha * 4.0 + 1e-6
         # here we rotate the system to have normal along z
         upperpos = utilities.generate_periodic_border(
@@ -225,7 +240,10 @@ class Surface(object):
             (p - center)**2, axis=1)) * 2 - 1
         return d * side
 
-    def _distance_flat(self, positions):
+    def _distance_flat(self,
+                       positions,
+                       upper_surface=None,
+                       lower_surface=None):
         box = self.interface.universe.dimensions[:3]
 
         pos = np.copy(positions)
@@ -235,7 +253,10 @@ class Surface(object):
         cond = np.where(pos[:, 0:2] < 0 * box[0:2])
         pos[cond] += box[cond[1]]
 
-        distance = self.interpolation(pos)
+        distance = self.interpolation(
+            pos,
+            upper_surface=upper_surface,
+            lower_surface=lower_surface)
         if np.sum(np.isnan(distance)) > 1 + int(0.01 * len(pos)):
             Warning("more than 1% of points have fallen outside"
                     "the convex hull while determining the"
@@ -246,9 +267,15 @@ class Surface(object):
         distance[cond] = 0.0
         return distance
 
-    def _initialize_distance_interpolator_flat(self, layer):
+    def _initialize_distance_interpolator_flat(self,
+                                              layer,
+                                              upper_surface=None,
+                                              lower_surface=None):
         self._layer = layer
-        self.triangulate_layer_flat(layer=self._layer)
+        self.triangulate_layer_flat(
+            layer=self._layer,
+            upper_surface=upper_surface,
+            lower_surface=lower_surface)
 
         self._interpolator = [None, None]
         for side in [0, 1]:
@@ -259,9 +286,15 @@ class Surface(object):
 class SurfaceFlatInterface(Surface):
     def distance(self, inp, *args, **kargs):
         positions = utilities.extract_positions(inp)
-        return self._distance_flat(positions)
+        return self._distance_flat(
+            positions,
+            upper_surface=kargs.get('upper_surface', None),
+            lower_surface=kargs.get('lower_surface', None))
 
-    def interpolation(self, inp):
+    def interpolation(self,
+                      inp,
+                      upper_surface=None,
+                      lower_surface=None):
         positions = utilities.extract_positions(inp)
         box = self.interface.universe.dimensions[self.z]
         try:
@@ -269,7 +302,10 @@ class SurfaceFlatInterface(Surface):
             upper_interp = self.surface_from_modes(upper_set, self.modes[0])
             lower_interp = self.surface_from_modes(lower_set, self.modes[1])
         except (TypeError, KeyError):
-            self._initialize_distance_interpolator_flat(layer=self._layer)
+            self._initialize_distance_interpolator_flat(
+                layer=self._layer,
+                upper_surface=upper_surface,
+                lower_surface=lower_surface)
             upper_interp = self._interpolator[0](positions[:, self.xy])
             lower_interp = self._interpolator[1](positions[:, self.xy])
 

@@ -157,6 +157,8 @@ class Profile(object):
             r = np.array([0., upper])
         if self._dir is not None:
             r = np.array([0., box[self._dir]])
+        else:
+            r = np.array([0., upper])
 
         if self.interface is not None:
             r -= r[1] / 2.
@@ -171,7 +173,10 @@ class Profile(object):
             nbins += 1
         self._nbins = nbins
 
-    def _sample_random_distribution(self, group):
+    def _sample_random_distribution(self,
+                                    group,
+                                    upper_surface=None,
+                                    lower_surface=None):
         box = group.universe.dimensions[:3]
         rnd_accum = np.array(0)
         try:
@@ -186,7 +191,10 @@ class Profile(object):
         rnd = np.random.random((size, 3))
         rnd *= self.interface.universe.dimensions[:3]
         rnd_pos = IntrinsicDistance(
-            self.interface, symmetry=self.symmetry).compute(rnd)
+            self.interface, symmetry=self.symmetry).compute(
+                rnd,
+                upper_surface=upper_surface,
+                lower_surface=lower_surface)
         # the interpolator can return NaNs in some cases
         rnd_pos = rnd_pos[np.isfinite(rnd_pos)]
         rnd_accum, bins, _ = stats.binned_statistic(
@@ -197,13 +205,27 @@ class Profile(object):
             bins=self._nbins)
         return rnd_accum, bins
 
-    def sample(self, group, **kargs):
+    def sample(self,
+               group,
+               interface = None,
+               upper_surface=None,
+               lower_surface=None,
+               **kargs):
         # TODO: implement progressive averaging to handle very long trajs
         # TODO: implement memory cleanup
         if not isinstance(group, AtomGroup):
             raise TypeError("The first argument passed to "
                             "Profile.sample() must be an AtomGroup.")
+        if interface is not None: self.interface = interface
+        if upper_surface is not None or lower_surface is not None:
+            if upper_surface is None or lower_surface is None:
+                raise ValueError("upper_surface and lower_surface must be provided together")
+            if interface.symmetry != "planar":
+                raise ValueError("upper_surface/lower_surface are only supported for planar symmetry. "
+                                 "Instantiate the interface with symmetry='planar'.")
+
         box = group.universe.trajectory.ts.dimensions[:3]
+
         if self._range is None:
             self._determine_range(box)
             self._determine_bins()
@@ -214,13 +236,19 @@ class Profile(object):
             pos = group.positions[::, self._dir]
         else:
             pos = IntrinsicDistance(
-                self.interface, symmetry=self.symmetry, mode=self.mode).compute(group)
+                self.interface, symmetry=self.symmetry, mode=self.mode).compute(
+                    group,
+                    upper_surface=upper_surface,
+                    lower_surface=lower_surface)
 
             if self._MCnorm is False:
                 rnd_accum = np.ones(self._nbins)
 
             else:
-                rnd_accum, bins = self._sample_random_distribution(group)
+                rnd_accum, bins = self._sample_random_distribution(
+                    group,
+                    upper_surface=upper_surface,
+                    lower_surface=lower_surface)
 
         values = self.observable.compute(group, **kargs)
         # the interpolator can return NaNs in some cases
