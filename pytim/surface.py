@@ -297,17 +297,12 @@ class SurfaceFlatInterface(Surface):
                       lower_surface=None):
         positions = utilities.extract_positions(inp)
         box = self.interface.universe.dimensions[self.z]
-        try:
-            self.options['from_modes']
-            upper_interp = self.surface_from_modes(upper_set, self.modes[0])
-            lower_interp = self.surface_from_modes(lower_set, self.modes[1])
-        except (TypeError, KeyError):
-            self._initialize_distance_interpolator_flat(
-                layer=self._layer,
-                upper_surface=upper_surface,
-                lower_surface=lower_surface)
-            upper_interp = self._interpolator[0](positions[:, self.xy])
-            lower_interp = self._interpolator[1](positions[:, self.xy])
+        self._initialize_distance_interpolator_flat(
+            layer=self._layer,
+            upper_surface=upper_surface,
+            lower_surface=lower_surface)
+        upper_interp = self._interpolator[0](positions[:, self.xy])
+        lower_interp = self._interpolator[1](positions[:, self.xy])
 
         d1 = upper_interp - positions[:, self.z]
         d1[np.where(d1 > box / 2.)] -= box
