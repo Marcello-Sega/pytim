@@ -7,6 +7,7 @@ from __future__ import print_function
 from .basic_observables import Number
 from .intrinsic_distance import IntrinsicDistance
 import numpy as np
+import warnings
 from scipy import stats
 from MDAnalysis.core.groups import Atom, AtomGroup, Residue, ResidueGroup
 
@@ -15,21 +16,24 @@ class Profile(object):
     r"""Calculates the profile (normal, or intrinsic) of a given observable
     across the simulation box.
 
-    :param Observable observable:   :class:`Number <pytim.observables.Number>`,
-                                    :class:`Mass <pytim.observables.Mass>`, or
-                                    any other observable:
-                                    calculate the profile of this quantity. If
-                                    None is supplied, it defaults to the number
-                                    density. The number density is always
-                                    calculated on a per atom basis.
-    :param str        direction:    'x','y', or 'z' : calculate the profile
-                                    along this direction. (default: 'z' or
-                                    the normal direction of the interface,
-                                    if provided.
-    :param ITIM       interface:    if provided, calculate the intrinsic
-                                    profile with respect to the first layers
-    :param bool       MCnorm:       if True (default) use a simple Monte Carlo
-                                    estimate the effective volumes of the bins.
+    :param Observable observable:    :class:`Number <pytim.observables.Number>`,
+                                     :class:`Mass <pytim.observables.Mass>`, or
+                                     any other observable:
+                                     calculate the profile of this quantity. If
+                                     None is supplied, it defaults to the number
+                                     density. The number density is always
+                                     calculated on a per atom basis.
+    :param str        direction:     'x','y', or 'z' : calculate the profile
+                                     along this direction. (default: 'z' or
+                                     the normal direction of the interface,
+                                     if provided.
+    :param ITIM       interface:     if provided, calculate the intrinsic
+                                     profile with respect to the first layers
+    :param bool       MCnorm:        if True (default) use a simple Monte Carlo
+                                     estimate the effective volumes of the bins
+    :param bool       reduced_units: if True, compute the histogram as a function
+                                     of the position normalized by the instantanous
+                                     box length. This can be used for NpT simulations.
 
     :Keyword Arguments:
         * MCpoints (int) --
@@ -110,6 +114,29 @@ class Profile(object):
     Negative positions are within the liquid phase, while positive ones are in the vapour
     phase.
 
+    For NpT runs, it may be useful to sample data in reduced units. This can be done
+    by passing reduced_units=True. The following shows that histogram is the same.
+    The absolute units can be recovered by multiplying the bins by the box length.
+
+    >>> import pytim
+    >>> from pytim.datafiles import WATER_GRO
+    >>> from pytim.observables import Profile, Number
+    >>> import MDAnalysis as mda
+    >>> import numpy as np
+    >>> u = mda.Universe(WATER_GRO)
+
+    >>> p1 = Profile(direction="z",reduced_units=True)
+    >>> p2 = Profile(direction="z",reduced_units=False)
+    >>> o = u.select_atoms('name OW')
+    >>> p1.sample(o)
+    >>> p2.sample(o)
+    >>> x1,x2,v = p1.get_values(binwidth=1)
+    >>> y1,y2,w = p2.get_values(binwidth=1)
+    >>> values_check =  np.all(np.isclose(v,w))
+    >>> bins_check = np.all(np.isclose(x1*u.dimensions[2],y1))
+    >>> print(np.all(bins_check), np.all(values_check))
+    True True
+
     """
 
     def __init__(self,
@@ -118,7 +145,9 @@ class Profile(object):
                  interface=None,
                  symmetry='default',
                  mode='default',
+                 reduced_units=False,
                  MCnorm=True,
+                 keep_missing=False,
                  **kargs):
 
         _dir = {'x': 0, 'y': 1, 'z': 2}
@@ -130,8 +159,10 @@ class Profile(object):
         else:
             self._dir = _dir[direction]
         self.mode = mode
+        self.reduced_units = reduced_units
         self.interface = interface
         self._MCnorm = MCnorm
+        self.keep_missing = keep_missing
         self.kargs = kargs
         if symmetry == 'default' and interface is not None:
             self.symmetry = self.interface.symmetry
@@ -142,34 +173,47 @@ class Profile(object):
         else:
             self.observable = observable
         self.binsize = 0.01  # this is used for internal calculations, the
-        # output binsize can be specified in
-        # self.get_values()
+                             # output binsize can be specified in
+                             # self.get_values(). Will be changed at runtime
+                             # if the option reduced_units is true.
         self.sampled_bins = None
         self.sampled_values = None
         self._range = None
         self._counts = 0
         self._totvol = []
+        self._box_lengths = []
 
     def _determine_range(self, box):
         upper = np.min(box)
-        if self._MCnorm:
-            upper = np.max(box)
-            r = np.array([0., upper])
-        if self._dir is not None:
-            r = np.array([0., box[self._dir]])
+        if self.reduced_units:
+            r = np.array([0.,1.])
         else:
-            r = np.array([0., upper])
+            if self._MCnorm:
+                upper = np.max(box)
+                r = np.array([0., upper])
+            if self._dir is not None:
+                r = np.array([0., box[self._dir]])
+            else:
+                r = np.array([0., upper])
 
         if self.interface is not None:
             r -= r[1] / 2.
         self._range = r
 
-    def _determine_bins(self):
-        nbins = int((self._range[1] - self._range[0]) / self.binsize)
-        # we need to make sure that the number of bins is odd, so that the
-        # central one encompasses zero (to make the delta-function
-        # contribution appear always in this bin)
-        if (nbins % 2 > 0):
+    def _determine_bins(self,box):
+        if self.reduced_units:
+            # binsize remains a physical length.  In reduced coordinates
+            # this corresponds to a bin width binsize / L_dir, so the number
+            # of bins changes with the box length.
+            nbins = int(box[self._dir] * (self._range[1] - self._range[0]) / self.binsize)
+        else:
+            nbins = int((self._range[1] - self._range[0]) / self.binsize)
+
+        nbins = max(nbins, 1)
+        # we need to make sure that the number of bins is odd, if this is
+        # an intrinsic profile, so that the central bin encompasses zero
+        # (to make the delta-function contribution appear always there)
+        if (nbins % 2 > 0 and self.interface is not None):
             nbins += 1
         self._nbins = nbins
 
@@ -228,9 +272,7 @@ class Profile(object):
 
         if self._range is None:
             self._determine_range(box)
-            self._determine_bins()
-        v = np.prod(box)
-        self._totvol.append(v)
+            self._determine_bins(box)
 
         if self.interface is None:
             pos = group.positions[::, self._dir]
@@ -252,8 +294,22 @@ class Profile(object):
 
         values = self.observable.compute(group, **kargs)
         # the interpolator can return NaNs in some cases
+        finite = np.isfinite(pos)
+        n_total,n_finite = len(pos), np.count_nonzero(finite)
         cond = np.isfinite(pos)
         values, pos = values[cond], pos[cond]
+        if n_finite != n_total:
+            msg = f"Profile.sample(): interpolation failed for {n_total-n_finite} out of {n_total} atoms."
+            if not self.keep_missing:
+                warnings.warn(msg+' Skipping this frame (set keep_missing=True to override)', RuntimeWarning)
+                return False
+            else:
+                warnings.warn(msg, RuntimeWarning)
+
+        v = np.prod(box)
+        self._box_lengths.append(box[self._dir])
+        if self.reduced_units:
+            pos /= box[self._dir]
         accum, bins, _ = stats.binned_statistic(
             pos,
             values,
@@ -267,61 +323,84 @@ class Profile(object):
             if self.interface is not None:
                 self.sampled_rnd_values = rnd_accum.copy()
             # stores the midpoints
-            self.sampled_bins = bins[1:] - self.binsize / 2.
+            self.sampled_bins = 0.5 * (bins[:-1] + bins[1:])
         else:
             self.sampled_values += accum
             if self.interface is not None:
                 self.sampled_rnd_values += rnd_accum
+        self._totvol.append(v)
         self._counts += 1
 
     def get_values(self, binwidth=None, nbins=None, density=True):
         if self.sampled_values is None:
             print("Warning no profile sampled so far")
-        # we use the largest box (largest number of bins) as reference.
-        # Statistics will be poor at the boundaries, but like that we don't
-        # loose information
+            return [None]*3
+
         max_bins = len(self.sampled_bins)
-        max_size = max_bins * self.binsize
+        if self.reduced_units:
+            max_size = self._range[1] - self._range[0]
+        else:
+            max_size = max_bins * self.binsize
 
-        if binwidth is not None:  # overrides nbins
-            nbins = max_size / binwidth
-        if nbins is None:  # means also binwidth must be none
+        if binwidth is not None:
+            if self.reduced_units:
+                avg_length = np.average(self._box_lengths)
+                nbins = int(round(avg_length * max_size / binwidth))
+            else:
+                nbins = int(round(max_size / binwidth))
+        if nbins is None:
             nbins = max_bins
+        nbins = max(int(nbins), 1)
 
-        if (nbins % 2 > 0):
+        if nbins % 2 > 0:
             nbins += 1
 
-        vals = self.sampled_values.copy()
-        if density: vals /= (np.average(self._totvol) / self._nbins)
-        vals /= self._counts
-        if self.interface is not None:
-            # new versions of scipy.binned_statistic don't like inf
-            # we set it now to zero, but only here, so that the
-            # count is always available in self.sampled_values
-            deltabin = int(1 + (nbins - 1) // 2)
-            vals[deltabin] = 0
+        counts = self.sampled_values.copy()
 
-        avg, bins, _ = stats.binned_statistic(
+        if self.interface is not None:
+            fine_deltabin = int(1 + (self._nbins - 1) // 2)
+            counts[fine_deltabin] = 0.0
+
+        avg_counts, bins, _ = stats.binned_statistic(
             self.sampled_bins,
-            vals,
+            counts,
             range=self._range,
-            statistic='mean',
-            bins=nbins)
+            statistic="sum",
+            bins=nbins,
+        )
 
-        if self.interface is not None:
-            _vol = self.sampled_rnd_values * self._nbins
-            _vol /= np.sum(self.sampled_rnd_values)
-            avgV, binsV, _ = stats.binned_statistic(
+        avg_counts /= self._counts
+
+        if not density:
+            avg = avg_counts
+        elif self.interface is None:
+            if self.reduced_units:
+                widths = bins[1:] - bins[:-1]
+                bin_volume = np.average(self._totvol) * widths
+            else:
+                bin_volume = np.average(self._totvol) / nbins
+            avg = avg_counts / bin_volume
+        else:
+            mc_counts, _, _ = stats.binned_statistic(
                 self.sampled_bins,
-                _vol,
+                self.sampled_rnd_values,
                 range=self._range,
-                statistic='mean',
-                bins=nbins)
-            avg[deltabin] = np.inf
-            avg[avgV > 0.0] /= avgV[avgV > 0.0]
-            avg[avgV <= 0.0] = 0.0
+                statistic="sum",
+                bins=nbins,
+            )
 
-        return [bins[0:-1], bins[1:], avg]
+            total_mc = np.sum(self.sampled_rnd_values)
+            avg_vol = np.average(self._totvol) * mc_counts / total_mc
+
+            avg = np.zeros_like(avg_counts)
+            mask = avg_vol > 0.0
+            avg[mask] = avg_counts[mask] / avg_vol[mask]
+
+            out_deltabin = int(1 + (nbins - 1) // 2)
+            avg[out_deltabin] = np.inf
+
+        return bins[:-1], bins[1:], avg
+
 
     @staticmethod
     def _():

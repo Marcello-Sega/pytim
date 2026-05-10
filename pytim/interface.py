@@ -185,11 +185,11 @@ class Interface(object):
                 for i,extra in enumerate(self.extra_cluster_groups):
                     if len(self.cluster_cut) == 1:
                         cluster_cut = self.cluster_cut[0]
-                    else: 
+                    else:
                         cluster_cut = self.cluster_cut[i+1]
                     if len(self.cluster_threshold_density) == 1:
                         cluster_threshold_density = self.cluster_threshold_density[0]
-                    else: 
+                    else:
                         cluster_threshold_density = self.cluster_threshold_density[i+1]
                     x_labels, x_counts, _ , min_samples = utilities.do_cluster_analysis_dbscan(
                         group=extra, cluster_cut=cluster_cut,
@@ -213,7 +213,7 @@ class Interface(object):
             labels = np.array(labels)
             self._min_samples[0] = float(min_samples)
             # counts is not necessarily ordered by size of cluster.
-            # we sort it and remember that its index corresponds to the 
+            # we sort it and remember that its index corresponds to the
             # label
             sorting = np.argsort(counts,kind='stable')[::-1]
             # labels for atoms in each cluster starting from the largest

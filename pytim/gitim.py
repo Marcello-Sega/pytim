@@ -57,7 +57,6 @@ class GITIM(Interface):
         :param int extra_cluster_count: Number of clusters (sorted by decreasing
                                     size) to be considered the majority component of
                                     the opposite phase.
-                                    
         :param int n_clusters:      Tag as surface atoms/molecules only
                                     those in the n_clusters largest clusters.
                                     Default: None, uses all clusters.
