@@ -19,7 +19,8 @@ def determine_samples(threshold_density, cluster_cut, n_neighbors):
     elif (threshold_density == 'auto'):
         modes = 2
         centroid, _ = vq.kmeans2(
-            n_neighbors * 1.0, modes, iter=10, check_finite=False)
+            n_neighbors * 1.0, modes, iter=10, check_finite=False,
+            rng=5317) # rng used to set the seed for reproducibile results
         min_samples = np.max(centroid)
 
     else:
@@ -35,11 +36,13 @@ def do_cluster_analysis_dbscan(group,
                                molecular=True):
     """ Performs a cluster analysis using DBSCAN
 
-        :returns [labels,counts,neighbors]: lists of the id of the cluster to
-                                  which every atom is belonging to, of the
-                                  number of elements in each cluster, and of
-                                  the number of neighbors for each atom
-                                  according to the specified criterion.
+        :returns [labels,counts,neighbors,min_samples]: lists of the id of
+                 the cluster to which every atom is belonging to, of the
+                 number of elements in each cluster,and of the number of
+                 neighbors for each atom according to the specified criterion.
+                 The last item, min_samples, is the threshold used in the
+                 clustering algorithm as passed or determined with the 'auto'
+                 option.
 
         Uses a slightly modified version of DBSCAN from sklearn.cluster
         that takes periodic boundary conditions into account (through
@@ -71,13 +74,12 @@ def do_cluster_analysis_dbscan(group,
 
     min_samples = determine_samples(threshold_density, cluster_cut,
                                     n_neighbors)
-
     labels = -np.ones(points.shape[0], dtype=np.intp)
     counts = np.zeros(points.shape[0], dtype=np.intp)
 
     core_samples = np.asarray(n_neighbors >= min_samples, dtype=np.uint8)
     dbscan_inner(core_samples, neighborhoods, labels, counts)
-    return labels, counts, n_neighbors
+    return labels, counts, n_neighbors, min_samples
 
 
 def _():
@@ -94,10 +96,10 @@ def _():
     >>> u = mda.Universe(ILBENZENE_GRO)
     >>> benzene = u.select_atoms('name C and resname LIG')
     >>> u.atoms.positions = u.atoms.pack_into_box()
-    >>> l,c,n =  DBScan(benzene, cluster_cut = 4.5, threshold_density = None)
-    >>> l1,c1,n1 = DBScan(benzene, cluster_cut = 8.5, threshold_density = 'auto')
+    >>> l,c,n,t =  DBScan(benzene, cluster_cut = 4.5, threshold_density = None)
+    >>> l1,c1,n1,t1 = DBScan(benzene, cluster_cut = 8.5, threshold_density = 'auto')
     >>> td = 0.009
-    >>> l2,c2,n2 = DBScan(benzene, cluster_cut = 8.5, threshold_density = td)
+    >>> l2,c2,n2,t2 = DBScan(benzene, cluster_cut = 8.5, threshold_density = td)
     >>> print (np.sort(c)[-2:])
     [   12 14904]
 
