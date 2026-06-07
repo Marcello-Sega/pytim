@@ -54,6 +54,9 @@ class GITIM(Interface):
                                     search, if cluster_cut is not None
         :param Object extra_cluster_groups: Additional groups, to allow for
                                     mixed interfaces
+        :param int extra_cluster_count: Number of clusters (sorted by decreasing
+                                    size) to be considered the majority component of
+                                    the opposite phase.
         :param int n_clusters:      Tag as surface atoms/molecules only
                                     those in the n_clusters largest clusters.
                                     Default: None, uses all clusters.
@@ -75,7 +78,6 @@ class GITIM(Interface):
                                     cluster of (initially detected) surface
                                     ones.
                                     Default: None, disables the filtering.
-        :param str symmetry:        Gives the code a hint about the topology
         :param str symmetry:        Gives the code a hint about the topology
                                     of the interface: 'generic' (default)
                                     or  'planar'
@@ -143,6 +145,7 @@ class GITIM(Interface):
                  include_zero_radius=False,
                  cluster_threshold_density=None,
                  extra_cluster_groups=None,
+                 extra_cluster_count=1,
                  n_clusters=None,
                  min_cluster_size=None,
                  biggest_cluster_only = False, # backward compatibility, sets n_clusters
@@ -290,10 +293,9 @@ class GITIM(Interface):
         # from the triangulation and updating the circumradius of the neighbors
         # of the removed points  only.
 
-        dbs = utilities.do_cluster_analysis_dbscan
-        return alpha_group, dbs
+        return alpha_group
 
-    def _assign_layers_postprocess(self, dbs, group, alpha_group, layer):
+    def _assign_layers_postprocess(self, group, alpha_group, layer):
         if len(group) > 0:
             if self.molecular:
                 group = group.residues.atoms
@@ -303,12 +305,20 @@ class GITIM(Interface):
         alpha_group = alpha_group[:] - group[:]
         self.label_group(
             self._layers[layer], beta=1. * (layer + 1), layer=(layer + 1))
+
+        if self.surface_cluster_cut is not None:
+            self.label_group(group.universe.atoms,surface_cluster=-1)
+            sorted_groups = self._generate_surface_clusters(
+                    group, self.surface_cluster_cut)
+            for i,g in enumerate(sorted_groups):
+                self.label_group(g,surface_cluster=i)
+
         return alpha_group
 
     def _assign_layers(self):
         """Determine the GITIM layers."""
 
-        alpha_group, dbs = self._assign_layers_setup()
+        alpha_group = self._assign_layers_setup()
 
         self.triangulation = []  # storage for triangulations
 
@@ -317,12 +327,9 @@ class GITIM(Interface):
             alpha_ids = self.alpha_shape(self.alpha, alpha_group, layer)
 
             group = alpha_group[alpha_ids]
-            if self.surface_cluster_cut is not None:
-                group = self._generate_surface_clusters(
-                    group, self.surface_cluster_cut)
 
             alpha_group = self._assign_layers_postprocess(
-                dbs, group, alpha_group, layer)
+                group, alpha_group, layer)
 
         # reset the interpolator
         self._interpolator = None
