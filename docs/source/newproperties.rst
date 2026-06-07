@@ -96,6 +96,15 @@ This results in the following (isolated molecules not shown)
 +----------------------------+
 
 
+Surface clusters
+--------
+
+The value of :py:obj:`atoms.surface_clusters` identify the surface cluster for
+classes like :class:`~pytim.itim.GITIM`, provided that the option :obj:`surface_cluster_cut`
+is not `None`. The label is -1 if the atom is not a surface one, and a progressive number
+in order of growing size of surface atom clusters.
+
+
 Sides
 -----
 
