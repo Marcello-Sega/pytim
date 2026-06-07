@@ -293,7 +293,7 @@ class SASA(GITIM):
     def _assign_layers(self):
         """Determine the SASA layers."""
 
-        alpha_group, dbs = self._assign_layers_setup()
+        alpha_group = self._assign_layers_setup()
 
         for layer in range(0, self.max_layers):
             if alpha_group.atoms.n_atoms == 0:
@@ -304,7 +304,7 @@ class SASA(GITIM):
                 group = alpha_group[alpha_ids]
 
             alpha_group = self._assign_layers_postprocess(
-                    dbs, group, alpha_group, layer)
+                    group, alpha_group, layer)
 
         # reset the interpolator
         self._interpolator = None
