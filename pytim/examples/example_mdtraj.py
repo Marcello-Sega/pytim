@@ -6,7 +6,8 @@
     loaded with MDTraj (http://mdtraj.org/)
     (see also the openmm interoperability)
 """
-import mdtraj
+import pytest
+mdtraj = pytest.importorskip("mdtraj")
 import pytim
 from pytim.datafiles import WATER_GRO, WATER_XTC
 
