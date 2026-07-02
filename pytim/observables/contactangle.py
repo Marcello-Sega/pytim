@@ -194,7 +194,7 @@ class ContactAngle(object):
             c, cp, theta, _, _ = self.fit_circle(use='histogram')
         self._polynomial_coefficients = c
         self._canonical_form = cp
-        return float(theta)
+        return float(np.real_if_close(theta,tol=1000))
 
     @property
     def contact_angles(self):
@@ -208,7 +208,7 @@ class ContactAngle(object):
             c, cp, theta, _ = self.fit_ellipse()
         self._polynomial_coefficients = c
         self._canonical_form = cp
-        return np.array(theta)
+        return np.array(np.real_if_close(theta,tol=1000))
 
     @property
     def mean_contact_angles(self):
@@ -223,7 +223,7 @@ class ContactAngle(object):
             c, cp, theta, _ = self.fit_ellipse(use='histogram')
         self._polynomial_coefficients = c
         self._canonical_form = cp
-        return np.array(theta)
+        return np.array(np.real_if_close(theta,tol=1000))
 
     @property
     def polynomial_coefficients(self):
@@ -850,6 +850,7 @@ class ContactAngle(object):
             phi += np.pi/2.
         # NOTE: don't change the units of phi to deg., other parts of the code
         #       depend on it being in rad.
+        phi = np.real_if_close(phi, tol=1000)
         phi = phi % np.pi
         return {'x0': x0.item(), 'y0': y0.item(), 'a': ap.item(), 'b': bp.item(), 'phi': phi.item(), 'e': e.item()}
 
