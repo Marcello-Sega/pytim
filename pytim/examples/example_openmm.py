@@ -8,6 +8,8 @@
 """
 import numpy as np
 # openmm imports
+import pytest
+openmm = pytest.importorskip("openmm")
 from openmm.app import *
 from openmm import *
 from openmm.unit import *
