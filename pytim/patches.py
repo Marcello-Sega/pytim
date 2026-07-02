@@ -27,11 +27,18 @@ def patchTrajectory(trajectory, interface):
 
         class PatchedTrajectory(trajectory.__class__):
             def _read_next_timestep(self, ts=None):
-                tmp = self.original_read_next_timestep(ts=ts)
-                if self.interface.autoassign is True:
-                    self.interface._assign_layers()
-                    self.interface._frame = self.frame
-                return tmp
+              try:
+                  tmp = self.original_read_next_timestep(ts=ts)
+              except TypeError as err:
+                  if "unexpected keyword argument 'ts'" not in str(err):
+                      raise
+                  tmp = self.original_read_next_timestep()
+
+              if self.interface.autoassign is True:
+                  self.interface._assign_layers()
+                  self.interface._frame = self.frame
+
+              return tmp
 
             def _read_frame_with_aux(self, frame):
                 if frame != self.frame:
