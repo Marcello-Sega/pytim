@@ -352,7 +352,7 @@ class Profile(object):
             nbins = max_bins
         nbins = max(int(nbins), 1)
 
-        if nbins % 2 > 0:
+        if self.interface is not None and nbins % 2 > 0:
             nbins += 1
 
         counts = self.sampled_values.copy()
