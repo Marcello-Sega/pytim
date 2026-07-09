@@ -8,4 +8,4 @@ PyWavelets>=1.8.0
 scikit-image>=0.25.0rc0
 sphinx>=7.4.0
 matplotlib>=3.9.2
-dask>=2024.7.0
+dask>=2024.7.1
