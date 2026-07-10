@@ -1,0 +1,12 @@
+name: pytim
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.9
+  - numpy
+  - scipy
+  - MDAnalysis>=2.0.0
+  - cython
