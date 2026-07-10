@@ -160,7 +160,6 @@ class SanityCheck(object):
         total = self.interface.universe.atoms[0:0]  # empty group
         for g in groups:
             if g is not None:
-                guess_radii(self.interface, group=g)
                 radii = np.copy(g.radii)
                 total += g
         vals = list(self.interface.radii_dict.values())
