@@ -6,6 +6,6 @@ setuptools
 MDAnalysis>=2.8.0
 PyWavelets>=1.8.0
 scikit-image>=0.25.0rc0
-sphinx>=7.4.0
+sphinx>=8.1.0
 matplotlib>=3.9.2
-dask>=2024.7.0
+dask>=2024.8.0
