@@ -101,6 +101,7 @@ except:
     from pkg_resources import resource_filename as resource
 
 import tempfile
+import hashlib
 import re as re
 import urllib
 try:
@@ -159,21 +160,30 @@ class Data(object):
             dirname = tmpdir
         urlbase_md5 = 'https://raw.githubusercontent.com/Marcello-Sega/pytim/extended_datafiles/files/'
         urlbase = 'https://github.com/Marcello-Sega/pytim/raw/extended_datafiles/files/'
-        print("checking presence of a cached copy...", end=' ')
+        # Fetch the checksum first: it guards both the cached copy and
+        # the fresh download. (The old code compared a str digest
+        # against bytes, which always raised and skipped the check.)
         try:
             with urlopen(urlbase_md5 + filename + '.MD5') as handle:
-                md5 = handle.read()
+                md5 = handle.read().decode('utf-8', 'replace').split()[0]
+        except BaseException:
+            md5 = None
+        print("checking presence of a cached copy...", end=' ')
+        try:
             md5_local = hashlib.md5(open(dirname + filename,
                                          'rb').read()).hexdigest()
-            if md5_local in md5:
+            if md5 is not None and md5_local == md5:
                 print("found")
                 return dirname + filename
         except BaseException:
             pass
         print("not found. Fetching remote file...", end=' ')
         newfile = urlopen(urlbase + filename + '?raw=true')
+        data = newfile.read()
+        if md5 is not None and hashlib.md5(data).hexdigest() != md5:
+            raise ValueError("downloaded file failed MD5 check")
         with open(dirname + filename, 'wb') as output:
-            output.write(newfile.read())
+            output.write(data)
             print("done.")
             return dirname + filename
 
